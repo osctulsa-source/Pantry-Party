@@ -7,6 +7,11 @@
  *
  * Five scenarios that try to make the engine lose data. An engine that can't pass all
  * five does not get to be our production engine. THROWAWAY.
+ *
+ * Every engine call below is awaited so the runner works for both sync engines
+ * (MemoryEngine — await of a non-Promise is a no-op) and async ones (PowerSync,
+ * Replicache — where ordering matters). Don't drop the awaits even though the
+ * memory engine doesn't need them.
  */
 
 import { quantityOf, type StoredItem, type SyncEngine } from "./syncEngine.ts";
@@ -16,7 +21,8 @@ import { PowerSyncEngine } from "./powerSyncEngine.ts";
 const engineChoice = (process.env.ENGINE ?? "memory").toLowerCase();
 
 interface World {
-  newEngine(device: string): SyncEngine;
+  /** May return sync (MemoryEngine) or a Promise (PowerSync, Replicache). Always `await`. */
+  newEngine(device: string): SyncEngine | Promise<SyncEngine>;
   serverSize(): number;
   describe: string;
 }
@@ -57,57 +63,57 @@ async function run() {
 
   // S1 — offline writes survive reconnect
   {
-    const a = world.newEngine("A");
-    a.setOnline(false);
-    for (let i = 0; i < 30; i++) a.add({ id: `s1-${i}`, name: `item ${i}`, quantity: 1 }, t(i));
-    a.setOnline(true);
+    const a = await world.newEngine("A");
+    await a.setOnline(false);
+    for (let i = 0; i < 30; i++) await a.add({ id: `s1-${i}`, name: `item ${i}`, quantity: 1 }, t(i));
+    await a.setOnline(true);
     await a.sync();
-    assert(a.read().length === 30, "S1 · 30 offline writes survive reconnect");
+    assert((await a.read()).length === 30, "S1 · 30 offline writes survive reconnect");
     if (engineChoice === "memory") assert(world.serverSize() === 30, "S1 · all 30 reached the server");
   }
 
   // S2 — cold restart (app update) loses nothing
   {
-    const a = world.newEngine("A");
-    a.add({ id: "s2", name: "olive oil", quantity: 1 }, t(1));
+    const a = await world.newEngine("A");
+    await a.add({ id: "s2", name: "olive oil", quantity: 1 }, t(1));
     await a.restart();
-    assert(a.read().some((i) => i.id === "s2"), "S2 · item present after cold restart");
+    assert((await a.read()).some((i) => i.id === "s2"), "S2 · item present after cold restart");
   }
 
   // S3 — concurrent add of the same item accumulates (THE data-loss test)
   {
-    const a = world.newEngine("A");
-    const b = world.newEngine("B");
-    a.setOnline(false); b.setOnline(false);
-    a.add({ id: "milk", name: "milk", quantity: 1 }, t(1));
-    b.add({ id: "milk", name: "milk", quantity: 1 }, t(2));
-    a.setOnline(true); await a.sync();
-    b.setOnline(true); await b.sync();
+    const a = await world.newEngine("A");
+    const b = await world.newEngine("B");
+    await a.setOnline(false); await b.setOnline(false);
+    await a.add({ id: "milk", name: "milk", quantity: 1 }, t(1));
+    await b.add({ id: "milk", name: "milk", quantity: 1 }, t(2));
+    await a.setOnline(true); await a.sync();
+    await b.setOnline(true); await b.sync();
     await a.sync();
-    const milk = a.read().find((i) => i.id === "milk");
+    const milk = (await a.read()).find((i) => i.id === "milk");
     assert(!!milk && quantityOf(milk) === 2, "S3 · concurrent adds sum to 2 (no lost update)");
   }
 
   // S4 — delete while offline propagates as a tombstone
   {
-    const a = world.newEngine("A");
-    const b = world.newEngine("B");
-    a.add({ id: "s4", name: "parsley", quantity: 1 }, t(1));
+    const a = await world.newEngine("A");
+    const b = await world.newEngine("B");
+    await a.add({ id: "s4", name: "parsley", quantity: 1 }, t(1));
     await b.sync(); // B sees parsley
-    b.setOnline(false);
-    a.del("s4", t(5));
-    b.setOnline(true); await b.sync();
-    assert(!b.read().some((i) => i.id === "s4"), "S4 · offline device honors the remote delete");
+    await b.setOnline(false);
+    await a.del("s4", t(5));
+    await b.setOnline(true); await b.sync();
+    assert(!(await b.read()).some((i) => i.id === "s4"), "S4 · offline device honors the remote delete");
   }
 
   // S5 — 1000 update cycles + periodic restarts, no drift
   {
-    const a = world.newEngine("A");
+    const a = await world.newEngine("A");
     for (let i = 0; i < 1000; i++) {
-      a.add({ id: "hot", name: "hot item", quantity: 1 }, t(i));
+      await a.add({ id: "hot", name: "hot item", quantity: 1 }, t(i));
       if (i % 50 === 0) await a.restart();
     }
-    const hot = a.read().find((i) => i.id === "hot");
+    const hot = (await a.read()).find((i) => i.id === "hot");
     assert(!!hot, "S5 · item survives 1000 cycles + restarts");
     assert(!!hot && quantityOf(hot) === 1, "S5 · quantity stays 1 (idempotent — no drift)");
   }

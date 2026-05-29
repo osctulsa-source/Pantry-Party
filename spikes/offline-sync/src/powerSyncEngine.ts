@@ -9,6 +9,14 @@
  *   That has the Supabase + PowerSync cloud setup. This file is useless without it.
  * ──────────────────────────────────────────────────────────────────────────────────
  *
+ *   SDK CAVEAT: the `@powersync/node` API names in the TODO comments below
+ *   (`db.execute`, `db.connect`, `db.waitForFirstSync`, etc.) reflect the SHAPE of the
+ *   PowerSync API, not a freshly verified read of the current README. The SDK is
+ *   evolving — open the current `@powersync/node` docs and confirm exact method names
+ *   before pasting from these comments. The architecture is right; the surface may have
+ *   drifted between releases.
+ * ──────────────────────────────────────────────────────────────────────────────────
+ *
  * ARCHITECTURE NOTES (and the impedance with our interface)
  *
  *  - PowerSync syncs CONTINUOUSLY when connected. There is no explicit `sync()`. Our

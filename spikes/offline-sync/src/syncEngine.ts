@@ -32,18 +32,23 @@ export interface StoredItem {
   updatedBy: string; // device id
 }
 
+/**
+ * All methods accept either sync or async implementations. MemoryEngine returns sync
+ * (real-engine spikes will return Promises). Test code MUST `await` every call so both
+ * shapes work — awaiting a non-Promise is a no-op.
+ */
 export interface SyncEngine {
   /** Local-first add/update. Persists immediately, online or not. `at` = logical clock. */
-  add(input: ItemInput, at: number): void;
+  add(input: ItemInput, at: number): void | Promise<void>;
   /** Tombstone delete. Propagates on reconnect. */
-  del(id: string, at: number): void;
+  del(id: string, at: number): void | Promise<void>;
   /** Current local view (tombstones excluded). */
-  read(): StoredItem[];
-  setOnline(online: boolean): void;
+  read(): StoredItem[] | Promise<StoredItem[]>;
+  setOnline(online: boolean): void | Promise<void>;
   /** Push queued local changes + pull remote. No-op while offline. */
-  sync(): void;
+  sync(): void | Promise<void>;
   /** App-update cycle: serialize local state, drop it, restore. Surfaces persistence bugs. */
-  restart(): void;
+  restart(): void | Promise<void>;
 }
 
 export const quantityOf = (it: StoredItem): number =>
