@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "expo.vscode-expo-tools",
+    "msjsdiag.vscode-react-native",
+    "yoavbls.pretty-ts-errors",
+    "eamodio.gitlens",
+    "ms-vsliveshare.vsliveshare",
+    "mikestead.dotenv",
+    "editorconfig.editorconfig"
+  ]
+}
