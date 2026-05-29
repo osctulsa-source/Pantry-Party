@@ -14,7 +14,7 @@
  * number here means nothing until the test set is REAL (independently-labeled receipts).
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { resolveBarcode, type ProductHit } from "./barcodeCascade.ts";
@@ -63,8 +63,12 @@ function looseMatch(resolved: string, expected: string): boolean {
 }
 
 async function main() {
-  const raw = JSON.parse(readFileSync(join(__dirname, "testset.sample.json"), "utf8"));
+  const realPath = join(__dirname, "testset.json");
+  const samplePath = join(__dirname, "testset.sample.json");
+  const usingReal = existsSync(realPath);
+  const raw = JSON.parse(readFileSync(usingReal ? realPath : samplePath, "utf8"));
   const items: TestItem[] = raw.items;
+  console.log(`  source: ${usingReal ? "testset.json — your real labeled set" : "testset.sample.json — smoke sample (build the real set to get a meaningful number)"}`);
   const barcoded = items.filter((i) => i.kind !== "produce");
   const produce = items.filter((i) => i.kind === "produce");
 

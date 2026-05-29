@@ -1,0 +1,6 @@
+barcode,expectedName,kind,category,store,note
+0049000028904,Coca-Cola Classic 12oz can,barcode,beverage,Kroger,
+0021000615278,"Kraft Singles, White American",barcode,dairy,Kroger,quoted comma is fine
+0011110038364,Kroger 2% Reduced Fat Milk,barcode,dairy,Kroger,store/private-label
+0000000004011,Banana,produce,produce,Kroger,PLU not a barcode -> manual entry
+0852909001020,RXBAR Chocolate Sea Salt,barcode,snack,Target,
