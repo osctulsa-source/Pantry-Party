@@ -1,0 +1,16 @@
+{
+  "name": "spike-capture-accuracy",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "THROWAWAY Phase 0 spike — measures barcode + OCR capture hit rate against a test set",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "tsx src/runHarness.ts",
+    "start:verbose": "tsx src/runHarness.ts --verbose"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

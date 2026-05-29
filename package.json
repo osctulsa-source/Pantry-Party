@@ -1,0 +1,27 @@
+{
+  "name": "breadbox",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pantry tracker — technical kickoff scaffold (codename Breadbox)",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "typecheck": "tsc -b",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "test": "echo \"Run tests per-workspace; spikes run standalone\" && exit 0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0"
+  },
+  "//": "Spikes under spikes/* are intentionally NOT workspaces — they are throwaway."
+}

@@ -1,0 +1,15 @@
+{
+  "name": "spike-offline-sync",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "THROWAWAY Phase 0 spike — proves offline-first sync survives a data-loss torture test",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "tsx src/tortureTest.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

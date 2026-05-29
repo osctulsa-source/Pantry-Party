@@ -1,0 +1,11 @@
+{
+  "_comment": "Sample test set. EXPAND TO 500 real items pulled from team grocery receipts before trusting the number. Cover: national brands, store brands, fresh produce (no barcode → expect miss, route to manual), international items, and multipacks. expectedName is matched loosely (case-insensitive substring) in the harness.",
+  "items": [
+    { "barcode": "0038000000805", "expectedName": "Corn Flakes", "note": "Kellogg's — national brand, should hit OFF" },
+    { "barcode": "0049000028904", "expectedName": "Coca-Cola", "note": "ubiquitous, high-confidence" },
+    { "barcode": "0021000615278", "expectedName": "Mac & Cheese", "note": "Kraft" },
+    { "barcode": "0011110038364", "expectedName": "Milk", "note": "Kroger store brand — tests UPCitemdb fallback" },
+    { "barcode": "0000000004011", "expectedName": "Banana", "note": "PLU not UPC — expect miss, should route to manual entry" },
+    { "barcode": "0852909001020", "expectedName": "RXBAR", "note": "smaller brand, OFF coverage varies" }
+  ]
+}

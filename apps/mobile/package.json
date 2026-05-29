@@ -1,0 +1,19 @@
+{
+  "name": "@breadbox/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "App.tsx",
+  "description": "Expo app — production foundation skeleton (Phase 1)",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android"
+  },
+  "dependencies": {
+    "@breadbox/core": "*",
+    "expo": "~51.0.0",
+    "react": "18.2.0",
+    "react-native": "0.74.0"
+  },
+  "//": "Phase 1: add the chosen sync engine (PowerSync/Replicache), WatermelonDB, expo-camera, and the barcode scanner module here."
+}

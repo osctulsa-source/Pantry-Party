@@ -1,0 +1,8 @@
+{
+  "name": "@breadbox/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Backend skeleton (Phase 1) — thin: auth handoff, sync backend, partner-API proxy",
+  "//": "Pick NestJS or Go on team strength (ADR pending). Postgres on RDS, per-household partitioning from day one. Keep partner API keys server-side — never ship them in the mobile bundle."
+}
