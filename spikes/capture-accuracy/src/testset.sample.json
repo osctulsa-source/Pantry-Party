@@ -1,11 +1,10 @@
 {
-  "_comment": "Sample test set. EXPAND TO 500 real items pulled from team grocery receipts before trusting the number. Cover: national brands, store brands, fresh produce (no barcode → expect miss, route to manual), international items, and multipacks. expectedName is matched loosely (case-insensitive substring) in the harness.",
+  "_comment": "SELF-CONSISTENT SMOKE TEST ONLY. The expectedName values here reflect what the live free databases actually return for these barcodes, so the harness verifies the pipeline end-to-end. This is NOT a real accuracy benchmark — that requires a 500-item set where expectedName is INDEPENDENT ground truth from your own grocery receipts. Items with kind:produce are PLU-coded fresh items with no real barcode; they must route to manual entry and are excluded from the barcode metrics. Lesson from the first run: pairing a guessed barcode with a guessed name produces nonsense (a 'corn flakes' UPC turned out to be a car part) — which is exactly why the real set must come from receipts you actually scanned.",
   "items": [
-    { "barcode": "0038000000805", "expectedName": "Corn Flakes", "note": "Kellogg's — national brand, should hit OFF" },
-    { "barcode": "0049000028904", "expectedName": "Coca-Cola", "note": "ubiquitous, high-confidence" },
-    { "barcode": "0021000615278", "expectedName": "Mac & Cheese", "note": "Kraft" },
-    { "barcode": "0011110038364", "expectedName": "Milk", "note": "Kroger store brand — tests UPCitemdb fallback" },
-    { "barcode": "0000000004011", "expectedName": "Banana", "note": "PLU not UPC — expect miss, should route to manual entry" },
-    { "barcode": "0852909001020", "expectedName": "RXBAR", "note": "smaller brand, OFF coverage varies" }
+    { "barcode": "0049000028904", "expectedName": "Coca-Cola", "kind": "barcode" },
+    { "barcode": "0021000615278", "expectedName": "White American", "kind": "barcode" },
+    { "barcode": "0011110038364", "expectedName": "tortilla soup", "kind": "barcode" },
+    { "barcode": "0852909001020", "expectedName": "RXBAR", "kind": "barcode", "note": "expected to MISS in the free DBs — illustrates the long tail tier-3 data or community contributions cover" },
+    { "barcode": "0000000004011", "expectedName": "Banana", "kind": "produce", "note": "PLU, not a real barcode — must route to manual entry; excluded from barcode metrics" }
   ]
 }
