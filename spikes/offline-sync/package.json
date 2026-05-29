@@ -6,9 +6,12 @@
   "description": "THROWAWAY Phase 0 spike — proves offline-first sync survives a data-loss torture test",
   "engines": { "node": ">=20" },
   "scripts": {
-    "test": "tsx src/tortureTest.ts"
+    "test": "tsx src/tortureTest.ts",
+    "//test:powersync": "Cross-platform env var. Requires `npm install` after setup-powersync.md is done so cross-env is available.",
+    "test:powersync": "cross-env ENGINE=powersync tsx src/tortureTest.ts"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "tsx": "^4.7.0",
     "typescript": "^5.4.0"
   }
