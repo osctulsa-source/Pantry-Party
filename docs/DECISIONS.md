@@ -46,6 +46,23 @@ Phase 0 / start of Phase 1.
 **Decision criteria (in priority order):** (1) zero data loss under torture test,
 (2) conflict-resolution ergonomics, (3) cost at 50K–200K MAU, (4) RN/Expo integration effort.
 
+**Update · PowerSync evidence (Phase 0 spike).** PowerSync passes the full data-loss
+torture test — all 5 scenarios, including concurrent same-item adds (no lost update),
+offline-delete tombstone propagation, and 1000 update cycles with periodic restarts (no
+drift). Run against a **self-hosted** stack (local Postgres + PowerSync via Docker;
+`powersync/`), after Supabase's free-tier direct connection proved IPv6-only and its
+pooler rejected logical replication. Reproduce: `cd spikes/offline-sync && npm run test:powersync`.
+
+Notes that will shape the production design:
+- PowerSync requires a single text `id` PK (no composite keys) — we synthesize
+  `id || ':' || device_id` in the sync rule and fold per-device rows on read.
+- Download is automatic (Postgres→SQLite); **upload is our code** — the connector's
+  `uploadData()` writes back to Postgres. The conflict policy lives there + in `mergeItems()`.
+
+**Still open:** Replicache was not built, so criteria (2)–(4) are not yet compared
+head-to-head. Decision remains **Open** pending either a Replicache spike or an explicit
+call to commit to PowerSync and descope Replicache.
+
 ---
 
 ## ADR-004 · Canonical pantry-item schema seeded early
