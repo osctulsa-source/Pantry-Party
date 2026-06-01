@@ -25,6 +25,10 @@ android/
 # Spike results (keep the dir, ignore the runs)
 spikes/**/results/*.json
 
+# PowerSync spike — throwaway config dir (can hold connection secrets) + local SQLite
+powersync/
+.powersync/
+
 # OS / editor
 .DS_Store
 *.log
