@@ -133,3 +133,30 @@ logo, app name, bundle ID display name) live behind a **themeable token layer**
 
 **Consequences.** One indirection layer. In return, the naming decision never blocks a
 single sprint.
+
+---
+
+## ADR-007 · Production Postgres host: DEFERRED
+**Status:** Deferred · **Date:** Phase 0 closure / Phase 1 prep
+
+**Context.** Phase 1 development runs against the local PowerSync + Postgres Docker stack
+at `infra/local-dev/`. That stack costs nothing to operate and exercises the same
+architecture pattern (offline-first sync, logical replication, per-household partitioning)
+as any production hosting choice would.
+
+**Decision.** Defer the production hosting choice until we're ready to deploy or invite
+external users. Realistic options when we revisit:
+- **Supabase + IPv4 add-on (~$29/mo)** — bundled auth + storage + edge functions;
+  familiar; the IPv4 add-on resolves the IPv6-only direct endpoint limitation that drove
+  the spike to self-hosted in the first place.
+- **Neon** — serverless Postgres only; branching is appealing; needs separate auth + storage.
+- **AWS RDS** — maximum control; best for an existing AWS-native org.
+- **Stay self-hosted on PowerSync at production scale** — viable if the team accepts the
+  ops burden; the local-dev stack already proves the architecture.
+
+**Revisit trigger.** First of: (a) any deploy to a host beyond developer machines,
+(b) inviting external users to test, (c) Phase 1 exit + V1 launch planning.
+
+**Why deferred is safe.** Postgres is portable; the hosting decision is a deploy-time
+concern, not a development-time one. Building against `infra/local-dev/` keeps the Phase 1
+walking skeleton work moving without committing to monthly infrastructure costs prematurely.
