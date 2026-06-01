@@ -2,7 +2,7 @@
   "name": "@breadbox/mobile",
   "version": "0.0.0",
   "private": true,
-  "main": "App.tsx",
+  "main": "index.js",
   "description": "Expo app — production foundation skeleton (Phase 1)",
   "scripts": {
     "start": "expo start",
