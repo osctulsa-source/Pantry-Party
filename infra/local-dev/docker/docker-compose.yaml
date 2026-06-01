@@ -5,8 +5,8 @@
 
 include:
   [
-    modules\database-postgres\postgres.database.compose.yaml,
-    modules\storage-postgres\postgres.storage.compose.yaml
+    modules/database-postgres/postgres.database.compose.yaml,
+    modules/storage-postgres/postgres.storage.compose.yaml
   ]
 
 services:
