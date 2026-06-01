@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Pantry Party",
+    "slug": "pantry-party",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.osctulsa.pantryparty.dev"
+    },
+    "android": {
+      "package": "com.osctulsa.pantryparty.dev",
+      "adaptiveIcon": {
+        "backgroundColor": "#FDFCF8"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

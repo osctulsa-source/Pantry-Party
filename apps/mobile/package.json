@@ -11,9 +11,19 @@
   },
   "dependencies": {
     "@breadbox/core": "*",
-    "expo": "~51.0.0",
-    "react": "18.2.0",
-    "react-native": "0.74.0"
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/source-serif-4": "^0.4.1",
+    "expo": "^56.0.0",
+    "expo-font": "~56.0.5",
+    "expo-splash-screen": "~56.0.10",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "zod": "^3.23.0"
   },
-  "//": "Phase 1: add the chosen sync engine (PowerSync/Replicache), WatermelonDB, expo-camera, and the barcode scanner module here."
+  "//": "Phase 1: add the chosen sync engine (PowerSync/Replicache), WatermelonDB, expo-camera, and the barcode scanner module here.",
+  "devDependencies": {
+    "@types/react": "~19.2.14"
+  }
 }
