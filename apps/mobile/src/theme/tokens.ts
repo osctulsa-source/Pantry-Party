@@ -23,9 +23,9 @@ export interface ThemeTokens {
     warning: string;
   };
   font: {
-    display: string; // headings
-    body: string; // UI text
-    mono: string; // data / labels
+    display: { regular: string; semibold: string; bold: string };
+    body: { regular: string; medium: string; semibold: string };
+    mono: string;
   };
   radius: { sm: number; md: number; lg: number };
   space: (n: number) => number; // 4pt grid: space(2) = 8
@@ -44,9 +44,22 @@ export const tokens: ThemeTokens = {
     warning: "#A06520",
   },
   font: {
-    display: "SourceSerif4",
-    body: "Inter",
-    mono: "JetBrainsMono",
+    /**
+     * Variant-specific font family names. RN best practice with @expo-google-fonts:
+     * each weight is its own registered family, NOT a fontWeight on a base family.
+     * Don't combine these with `fontWeight` in styles — pick the right variant.
+     */
+    display: {
+      regular: 'SourceSerif4_400Regular',
+      semibold: 'SourceSerif4_600SemiBold',
+      bold: 'SourceSerif4_700Bold',
+    },
+    body: {
+      regular: 'Inter_400Regular',
+      medium: 'Inter_500Medium',
+      semibold: 'Inter_600SemiBold',
+    },
+    mono: 'Menlo', // iOS system mono; Android falls back to its system mono. No custom mono loaded yet.
   },
   radius: { sm: 6, md: 10, lg: 16 },
   space: (n: number) => n * 4,

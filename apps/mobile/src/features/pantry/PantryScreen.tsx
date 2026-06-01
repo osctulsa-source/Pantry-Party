@@ -83,15 +83,14 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space(3),
   },
   brand: {
-    fontFamily: tokens.font.display,
+    fontFamily: tokens.font.display.bold,
     fontSize: 28,
-    fontWeight: '700',
     color: tokens.color.ink,
     letterSpacing: -0.5,
   },
   count: {
     marginTop: tokens.space(1),
-    fontFamily: tokens.font.body,
+    fontFamily: tokens.font.body.regular,
     fontSize: 13,
     color: tokens.color.inkMuted,
   },
@@ -110,14 +109,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontFamily: tokens.font.body,
+    fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    fontWeight: '600',
     color: tokens.color.ink,
   },
   meta: {
     marginTop: 2,
-    fontFamily: tokens.font.body,
+    fontFamily: tokens.font.body.regular,
     fontSize: 12,
     color: tokens.color.inkMuted,
   },
@@ -128,6 +126,7 @@ const styles = StyleSheet.create({
   },
   expiryUrgent: {
     color: tokens.color.accent,
-    fontWeight: '600',
+    // No fontWeight — system mono can't render synthesized bold cleanly,
+    // and the accent color is doing the urgency work already.
   },
 });
