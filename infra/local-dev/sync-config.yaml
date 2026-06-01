@@ -13,7 +13,7 @@ streams:
   global:
     auto_subscribe: true
     queries:
-      # PowerSync requires a single text `id` PK and does not support composite keys,
-      # so synthesize one from (id, device_id). The original item id rides along as
-      # `item_id`; the client folds per-device rows back together via mergeItems().
-      - SELECT id || ':' || device_id AS id, id AS item_id, device_id, name, qty, expires_at, deleted, updated_at FROM pantry_items
+      # Walking-skeleton scope: stream every column of pantry_items to every connected
+      # client. Single UUID PK on `id` matches the production schema, so no synthetic
+      # key is needed. Per-household partitioning (auth fields) is a Phase 1 concern.
+      - SELECT * FROM pantry_items

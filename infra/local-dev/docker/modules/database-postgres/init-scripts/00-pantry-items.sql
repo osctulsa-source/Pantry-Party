@@ -1,21 +1,35 @@
--- offline-sync spike · source-of-truth table for PowerSync replication.
--- Each device writes its OWN row (composite PK id + device_id); the cross-device
--- merge happens client-side in mergeItems(). Schema mirrors RawRow in
--- spikes/offline-sync/src/powerSyncEngine.ts and setup-powersync.md.
---
--- Runs only on first start (empty data volume). Ordered 00- so the table exists
--- before 01-powersync-publication.sql creates the `powersync` publication.
+-- pantry_items: production-shape schema, mirrors @breadbox/core's PantryItem (packages/core/src/schema.ts).
+-- This is the table PowerSync replicates from. Walking-skeleton scope:
+--   - Last-write-wins via updated_at; no per-device CRDT semantics yet
+--   - Single primary key on id (UUID)
+--   - Soft delete via deleted = true (not row removal — keeps tombstones for sync propagation)
 
 CREATE TABLE IF NOT EXISTS pantry_items (
-  id          TEXT    NOT NULL,
-  device_id   TEXT    NOT NULL,
-  name        TEXT    NOT NULL DEFAULT '',
-  qty         REAL    NOT NULL DEFAULT 0,
-  expires_at  TEXT,            -- ISO 8601, nullable
-  deleted     INTEGER NOT NULL DEFAULT 0,
-  updated_at  BIGINT  NOT NULL,
-  PRIMARY KEY (id, device_id)
+  id           UUID         PRIMARY KEY,
+  household_id UUID         NOT NULL,
+  name         TEXT         NOT NULL,
+  brand        TEXT,
+  category     TEXT,
+  barcode      TEXT,
+  quantity     REAL         NOT NULL DEFAULT 1,
+  unit         TEXT,
+  location     TEXT         NOT NULL DEFAULT 'pantry'
+                              CHECK (location IN ('pantry', 'fridge', 'freezer')),
+  added_at     TIMESTAMPTZ  NOT NULL,
+  expires_at   TIMESTAMPTZ,
+  source       TEXT         NOT NULL
+                              CHECK (source IN ('barcode', 'receipt', 'manual', 'restock')),
+  added_by     TEXT         NOT NULL,
+  updated_at   BIGINT       NOT NULL,  -- epoch ms, mirrors @breadbox/core's PantryItem.updatedAt
+  deleted      BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
--- Composite PK is the default REPLICA IDENTITY, which is what logical replication
--- needs to stream UPDATEs (our tombstones are UPDATEs to deleted=1, not DELETEs).
+-- Per-household lookup is the dominant access pattern.
+CREATE INDEX IF NOT EXISTS idx_pantry_items_household
+  ON pantry_items (household_id)
+  WHERE deleted = FALSE;
+
+-- Used by Cook This for expiration-urgency ranking.
+CREATE INDEX IF NOT EXISTS idx_pantry_items_expires
+  ON pantry_items (expires_at)
+  WHERE expires_at IS NOT NULL AND deleted = FALSE;
