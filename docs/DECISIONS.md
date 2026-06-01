@@ -34,7 +34,7 @@ This is the deepest bet in the app — hence the dedicated Phase 0 spike.
 ---
 
 ## ADR-003 · Sync engine — DECISION DEFERRED to Phase 0 spike
-**Status:** Open · **Date:** Phase 0 kickoff
+**Status:** Accepted — PowerSync (Phase 0 closure) · **Date:** Phase 0 kickoff
 
 **Context.** PowerSync and Replicache both solve offline-first conflict-resolved sync.
 The choice is consequential and hard to reverse, so we refuse to decide on vibes.
@@ -59,9 +59,38 @@ Notes that will shape the production design:
 - Download is automatic (Postgres→SQLite); **upload is our code** — the connector's
   `uploadData()` writes back to Postgres. The conflict policy lives there + in `mergeItems()`.
 
-**Still open:** Replicache was not built, so criteria (2)–(4) are not yet compared
-head-to-head. Decision remains **Open** pending either a Replicache spike or an explicit
-call to commit to PowerSync and descope Replicache.
+### Closure (Phase 0 spike complete) · Decision: PowerSync
+
+**Why the original "decide on evidence against both" criterion wasn't fully honored.**
+Replicache entered maintenance mode between this ADR being written and the evaluation
+being run — Rocicorp open-sourced it, stopped charging, no longer accepts new adopters,
+and now recommends migrating to Zero (their newer engine). A 2026 greenfield build
+wouldn't pick a sunset engine even if it passed every test, so building a Replicache
+adapter to "close the comparison" would have been theatre, not evidence. Zero was
+considered as a successor but its production track record is too thin (~2024) for a
+torture-test pass to meaningfully de-risk a multi-year engine bet.
+
+**Why PowerSync's standalone evidence is sufficient.**
+- Full torture-test pass (6/6 against the SyncEngine interface — see commits d3981e8
+  and 23ab900): offline writes survive reconnect; cold restart loses nothing;
+  concurrent same-item adds accumulate (no lost update); offline-delete tombstones
+  propagate; 1000 update cycles with periodic restarts produce no drift.
+- The torture test covers correctness — the dimension hardest to recover from in
+  production. The remaining dimensions (cost trajectory at 50K–200K MAU, RN/Expo
+  ergonomics, vendor stability) require real Phase 1 usage to evaluate, not another
+  spike run.
+
+**Open issue carried into Phase 1.** Supabase's IPv6-only direct Postgres endpoint
+isn't reachable from PowerSync Cloud's egress, which is why the spike went
+self-hosted. The production app must decide: pay for Supabase's IPv4 add-on, host
+Postgres elsewhere (Neon, AWS RDS, etc.), or stay self-hosted on PowerSync. This is
+a Phase 1 architecture call, not blocking the engine decision.
+
+**Spike cleanup is deferred to Phase 1 kickoff** (not done at closure). The local
+Docker stack in `powersync/` is actively useful as a Phase 1 dev environment, and
+the adapter in `spikes/offline-sync/` documents the working merge model. Both get
+cleaned up — or the Docker stack promoted to `infra/local-dev/` — as part of
+Phase 1's first sprint.
 
 ---
 
