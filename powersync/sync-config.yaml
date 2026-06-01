@@ -1,0 +1,19 @@
+# PowerSync sync rules — offline-sync spike (self-hosted)
+# yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
+#
+# Spike scope: stream every row of pantry_items to every connected client so the
+# torture test can prove round-trip + merge. Per-household partitioning (auth
+# fields) is a Phase 1 concern.
+
+# See https://docs.powersync.com/sync/advanced/compatibility
+config:
+  edition: 3
+
+streams:
+  global:
+    auto_subscribe: true
+    queries:
+      # PowerSync requires a single text `id` PK and does not support composite keys,
+      # so synthesize one from (id, device_id). The original item id rides along as
+      # `item_id`; the client folds per-device rows back together via mergeItems().
+      - SELECT id || ':' || device_id AS id, id AS item_id, device_id, name, qty, expires_at, deleted, updated_at FROM pantry_items
