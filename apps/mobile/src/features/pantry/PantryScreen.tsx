@@ -6,14 +6,18 @@
  * fonts, or spacing values (ADR-006).
  */
 import { useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
 import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { daysUntilExpiry, type PantryItem } from '@breadbox/core';
+import type { RootStackParamList } from '../../../App';
 
 export function PantryScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
   const [items, setItems] = useState<PantryItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -38,6 +42,12 @@ export function PantryScreen() {
           {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
         </Text>
       </View>
+      <Pressable
+        onPress={() => navigation.navigate('Recipes')}
+        style={styles.cookButton}
+      >
+        <Text style={styles.cookButtonText}>Find recipes →</Text>
+      </Pressable>
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
@@ -93,6 +103,20 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.regular,
     fontSize: 13,
     color: tokens.color.inkMuted,
+  },
+  cookButton: {
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cookButtonText: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 14,
+    color: tokens.color.accent,
   },
   list: {
     paddingBottom: tokens.space(8),

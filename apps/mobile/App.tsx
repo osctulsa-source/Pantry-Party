@@ -1,14 +1,24 @@
-import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { SourceSerif4_400Regular, SourceSerif4_600SemiBold, SourceSerif4_700Bold } from '@expo-google-fonts/source-serif-4';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { tokens } from './src/theme/tokens';
-import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { setupPowerSync } from './src/data/powersync/db';
+import { PantryScreen } from './src/features/pantry/PantryScreen';
+import { RecipesScreen } from './src/features/recipes/RecipesScreen';
+
+export type RootStackParamList = {
+  Pantry: undefined;
+  Recipes: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -35,9 +45,8 @@ export default function App() {
   if (syncError) {
     return (
       <View style={styles.loading}>
-        <Text style={styles.errorText}>
-          PowerSync failed to start.{'\n'}
-          {syncError.message}
+        <Text style={{ color: tokens.color.accent, padding: 24, textAlign: 'center' }}>
+          PowerSync failed to start.{'\n'}{syncError.message}
         </Text>
       </View>
     );
@@ -54,7 +63,22 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <PantryScreen />
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Pantry"
+          screenOptions={{
+            headerStyle: { backgroundColor: tokens.color.surface },
+            headerTintColor: tokens.color.accent,
+            headerTitleStyle: {
+              fontFamily: tokens.font.display.bold,
+              color: tokens.color.ink,
+            },
+          }}
+        >
+          <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: 'Breadbox' }} />
+          <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
@@ -65,10 +89,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: tokens.color.surface,
-  },
-  errorText: {
-    color: tokens.color.accent,
-    padding: 24,
-    textAlign: 'center',
   },
 });
