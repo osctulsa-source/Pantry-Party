@@ -23,18 +23,23 @@ services:
       POWERSYNC_CONFIG_PATH: /config/service.yaml
       NODE_OPTIONS: --max-old-space-size=1000
     healthcheck:
+      # PowerSync always listens on 8080 inside the container, regardless of
+      # PS_PORT (which only controls the host-side port mapping below). Probe
+      # the internal port, not the user-configurable host port.
       test:
         - 'CMD'
         - 'node'
         - '-e'
-        - "fetch('http://localhost:${PS_PORT:-8080}/probes/liveness').then(r =>
+        - "fetch('http://localhost:8080/probes/liveness').then(r =>
           r.ok ? process.exit(0) : process.exit(1)).catch(() =>
           process.exit(1))"
       interval: 5s
       timeout: 1s
       retries: 15
     ports:
-      - '${PS_PORT:-8080}:${PS_PORT:-8080}'
+      # Host port is configurable via PS_PORT (default 8080); container side
+      # is always 8080. Don't set PS_PORT=8081 — collides with Expo Metro.
+      - '${PS_PORT:-8080}:8080'
     depends_on:
       {
         pg-db: { condition: service_healthy },
