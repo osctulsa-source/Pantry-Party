@@ -13,7 +13,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
 import { powerSyncPantry } from '../../data/powerSyncPantry';
-import { daysUntilExpiry, type PantryItem } from '@breadbox/core';
+import { getExpiryStatus, type PantryItem } from '@breadbox/core';
+import { formatExpiryMeta } from './expiryFormat';
 import type { RootStackParamList } from '../../../App';
 
 export function PantryScreen() {
@@ -34,6 +35,9 @@ export function PantryScreen() {
     load();
   }, []);
 
+  // Compute once per render so every row sees the same "now" — avoids drift mid-list.
+  const now = new Date();
+
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -51,7 +55,7 @@ export function PantryScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <PantryRow item={item} />}
+        renderItem={({ item }) => <PantryRow item={item} now={now} />}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={tokens.color.accent} />}
       />
@@ -59,9 +63,15 @@ export function PantryScreen() {
   );
 }
 
-function PantryRow({ item }: { item: PantryItem }) {
-  const days = daysUntilExpiry(item);
-  const isUrgent = days !== null && days <= 3;
+function PantryRow({ item, now }: { item: PantryItem; now: Date }) {
+  const status = getExpiryStatus(item, now);
+  const expiryText = formatExpiryMeta(item, now);
+  const expiryColor =
+    status === 'warning'
+      ? tokens.semantic.expiry.warning
+      : status === 'expired'
+        ? tokens.semantic.expiry.expired
+        : tokens.semantic.expiry.fresh;
   return (
     <View style={styles.row}>
       <View style={styles.rowMain}>
@@ -73,10 +83,8 @@ function PantryRow({ item }: { item: PantryItem }) {
           {item.brand ? ` · ${item.brand}` : ''}
         </Text>
       </View>
-      {days !== null && (
-        <Text style={[styles.expiry, isUrgent && styles.expiryUrgent]}>
-          {days < 0 ? `expired ${Math.abs(days)}d ago` : days === 0 ? 'expires today' : `${days}d`}
-        </Text>
+      {expiryText && (
+        <Text style={[styles.expiry, { color: expiryColor }]}>{expiryText}</Text>
       )}
     </View>
   );
@@ -144,13 +152,8 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
   },
   expiry: {
-    fontFamily: tokens.font.mono,
+    fontFamily: tokens.font.body.regular,
     fontSize: 12,
-    color: tokens.color.inkMuted,
-  },
-  expiryUrgent: {
-    color: tokens.color.accent,
-    // No fontWeight — system mono can't render synthesized bold cleanly,
-    // and the accent color is doing the urgency work already.
+    // Color is set inline per row from tokens.semantic.expiry — fresh / warning / expired.
   },
 });
