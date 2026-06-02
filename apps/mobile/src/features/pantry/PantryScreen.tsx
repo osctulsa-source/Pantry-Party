@@ -15,6 +15,7 @@ import { tokens } from '../../theme/tokens';
 import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
+import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import type { RootStackParamList } from '../../../App';
 
 export function PantryScreen() {
@@ -34,6 +35,8 @@ export function PantryScreen() {
   useEffect(() => {
     load();
   }, []);
+
+  useExpiryNotifications(items);
 
   // Compute once per render so every row sees the same "now" — avoids drift mid-list.
   const now = new Date();

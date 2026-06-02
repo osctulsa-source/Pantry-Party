@@ -17,7 +17,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-dev-client"
+      "expo-dev-client",
+      [
+        "expo-notifications",
+        {
+          "color": "#2A4D3E"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false
