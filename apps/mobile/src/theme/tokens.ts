@@ -22,6 +22,18 @@ export interface ThemeTokens {
     success: string;
     warning: string;
   };
+  /**
+   * Semantic tokens — meaning, not raw palette. Feature code reads these when the color
+   * carries product meaning (e.g. expiry urgency) so that a brand swap can re-tune
+   * meaning-bearing colors independently of the palette.
+   */
+  semantic: {
+    expiry: {
+      fresh: string;
+      warning: string;
+      expired: string;
+    };
+  };
   font: {
     display: { regular: string; semibold: string; bold: string };
     body: { regular: string; medium: string; semibold: string };
@@ -31,17 +43,27 @@ export interface ThemeTokens {
   space: (n: number) => number; // 4pt grid: space(2) = 8
 }
 
+// Lifted so `semantic.expiry.fresh` mirrors `color.inkMuted` without duplicating the hex.
+const INK_MUTED = "#555555";
+
 /** Codename palette — deliberately neutral placeholder. Swap wholesale at brand lock. */
 export const tokens: ThemeTokens = {
   brandName: "Breadbox", // ← replace with the final brand here, once
   color: {
     accent: "#8B1D1D",
     ink: "#1A1A1A",
-    inkMuted: "#555555",
+    inkMuted: INK_MUTED,
     surface: "#FDFCF8",
     surfaceAlt: "#F5ECD3",
     success: "#2D5A3D",
     warning: "#A06520",
+  },
+  semantic: {
+    expiry: {
+      fresh: INK_MUTED, // mirrors color.inkMuted — meta-line default ink for non-urgent items
+      warning: "#8B6E2D", // deep mustard; WCAG AA on cream surface; 0–3 days to expiry
+      expired: "#A8504A", // muted brick; "deal with this", not "system error"
+    },
   },
   font: {
     /**
