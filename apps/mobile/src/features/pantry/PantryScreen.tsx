@@ -10,7 +10,7 @@ import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { tokens } from '../../theme/tokens';
-import { stubPantry } from '../../data/stubPantry';
+import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { daysUntilExpiry, type PantryItem } from '@breadbox/core';
 
 export function PantryScreen() {
@@ -20,7 +20,7 @@ export function PantryScreen() {
   async function load() {
     setRefreshing(true);
     try {
-      setItems(await stubPantry.list());
+      setItems(await powerSyncPantry.list());
     } finally {
       setRefreshing(false);
     }

@@ -15,6 +15,7 @@
     "@expo-google-fonts/source-serif-4": "^0.4.1",
     "@op-engineering/op-sqlite": "^16.2.0",
     "@powersync/common": "^1.53.2",
+    "@powersync/op-sqlite": "^0.9.9",
     "@powersync/react-native": "^1.35.3",
     "expo": "^56.0.0",
     "expo-dev-client": "~56.0.18",
