@@ -28,3 +28,6 @@ jobs:
 
       - name: Typecheck apps/mobile
         run: npx tsc -p apps/mobile/tsconfig.json --noEmit
+
+      - name: Test packages/core
+        run: npm test -w packages/core

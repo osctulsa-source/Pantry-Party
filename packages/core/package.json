@@ -5,7 +5,13 @@
   "type": "module",
   "main": "src/index.ts",
   "description": "Shared domain logic — the canonical pantry-item schema everything reads/writes (ADR-004)",
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
   }
 }
