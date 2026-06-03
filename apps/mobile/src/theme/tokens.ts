@@ -11,6 +11,8 @@
  *   <View style={{ backgroundColor: tokens.color.surface }} />
  */
 
+import { BRAND } from './brand';
+
 export interface ThemeTokens {
   brandName: string; // display name; codename until the real one lands
   color: {
@@ -48,7 +50,7 @@ const INK_MUTED = "#555555";
 
 /** Codename palette — deliberately neutral placeholder. Swap wholesale at brand lock. */
 export const tokens: ThemeTokens = {
-  brandName: "Breadbox", // ← replace with the final brand here, once
+  brandName: BRAND.productName, // ← replace with the final brand here, once
   color: {
     accent: "#8B1D1D",
     ink: "#1A1A1A",
