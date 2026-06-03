@@ -160,3 +160,43 @@ external users. Realistic options when we revisit:
 **Why deferred is safe.** Postgres is portable; the hosting decision is a deploy-time
 concern, not a development-time one. Building against `infra/local-dev/` keeps the Phase 1
 walking skeleton work moving without committing to monthly infrastructure costs prematurely.
+
+---
+
+## ADR-008 · Throwaway Express upload-proxy (backend decision still deferred)
+**Status:** Accepted · **Date:** PR #8a
+
+**Context.** PowerSync's `uploadData()` requires a server endpoint to drain local CRUD
+writes back to Postgres. PR #7.5 added local-only writes (auto-create-household) and
+PR #8b will add more (Add Item UI). Both need *some* write path now, but the production
+backend stack (NestJS vs Go vs another) is intentionally deferred per `.cursorrules`
+and the still-open ADR-007 (hosting). Building the real backend now would force a
+premature lock-in to a framework + deployment model.
+
+**Decision.** Stand up a deliberately minimal Express service under `services/api/`,
+with the explicit understanding that it is THROWAWAY:
+
+- Single endpoint: `POST /sync/upload`. No others.
+- Auth: JWT validation against Supabase JWKS (same key path PowerSync uses), and the
+  upload handler verifies that any user-id-shaped column in the payload (`user_id`,
+  `created_by`, `added_by`) matches the JWT's `sub`. This is foundational tenancy
+  enforcement, not business logic.
+- No business logic, no conflict resolution (that stays client-side in `mergeItems()`).
+- Every file in `services/api/` carries a `⚠ TEMPORARY` header pointing back to this ADR.
+
+**Promotion triggers.** Replace with the real backend when ANY are true:
+
+1. We've planned three or more endpoints (the *second* new endpoint is the smell).
+2. We're within ~30 days of a production deploy.
+3. We need a feature Express + raw `pg` can't deliver cleanly — background jobs,
+   pub/sub, schedule-driven work, structured authorization beyond JWT-sub matching.
+
+**Consequences.** `services/api/` will need a full rewrite when promoted (NestJS leans
+likely per `.cursorrules`). The *wire protocol* (`{ crud: CrudEntry[] }` POST → 200)
+stays stable across the rewrite — only the implementation rots. The header on every
+file is the self-enforcing tripwire: an editor opening the file is reminded this is
+temporary, and adding a non-upload endpoint immediately violates the scope discipline.
+
+**Update mechanism.** When any promotion trigger fires, open a new ADR (ADR-NNN)
+documenting the chosen real backend, link back to ADR-008, and mark this status as
+**Superseded**.

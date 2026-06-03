@@ -29,5 +29,16 @@ jobs:
       - name: Typecheck apps/mobile
         run: npx tsc -p apps/mobile/tsconfig.json --noEmit
 
+      - name: Typecheck services/api
+        run: npm run typecheck -w services/api
+
       - name: Test packages/core
         run: npm test -w packages/core
+
+      - name: Test services/api
+        # API_JWKS_URI is required at import-time by the auth middleware. The
+        # unit tests don't exercise auth, but the import chain still triggers
+        # the env check. Any URL satisfies the check.
+        env:
+          API_JWKS_URI: https://example.com/jwks.json
+        run: npm test -w services/api

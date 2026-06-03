@@ -5,10 +5,10 @@
  *   - PowerSyncDatabase manages a local SQLite (op-sqlite-backed) that mirrors
  *     a slice of the upstream Postgres, populated by sync rules.
  *   - The Connector tells PowerSync HOW to authenticate (fetchCredentials) and
- *     how to push local changes back to the server (uploadData). uploadData is
- *     still a no-op — local writes (auto-create-household in PR #7.5, Add Item
- *     in PR #8) stay queued in SQLite's CRUD log until PR #8 implements the
- *     upload pass.
+ *     how to push local changes back to the server (uploadData). Local writes
+ *     (auto-create-household in PR #7.5, Add Item in PR #8b) accumulate in
+ *     SQLite's CRUD log; uploadData drains them by POSTing to the temporary
+ *     services/api upload-proxy (ADR-008).
  *
  * Authentication:
  *   - PowerSync validates client JWTs against the Supabase JWKS (configured in
@@ -64,12 +64,48 @@ class SupabaseConnector implements PowerSyncBackendConnector {
     return { endpoint, token };
   }
 
-  // Local SQLite queues writes (auto-create-household lands rows in PR #7.5;
-  // Add Item UI lands more in PR #8). Draining the queue back to Postgres is
-  // PR #8's responsibility — until then writes accumulate locally without
-  // reaching the server.
-  async uploadData(_database: AbstractPowerSyncDatabase): Promise<void> {
-    // intentionally empty for now
+  // Drains the local CRUD queue to the upload-proxy. Throws on failure so
+  // PowerSync retries (with backoff). On success we mark the batch complete
+  // so PowerSync drops it from the local queue.
+  //
+  // The endpoint is the THROWAWAY Express service in services/api (ADR-008).
+  // Wire format: `{ crud: CrudEntry[] }` POST → 200 `{ ok: true, applied: N }`.
+  async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
+    const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+    if (!apiUrl) {
+      throw new Error(
+        'Missing EXPO_PUBLIC_API_URL. Check apps/mobile/.env.local — copy from .env.example.',
+      );
+    }
+
+    const batch = await database.getNextCrudTransaction();
+    if (!batch) return;
+
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    const token = data.session?.access_token;
+    if (!token) {
+      // Same defensive case as fetchCredentials — session was revoked between
+      // queueing the write and uploading it. Throw so PowerSync retries when
+      // a new session lands.
+      throw new Error('No Supabase session — cannot upload CRUD queue');
+    }
+
+    const res = await fetch(`${apiUrl}/sync/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ crud: batch.crud.map((e) => e.toJSON()) }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Upload failed: HTTP ${res.status} ${body}`);
+    }
+
+    await batch.complete();
   }
 }
 
