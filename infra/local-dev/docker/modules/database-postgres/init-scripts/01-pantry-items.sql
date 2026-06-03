@@ -3,10 +3,11 @@
 --   - Last-write-wins via updated_at; no per-device CRDT semantics yet
 --   - Single primary key on id (UUID)
 --   - Soft delete via deleted = true (not row removal — keeps tombstones for sync propagation)
+--   - household_id FKs into households (00-households.sql, runs first)
 
 CREATE TABLE IF NOT EXISTS pantry_items (
   id           UUID         PRIMARY KEY,
-  household_id UUID         NOT NULL,
+  household_id UUID         NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   name         TEXT         NOT NULL,
   brand        TEXT,
   category     TEXT,

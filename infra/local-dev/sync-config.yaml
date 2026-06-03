@@ -1,19 +1,48 @@
-# PowerSync sync rules — offline-sync spike (self-hosted)
+# PowerSync sync rules — per-user pantry partitioning (ADR-008).
 # yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
 #
-# Spike scope: stream every row of pantry_items to every connected client so the
-# torture test can prove round-trip + merge. Per-household partitioning (auth
-# fields) is a Phase 1 concern.
+# Each client connects with a Supabase user session JWT. PowerSync validates it
+# against the Supabase JWKS (see service.yaml client_auth) and exposes the user
+# id as auth.user_id() (the JWT `sub` claim). We use that to scope every
+# replicated row to the user's household membership.
+#
+# Edition 3 (Sync Streams) syntax notes:
+#   - Use `auth.user_id()` for JWT claims (NOT the legacy `request.user_id()`).
+#   - There is no separate `parameters:` field and no `bucket.X` references —
+#     edition 3 implicitly partitions buckets based on the query structure.
+#     Use inline subqueries against join tables for partitioning instead.
+#   - `subscription.parameter('key')` is for client-supplied values; we don't
+#     use it here because household scoping is purely server-derived from JWT.
 
-# See https://docs.powersync.com/sync/advanced/compatibility
+# See https://docs.powersync.com/sync/streams/overview
 config:
   edition: 3
 
 streams:
-  global:
+  # Per-user membership: tells the client which households they belong to. Not
+  # filtered by household_id — the client needs the full list to choose / display
+  # a current household.
+  user_memberships:
+    auto_subscribe: true
+    query: SELECT * FROM user_households WHERE user_id = auth.user_id()
+
+  # Per-household data: pantry items and household metadata, scoped to the
+  # households the signed-in user is a member of. PowerSync implicitly creates
+  # one bucket per (user, household) pair from the subquery, so users see ONLY
+  # rows whose household_id matches a row they appear in via user_households —
+  # no cross-tenant leakage.
+  household_data:
     auto_subscribe: true
     queries:
-      # Walking-skeleton scope: stream every column of pantry_items to every connected
-      # client. Single UUID PK on `id` matches the production schema, so no synthetic
-      # key is needed. Per-household partitioning (auth fields) is a Phase 1 concern.
-      - SELECT * FROM pantry_items
+      - |
+        SELECT * FROM pantry_items
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
+      - |
+        SELECT * FROM households
+        WHERE id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
