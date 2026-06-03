@@ -1,19 +1,32 @@
-# PowerSync sync rules — offline-sync spike (self-hosted)
+# PowerSync sync rules — per-user pantry partitioning (ADR-008).
 # yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
 #
-# Spike scope: stream every row of pantry_items to every connected client so the
-# torture test can prove round-trip + merge. Per-household partitioning (auth
-# fields) is a Phase 1 concern.
+# Each client connects with a Supabase user session JWT. PowerSync validates it
+# against the Supabase JWKS (see service.yaml client_auth) and exposes the user
+# id as request.user_id() (the JWT `sub` claim). We use that to scope every
+# replicated row to the user's household membership.
 
 # See https://docs.powersync.com/sync/advanced/compatibility
 config:
   edition: 3
 
 streams:
-  global:
+  # Per-user membership: tells the client which households they belong to. Not
+  # filtered by household_id — the client needs the full list to choose / display
+  # a current household.
+  user_memberships:
     auto_subscribe: true
     queries:
-      # Walking-skeleton scope: stream every column of pantry_items to every connected
-      # client. Single UUID PK on `id` matches the production schema, so no synthetic
-      # key is needed. Per-household partitioning (auth fields) is a Phase 1 concern.
-      - SELECT * FROM pantry_items
+      - SELECT * FROM user_households WHERE user_id = request.user_id()
+
+  # Per-household data: pantry items and household metadata, partitioned by
+  # household membership. The parameter query returns one row per household the
+  # user belongs to; each row creates a bucket, and the queries below run
+  # per-bucket. Users see ONLY pantry_items whose household_id matches a row
+  # they appear in via user_households — no cross-tenant leakage.
+  household_data:
+    auto_subscribe: true
+    parameters: SELECT household_id FROM user_households WHERE user_id = request.user_id()
+    queries:
+      - SELECT * FROM pantry_items WHERE household_id = bucket.household_id
+      - SELECT * FROM households    WHERE id           = bucket.household_id

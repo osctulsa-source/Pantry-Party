@@ -221,15 +221,22 @@ storage:
   type: postgresql
   uri: !env PS_STORAGE_SOURCE_URI
 
-# Client (end-user) auth for the offline-sync spike. HS256 shared secret —
-# dev/testing ONLY (production should use RS256 via jwks_uri). The CLI signs dev
-# tokens with this key; the service validates incoming client JWTs against it.
-# `audience` must include the URL the token's `aud` is issued for.
+# Client (end-user) auth — Supabase asymmetric JWTs (ES256 via JWKS).
+#
+# The mobile client signs in to Supabase and forwards the resulting access token
+# to PowerSync via fetchCredentials() (apps/mobile/src/data/powersync/db.ts).
+# PowerSync fetches Supabase's JWKS (project.well-known endpoint) and validates
+# the signature + audience. The token's `sub` claim becomes request.user_id() in
+# sync-config.yaml.
+#
+# PS_SUPABASE_JWKS_URI is project-specific; keep it in docker/.env (gitignored)
+# so each developer can point at their own Supabase project. Format:
+#   https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
+# The project ref is the subdomain of EXPO_PUBLIC_SUPABASE_URL.
+#
+# `audience: authenticated` matches the `aud` claim Supabase puts on user
+# session tokens (NOT the legacy anon/service_role tokens). Audience mismatch =
+# silent JWT rejection in PowerSync; check container logs if sync stalls.
 client_auth:
-  audience: ['http://localhost:8080', 'http://127.0.0.1:8080']
-  jwks:
-    keys:
-      - kty: oct
-        alg: HS256
-        kid: powersync-dev
-        k: lTRDEomqZj7dN70qWltF2cjIXY9yGIrOnbiSA_00Wj0
+  audience: ['authenticated']
+  jwks_uri: !env PS_SUPABASE_JWKS_URI
