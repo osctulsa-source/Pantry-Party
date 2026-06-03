@@ -16,10 +16,12 @@ import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
+import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
+  const { signOut } = useAuth();
   const [items, setItems] = useState<PantryItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -44,10 +46,15 @@ export function PantryScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
-        <Text style={styles.brand}>{tokens.brandName}</Text>
-        <Text style={styles.count}>
-          {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
-        </Text>
+        <View style={styles.headerMain}>
+          <Text style={styles.brand}>{tokens.brandName}</Text>
+          <Text style={styles.count}>
+            {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
+          </Text>
+        </View>
+        <Pressable onPress={signOut} hitSlop={8}>
+          <Text style={styles.signOut}>Sign out</Text>
+        </Pressable>
       </View>
       <Pressable
         onPress={() => navigation.navigate('Recipes')}
@@ -99,9 +106,21 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.surface,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
     paddingHorizontal: tokens.space(6),
     paddingTop: tokens.space(4),
     paddingBottom: tokens.space(3),
+  },
+  headerMain: {
+    flex: 1,
+  },
+  signOut: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.accent,
+    paddingTop: tokens.space(2),
   },
   brand: {
     fontFamily: tokens.font.display.bold,

@@ -12,13 +12,64 @@ import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
+import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
+import { SignInScreen } from './src/features/auth/SignInScreen';
+import { SignUpScreen } from './src/features/auth/SignUpScreen';
 
 export type RootStackParamList = {
   Pantry: undefined;
   Recipes: undefined;
 };
 
+export type AuthStackParamList = {
+  SignIn: undefined;
+  SignUp: undefined;
+};
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const AuthStackNav = createNativeStackNavigator<AuthStackParamList>();
+
+function AppStack() {
+  return (
+    <Stack.Navigator
+      initialRouteName="Pantry"
+      screenOptions={{
+        headerStyle: { backgroundColor: tokens.color.surface },
+        headerTintColor: tokens.color.accent,
+        headerTitleStyle: {
+          fontFamily: tokens.font.display.bold,
+          color: tokens.color.ink,
+        },
+      }}
+    >
+      <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: 'Breadbox' }} />
+      <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
+    </Stack.Navigator>
+  );
+}
+
+function AuthStack() {
+  return (
+    <AuthStackNav.Navigator initialRouteName="SignIn" screenOptions={{ headerShown: false }}>
+      <AuthStackNav.Screen name="SignIn" component={SignInScreen} />
+      <AuthStackNav.Screen name="SignUp" component={SignUpScreen} />
+    </AuthStackNav.Navigator>
+  );
+}
+
+function AppRoot() {
+  const { state } = useAuth();
+
+  if (state.status === 'loading') {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator color={tokens.color.accent} />
+      </View>
+    );
+  }
+
+  return state.status === 'authenticated' ? <AppStack /> : <AuthStack />;
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -63,22 +114,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Pantry"
-          screenOptions={{
-            headerStyle: { backgroundColor: tokens.color.surface },
-            headerTintColor: tokens.color.accent,
-            headerTitleStyle: {
-              fontFamily: tokens.font.display.bold,
-              color: tokens.color.ink,
-            },
-          }}
-        >
-          <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: 'Breadbox' }} />
-          <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <NavigationContainer>
+          <AppRoot />
+        </NavigationContainer>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }
