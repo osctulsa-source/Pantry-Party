@@ -31,7 +31,7 @@ Then point your local app at http://localhost:8080 (configured via env vars — 
 
 ## Authentication (Supabase JWT handoff)
 
-The mobile client signs in with Supabase, then forwards the resulting access token to PowerSync as the bearer credential (`apps/mobile/src/data/powersync/db.ts`). PowerSync validates the JWT against the Supabase project's JWKS endpoint (asymmetric ES256). The token's `sub` claim becomes `request.user_id()` in `sync-config.yaml`, and the sync rules use it to filter pantry data per household membership.
+The mobile client signs in with Supabase, then forwards the resulting access token to PowerSync as the bearer credential (`apps/mobile/src/data/powersync/db.ts`). PowerSync validates the JWT against the Supabase project's JWKS endpoint (asymmetric ES256). The token's `sub` claim becomes `auth.user_id()` in `sync-config.yaml`, and the sync rules use it to filter pantry data per household membership.
 
 To configure:
 

@@ -226,7 +226,7 @@ storage:
 # The mobile client signs in to Supabase and forwards the resulting access token
 # to PowerSync via fetchCredentials() (apps/mobile/src/data/powersync/db.ts).
 # PowerSync fetches Supabase's JWKS (project.well-known endpoint) and validates
-# the signature + audience. The token's `sub` claim becomes request.user_id() in
+# the signature + audience. The token's `sub` claim becomes auth.user_id() in
 # sync-config.yaml.
 #
 # PS_SUPABASE_JWKS_URI is project-specific; keep it in docker/.env (gitignored)

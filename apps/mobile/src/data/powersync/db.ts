@@ -13,7 +13,7 @@
  *     infra/local-dev/service.yaml client_auth.jwks_uri).
  *   - fetchCredentials() pulls the current Supabase access token from
  *     supabase.auth.getSession() and forwards it as the PowerSync bearer token.
- *   - The token's `sub` claim (Supabase user id) becomes request.user_id() in
+ *   - The token's `sub` claim (Supabase user id) becomes auth.user_id() in
  *     the sync rules, scoping every replicated row to the user's households.
  *
  * Lifecycle (auth-driven):

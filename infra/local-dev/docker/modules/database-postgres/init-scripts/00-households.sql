@@ -8,7 +8,7 @@
 --   created_by / user_id are Supabase auth.users.id values. The Supabase auth
 --   schema lives in a SEPARATE Postgres (Supabase cloud), so we cannot add a
 --   foreign key here. Treat these columns as opaque UUIDs from the JWT `sub`
---   claim — PowerSync sync rules filter on them via request.user_id().
+--   claim — PowerSync sync rules filter on them via auth.user_id().
 
 CREATE TABLE IF NOT EXISTS households (
   id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
