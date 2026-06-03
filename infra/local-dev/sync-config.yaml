@@ -3,10 +3,18 @@
 #
 # Each client connects with a Supabase user session JWT. PowerSync validates it
 # against the Supabase JWKS (see service.yaml client_auth) and exposes the user
-# id as request.user_id() (the JWT `sub` claim). We use that to scope every
+# id as auth.user_id() (the JWT `sub` claim). We use that to scope every
 # replicated row to the user's household membership.
+#
+# Edition 3 (Sync Streams) syntax notes:
+#   - Use `auth.user_id()` for JWT claims (NOT the legacy `request.user_id()`).
+#   - There is no separate `parameters:` field and no `bucket.X` references —
+#     edition 3 implicitly partitions buckets based on the query structure.
+#     Use inline subqueries against join tables for partitioning instead.
+#   - `subscription.parameter('key')` is for client-supplied values; we don't
+#     use it here because household scoping is purely server-derived from JWT.
 
-# See https://docs.powersync.com/sync/advanced/compatibility
+# See https://docs.powersync.com/sync/streams/overview
 config:
   edition: 3
 
@@ -16,17 +24,25 @@ streams:
   # a current household.
   user_memberships:
     auto_subscribe: true
-    queries:
-      - SELECT * FROM user_households WHERE user_id = request.user_id()
+    query: SELECT * FROM user_households WHERE user_id = auth.user_id()
 
-  # Per-household data: pantry items and household metadata, partitioned by
-  # household membership. The parameter query returns one row per household the
-  # user belongs to; each row creates a bucket, and the queries below run
-  # per-bucket. Users see ONLY pantry_items whose household_id matches a row
-  # they appear in via user_households — no cross-tenant leakage.
+  # Per-household data: pantry items and household metadata, scoped to the
+  # households the signed-in user is a member of. PowerSync implicitly creates
+  # one bucket per (user, household) pair from the subquery, so users see ONLY
+  # rows whose household_id matches a row they appear in via user_households —
+  # no cross-tenant leakage.
   household_data:
     auto_subscribe: true
-    parameters: SELECT household_id FROM user_households WHERE user_id = request.user_id()
     queries:
-      - SELECT * FROM pantry_items WHERE household_id = bucket.household_id
-      - SELECT * FROM households    WHERE id           = bucket.household_id
+      - |
+        SELECT * FROM pantry_items
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
+      - |
+        SELECT * FROM households
+        WHERE id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
