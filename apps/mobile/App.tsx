@@ -15,6 +15,7 @@ import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
+import { BRAND } from './src/theme/brand';
 
 export type RootStackParamList = {
   Pantry: undefined;
@@ -42,7 +43,7 @@ function AppStack() {
         },
       }}
     >
-      <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: 'Breadbox' }} />
+      <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: BRAND.productName }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
     </Stack.Navigator>
   );
