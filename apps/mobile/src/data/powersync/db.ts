@@ -6,7 +6,9 @@
  *     a slice of the upstream Postgres, populated by sync rules.
  *   - The Connector tells PowerSync HOW to authenticate (fetchCredentials) and
  *     how to push local changes back to the server (uploadData). uploadData is
- *     still a no-op — client writes land in PR #7.5 (auto-create) / PR #8 (Add).
+ *     still a no-op — local writes (auto-create-household in PR #7.5, Add Item
+ *     in PR #8) stay queued in SQLite's CRUD log until PR #8 implements the
+ *     upload pass.
  *
  * Authentication:
  *   - PowerSync validates client JWTs against the Supabase JWKS (configured in
@@ -62,9 +64,10 @@ class SupabaseConnector implements PowerSyncBackendConnector {
     return { endpoint, token };
   }
 
-  // Read-only walking-skeleton scope. Local SQLite still queues writes; we
-  // start draining when auto-create-household (PR #7.5) or Add Item (PR #8)
-  // need to push rows back.
+  // Local SQLite queues writes (auto-create-household lands rows in PR #7.5;
+  // Add Item UI lands more in PR #8). Draining the queue back to Postgres is
+  // PR #8's responsibility — until then writes accumulate locally without
+  // reaching the server.
   async uploadData(_database: AbstractPowerSyncDatabase): Promise<void> {
     // intentionally empty for now
   }

@@ -46,12 +46,14 @@ If PowerSync logs report "audience mismatch" or "unsupported algorithm," paste a
 
 ## Smoke test: per-user isolation
 
-On a single iOS simulator, sign in / sign out is enough to prove the sync filter:
+On a single iOS simulator, sign in / sign out is enough to prove the sync filter.
+
+> **Note (PR #7.5):** On first sign-in the mobile client now auto-creates a default household + owner membership in **local SQLite** via `ensureDefaultHousehold()`. Until `uploadData()` ships in PR #8, those rows never reach Postgres — so for the server-driven sync filter to have anything to filter, you still need to INSERT a household / membership / pantry_items directly into Postgres for each test user. The locally-auto-created household coexists with the server-provisioned one; the screen shows both.
 
 1. Reset state: `docker compose -f docker/docker-compose.yaml down -v && up -d` (drops volumes so init scripts re-run cleanly).
 2. Launch the app. Sign in as user A.
 3. Get user A's Supabase user id (Supabase Dashboard → Authentication → Users, copy the `id` UUID).
-4. Direct Postgres insert (the mobile client can't write yet — Add Item lands in PR #8):
+4. Direct Postgres insert (needed for the server-side filter to send data down — until PR #8 closes the loop via `uploadData()`):
    ```sh
    docker compose -f docker/docker-compose.yaml exec pg-db psql -U postgres -d postgres -c "
      INSERT INTO households (created_by) VALUES ('<user-a-uuid>') RETURNING id;
