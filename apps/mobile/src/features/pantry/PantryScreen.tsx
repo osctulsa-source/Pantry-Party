@@ -1,47 +1,96 @@
 /**
- * PantryScreen — the first walking-skeleton screen.
+ * PantryScreen — reactive view over PowerSync's local SQLite.
  *
- * Reads from `stubPantry` for now; swaps to a PowerSync-backed repository in a
- * later prompt. All styling pulls from `theme/tokens` — no hardcoded colors,
- * fonts, or spacing values (ADR-006).
+ * Uses `useQuery` from @powersync/react-native, which subscribes to the
+ * underlying watched query and re-renders whenever `pantry_items` changes —
+ * whether the change came from the local Add Item form, an upload-proxy
+ * round-trip, or a sync stream push. No more "navigate back, pull to refresh"
+ * dance. The PowerSyncContext.Provider lives in App.tsx.
+ *
+ * All styling pulls from `theme/tokens` — no hardcoded colors, fonts, or
+ * spacing values (ADR-006).
  */
-import { useEffect, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@powersync/react-native';
 
 import { tokens } from '../../theme/tokens';
-import { powerSyncPantry } from '../../data/powerSyncPantry';
-import { getExpiryStatus, type PantryItem } from '@breadbox/core';
+import type { PantryItemRow } from '../../data/powersync/schema';
+import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
+// Same SQL the one-shot powerSyncPantry.list() used — semantics unchanged.
+const PANTRY_QUERY = 'SELECT * FROM pantry_items WHERE deleted = 0 ORDER BY name';
+
+// Mirrors rowToPantryItem in powerSyncPantry.ts. Duplicated intentionally so
+// this PR stays scoped to two files (App.tsx + this one). If a third consumer
+// of the mapping shows up, lift it into a shared helper.
+function rowToPantryItem(row: PantryItemRow): PantryItem {
+  return parsePantryItem({
+    id: row.id,
+    householdId: row.household_id,
+    name: row.name,
+    brand: row.brand ?? undefined,
+    category: row.category ?? undefined,
+    barcode: row.barcode ?? undefined,
+    quantity: row.quantity,
+    unit: row.unit ?? undefined,
+    location: row.location,
+    addedAt: row.added_at,
+    expiresAt: row.expires_at ?? undefined,
+    source: row.source,
+    addedBy: row.added_by,
+    updatedAt: row.updated_at,
+    deleted: row.deleted === 1,
+  });
+}
+
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
   const { signOut } = useAuth();
+
+  const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY);
+  // Keep the last good list across transient errors (e.g. SQLite disconnect on
+  // sign-out): if `error` is set, we log and preserve `items` from the prior
+  // successful render. Otherwise we map the latest rows through parsePantryItem.
   const [items, setItems] = useState<PantryItem[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-
-  async function load() {
-    setRefreshing(true);
-    try {
-      setItems(await powerSyncPantry.list());
-    } finally {
-      setRefreshing(false);
-    }
-  }
-
   useEffect(() => {
-    load();
-  }, []);
+    if (error) {
+      console.warn('[PantryScreen] reactive query error:', error);
+      return;
+    }
+    setItems(rows.map(rowToPantryItem));
+  }, [rows, error]);
+
+  // Pull-to-refresh is preserved as a brief visual ack — the watch is the
+  // single source of truth, so there's nothing to actually refetch. Keeping
+  // the gesture handled because some users tap it instinctively.
+  const [refreshing, setRefreshing] = useState(false);
+  function onRefresh() {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 400);
+  }
 
   useExpiryNotifications(items);
 
   // Compute once per render so every row sees the same "now" — avoids drift mid-list.
-  const now = new Date();
+  const now = useMemo(() => new Date(), [items]);
+
+  if (isLoading && items.length === 0) {
+    return (
+      <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
+        <View style={styles.loading}>
+          <ActivityIndicator color={tokens.color.accent} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -72,7 +121,7 @@ export function PantryScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <PantryRow item={item} now={now} />}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={tokens.color.accent} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
       />
     </SafeAreaView>
   );
@@ -109,6 +158,11 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: tokens.color.surface,
+  },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
