@@ -52,9 +52,14 @@ export function PantryScreen() {
             {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
           </Text>
         </View>
-        <Pressable onPress={signOut} hitSlop={8}>
-          <Text style={styles.signOut}>Sign out</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={() => navigation.navigate('AddItem')} hitSlop={8}>
+            <Text style={styles.addItem}>+ Add</Text>
+          </Pressable>
+          <Pressable onPress={signOut} hitSlop={8}>
+            <Text style={styles.signOut}>Sign out</Text>
+          </Pressable>
+        </View>
       </View>
       <Pressable
         onPress={() => navigation.navigate('Recipes')}
@@ -116,11 +121,21 @@ const styles = StyleSheet.create({
   headerMain: {
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(4),
+    paddingTop: tokens.space(2),
+  },
+  addItem: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 13,
+    color: tokens.color.success,
+  },
   signOut: {
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.color.accent,
-    paddingTop: tokens.space(2),
   },
   brand: {
     fontFamily: tokens.font.display.bold,
