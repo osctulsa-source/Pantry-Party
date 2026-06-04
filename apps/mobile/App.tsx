@@ -11,6 +11,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { PantryScreen } from './src/features/pantry/PantryScreen';
+import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
@@ -19,6 +20,7 @@ import { BRAND } from './src/theme/brand';
 
 export type RootStackParamList = {
   Pantry: undefined;
+  AddItem: undefined;
   Recipes: undefined;
 };
 
@@ -44,6 +46,7 @@ function AppStack() {
       }}
     >
       <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: BRAND.productName }} />
+      <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
     </Stack.Navigator>
   );
