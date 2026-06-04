@@ -7,6 +7,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { PowerSyncContext, type PowerSyncDatabase } from '@powersync/react-native';
 
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
@@ -84,12 +85,12 @@ export default function App() {
     Inter_500Medium,
     Inter_600SemiBold,
   });
-  const [syncReady, setSyncReady] = useState(false);
+  const [db, setDb] = useState<PowerSyncDatabase | null>(null);
   const [syncError, setSyncError] = useState<Error | null>(null);
 
   useEffect(() => {
     setupPowerSync()
-      .then(() => setSyncReady(true))
+      .then((instance) => setDb(instance))
       .catch((e: unknown) => {
         const err = e instanceof Error ? e : new Error(String(e));
         console.error('PowerSync setup failed:', err);
@@ -107,7 +108,7 @@ export default function App() {
     );
   }
 
-  if (!fontsLoaded || !syncReady) {
+  if (!fontsLoaded || !db) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={tokens.color.accent} />
@@ -118,11 +119,15 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <AuthProvider>
-        <NavigationContainer>
-          <AppRoot />
-        </NavigationContainer>
-      </AuthProvider>
+      {/* PowerSyncContext makes the db instance available to useQuery() hooks
+          inside any screen — see PantryScreen for the first consumer. */}
+      <PowerSyncContext.Provider value={db}>
+        <AuthProvider>
+          <NavigationContainer>
+            <AppRoot />
+          </NavigationContainer>
+        </AuthProvider>
+      </PowerSyncContext.Provider>
     </SafeAreaProvider>
   );
 }
