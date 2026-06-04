@@ -22,7 +22,6 @@ import type { PantryItemRow } from '../../data/powersync/schema';
 import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
-import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
 // Same SQL the one-shot powerSyncPantry.list() used — semantics unchanged.
@@ -53,7 +52,6 @@ function rowToPantryItem(row: PantryItemRow): PantryItem {
 
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
-  const { signOut } = useAuth();
 
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY);
   // Keep the last good list across transient errors (e.g. SQLite disconnect on
@@ -105,8 +103,8 @@ export function PantryScreen() {
           <Pressable onPress={() => navigation.navigate('AddItem')} hitSlop={8}>
             <Text style={styles.addItem}>+ Add</Text>
           </Pressable>
-          <Pressable onPress={signOut} hitSlop={8}>
-            <Text style={styles.signOut}>Sign out</Text>
+          <Pressable onPress={() => navigation.navigate('Settings')} hitSlop={8}>
+            <Text style={styles.settings}>Settings</Text>
           </Pressable>
         </View>
       </View>
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: tokens.color.success,
   },
-  signOut: {
+  settings: {
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.color.accent,
