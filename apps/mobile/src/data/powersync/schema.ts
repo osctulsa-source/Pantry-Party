@@ -34,11 +34,10 @@ const pantry_items = new Table({
   deleted: column.integer,
 });
 
-// households / user_households are downloaded from the sync stream. PR #7.5
-// also writes to them locally via ensureDefaultHousehold() so a fresh user gets
-// a pantry to live in without manual SQL provisioning. Those local writes sit
-// in the CRUD queue until PR #8 implements uploadData() — so on PR #7.5 alone,
-// the household exists only on this device.
+// households / user_households are downloaded from the sync stream AND written
+// to locally by ensureDefaultHousehold() so a fresh user gets a pantry to live
+// in without manual SQL provisioning. Local writes drain to Postgres via
+// SupabaseConnector.uploadData → services/api (ADR-008, PR #8a).
 const households = new Table({
   name: column.text,
   created_at: column.text,
