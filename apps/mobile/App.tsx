@@ -14,6 +14,7 @@ import { setupPowerSync } from './src/data/powersync/db';
 import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
+import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Pantry: undefined;
   AddItem: undefined;
   Recipes: undefined;
+  Settings: undefined;
 };
 
 export type AuthStackParamList = {
@@ -49,6 +51,7 @@ function AppStack() {
       <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: BRAND.productName }} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
     </Stack.Navigator>
   );
 }
