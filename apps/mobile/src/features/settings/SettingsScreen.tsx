@@ -1,9 +1,9 @@
 /**
  * SettingsScreen — minimal v1.
  *
- * Two sections only: the signed-in account email and a sign-out action.
- * Shared Household, notification preferences, and account deletion are future
- * PRs and intentionally absent here.
+ * Sections: signed-in account email, a Household entry that navigates to the
+ * dedicated household screen, and a sign-out action. Notification preferences
+ * and account deletion are future PRs and intentionally absent.
  *
  * Sign-out routing is implicit: signOut() flips Supabase auth state, the
  * AuthContext onAuthStateChange listener disconnects PowerSync + clears local
@@ -13,11 +13,17 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
+import type { RootStackParamList } from '../../../App';
+
+type SettingsNav = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
 
 export function SettingsScreen() {
+  const navigation = useNavigation<SettingsNav>();
   const { state, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -32,9 +38,16 @@ export function SettingsScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <View style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.eyebrow}>Account</Text>
-          <Text style={styles.email}>{email}</Text>
+        <View style={styles.topGroup}>
+          <View style={styles.section}>
+            <Text style={styles.eyebrow}>Account</Text>
+            <Text style={styles.email}>{email}</Text>
+          </View>
+
+          <Pressable style={styles.row} onPress={() => navigation.navigate('Household')}>
+            <Text style={styles.rowLabel}>Household</Text>
+            <Text style={styles.rowChevron}>›</Text>
+          </Pressable>
         </View>
 
         <Pressable
@@ -65,6 +78,9 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space(6),
     paddingBottom: tokens.space(6),
   },
+  topGroup: {
+    gap: tokens.space(6),
+  },
   section: {
     gap: tokens.space(1),
   },
@@ -79,6 +95,25 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.regular,
     fontSize: 16,
     color: tokens.color.ink,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.md,
+  },
+  rowLabel: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 16,
+    color: tokens.color.ink,
+  },
+  rowChevron: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 22,
+    color: tokens.color.inkMuted,
   },
   signOut: {
     paddingVertical: tokens.space(4),

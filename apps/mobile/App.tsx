@@ -15,6 +15,8 @@ import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { SettingsScreen } from './src/features/settings/SettingsScreen';
+import { HouseholdScreen } from './src/features/household/HouseholdScreen';
+import { InviteCodeModal } from './src/features/household/InviteCodeModal';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
@@ -25,6 +27,8 @@ export type RootStackParamList = {
   AddItem: undefined;
   Recipes: undefined;
   Settings: undefined;
+  Household: undefined;
+  InviteCodeModal: { householdId: string };
 };
 
 export type AuthStackParamList = {
@@ -52,6 +56,12 @@ function AppStack() {
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
+      <Stack.Screen
+        name="InviteCodeModal"
+        component={InviteCodeModal}
+        options={{ title: 'Invite member', presentation: 'modal' }}
+      />
     </Stack.Navigator>
   );
 }
