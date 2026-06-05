@@ -13,6 +13,7 @@ import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
+import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
@@ -27,6 +28,7 @@ import { BRAND } from './src/theme/brand';
 export type RootStackParamList = {
   Pantry: undefined;
   AddItem: undefined;
+  EditItem: { itemId: string };
   Recipes: undefined;
   Settings: undefined;
   Household: undefined;
@@ -57,6 +59,7 @@ function AppStack() {
     >
       <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: BRAND.productName }} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
+      <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />

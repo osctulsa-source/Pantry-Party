@@ -132,7 +132,13 @@ export function PantryScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <PantryRow item={item} now={now} />}
+        renderItem={({ item }) => (
+          <PantryRow
+            item={item}
+            now={now}
+            onPress={() => navigation.navigate('EditItem', { itemId: item.id })}
+          />
+        )}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
       />
@@ -140,7 +146,7 @@ export function PantryScreen() {
   );
 }
 
-function PantryRow({ item, now }: { item: PantryItem; now: Date }) {
+function PantryRow({ item, now, onPress }: { item: PantryItem; now: Date; onPress: () => void }) {
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
   const expiryColor =
@@ -150,7 +156,10 @@ function PantryRow({ item, now }: { item: PantryItem; now: Date }) {
         ? tokens.semantic.expiry.expired
         : tokens.semantic.expiry.fresh;
   return (
-    <View style={styles.row}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+    >
       <View style={styles.rowMain}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.meta}>
@@ -163,7 +172,7 @@ function PantryRow({ item, now }: { item: PantryItem; now: Date }) {
       {expiryText && (
         <Text style={[styles.expiry, { color: expiryColor }]}>{expiryText}</Text>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -240,6 +249,9 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space(3),
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tokens.color.surfaceAlt,
+  },
+  rowPressed: {
+    backgroundColor: tokens.color.surfaceAlt,
   },
   rowMain: {
     flex: 1,
