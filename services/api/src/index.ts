@@ -3,6 +3,7 @@
 //    Tracking: docs/DECISIONS.md ADR-008.
 
 import express from 'express';
+import { householdRouter } from './routes/household.js';
 import { uploadRouter } from './routes/upload.js';
 
 const PORT = Number(process.env.API_PORT ?? '8090');
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use(uploadRouter);
+app.use(householdRouter);
 
 app.listen(PORT, () => {
   console.log(`[api] listening on :${PORT}`);

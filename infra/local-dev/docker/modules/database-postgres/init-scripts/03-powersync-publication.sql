@@ -4,8 +4,15 @@
 -- FOR ALL TABLES so any tables you create are replicated; for production
 -- you may create a publication that lists only the tables used in sync-config.yaml.
 --
+-- Renumbered from 02- to 03- in PR A of Shared Household so the new
+-- 02-household-invites.sql table-creation script runs before the publication
+-- step. FOR ALL TABLES means the new household_invites table (and any future
+-- tables) are picked up without editing this file.
+--
 -- Example for a single table: CREATE PUBLICATION powersync FOR TABLE my_table;
--- Example for multiple:     CREATE PUBLICATION powersync FOR TABLE t1, t2, t3;
+-- Example for multiple:     CREATE PUBLICATION powersync FOR TABLE
+--                              households, user_households, pantry_items,
+--                              household_invites;
 --
 -- Note: Init scripts run only when the Postgres data directory is empty (first
 -- container start). If you see "Publication 'powersync' does not exist", remove
