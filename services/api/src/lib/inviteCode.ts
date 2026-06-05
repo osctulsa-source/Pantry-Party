@@ -30,11 +30,12 @@ export const INVITE_WORDS = [
   'NUT',
 ] as const;
 
-// Excludes 0, 1, and O so codes read unambiguously over the phone or in a
-// dim kitchen (numeric 0 vs letter O is the worst offender; 1 reads as the
-// letter l in some fonts). 33 chars × 4 positions ≈ 1.19M combinations per
-// word, so per-word collisions are vanishingly rare in practice.
-export const INVITE_CHAR_POOL = 'ABCDEFGHIJKLMNPQRSTUVWXYZ23456789';
+// Excludes 0, 1, I, and O so codes read unambiguously over the phone or in a
+// dim kitchen. Codes whose entire purpose is being shared verbally can't
+// afford the I-vs-1 or O-vs-0 confusion ("Was that BREAD-7I2M or BREAD-712M?").
+// 32 chars × 4 positions ≈ 1.05M combinations per word, so per-word collisions
+// are still vanishingly rare in practice.
+export const INVITE_CHAR_POOL = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 // Validates the WORD-XXXX shape only. Does NOT check word-list membership —
 // the UNIQUE constraint on household_invites.invite_code is the source of

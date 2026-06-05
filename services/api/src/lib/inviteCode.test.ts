@@ -33,10 +33,13 @@ describe('generateInviteCode', () => {
         expect(pool.has(ch)).toBe(true);
       }
     }
-    // Sanity: 0, 1, and O are excluded by construction. Belt-and-braces here
-    // so a future tweak to INVITE_CHAR_POOL that re-introduces them fails loud.
-    for (const banned of ['0', '1', 'O']) {
-      // Only enforce on the suffix; word prefixes may legitimately contain O.
+    // Sanity: 0, 1, I, and O are all excluded by construction (the I-vs-1 and
+    // O-vs-0 misreads are the whole reason this pool exists). Belt-and-braces
+    // here so a future tweak to INVITE_CHAR_POOL that re-introduces any of
+    // them fails loud.
+    for (const banned of ['0', '1', 'I', 'O']) {
+      // Only enforce on the suffix; word prefixes (e.g. OLIVE, LIME, FIG) may
+      // legitimately contain I or O.
       const offenders = Array.from({ length: 200 }, () => generateInviteCode()).filter((c) =>
         (c.split('-')[1] ?? '').includes(banned),
       );
