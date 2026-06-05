@@ -7,16 +7,6 @@
  * state before we decide whether to create. Without that ordering, a returning
  * user whose membership exists server-side but hasn't replicated to this device
  * yet would get a duplicate household.
- *
- * Caveat (single-device only):
- *   `SupabaseConnector.uploadData()` is still a no-op (deferred to PR #8 with
- *   the Add Item UI). The locally-inserted rows here are visible to local
- *   SQLite queries — so the PantryScreen and pantry CRUD work — but they do
- *   NOT reach Postgres until uploadData lands. Two devices for the same user
- *   will each auto-create their OWN default household and never converge.
- *   This is acceptable for PR #7.5's stated goal ("delete the manual SQL
- *   provisioning step for single-device sign-in"); multi-device convergence
- *   is a PR #8 concern.
  */
 import * as Crypto from 'expo-crypto';
 import { getPowerSync } from '../../data/powersync/db';
@@ -58,8 +48,8 @@ export async function ensureDefaultHousehold(userId: string): Promise<void> {
       const nowIso = new Date().toISOString();
 
       // Atomic: never leave a household with no membership (or vice versa).
-      // PowerSync's CRUD queue captures both inserts together for the eventual
-      // uploadData() pass in PR #8.
+      // PowerSync's CRUD queue captures both inserts; uploadData() drains them
+      // to /sync/upload (PR #9 — services/api Express stopgap, ADR-008).
       await db.writeTransaction(async (tx) => {
         await tx.execute(
           `INSERT INTO households (id, name, created_at, created_by)
