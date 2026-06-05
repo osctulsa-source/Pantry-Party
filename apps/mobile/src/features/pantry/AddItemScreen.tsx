@@ -6,9 +6,10 @@
  * upload-proxy → Postgres. We never POST to /sync/upload directly — that would
  * bypass the offline-first guarantee.
  *
- * household_id is looked up inline from the local user_households table right
- * before insert (not via a context). Styling mirrors SignInScreen: centered
- * card, generous padding, green submit button. All values come from tokens.
+ * household_id comes from ActiveHouseholdContext (PR C) — replaces the PR #8b
+ * inline user_households lookup, which arbitrarily picked the first
+ * membership and broke for multi-household users. Styling mirrors SignInScreen:
+ * centered card, generous padding, green submit button. All values come from tokens.
  */
 import { useState } from 'react';
 import {
@@ -30,6 +31,7 @@ import { StorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import { useAuth } from '../auth/AuthContext';
+import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -43,6 +45,7 @@ type Location = (typeof LOCATIONS)[number];
 export function AddItemScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'AddItem'>>();
   const { state } = useAuth();
+  const { activeHouseholdId } = useActiveHousehold();
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [location, setLocation] = useState<Location>('pantry');
@@ -56,7 +59,11 @@ export function AddItemScreen() {
   const trimmedExpiry = expiresAt.trim();
   const expiryValid = trimmedExpiry === '' || ISO_DATE.test(trimmedExpiry);
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
-  const formValid = nameValid && qtyValid && expiryValid;
+  // Defensive — activeHouseholdId should be set by the time the user navigates
+  // here (PantryScreen gates its own render on it), but if context bootstrap
+  // somehow hasn't completed, disable submit instead of risking a NOT NULL
+  // constraint violation on insert.
+  const formValid = nameValid && qtyValid && expiryValid && activeHouseholdId !== null;
 
   async function onSubmit() {
     if (!formValid || submitting) return;
@@ -64,18 +71,15 @@ export function AddItemScreen() {
       setError('You must be signed in to add items.');
       return;
     }
+    if (!activeHouseholdId) {
+      setError('No active household selected.');
+      return;
+    }
     setError(null);
     setSubmitting(true);
     try {
       const db = getPowerSync();
       const userId = state.session.user.id;
-
-      const memberships = await db.getAll<{ household_id: string }>(
-        `SELECT household_id FROM user_households WHERE user_id = ? LIMIT 1`,
-        [userId],
-      );
-      const householdId = memberships[0]?.household_id;
-      if (!householdId) throw new Error('No household for user — auto-create flow failed');
 
       // Store a full ISO timestamp: core's PantryItem validates expiresAt with
       // .datetime(), so a bare YYYY-MM-DD would fail on read-back.
@@ -89,7 +93,7 @@ export function AddItemScreen() {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           Crypto.randomUUID(),
-          householdId,
+          activeHouseholdId,
           trimmedName,
           parsedQty,
           location,

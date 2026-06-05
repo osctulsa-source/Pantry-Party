@@ -39,3 +39,37 @@ export async function generateInvite(
   }
   return response.json();
 }
+
+export interface AcceptInviteResponse {
+  household_id: string;
+}
+
+// Thrown when /household/accept returns a non-2xx. The `status` field lets
+// JoinHouseholdScreen branch on 400/404/409/410 for user-facing copy without
+// regex-matching the message body.
+export interface AcceptInviteError extends Error {
+  status: number;
+}
+
+export async function acceptInvite(
+  inviteCode: string,
+  accessToken: string,
+): Promise<AcceptInviteResponse> {
+  const response = await fetch(`${API_URL}/household/accept`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({ invite_code: inviteCode }),
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    const err = new Error(
+      `Accept invite failed (${response.status}): ${body}`,
+    ) as AcceptInviteError;
+    err.status = response.status;
+    throw err;
+  }
+  return response.json();
+}

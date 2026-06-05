@@ -17,6 +17,8 @@ import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
+import { JoinHouseholdScreen } from './src/features/household/JoinHouseholdScreen';
+import { ActiveHouseholdProvider } from './src/features/household/ActiveHouseholdContext';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
@@ -29,6 +31,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
+  JoinHousehold: undefined;
 };
 
 export type AuthStackParamList = {
@@ -61,6 +64,11 @@ function AppStack() {
         name="InviteCodeModal"
         component={InviteCodeModal}
         options={{ title: 'Invite member', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="JoinHousehold"
+        component={JoinHouseholdScreen}
+        options={{ title: 'Join a household' }}
       />
     </Stack.Navigator>
   );
@@ -136,9 +144,14 @@ export default function App() {
           inside any screen — see PantryScreen for the first consumer. */}
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
-          <NavigationContainer>
-            <AppRoot />
-          </NavigationContainer>
+          {/* ActiveHouseholdProvider depends on BOTH AuthContext (for user_id)
+              and PowerSync (for the user_households bootstrap query), so it
+              must sit inside both. See features/household/ActiveHouseholdContext. */}
+          <ActiveHouseholdProvider>
+            <NavigationContainer>
+              <AppRoot />
+            </NavigationContainer>
+          </ActiveHouseholdProvider>
         </AuthProvider>
       </PowerSyncContext.Provider>
     </SafeAreaProvider>

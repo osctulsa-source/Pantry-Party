@@ -1,22 +1,24 @@
 /**
- * HouseholdScreen — view of the user's single household and its members.
+ * HouseholdScreen — list-+-detail view of the user's households.
  *
- * Single-household assumption (PR B of Shared Household): every user gets one
- * household auto-created on first sign-in via ensureDefaultHousehold(). PR C
- * relaxes this when an accepted invite adds a second membership; until then
- * `SELECT * FROM households LIMIT 1` returns at most one row.
+ * PR C restructure (replacing the PR B single-household view):
+ *   - Top: "Your households" — every household the user belongs to as a
+ *     tappable card. The active card has an accent border and a checkmark.
+ *     Tapping a non-active card switches active via ActiveHouseholdContext;
+ *     the member list below re-queries automatically.
+ *   - Middle: "Members of {activeHousehold.name}" — same member-row logic as
+ *     PR B (current user by email, others by `member <first-8-chars>`),
+ *     scoped to whichever household is currently active.
+ *   - Bottom: "Invite member" (existing) + "Join another household" (new entry
+ *     point to JoinHouseholdScreen).
  *
- * Member display:
- *   - Current user → real email (from session) + "you" badge
- *   - Other members → "member <first-8-chars-of-uid>"
+ * The layout intentionally does NOT branch on household count — even users
+ * with a single household see the list section (with one card, marked active).
+ * Keeping a stable layout avoids the cognitive cost of a UI that mutates as
+ * users invite/accept.
  *
- * Email enrichment for other members is a deliberate v1 cut: emails live in
- * Supabase auth.users, which isn't streamed via PowerSync. Adding it requires
- * either denormalizing email into user_households on insert or a service-role
- * lookup endpoint — both out of scope for PR B.
- *
- * The Invite-member CTA navigates to the InviteCodeModal, which is responsible
- * for actually firing the /household/invite request on mount.
+ * Email enrichment for non-current members remains a v1 cut (see PR B note):
+ * emails live in Supabase auth.users and aren't streamed via PowerSync.
  */
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +28,7 @@ import { useQuery } from '@powersync/react-native';
 
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
+import { useActiveHousehold } from './ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
 
 type HouseholdNav = NativeStackNavigationProp<RootStackParamList, 'Household'>;
@@ -34,6 +37,7 @@ interface HouseholdRow {
   id: string;
   name: string;
   created_by: string;
+  member_count: number;
 }
 
 interface MemberRow {
@@ -51,22 +55,36 @@ interface DisplayMember {
 export function HouseholdScreen() {
   const navigation = useNavigation<HouseholdNav>();
   const { state: authState } = useAuth();
+  const { activeHouseholdId, setActiveHouseholdId, isLoading: activeLoading } =
+    useActiveHousehold();
+
   const currentUserId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const currentUserEmail =
     authState.status === 'authenticated' ? authState.session.user.email ?? null : null;
 
-  const { data: householdRows, isLoading: householdLoading } = useQuery<HouseholdRow>(
-    'SELECT * FROM households LIMIT 1',
+  // All households the user belongs to. Member count comes from a correlated
+  // subquery so we don't need a second reactive query just for the badge.
+  const { data: householdRows, isLoading: householdsLoading } = useQuery<HouseholdRow>(
+    `SELECT h.id, h.name, h.created_by,
+            (SELECT COUNT(*) FROM user_households uh2 WHERE uh2.household_id = h.id) AS member_count
+     FROM households h
+     JOIN user_households uh ON uh.household_id = h.id
+     WHERE uh.user_id = ?
+     ORDER BY h.created_at DESC`,
+    [currentUserId ?? ''],
   );
-  const household = householdRows[0];
-  const householdId = household?.id ?? '';
+
+  const activeHousehold = householdRows.find((h) => h.id === activeHouseholdId) ?? null;
+  const activeIdForMembers = activeHousehold?.id ?? '';
 
   const { data: memberRows, isLoading: membersLoading } = useQuery<MemberRow>(
     'SELECT user_id, role FROM user_households WHERE household_id = ? ORDER BY created_at ASC',
-    [householdId],
+    [activeIdForMembers],
   );
 
-  if (householdLoading) {
+  // While auth/active bootstrap or the household list is still resolving,
+  // show a soft loading state instead of an empty layout flash.
+  if (activeLoading || householdsLoading) {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
@@ -77,8 +95,9 @@ export function HouseholdScreen() {
   }
 
   // Defensive: ensureDefaultHousehold should always provision one, but if the
-  // local SQLite cache hasn't caught up yet show a soft state instead of crashing.
-  if (!household) {
+  // local SQLite cache hasn't caught up yet show a soft state instead of
+  // crashing on the empty list.
+  if (householdRows.length === 0) {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
@@ -105,12 +124,40 @@ export function HouseholdScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.householdName}>{household.name}</Text>
+        <View style={styles.householdsSection}>
+          <Text style={styles.eyebrow}>Your households</Text>
+          {householdRows.map((h) => {
+            const isActive = h.id === activeHouseholdId;
+            return (
+              <Pressable
+                key={h.id}
+                style={[styles.householdCard, isActive && styles.householdCardActive]}
+                onPress={() => {
+                  if (!isActive) setActiveHouseholdId(h.id);
+                }}
+              >
+                <View style={styles.householdCardMain}>
+                  <Text style={styles.householdCardName} numberOfLines={1}>
+                    {h.name}
+                  </Text>
+                  <Text style={styles.householdCardMeta}>
+                    {h.member_count} {h.member_count === 1 ? 'member' : 'members'}
+                  </Text>
+                </View>
+                {isActive && (
+                  <Text style={styles.activeCheck} accessibilityLabel="Active household">
+                    ✓
+                  </Text>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={styles.membersSection}>
-          <Text style={styles.eyebrow}>Members</Text>
+          <Text style={styles.eyebrow}>
+            Members of {activeHousehold?.name ?? '...'}
+          </Text>
           {membersLoading ? (
             <ActivityIndicator color={tokens.color.accent} style={styles.membersLoading} />
           ) : (
@@ -128,12 +175,25 @@ export function HouseholdScreen() {
           )}
         </View>
 
-        <Pressable
-          style={styles.inviteButton}
-          onPress={() => navigation.navigate('InviteCodeModal', { householdId: household.id })}
-        >
-          <Text style={styles.inviteButtonText}>Invite member</Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            style={styles.inviteButton}
+            onPress={() => {
+              if (activeHousehold) {
+                navigation.navigate('InviteCodeModal', { householdId: activeHousehold.id });
+              }
+            }}
+            disabled={!activeHousehold}
+          >
+            <Text style={styles.inviteButtonText}>Invite member</Text>
+          </Pressable>
+          <Pressable
+            style={styles.joinButton}
+            onPress={() => navigation.navigate('JoinHousehold')}
+          >
+            <Text style={styles.joinButtonText}>Join another household</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -179,18 +239,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: tokens.color.inkMuted,
   },
-  header: {
-    marginBottom: tokens.space(6),
-  },
-  householdName: {
-    fontFamily: tokens.font.display.bold,
-    fontSize: 32,
-    color: tokens.color.ink,
-    letterSpacing: -0.5,
-  },
-  membersSection: {
-    flex: 1,
+  householdsSection: {
     gap: tokens.space(2),
+    marginBottom: tokens.space(6),
   },
   eyebrow: {
     fontFamily: tokens.font.body.semibold,
@@ -199,6 +250,43 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: tokens.color.inkMuted,
     marginBottom: tokens.space(2),
+  },
+  householdCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.md,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    gap: tokens.space(3),
+  },
+  householdCardActive: {
+    borderColor: tokens.color.accent,
+  },
+  householdCardMain: {
+    flex: 1,
+  },
+  householdCardName: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 16,
+    color: tokens.color.ink,
+  },
+  householdCardMeta: {
+    marginTop: 2,
+    fontFamily: tokens.font.body.regular,
+    fontSize: 12,
+    color: tokens.color.inkMuted,
+  },
+  activeCheck: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 18,
+    color: tokens.color.accent,
+  },
+  membersSection: {
+    flex: 1,
+    gap: tokens.space(2),
   },
   membersLoading: {
     marginTop: tokens.space(4),
@@ -250,16 +338,30 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     paddingTop: tokens.space(4),
   },
+  actions: {
+    gap: tokens.space(3),
+    marginTop: tokens.space(4),
+  },
   inviteButton: {
     paddingVertical: tokens.space(4),
     backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.md,
     alignItems: 'center',
-    marginTop: tokens.space(4),
   },
   inviteButtonText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
     color: tokens.color.surface,
+  },
+  joinButton: {
+    paddingVertical: tokens.space(4),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+  },
+  joinButtonText: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 16,
+    color: tokens.color.accent,
   },
 });

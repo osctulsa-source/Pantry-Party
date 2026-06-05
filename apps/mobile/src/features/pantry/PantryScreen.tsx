@@ -22,10 +22,15 @@ import type { PantryItemRow } from '../../data/powersync/schema';
 import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
+import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
 
-// Same SQL the one-shot powerSyncPantry.list() used — semantics unchanged.
-const PANTRY_QUERY = 'SELECT * FROM pantry_items WHERE deleted = 0 ORDER BY name';
+// Scoped to the active household so multi-household users see only the
+// relevant pantry. PowerSync's sync rules already stream every household the
+// user belongs to into local SQLite; the WHERE clause here is the client-side
+// filter that picks the active one.
+const PANTRY_QUERY =
+  'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ORDER BY name';
 
 // Mirrors rowToPantryItem in powerSyncPantry.ts. Duplicated intentionally so
 // this PR stays scoped to two files (App.tsx + this one). If a third consumer
@@ -52,8 +57,15 @@ function rowToPantryItem(row: PantryItemRow): PantryItem {
 
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
+  const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
 
-  const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY);
+  // Bind to an empty string when no active household is set — the query stays
+  // valid (returns 0 rows) and we render the loading state below before
+  // showing the empty list.
+  const { data: rows, isLoading, error } = useQuery<PantryItemRow>(
+    PANTRY_QUERY,
+    [activeHouseholdId ?? ''],
+  );
   // Keep the last good list across transient errors (e.g. SQLite disconnect on
   // sign-out): if `error` is set, we log and preserve `items` from the prior
   // successful render. Otherwise we map the latest rows through parsePantryItem.
@@ -80,7 +92,10 @@ export function PantryScreen() {
   // Compute once per render so every row sees the same "now" — avoids drift mid-list.
   const now = useMemo(() => new Date(), [items]);
 
-  if (isLoading && items.length === 0) {
+  // Loading covers (a) AsyncStorage bootstrap of the active household, (b) the
+  // null gap before bootstrap picks a default, and (c) the initial reactive
+  // query before any rows arrive.
+  if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
         <View style={styles.loading}>
