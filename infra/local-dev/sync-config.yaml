@@ -46,3 +46,15 @@ streams:
           SELECT household_id FROM user_households
           WHERE user_id = auth.user_id()
         )
+
+  # Per-user outstanding invites: streams ONLY invites the signed-in user
+  # personally created (PR A of Shared Household). Invites created by other
+  # members of the same household are deliberately NOT visible — reduces info
+  # leak surface and keeps the UI scoped to "codes I generated". The /household
+  # endpoints in services/api are the only writer of household_invites.
+  user_invites:
+    auto_subscribe: true
+    queries:
+      - |
+        SELECT * FROM household_invites
+        WHERE created_by = auth.user_id()
