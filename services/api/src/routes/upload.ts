@@ -68,6 +68,96 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
   pantry_items: ['added_by'],
 };
 
+// Editable columns for a PATCH on pantry_items. Everything else is immutable
+// post-insert: id / household_id / added_by / source / added_at can never be
+// reassigned, so attempting to set one is a 400 (not a silent drop) — a client
+// trying to move an item between households or rewrite provenance is a bug or
+// an attack, and we want it loud. `deleted` is here because the mobile "delete"
+// is a tombstone (UPDATE deleted = 1), not a row removal.
+const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
+  'name',
+  'quantity',
+  'location',
+  'expires_at',
+  'deleted',
+  'updated_at',
+]);
+
+// Carries an HTTP status alongside the message so the route can translate a
+// failure deep inside the transaction (e.g. tenancy 403, row-not-found 404)
+// into the right response code instead of a blanket 500.
+export class UploadError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'UploadError';
+  }
+}
+
+/**
+ * Applies a single PATCH op to pantry_items inside an already-open transaction.
+ *
+ * Edit AND delete both arrive here: delete is just a PATCH with deleted = 1
+ * (tombstone). Order of checks matters — shape/allowlist (400) before any IO,
+ * then existence (404), then tenancy (403), then the parameterized UPDATE.
+ *
+ * Tenancy mirrors the PUT path's intent but can't be done purely: a PATCH
+ * payload only carries the columns being changed, never household_id (it's
+ * immutable + forbidden), so we must read the target row to learn which
+ * household it belongs to and confirm the caller is a member. Without this a
+ * user could edit another household's items by spoofing item IDs.
+ *
+ * Idempotent: re-applying the same payload sets the same values, so a PowerSync
+ * retry of an already-applied op doesn't drift state.
+ */
+export async function handlePatchPantryItem(
+  entry: CrudEntry,
+  userId: string,
+  client: PoolClient,
+): Promise<void> {
+  if (entry.type !== 'pantry_items') {
+    throw new UploadError(400, `PATCH not supported for table "${entry.type}"`);
+  }
+
+  const data = entry.data ?? {};
+  const columns = Object.keys(data);
+  if (columns.length === 0) {
+    throw new UploadError(400, 'PATCH data must set at least one column');
+  }
+  for (const col of columns) {
+    if (!PATCH_ALLOWED_COLUMNS.has(col)) {
+      throw new UploadError(400, `column "${col}" is not editable via PATCH`);
+    }
+  }
+
+  const found = await client.query('SELECT household_id FROM pantry_items WHERE id = $1', [
+    entry.id,
+  ]);
+  if ((found.rowCount ?? 0) === 0) {
+    throw new UploadError(404, `pantry_items row "${entry.id}" not found`);
+  }
+  const householdId = found.rows[0]?.household_id;
+
+  const member = await client.query(
+    'SELECT 1 FROM user_households WHERE user_id = $1 AND household_id = $2',
+    [userId, householdId],
+  );
+  if ((member.rowCount ?? 0) === 0) {
+    throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
+  }
+
+  // Dynamic but fully parameterized: column names come from the allowlist above
+  // (never user input), values are bound. `id` takes the final placeholder.
+  const setClause = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
+  const values = columns.map((col) => data[col]);
+  await client.query(`UPDATE pantry_items SET ${setClause} WHERE id = $${columns.length + 1}`, [
+    ...values,
+    entry.id,
+  ]);
+}
+
 /**
  * Validates a single CrudEntry against table allowlist, column allowlist, and
  * user-id tenancy. Returns `{ ok: true, ... }` with everything needed to build
@@ -83,9 +173,11 @@ export function validateCrudEntry(
     return { ok: false, error: `unknown table "${entry.type}"` };
   }
 
-  // PR #8a scope: PUT only. PATCH + DELETE land when Add Item (PR #8b) needs them.
+  // This validator is the PUT (insert-or-replace) path only. PATCH has its own
+  // handler (handlePatchPantryItem) because its tenancy check requires reading
+  // the target row; DELETE is unsupported (deletes are PATCH tombstones).
   if (entry.op !== 'PUT') {
-    return { ok: false, error: `op "${entry.op}" not supported yet (PUT only in PR #8a)` };
+    return { ok: false, error: `validateCrudEntry handles PUT only; got "${entry.op}"` };
   }
 
   const data = entry.data ?? {};
@@ -159,17 +251,37 @@ router.post('/sync/upload', requireUser, async (req, res) => {
   const userId = (req as AuthedRequest).userId;
   const entries = parsed.data.crud;
 
-  // Validate every entry first; reject the whole batch if any fails. Atomic +
-  // honest — PowerSync will retry the batch as a unit.
-  const validations = entries.map((e) => ({ entry: e, result: validateCrudEntry(e, userId) }));
-  const firstError = validations.find((v) => !v.result.ok);
-  if (firstError && !firstError.result.ok) {
-    res.status(400).json({
-      ok: false,
-      error: firstError.result.error,
-      offendingEntry: { op: firstError.entry.op, type: firstError.entry.type, id: firstError.entry.id },
-    });
-    return;
+  // Plan the whole batch before touching Postgres, preserving entry order (a
+  // PUT-then-PATCH on the same row must apply in sequence). PUT validation is
+  // pure, so its failures reject the batch here with a 400. PATCH tenancy needs
+  // to read the target row, so it's deferred into the transaction below. DELETE
+  // is unsupported on purpose — mobile deletes are PATCH tombstones (deleted=1).
+  type PlannedOp =
+    | { op: 'PUT'; table: string; columns: string[]; values: unknown[] }
+    | { op: 'PATCH'; entry: CrudEntry };
+  const plan: PlannedOp[] = [];
+  for (const entry of entries) {
+    if (entry.op === 'PUT') {
+      const result = validateCrudEntry(entry, userId);
+      if (!result.ok) {
+        res.status(400).json({
+          ok: false,
+          error: result.error,
+          offendingEntry: { op: entry.op, type: entry.type, id: entry.id },
+        });
+        return;
+      }
+      plan.push({ op: 'PUT', table: result.table, columns: result.columns, values: result.values });
+    } else if (entry.op === 'PATCH') {
+      plan.push({ op: 'PATCH', entry });
+    } else {
+      res.status(400).json({
+        ok: false,
+        error: `op "${entry.op}" not supported — deletes are modeled as PATCH tombstones (deleted = 1)`,
+        offendingEntry: { op: entry.op, type: entry.type, id: entry.id },
+      });
+      return;
+    }
   }
 
   let client: PoolClient | null = null;
@@ -177,16 +289,23 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     client = await pool.connect();
     await client.query('BEGIN');
 
-    for (const { result } of validations) {
-      if (!result.ok) continue; // unreachable — we returned above; satisfies TS narrowing
-      const { sql } = buildUpsertSql(result.table, result.columns);
-      await client.query(sql, result.values);
+    for (const op of plan) {
+      if (op.op === 'PUT') {
+        const { sql } = buildUpsertSql(op.table, op.columns);
+        await client.query(sql, op.values);
+      } else {
+        await handlePatchPantryItem(op.entry, userId, client);
+      }
     }
 
     await client.query('COMMIT');
     res.json({ ok: true, applied: entries.length });
   } catch (err) {
     if (client) await client.query('ROLLBACK').catch(() => undefined);
+    if (err instanceof UploadError) {
+      res.status(err.status).json({ ok: false, error: err.message });
+      return;
+    }
     console.error('[api] upload failed:', err);
     res.status(500).json({ ok: false, error: 'upload failed' });
   } finally {
