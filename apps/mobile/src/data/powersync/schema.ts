@@ -51,7 +51,27 @@ const user_households = new Table({
   created_at: column.text,
 });
 
-export const AppSchema = new Schema({ pantry_items, households, user_households });
+// household_invites streams down via the user_invites sync rule (sync-config.yaml):
+// the user only sees invite codes they personally created. Writes happen via the
+// /household/invite backend endpoint — never from the client — so the client copy
+// is effectively read-only despite PowerSync exposing it as a writable table.
+// Mirrors infra/local-dev/docker/modules/database-postgres/init-scripts/02-household-invites.sql.
+const household_invites = new Table({
+  household_id: column.text,
+  invite_code: column.text,
+  created_by: column.text,
+  created_at: column.text,
+  expires_at: column.text,
+  used_at: column.text,
+  used_by: column.text,
+});
+
+export const AppSchema = new Schema({
+  pantry_items,
+  households,
+  user_households,
+  household_invites,
+});
 
 // Row shape SELECT returns. Kept here so consumers don't reach into PowerSync
 // internals. parsePantryItem in @breadbox/core does the real validation; this
