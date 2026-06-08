@@ -1,16 +1,11 @@
 /**
- * AddItemScreen — faster manual entry.
+ * AddItemScreen — manual pantry entry with smart expiry.
  *
- * Two improvements over the v1 form:
- *  1. Smart expiry: we suggest a "best before" from the item's name (shelf-life
- *     by inferred category, @breadbox/core) and let the user adjust with quick
- *     presets + ±1-day steppers (ExpiryField) — no native date picker needed.
- *  2. Quick-add staples: one tap to add common items (flour, sugar, oils,
- *     sauces, rice…) with sensible category / location / expiry defaults.
- *
- * Writes go through the shared addPantryItem() helper → PowerSync local SQLite →
- * uploadData() drains to the upload-proxy → Postgres (offline-first, PR #9).
- * household_id comes from ActiveHouseholdContext. All values come from tokens.
+ * Quick-add staples now live on their own screen (QuickAddScreen); this screen
+ * is the "add your own" form. We still suggest a "best before" from the item's
+ * name (shelf-life by inferred category, @breadbox/core) and let the user adjust
+ * with ExpiryField (presets + ±1-day steppers). Writes go through addPantryItem()
+ * → PowerSync local SQLite → upload-proxy → Postgres (offline-first).
  */
 import { useMemo, useState } from 'react';
 import {
@@ -28,13 +23,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { StorageLocation, addDaysUTC, suggestExpiryISO, suggestShelfLifeDays } from '@breadbox/core';
+import { StorageLocation, addDaysUTC, suggestShelfLifeDays } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
 import { ExpiryField } from './ExpiryField';
-import { STAPLE_GROUPS, type Staple } from './staples';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -53,7 +47,6 @@ export function AddItemScreen() {
   const [expiryTouched, setExpiryTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [added, setAdded] = useState<string[]>([]);
 
   const trimmedName = name.trim();
   const parsedQty = parseInt(quantity, 10);
@@ -101,59 +94,12 @@ export function AddItemScreen() {
     }
   }
 
-  async function onQuickAdd(staple: Staple) {
-    if (!userId || !activeHouseholdId || added.includes(staple.name)) return;
-    try {
-      await addPantryItem({
-        householdId: activeHouseholdId,
-        userId,
-        name: staple.name,
-        quantity: 1,
-        location: staple.location,
-        expiresIso: staple.noExpiry ? null : suggestExpiryISO({ category: staple.category }),
-        source: 'manual',
-      });
-      setAdded((prev) => [...prev, staple.name]);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }
-
   const expiryHint = !expiryTouched && suggestedDays !== null ? ' · suggested, adjust anytime' : '';
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.sectionTitle}>Quick add</Text>
-          <Text style={styles.sectionHint}>Tap to add common staples — we set a sensible location and expiry.</Text>
-          {STAPLE_GROUPS.map((group) => (
-            <View key={group.title} style={styles.group}>
-              <Text style={styles.groupTitle}>{group.title}</Text>
-              <View style={styles.chips}>
-                {group.items.map((s) => {
-                  const isAdded = added.includes(s.name);
-                  return (
-                    <Pressable
-                      key={s.name}
-                      onPress={() => onQuickAdd(s)}
-                      disabled={isAdded}
-                      style={[styles.staple, isAdded && styles.stapleAdded]}
-                    >
-                      <Text style={[styles.stapleTxt, isAdded && styles.stapleTxtAdded]}>
-                        {isAdded ? `✓ ${s.name}` : `+ ${s.name}`}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ))}
-
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionTitle}>Add your own</Text>
-
           <Text style={styles.label}>Name</Text>
           <TextInput
             style={styles.input}
@@ -162,6 +108,7 @@ export function AddItemScreen() {
             value={name}
             onChangeText={setName}
             maxLength={MAX_NAME_LENGTH}
+            autoFocus
           />
 
           <Text style={styles.label}>Quantity</Text>
@@ -191,7 +138,9 @@ export function AddItemScreen() {
           </View>
 
           <Text style={styles.label}>Best before{expiryHint}</Text>
-          <ExpiryField valueDays={effectiveDays} onChange={onChangeExpiry} />
+          <View style={styles.expiryWrap}>
+            <ExpiryField valueDays={effectiveDays} onChange={onChangeExpiry} />
+          </View>
 
           {error && <Text style={styles.error}>{error}</Text>}
 
@@ -216,43 +165,6 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   flex: { flex: 1 },
   scroll: { padding: tokens.space(6), paddingBottom: tokens.space(10) },
-  sectionTitle: {
-    fontFamily: tokens.font.display.semibold,
-    fontSize: 18,
-    color: tokens.color.ink,
-    marginBottom: tokens.space(1),
-  },
-  sectionHint: {
-    fontFamily: tokens.font.body.regular,
-    fontSize: 13,
-    color: tokens.color.inkMuted,
-    marginBottom: tokens.space(4),
-    lineHeight: 18,
-  },
-  group: { marginBottom: tokens.space(4) },
-  groupTitle: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 12,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: tokens.color.inkMuted,
-    marginBottom: tokens.space(2),
-  },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
-  staple: {
-    paddingVertical: tokens.space(2),
-    paddingHorizontal: tokens.space(3),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: 999,
-  },
-  stapleAdded: { backgroundColor: tokens.color.accentSoft },
-  stapleTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
-  stapleTxtAdded: { color: tokens.color.accent },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: tokens.color.line,
-    marginVertical: tokens.space(6),
-  },
   label: {
     marginBottom: tokens.space(2),
     fontFamily: tokens.font.body.medium,
@@ -285,14 +197,15 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   segmentTextSelected: { color: tokens.color.onAccent },
+  expiryWrap: { marginBottom: tokens.space(4) },
   error: {
-    marginTop: tokens.space(3),
+    marginTop: tokens.space(2),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.semantic.expiry.expired,
   },
   submit: {
-    marginTop: tokens.space(5),
+    marginTop: tokens.space(3),
     paddingVertical: tokens.space(4),
     backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.md,

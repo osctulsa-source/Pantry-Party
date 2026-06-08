@@ -136,12 +136,14 @@ export function PantryScreen() {
           </Pressable>
         </View>
       </View>
-      <Pressable
-        onPress={() => navigation.navigate('Recipes')}
-        style={styles.cookButton}
-      >
-        <Text style={styles.cookButtonText}>Find recipes →</Text>
-      </Pressable>
+      <View style={styles.actionRow}>
+        <Pressable onPress={() => navigation.navigate('Recipes')} style={styles.actionBtn}>
+          <Text style={styles.actionBtnText}>Find recipes →</Text>
+        </Pressable>
+        <Pressable onPress={() => navigation.navigate('QuickAdd')} style={styles.actionBtn}>
+          <Text style={styles.actionBtnText}>＋ Quick add</Text>
+        </Pressable>
+      </View>
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
@@ -249,16 +251,21 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.semibold,
     color: tokens.semantic.expiry.warning,
   },
-  cookButton: {
+  actionRow: {
+    flexDirection: 'row',
+    gap: tokens.space(3),
     marginHorizontal: tokens.space(6),
     marginBottom: tokens.space(3),
+  },
+  actionBtn: {
+    flex: 1,
     paddingVertical: tokens.space(3),
     paddingHorizontal: tokens.space(4),
     backgroundColor: tokens.color.surfaceAlt,
     borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
-  cookButtonText: {
+  actionBtnText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 14,
     color: tokens.color.accent,
