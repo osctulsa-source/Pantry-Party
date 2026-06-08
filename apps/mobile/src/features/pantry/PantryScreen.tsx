@@ -31,8 +31,12 @@ import type { RootStackParamList } from '../../../App';
 // relevant pantry. PowerSync's sync rules already stream every household the
 // user belongs to into local SQLite; the WHERE clause here is the client-side
 // filter that picks the active one.
+// Sorted soonest-to-expire so the items that need using surface first. ISO
+// timestamps sort chronologically as text; `(expires_at IS NULL)` first pushes
+// no-date items (staples) to the bottom; name is the final tiebreaker.
 const PANTRY_QUERY =
-  'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ORDER BY name';
+  'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
+  'ORDER BY (expires_at IS NULL), expires_at ASC, name ASC';
 
 // Mirrors rowToPantryItem in powerSyncPantry.ts. Duplicated intentionally so
 // this PR stays scoped to two files (App.tsx + this one). If a third consumer
