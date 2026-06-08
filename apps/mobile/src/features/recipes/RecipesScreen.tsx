@@ -1,26 +1,43 @@
 /**
- * RecipesScreen — the "Cook This" surface (Killer 3, first hi-fi pass).
+ * RecipesScreen — "Cook This" with swipeable suggestions + on-device learning.
  *
- * Replaces the walking-skeleton plain list. Pulls the pantry from PowerSync,
- * asks Spoonacular what we can cook, and presents a hero recipe + alternates in
- * the Crumb palette. The differentiator is the reason line: it ties the hero to
- * the soonest-expiring pantry item ("because your spinach expires tomorrow") —
- * expiration intelligence as the recommendation surface, not just an alert.
+ * Pulls the pantry, asks Spoonacular what we can cook, then shows the top 1-3
+ * suggestions in a swipeable pager. Each card has ♥ Like / ✕ Skip / View, and
+ * opens are recorded implicitly. Those signals feed a per-household preference
+ * map (@breadbox/core recipePrefs, persisted via useRecipePrefs) that re-ranks
+ * future suggestions toward what you engage with.
  *
- * Deferred to the full Killer 3 engine: expiration-weighted ranking (we still
- * use Spoonacular's "maximize used ingredients" order) and a native recipe
- * detail screen (taps open the recipe on spoonacular.com via Linking).
+ * Above the pager, the differentiator: a reason line tying tonight's cook to the
+ * soonest-expiring pantry item. Below it, the rest as "More from your pantry".
+ *
+ * Supersedes the single-hero pass (PR #23). Server-side ranking stays deferred
+ * to the full Killer 3 engine; taps open the recipe on spoonacular.com.
  */
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getExpiryStatus, scoreTitle, type PantryItem, type PrefEvent, type RecipePrefs } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { findByIngredients } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
-import { getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
+import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useRecipePrefs } from './useRecipePrefs';
+
+const CARD_W = Dimensions.get('window').width;
 
 type LoadState =
   | { kind: 'loading' }
@@ -33,7 +50,7 @@ function recipeUrl(r: SpoonacularRecipe): string {
   return `https://spoonacular.com/recipes/${slug}-${r.id}`;
 }
 
-// Soonest-expiring item that actually needs attention (warning/expired) — drives the reason line.
+// Soonest-expiring item that needs attention (warning/expired) — drives the reason line.
 function pickUrgent(items: PantryItem[], now: Date): PantryItem | undefined {
   return items
     .filter((i) => i.expiresAt && getExpiryStatus(i, now) !== 'fresh')
@@ -51,6 +68,8 @@ function matchLine(r: SpoonacularRecipe): string {
 }
 
 export function RecipesScreen() {
+  const { activeHouseholdId } = useActiveHousehold();
+  const { prefs, record } = useRecipePrefs(activeHouseholdId);
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   useEffect(() => {
@@ -62,7 +81,7 @@ export function RecipesScreen() {
           if (!cancelled) setState({ kind: 'empty', itemCount: 0 });
           return;
         }
-        const recipes = await findByIngredients(items.map((i) => i.name), { number: 6 });
+        const recipes = await findByIngredients(items.map((i) => i.name), { number: 8 });
         if (cancelled) return;
         if (recipes.length === 0) setState({ kind: 'empty', itemCount: items.length });
         else setState({ kind: 'ok', recipes, items });
@@ -93,9 +112,7 @@ export function RecipesScreen() {
 
       {state.kind === 'empty' && (
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>
-            {state.itemCount === 0 ? 'Nothing to cook yet' : 'No matches found'}
-          </Text>
+          <Text style={styles.errorTitle}>{state.itemCount === 0 ? 'Nothing to cook yet' : 'No matches found'}</Text>
           <Text style={styles.helper}>
             {state.itemCount === 0
               ? "Add a few items to your pantry and we'll suggest recipes from what you have."
@@ -104,50 +121,106 @@ export function RecipesScreen() {
         </View>
       )}
 
-      {state.kind === 'ok' && <CookThis recipes={state.recipes} items={state.items} />}
+      {state.kind === 'ok' && <CookThis recipes={state.recipes} items={state.items} prefs={prefs} record={record} />}
     </SafeAreaView>
   );
 }
 
-function CookThis({ recipes, items }: { recipes: SpoonacularRecipe[]; items: PantryItem[] }) {
-  const hero = recipes[0];
-  // recipes is non-empty by construction (the 'ok' state requires >= 1 match), but
-  // noUncheckedIndexedAccess can't prove that — guard so `hero` narrows to a recipe.
-  if (!hero) return null;
-  const now = new Date();
+function CookThis({
+  recipes,
+  items,
+  prefs,
+  record,
+}: {
+  recipes: SpoonacularRecipe[];
+  items: PantryItem[];
+  prefs: RecipePrefs;
+  record: (title: string, event: PrefEvent) => void;
+}) {
+  const now = useMemo(() => new Date(), []);
   const urgent = pickUrgent(items, now);
-  const alternates = recipes.slice(1);
-
   const reason = urgent ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}` : null;
   const reasonColor =
-    urgent && getExpiryStatus(urgent, now) === 'expired'
-      ? tokens.semantic.expiry.expired
-      : tokens.semantic.expiry.warning;
+    urgent && getExpiryStatus(urgent, now) === 'expired' ? tokens.semantic.expiry.expired : tokens.semantic.expiry.warning;
+
+  const [liked, setLiked] = useState<Set<number>>(new Set());
+  const [skipped, setSkipped] = useState<Set<number>>(new Set());
+  const [page, setPage] = useState(0);
+
+  // Re-rank by learned preference (title-token overlap) blended with the raw
+  // ingredient match, so cold-start still surfaces good matches.
+  const pool = useMemo(
+    () =>
+      [...recipes].sort(
+        (a, b) =>
+          scoreTitle(prefs, b.title) * 1.5 +
+          b.usedIngredientCount -
+          (scoreTitle(prefs, a.title) * 1.5 + a.usedIngredientCount),
+      ),
+    [recipes, prefs],
+  );
+
+  const top = pool.slice(0, 3);
+  const alternates = pool.slice(3);
+
+  function onLike(r: SpoonacularRecipe) {
+    record(r.title, 'like');
+    setLiked((prev) => new Set(prev).add(r.id));
+  }
+  function onSkip(r: SpoonacularRecipe) {
+    record(r.title, 'skip');
+    setSkipped((prev) => new Set(prev).add(r.id));
+  }
+  function onOpen(r: SpoonacularRecipe) {
+    record(r.title, 'open');
+    Linking.openURL(recipeUrl(r));
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <Text style={styles.eyebrow}>Cook this · tonight</Text>
+      <View style={styles.headerPad}>
+        <Text style={styles.eyebrow}>Cook this · tonight</Text>
+        {reason && <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>}
+        <Text style={styles.swipeHint}>Swipe through your top picks — ♥ and ✕ teach us what you like.</Text>
+      </View>
 
-      <Pressable style={styles.hero} onPress={() => Linking.openURL(recipeUrl(hero))}>
-        <Image source={{ uri: hero.image }} style={styles.heroImg} />
-        <View style={styles.heroPad}>
-          <Text style={styles.heroTitle}>{hero.title}</Text>
-          {reason && <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>}
-          <Text style={styles.match}>{matchLine(hero)}</Text>
-          <View style={styles.cta}>
-            <Text style={styles.ctaText}>View recipe →</Text>
-          </View>
+      <FlatList
+        data={top}
+        keyExtractor={(r) => String(r.id)}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => setPage(Math.round(e.nativeEvent.contentOffset.x / CARD_W))}
+        renderItem={({ item }) => (
+          <HeroCard
+            recipe={item}
+            liked={liked.has(item.id)}
+            skipped={skipped.has(item.id)}
+            onLike={onLike}
+            onSkip={onSkip}
+            onOpen={onOpen}
+          />
+        )}
+      />
+
+      {top.length > 1 && (
+        <View style={styles.dots}>
+          {top.map((r, i) => (
+            <View key={r.id} style={[styles.dot, i === page && styles.dotActive]} />
+          ))}
         </View>
-      </Pressable>
+      )}
 
       {alternates.length > 0 && (
-        <View style={styles.alts}>
+        <View style={styles.altsPad}>
           <Text style={styles.altHead}>More from your pantry</Text>
           {alternates.map((r) => (
-            <Pressable key={r.id} style={styles.altRow} onPress={() => Linking.openURL(recipeUrl(r))}>
+            <Pressable key={r.id} style={styles.altRow} onPress={() => onOpen(r)}>
               <Image source={{ uri: r.image }} style={styles.altThumb} />
               <View style={styles.altText}>
-                <Text style={styles.altName}>{r.title}</Text>
+                <Text style={styles.altName} numberOfLines={1}>
+                  {r.title}
+                </Text>
                 <Text style={styles.altMeta}>{matchLine(r)}</Text>
               </View>
             </Pressable>
@@ -155,6 +228,47 @@ function CookThis({ recipes, items }: { recipes: SpoonacularRecipe[]; items: Pan
         </View>
       )}
     </ScrollView>
+  );
+}
+
+function HeroCard({
+  recipe,
+  liked,
+  skipped,
+  onLike,
+  onSkip,
+  onOpen,
+}: {
+  recipe: SpoonacularRecipe;
+  liked: boolean;
+  skipped: boolean;
+  onLike: (r: SpoonacularRecipe) => void;
+  onSkip: (r: SpoonacularRecipe) => void;
+  onOpen: (r: SpoonacularRecipe) => void;
+}) {
+  return (
+    <View style={styles.cardPage}>
+      <Pressable style={[styles.hero, skipped && styles.heroDim]} onPress={() => onOpen(recipe)}>
+        <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+        <View style={styles.heroPad}>
+          <Text style={styles.heroTitle} numberOfLines={2}>
+            {recipe.title}
+          </Text>
+          <Text style={styles.match}>{matchLine(recipe)}</Text>
+        </View>
+      </Pressable>
+      <View style={styles.actions}>
+        <Pressable style={[styles.actBtn, liked && styles.actBtnLiked]} onPress={() => onLike(recipe)}>
+          <Text style={[styles.actTxt, liked && styles.actTxtLiked]}>{liked ? '♥ Liked' : '♥ Like'}</Text>
+        </Pressable>
+        <Pressable style={[styles.actBtn, skipped && styles.actBtnSkipped]} onPress={() => onSkip(recipe)}>
+          <Text style={styles.actTxt}>{skipped ? '✕ Skipped' : '✕ Skip'}</Text>
+        </Pressable>
+        <Pressable style={[styles.actBtn, styles.viewBtn]} onPress={() => onOpen(recipe)}>
+          <Text style={[styles.actTxt, styles.viewTxt]}>View →</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -176,15 +290,19 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
-  scroll: { padding: tokens.space(6), paddingBottom: tokens.space(10) },
+  scroll: { paddingTop: tokens.space(6), paddingBottom: tokens.space(10) },
+  headerPad: { paddingHorizontal: tokens.space(6), marginBottom: tokens.space(4) },
   eyebrow: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: tokens.color.accent,
-    marginBottom: tokens.space(3),
+    marginBottom: tokens.space(2),
   },
+  reason: { fontFamily: tokens.font.body.semibold, fontSize: 14, lineHeight: 19, marginBottom: tokens.space(2) },
+  swipeHint: { fontFamily: tokens.font.body.regular, fontSize: 12.5, color: tokens.color.inkMuted, lineHeight: 17 },
+  cardPage: { width: CARD_W, paddingHorizontal: tokens.space(6) },
   hero: {
     backgroundColor: tokens.color.surfaceAlt,
     borderRadius: tokens.radius.lg,
@@ -192,27 +310,35 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: tokens.color.line,
   },
+  heroDim: { opacity: 0.5 },
   heroImg: { width: '100%', height: 170, backgroundColor: tokens.color.line },
   heroPad: { padding: tokens.space(4) },
   heroTitle: {
     fontFamily: tokens.font.display.bold,
-    fontSize: 22,
+    fontSize: 21,
     color: tokens.color.ink,
     letterSpacing: -0.3,
-    lineHeight: 26,
+    lineHeight: 25,
   },
-  reason: { fontFamily: tokens.font.body.semibold, fontSize: 13, marginTop: tokens.space(2), lineHeight: 18 },
   match: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: tokens.space(2) },
-  cta: {
-    marginTop: tokens.space(4),
-    height: 46,
+  actions: { flexDirection: 'row', gap: tokens.space(2), marginTop: tokens.space(3) },
+  actBtn: {
+    flex: 1,
+    paddingVertical: tokens.space(3),
     borderRadius: tokens.radius.md,
-    backgroundColor: tokens.color.accent,
+    backgroundColor: tokens.color.surfaceAlt,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  ctaText: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.onAccent },
-  alts: { marginTop: tokens.space(7) },
+  actBtnLiked: { backgroundColor: tokens.color.accentSoft },
+  actBtnSkipped: { opacity: 0.6 },
+  viewBtn: { backgroundColor: tokens.color.accent },
+  actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink },
+  actTxtLiked: { color: tokens.color.accent },
+  viewTxt: { color: tokens.color.onAccent },
+  dots: { flexDirection: 'row', justifyContent: 'center', gap: tokens.space(2), marginTop: tokens.space(4) },
+  dot: { width: 7, height: 7, borderRadius: 999, backgroundColor: tokens.color.line },
+  dotActive: { backgroundColor: tokens.color.accent },
+  altsPad: { paddingHorizontal: tokens.space(6), marginTop: tokens.space(7) },
   altHead: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
