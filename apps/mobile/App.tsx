@@ -166,7 +166,7 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={tokens.colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* PowerSyncContext makes the db instance available to useQuery() hooks
           inside any screen — see PantryScreen for the first consumer. */}
       <PowerSyncContext.Provider value={db}>

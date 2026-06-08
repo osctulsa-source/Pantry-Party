@@ -4,7 +4,7 @@
     "slug": "pantry-party",
     "version": "0.0.1",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.osctulsa.pantryparty.dev"
