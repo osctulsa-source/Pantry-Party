@@ -110,9 +110,12 @@ export function RecipesScreen() {
 }
 
 function CookThis({ recipes, items }: { recipes: SpoonacularRecipe[]; items: PantryItem[] }) {
+  const hero = recipes[0];
+  // recipes is non-empty by construction (the 'ok' state requires >= 1 match), but
+  // noUncheckedIndexedAccess can't prove that — guard so `hero` narrows to a recipe.
+  if (!hero) return null;
   const now = new Date();
   const urgent = pickUrgent(items, now);
-  const hero = recipes[0];
   const alternates = recipes.slice(1);
 
   const reason = urgent ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}` : null;
