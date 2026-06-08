@@ -1,9 +1,5 @@
 /**
- * SettingsScreen — minimal v1.
- *
- * Sections: signed-in account email, a Household entry that navigates to the
- * dedicated household screen, and a sign-out action. Notification preferences
- * and account deletion are future PRs and intentionally absent.
+ * SettingsScreen — migrated onto the UI primitives (Screen/Caption/Body/ListRow/Button).
  *
  * Sign-out routing is implicit: signOut() flips Supabase auth state, the
  * AuthContext onAuthStateChange listener disconnects PowerSync + clears local
@@ -11,12 +7,12 @@
  * navigation from this screen.
  */
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
+import { Body, Button, Caption, ListRow, Screen } from '../../components/ui';
 import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
@@ -36,41 +32,24 @@ export function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
+    <Screen edges={['left', 'right', 'bottom']}>
       <View style={styles.content}>
         <View style={styles.topGroup}>
           <View style={styles.section}>
-            <Text style={styles.eyebrow}>Account</Text>
-            <Text style={styles.email}>{email}</Text>
+            <Caption>Account</Caption>
+            <Body size={16}>{email}</Body>
           </View>
 
-          <Pressable style={styles.row} onPress={() => navigation.navigate('Household')}>
-            <Text style={styles.rowLabel}>Household</Text>
-            <Text style={styles.rowChevron}>›</Text>
-          </Pressable>
+          <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 
-        <Pressable
-          style={[styles.signOut, signingOut && styles.signOutDisabled]}
-          onPress={onSignOut}
-          disabled={signingOut}
-        >
-          {signingOut ? (
-            <ActivityIndicator color={tokens.color.surface} />
-          ) : (
-            <Text style={styles.signOutText}>Sign out</Text>
-          )}
-        </Pressable>
+        <Button title="Sign out" onPress={onSignOut} loading={signingOut} />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: tokens.color.surface,
-  },
   content: {
     flex: 1,
     justifyContent: 'space-between',
@@ -83,50 +62,5 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: tokens.space(1),
-  },
-  eyebrow: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 12,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: tokens.color.inkMuted,
-  },
-  email: {
-    fontFamily: tokens.font.body.regular,
-    fontSize: 16,
-    color: tokens.color.ink,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: tokens.space(4),
-    paddingHorizontal: tokens.space(4),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: tokens.radius.md,
-  },
-  rowLabel: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.color.ink,
-  },
-  rowChevron: {
-    fontFamily: tokens.font.body.regular,
-    fontSize: 22,
-    color: tokens.color.inkMuted,
-  },
-  signOut: {
-    paddingVertical: tokens.space(4),
-    backgroundColor: tokens.color.accent,
-    borderRadius: tokens.radius.md,
-    alignItems: 'center',
-  },
-  signOutDisabled: {
-    opacity: 0.6,
-  },
-  signOutText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.color.surface,
   },
 });
