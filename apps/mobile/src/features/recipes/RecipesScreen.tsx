@@ -1,13 +1,10 @@
 /**
- * RecipesScreen — "Cook This" with time-of-day awareness, meal-type filtering,
- * swipeable suggestions, and on-device learning.
+ * RecipesScreen — "Cook This": time-of-day aware, meal-type filtered, swipeable,
+ * learning suggestions, with ingredient controls.
  *
- * The query defaults to the meal that fits the current time (breakfast / entrée /
- * snack) via @breadbox/core mealtime, and the user can switch with the meal chips
- * (Any / Breakfast / Entrée / Dessert / Snack) — driving Spoonacular's complexSearch
- * `type` filter so an entrée request actually returns entrées, not whatever maximized
- * ingredient use. Results are still re-ranked by learned preference (recipePrefs) and
- * shown in a swipeable pager with ♥ Like / ✕ Skip / View.
+ * New here: you can drop pantry ingredients from the search (tap a chip to leave
+ * out e.g. bananas) and Refresh for new ideas (pages Spoonacular's results via
+ * offset). The reason line follows the ingredients you're actually cooking with.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -43,6 +40,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useRecipePrefs } from './useRecipePrefs';
 
 const CARD_W = Dimensions.get('window').width;
+const PAGE = 8;
 
 type MealChoice = MealType | 'any';
 
@@ -54,10 +52,10 @@ const MEALS: Array<{ label: string; value: MealChoice }> = [
   { label: 'Snack', value: 'snack' },
 ];
 
-type LoadState =
+type RecipeState =
   | { kind: 'loading' }
-  | { kind: 'ok'; recipes: SpoonacularRecipe[]; items: PantryItem[] }
-  | { kind: 'empty'; itemCount: number }
+  | { kind: 'ok'; recipes: SpoonacularRecipe[] }
+  | { kind: 'empty'; reason: 'no-pantry' | 'all-excluded' | 'no-match' }
   | { kind: 'error'; message: string };
 
 function recipeUrl(r: SpoonacularRecipe): string {
@@ -85,34 +83,91 @@ export function RecipesScreen() {
   const { activeHouseholdId } = useActiveHousehold();
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
   const hour = useMemo(() => new Date().getHours(), []);
-  const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
-  const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
+  const [items, setItems] = useState<PantryItem[] | null>(null);
+  const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
+  const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
+  const [offset, setOffset] = useState(0);
+  const [showIngredients, setShowIngredients] = useState(false);
+  const [recipeState, setRecipeState] = useState<RecipeState>({ kind: 'loading' });
+
+  const excludedKey = excluded.join('|');
+
+  // Load the pantry once; the ingredient chips render from this.
   useEffect(() => {
     let cancelled = false;
-    setState({ kind: 'loading' });
+    powerSyncPantry
+      .list()
+      .then((list) => {
+        if (!cancelled) setItems(list);
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setItems([]);
+          setRecipeState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeItems = useMemo(
+    () => (items ?? []).filter((i) => !excluded.includes(i.name.toLowerCase())),
+    [items, excludedKey],
+  );
+
+  // Query recipes whenever the pantry, meal, exclusions, or page change.
+  useEffect(() => {
+    if (items === null) return;
+    let cancelled = false;
+    if (items.length === 0) {
+      setRecipeState({ kind: 'empty', reason: 'no-pantry' });
+      return;
+    }
+    const names = items.filter((i) => !excluded.includes(i.name.toLowerCase())).map((i) => i.name);
+    if (names.length === 0) {
+      setRecipeState({ kind: 'empty', reason: 'all-excluded' });
+      return;
+    }
+    setRecipeState({ kind: 'loading' });
     (async () => {
       try {
-        const items = await powerSyncPantry.list();
-        if (items.length === 0) {
-          if (!cancelled) setState({ kind: 'empty', itemCount: 0 });
-          return;
-        }
-        const recipes = await searchByMeal(items.map((i) => i.name), {
+        const recipes = await searchByMeal(names, {
           type: meal === 'any' ? undefined : meal,
-          number: 8,
+          number: PAGE,
+          offset,
         });
         if (cancelled) return;
-        if (recipes.length === 0) setState({ kind: 'empty', itemCount: items.length });
-        else setState({ kind: 'ok', recipes, items });
+        setRecipeState(recipes.length === 0 ? { kind: 'empty', reason: 'no-match' } : { kind: 'ok', recipes });
       } catch (e) {
-        if (!cancelled) setState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
+        if (!cancelled) setRecipeState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [meal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, meal, excludedKey, offset]);
+
+  function changeMeal(m: MealChoice) {
+    setMeal(m);
+    setOffset(0);
+  }
+  function toggleExclude(name: string) {
+    const k = name.toLowerCase();
+    setExcluded((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
+    setOffset(0);
+  }
+  function refresh() {
+    setOffset((o) => o + PAGE);
+  }
+  function reset() {
+    setExcluded([]);
+    setOffset(0);
+  }
+
+  const canReset = excluded.length > 0 || offset > 0;
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
@@ -122,44 +177,87 @@ export function RecipesScreen() {
           {MEALS.map((m) => {
             const selected = m.value === meal;
             return (
-              <Pressable
-                key={m.value}
-                onPress={() => setMeal(m.value)}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
+              <Pressable key={m.value} onPress={() => changeMeal(m.value)} style={[styles.chip, selected && styles.chipSelected]}>
                 <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{m.label}</Text>
               </Pressable>
             );
           })}
         </View>
+
+        <View style={styles.controls}>
+          <Pressable style={styles.ctrlBtn} onPress={refresh}>
+            <Text style={styles.ctrlBtnTxt}>↻ Refresh</Text>
+          </Pressable>
+          <Pressable style={styles.ctrlBtn} onPress={() => setShowIngredients((v) => !v)}>
+            <Text style={styles.ctrlBtnTxt}>
+              Ingredients · {items ? items.length : 0} {showIngredients ? '▴' : '▾'}
+            </Text>
+          </Pressable>
+          {canReset && (
+            <Pressable hitSlop={6} onPress={reset}>
+              <Text style={styles.resetTxt}>Reset</Text>
+            </Pressable>
+          )}
+        </View>
+
+        {showIngredients && items && items.length > 0 && (
+          <View style={styles.ingWrap}>
+            <Text style={styles.ingHint}>Tap an ingredient to leave it out of suggestions.</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.ingRow}>
+              {items.map((i) => {
+                const out = excluded.includes(i.name.toLowerCase());
+                return (
+                  <Pressable key={i.id} onPress={() => toggleExclude(i.name)} style={[styles.ingChip, out && styles.ingChipOut]}>
+                    <Text style={[styles.ingChipTxt, out && styles.ingChipTxtOut]}>{out ? `+ ${i.name}` : `${i.name}  ✕`}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
       </View>
 
-      {state.kind === 'loading' && (
+      {recipeState.kind === 'loading' && (
         <View style={styles.center}>
           <ActivityIndicator color={tokens.color.accent} />
           <Text style={styles.helper}>Finding what you can cook…</Text>
         </View>
       )}
 
-      {state.kind === 'error' && (
+      {recipeState.kind === 'error' && (
         <View style={styles.center}>
           <Text style={styles.errorTitle}>Couldn't load recipes</Text>
-          <Text style={styles.helper}>{state.message}</Text>
+          <Text style={styles.helper}>{recipeState.message}</Text>
         </View>
       )}
 
-      {state.kind === 'empty' && (
+      {recipeState.kind === 'empty' && (
         <View style={styles.center}>
-          <Text style={styles.errorTitle}>{state.itemCount === 0 ? 'Nothing to cook yet' : 'No matches found'}</Text>
-          <Text style={styles.helper}>
-            {state.itemCount === 0
-              ? "Add a few items to your pantry and we'll suggest recipes from what you have."
-              : `No ${meal === 'any' ? 'matches' : `${meal} ideas`} from your pantry right now — try another meal type above.`}
+          <Text style={styles.errorTitle}>
+            {recipeState.reason === 'no-pantry'
+              ? 'Nothing to cook yet'
+              : recipeState.reason === 'all-excluded'
+                ? 'Everything is left out'
+                : 'No more ideas'}
           </Text>
+          <Text style={styles.helper}>
+            {recipeState.reason === 'no-pantry'
+              ? "Add a few items to your pantry and we'll suggest recipes from what you have."
+              : recipeState.reason === 'all-excluded'
+                ? 'You’ve left out every ingredient — tap Reset or add some back.'
+                : 'That’s all we found — try Reset, a different meal type, or add some ingredients back.'}
+          </Text>
+          {canReset && (
+            <Pressable style={styles.resetBtn} onPress={reset}>
+              <Text style={styles.resetBtnTxt}>Reset</Text>
+            </Pressable>
+          )}
         </View>
       )}
 
-      {state.kind === 'ok' && <CookThis recipes={state.recipes} items={state.items} prefs={prefs} record={record} />}
+      {recipeState.kind === 'ok' && (
+        <CookThis recipes={recipeState.recipes} items={activeItems} prefs={prefs} record={record} />
+      )}
     </SafeAreaView>
   );
 }
@@ -337,17 +435,34 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(3),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
-  chip: {
+  chip: { paddingVertical: tokens.space(2), paddingHorizontal: tokens.space(3), borderRadius: 999, backgroundColor: tokens.color.surfaceAlt },
+  chipSelected: { backgroundColor: tokens.color.accent },
+  chipText: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
+  chipTextSelected: { color: tokens.color.onAccent },
+  controls: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), marginTop: tokens.space(3) },
+  ctrlBtn: {
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  ctrlBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
+  ingWrap: { marginTop: tokens.space(3) },
+  ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
+  ingRow: { flexDirection: 'row', gap: tokens.space(2), paddingRight: tokens.space(4) },
+  ingChip: {
     paddingVertical: tokens.space(2),
     paddingHorizontal: tokens.space(3),
     borderRadius: 999,
     backgroundColor: tokens.color.surfaceAlt,
   },
-  chipSelected: { backgroundColor: tokens.color.accent },
-  chipText: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
-  chipTextSelected: { color: tokens.color.onAccent },
+  ingChipOut: { backgroundColor: 'transparent', borderWidth: 1, borderColor: tokens.color.line },
+  ingChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
+  ingChipTxtOut: { color: tokens.color.inkMuted },
   scroll: { paddingBottom: tokens.space(10) },
-  reasonPad: { paddingHorizontal: tokens.space(6) },
+  reasonPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(2) },
   reason: { fontFamily: tokens.font.body.semibold, fontSize: 14, lineHeight: 19, marginBottom: tokens.space(2) },
   swipeHint: {
     fontFamily: tokens.font.body.regular,
@@ -368,22 +483,10 @@ const styles = StyleSheet.create({
   heroDim: { opacity: 0.5 },
   heroImg: { width: '100%', height: 170, backgroundColor: tokens.color.line },
   heroPad: { padding: tokens.space(4) },
-  heroTitle: {
-    fontFamily: tokens.font.display.bold,
-    fontSize: 21,
-    color: tokens.color.ink,
-    letterSpacing: -0.3,
-    lineHeight: 25,
-  },
+  heroTitle: { fontFamily: tokens.font.display.bold, fontSize: 21, color: tokens.color.ink, letterSpacing: -0.3, lineHeight: 25 },
   match: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: tokens.space(2) },
   actions: { flexDirection: 'row', gap: tokens.space(2), marginTop: tokens.space(3) },
-  actBtn: {
-    flex: 1,
-    paddingVertical: tokens.space(3),
-    borderRadius: tokens.radius.md,
-    backgroundColor: tokens.color.surfaceAlt,
-    alignItems: 'center',
-  },
+  actBtn: { flex: 1, paddingVertical: tokens.space(3), borderRadius: tokens.radius.md, backgroundColor: tokens.color.surfaceAlt, alignItems: 'center' },
   actBtnLiked: { backgroundColor: tokens.color.accentSoft },
   actBtnSkipped: { opacity: 0.6 },
   viewBtn: { backgroundColor: tokens.color.accent },
@@ -414,4 +517,12 @@ const styles = StyleSheet.create({
   altText: { flex: 1 },
   altName: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.ink },
   altMeta: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: 2 },
+  resetBtn: {
+    marginTop: tokens.space(4),
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(6),
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+  },
+  resetBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.onAccent },
 });
