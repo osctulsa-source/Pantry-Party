@@ -25,8 +25,10 @@ const PRESETS: Array<{ label: string; days: number | null }> = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function relative(days: number): string {
-  if (days <= 0) return 'today';
+  if (days === 0) return 'today';
   if (days === 1) return 'tomorrow';
+  if (days === -1) return 'yesterday';
+  if (days < 0) return `${-days} days ago`;
   if (days < 14) return `in ${days} days`;
   if (days < 60) return `in ${Math.round(days / 7)} weeks`;
   if (days < 365) return `in ${Math.round(days / 30)} months`;
@@ -50,7 +52,7 @@ export function ExpiryField({
         <Text style={[styles.dateText, valueDays === null && styles.dateMuted]}>{friendly}</Text>
         {valueDays !== null && (
           <View style={styles.steppers}>
-            <Pressable hitSlop={6} onPress={() => onChange(Math.max(0, valueDays - 1))} style={styles.stepBtn}>
+            <Pressable hitSlop={6} onPress={() => onChange(valueDays - 1)} style={styles.stepBtn}>
               <Text style={styles.stepTxt}>−1d</Text>
             </Pressable>
             <Pressable hitSlop={6} onPress={() => onChange(valueDays + 1)} style={styles.stepBtn}>

@@ -7,9 +7,13 @@
  * tombstone — UPDATE deleted = 1 — so PantryScreen's `WHERE deleted = 0` filter
  * hides it without an actual row removal.
  *
- * The form UI is intentionally duplicated from AddItemScreen rather than
- * extracted into a shared component. Extraction is backlog: revisit when a third
- * consumer appears or the two forms diverge meaningfully (project doc).
+ * Expiry uses the shared ExpiryField (presets + steppers), matching Add Item.
+ * The stored ISO date ↔ days-from-today conversion happens here: isoToDays on
+ * hydrate, addDaysUTC on save. An already-expired item hydrates to a negative
+ * day count (ExpiryField renders "N days ago").
+ *
+ * The rest of the form is intentionally duplicated from AddItemScreen rather
+ * than extracted — revisit when a third consumer appears (project doc).
  */
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -28,20 +32,30 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@powersync/react-native';
 
-import { StorageLocation } from '@breadbox/core';
+import { StorageLocation, addDaysUTC } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
+import { ExpiryField } from './ExpiryField';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
-// Plain text input for v1 — basic shape check only. Polish PR can add a real picker.
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const LOCATIONS = StorageLocation.options;
 type Location = (typeof LOCATIONS)[number];
 
 function toLocation(value: string): Location {
   return (LOCATIONS as readonly string[]).includes(value) ? (value as Location) : 'pantry';
+}
+
+// Stored ISO expiry → whole days from today (UTC-midnight basis, the inverse of
+// addDaysUTC). Negative when the item is already past its date.
+function isoToDays(iso: string | null | undefined, now: Date): number | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const a = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const b = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  return Math.round((b - a) / 86_400_000);
 }
 
 export function EditItemScreen() {
@@ -58,7 +72,7 @@ export function EditItemScreen() {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [location, setLocation] = useState<Location>('pantry');
-  const [expiresAt, setExpiresAt] = useState('');
+  const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,16 +85,14 @@ export function EditItemScreen() {
     setName(item.name);
     setQuantity(String(item.quantity));
     setLocation(toLocation(item.location));
-    setExpiresAt(item.expires_at ? item.expires_at.slice(0, 10) : '');
+    setExpiryDays(isoToDays(item.expires_at, new Date()));
   }, [item]);
 
   const trimmedName = name.trim();
   const parsedQty = parseInt(quantity, 10);
   const qtyValid = Number.isInteger(parsedQty) && parsedQty > 0;
-  const trimmedExpiry = expiresAt.trim();
-  const expiryValid = trimmedExpiry === '' || ISO_DATE.test(trimmedExpiry);
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
-  const formValid = nameValid && qtyValid && expiryValid;
+  const formValid = nameValid && qtyValid;
 
   async function onSave() {
     if (!formValid || submitting) return;
@@ -89,11 +101,9 @@ export function EditItemScreen() {
     try {
       const db = getPowerSync();
 
-      // Store a full ISO timestamp: core's PantryItem validates expiresAt with
-      // .datetime(), so a bare YYYY-MM-DD would fail on read-back.
-      const expiresIso = trimmedExpiry
-        ? new Date(`${trimmedExpiry}T00:00:00.000Z`).toISOString()
-        : null;
+      // Store a full ISO timestamp (UTC midnight): core's PantryItem validates
+      // expiresAt with .datetime(), so a bare YYYY-MM-DD would fail on read-back.
+      const expiresIso = expiryDays === null ? null : addDaysUTC(new Date(), expiryDays).toISOString();
 
       await db.execute(
         `UPDATE pantry_items
@@ -159,10 +169,7 @@ export function EditItemScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.center}>
           <View style={styles.card}>
             <Text style={styles.label}>Name</Text>
@@ -195,24 +202,16 @@ export function EditItemScreen() {
                     onPress={() => setLocation(loc)}
                     style={[styles.segment, selected && styles.segmentSelected]}
                   >
-                    <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
-                      {loc}
-                    </Text>
+                    <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{loc}</Text>
                   </Pressable>
                 );
               })}
             </View>
 
-            <Text style={styles.label}>Expires (optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={tokens.color.inkMuted}
-              value={expiresAt}
-              onChangeText={setExpiresAt}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <Text style={styles.label}>Best before</Text>
+            <View style={styles.expiryWrap}>
+              <ExpiryField valueDays={expiryDays} onChange={setExpiryDays} />
+            </View>
 
             {error && <Text style={styles.error}>{error}</Text>}
 
@@ -228,11 +227,7 @@ export function EditItemScreen() {
               )}
             </Pressable>
 
-            <Pressable
-              style={styles.delete}
-              onPress={onDeletePress}
-              disabled={submitting}
-            >
+            <Pressable style={styles.delete} onPress={onDeletePress} disabled={submitting}>
               <Text style={styles.deleteText}>Delete item</Text>
             </Pressable>
           </View>
@@ -294,15 +289,19 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.medium,
     fontSize: 14,
     color: tokens.color.inkMuted,
+    textTransform: 'capitalize',
   },
   segmentTextSelected: {
     color: tokens.color.surface,
+  },
+  expiryWrap: {
+    marginBottom: tokens.space(4),
   },
   error: {
     marginBottom: tokens.space(3),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
-    color: tokens.color.accent,
+    color: tokens.semantic.expiry.expired,
   },
   submit: {
     marginTop: tokens.space(1),
