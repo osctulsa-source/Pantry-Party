@@ -24,6 +24,8 @@ import { ActiveHouseholdProvider } from './src/features/household/ActiveHousehol
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
+import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
+import { useOnboarding } from './src/features/onboarding/useOnboarding';
 import { BRAND } from './src/theme/brand';
 
 export type RootStackParamList = {
@@ -91,6 +93,9 @@ function AuthStack() {
 
 function AppRoot() {
   const { state } = useAuth();
+  const userId = state.status === 'authenticated' ? state.session.user.id : null;
+  // Hook is called unconditionally (Rules of Hooks); it no-ops until userId is set.
+  const { needsOnboarding, loading: onboardingLoading, complete } = useOnboarding(userId);
 
   if (state.status === 'loading') {
     return (
@@ -100,7 +105,23 @@ function AppRoot() {
     );
   }
 
-  return state.status === 'authenticated' ? <AppStack /> : <AuthStack />;
+  if (state.status !== 'authenticated') {
+    return <AuthStack />;
+  }
+
+  if (onboardingLoading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator color={tokens.color.accent} />
+      </View>
+    );
+  }
+
+  if (needsOnboarding) {
+    return <OnboardingScreen onDone={complete} />;
+  }
+
+  return <AppStack />;
 }
 
 export default function App() {
