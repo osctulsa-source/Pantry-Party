@@ -3,3 +3,4 @@ export * from "./expiry.ts";
 export * from "./notifications.ts";
 export * from "./shelfLife.ts";
 export * from "./recipePrefs.ts";
+export * from "./mealtime.ts";
