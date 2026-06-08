@@ -3,8 +3,8 @@
  *
  * - findByIngredients: original walking-skeleton call (maximize used ingredients).
  * - searchByMeal: complexSearch by pantry ingredients, optionally filtered to a
- *   meal type (main course / breakfast / dessert / snack) for the time-of-day-aware
- *   Cook This screen. Returns the same SpoonacularRecipe shape.
+ *   meal type (main course / breakfast / dessert / snack) and paged via `offset`
+ *   (so "Refresh" returns the next batch of matches). Returns SpoonacularRecipe[].
  *
  * Deferrals: no caching (each call spends free-tier points), no retry, no dedupe.
  * API key from EXPO_PUBLIC_SPOONACULAR_API_KEY; production would proxy server-side.
@@ -63,6 +63,7 @@ export async function findByIngredients(
 export interface SearchByMealOptions {
   type?: MealType; // omit for "any"
   number?: number;
+  offset?: number; // page into the results (used by Refresh)
 }
 
 // Subset of complexSearch's result shape we consume (with fillIngredients=true).
@@ -79,9 +80,9 @@ interface ComplexSearchResponse {
 }
 
 /**
- * complexSearch by pantry ingredients, optionally constrained to a meal type.
- * fillIngredients=true gives used/missed counts so results map to SpoonacularRecipe
- * and the Cook This screen can re-rank them exactly like findByIngredients output.
+ * complexSearch by pantry ingredients, optionally constrained to a meal type and
+ * paged via `offset`. fillIngredients=true gives used/missed counts so results map
+ * to SpoonacularRecipe and the Cook This screen can re-rank them like before.
  */
 export async function searchByMeal(
   ingredients: string[],
@@ -101,6 +102,7 @@ export async function searchByMeal(
     apiKey,
   });
   if (opts.type) params.set('type', opts.type);
+  if (opts.offset) params.set('offset', String(opts.offset));
 
   const res = await fetch(`${SPOONACULAR_BASE}/complexSearch?${params.toString()}`);
   if (!res.ok) {
