@@ -8,7 +8,8 @@
  * dance. The PowerSyncContext.Provider lives in App.tsx.
  *
  * All styling pulls from `theme/tokens` — no hardcoded colors, fonts, or
- * spacing values (ADR-006).
+ * spacing values (ADR-006). Expiry status is rendered via <ExpiryPill>, the
+ * double-encoded (shape + text + color) colorblind-safe indicator.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -21,6 +22,7 @@ import { tokens } from '../../theme/tokens';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
+import { ExpiryPill } from '../../components/ExpiryPill';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
@@ -92,6 +94,12 @@ export function PantryScreen() {
   // Compute once per render so every row sees the same "now" — avoids drift mid-list.
   const now = useMemo(() => new Date(), [items]);
 
+  // How many items need attention (warning or expired). Drives the header summary.
+  const soonCount = useMemo(
+    () => items.filter((i) => getExpiryStatus(i, now) !== 'fresh').length,
+    [items, now],
+  );
+
   // Loading covers (a) AsyncStorage bootstrap of the active household, (b) the
   // null gap before bootstrap picks a default, and (c) the initial reactive
   // query before any rows arrive.
@@ -111,7 +119,12 @@ export function PantryScreen() {
         <View style={styles.headerMain}>
           <Text style={styles.brand}>{tokens.brandName}</Text>
           <Text style={styles.count}>
-            {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
+            {items.length} {items.length === 1 ? 'item' : 'items'}
+            {soonCount > 0 ? (
+              <Text style={styles.countSoon}>{`  ·  ${soonCount} to use soon`}</Text>
+            ) : (
+              ' in your pantry'
+            )}
           </Text>
         </View>
         <View style={styles.headerActions}>
@@ -139,7 +152,8 @@ export function PantryScreen() {
             onPress={() => navigation.navigate('EditItem', { itemId: item.id })}
           />
         )}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
+        ListEmptyComponent={<PantryEmpty onAdd={() => navigation.navigate('AddItem')} />}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
       />
     </SafeAreaView>
@@ -149,12 +163,6 @@ export function PantryScreen() {
 function PantryRow({ item, now, onPress }: { item: PantryItem; now: Date; onPress: () => void }) {
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
-  const expiryColor =
-    status === 'warning'
-      ? tokens.semantic.expiry.warning
-      : status === 'expired'
-        ? tokens.semantic.expiry.expired
-        : tokens.semantic.expiry.fresh;
   return (
     <Pressable
       onPress={onPress}
@@ -169,10 +177,22 @@ function PantryRow({ item, now, onPress }: { item: PantryItem; now: Date; onPres
           {item.brand ? ` · ${item.brand}` : ''}
         </Text>
       </View>
-      {expiryText && (
-        <Text style={[styles.expiry, { color: expiryColor }]}>{expiryText}</Text>
-      )}
+      {expiryText && <ExpiryPill status={status} label={expiryText} />}
     </Pressable>
+  );
+}
+
+function PantryEmpty({ onAdd }: { onAdd: () => void }) {
+  return (
+    <View style={styles.emptyWrap}>
+      <Text style={styles.emptyTitle}>Your pantry's empty</Text>
+      <Text style={styles.emptySub}>
+        Add an item to start tracking freshness and get recipe ideas from what you already have.
+      </Text>
+      <Pressable style={styles.emptyBtn} onPress={onAdd}>
+        <Text style={styles.emptyBtnText}>Add your first item</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -225,13 +245,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: tokens.color.inkMuted,
   },
+  countSoon: {
+    fontFamily: tokens.font.body.semibold,
+    color: tokens.semantic.expiry.warning,
+  },
   cookButton: {
     marginHorizontal: tokens.space(6),
     marginBottom: tokens.space(3),
     paddingVertical: tokens.space(3),
     paddingHorizontal: tokens.space(4),
     backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: 8,
+    borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
   cookButtonText: {
@@ -242,19 +266,23 @@ const styles = StyleSheet.create({
   list: {
     paddingBottom: tokens.space(8),
   },
+  listEmpty: {
+    flexGrow: 1,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: tokens.space(6),
     paddingVertical: tokens.space(3),
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: tokens.color.surfaceAlt,
+    borderBottomColor: tokens.color.line,
   },
   rowPressed: {
     backgroundColor: tokens.color.surfaceAlt,
   },
   rowMain: {
     flex: 1,
+    marginRight: tokens.space(3),
   },
   name: {
     fontFamily: tokens.font.body.semibold,
@@ -267,9 +295,36 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: tokens.color.inkMuted,
   },
-  expiry: {
+  emptyWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: tokens.space(8),
+  },
+  emptyTitle: {
+    fontFamily: tokens.font.display.semibold,
+    fontSize: 20,
+    color: tokens.color.ink,
+    marginBottom: tokens.space(2),
+    textAlign: 'center',
+  },
+  emptySub: {
     fontFamily: tokens.font.body.regular,
-    fontSize: 12,
-    // Color is set inline per row from tokens.semantic.expiry — fresh / warning / expired.
+    fontSize: 14,
+    color: tokens.color.inkMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: tokens.space(5),
+  },
+  emptyBtn: {
+    backgroundColor: tokens.color.accent,
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(6),
+    borderRadius: tokens.radius.md,
+  },
+  emptyBtnText: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+    color: tokens.color.onAccent,
   },
 });
