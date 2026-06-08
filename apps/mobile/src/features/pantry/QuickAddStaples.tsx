@@ -1,18 +1,26 @@
 /**
- * QuickAddStaples — the grouped staple chips, extracted so both the standalone
- * Quick Add screen and the first-run onboarding flow render the same UI.
- *
- * Stateless: the parent owns insertion and the `added` set (which drives the ✓).
+ * QuickAddStaples — the grouped staple chips, shared by the Quick Add screen and
+ * the first-run onboarding flow. Stateless: the parent owns insertion and the
+ * `added` set (which drives the ✓). `hiddenGroups` lets a caller (Quick Add)
+ * drop sections the user has hidden; onboarding omits it and shows everything.
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '../../theme/tokens';
 import { STAPLE_GROUPS, type Staple } from './staples';
 
-export function QuickAddStaples({ added, onAdd }: { added: string[]; onAdd: (staple: Staple) => void }) {
+export function QuickAddStaples({
+  added,
+  onAdd,
+  hiddenGroups = [],
+}: {
+  added: string[];
+  onAdd: (staple: Staple) => void;
+  hiddenGroups?: string[];
+}) {
   return (
     <View>
-      {STAPLE_GROUPS.map((group) => (
+      {STAPLE_GROUPS.filter((group) => !hiddenGroups.includes(group.title)).map((group) => (
         <View key={group.title} style={styles.group}>
           <Text style={styles.groupTitle}>{group.title}</Text>
           <View style={styles.chips}>
