@@ -1,25 +1,33 @@
 /**
- * Spoonacular API client — walking skeleton scope.
+ * Spoonacular API client.
  *
- * Wraps findByIngredients: takes a list of ingredient names, returns matching
- * recipes ranked by Spoonacular's default heuristic ("maximize used ingredients").
+ * - findByIngredients: original walking-skeleton call (maximize used ingredients).
+ * - searchByMeal: complexSearch by pantry ingredients, optionally filtered to a
+ *   meal type (main course / breakfast / dessert / snack) for the time-of-day-aware
+ *   Cook This screen. Returns the same SpoonacularRecipe shape.
  *
- * Walking-skeleton deferrals:
- * - No caching (each call uses 1 of 50 daily free-tier points; fine for dev)
- * - No retry logic for transient failures
- * - No request deduplication
- * - No expiration-weighted ranking (Killer 3 work)
- *
- * API key comes from EXPO_PUBLIC_SPOONACULAR_API_KEY. Production would proxy
- * through a backend; walking-skeleton accepts client-side key exposure given
- * the free tier's 50/day throttle.
+ * Deferrals: no caching (each call spends free-tier points), no retry, no dedupe.
+ * API key from EXPO_PUBLIC_SPOONACULAR_API_KEY; production would proxy server-side.
  */
+import type { MealType } from '@breadbox/core';
+
 import type { FindByIngredientsResponse, SpoonacularRecipe } from './types';
 
 const SPOONACULAR_BASE = 'https://api.spoonacular.com/recipes';
 
+function requireApiKey(): string {
+  const apiKey = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      'Missing EXPO_PUBLIC_SPOONACULAR_API_KEY. Sign up at spoonacular.com/food-api ' +
+        'and add the key to apps/mobile/.env.local.',
+    );
+  }
+  return apiKey;
+}
+
 export interface FindByIngredientsOptions {
-  number?: number;        // how many recipes to return (default 5)
+  number?: number; // how many recipes to return (default 5)
   ignorePantry?: boolean; // ignore common staples like salt/pepper (default true)
 }
 
@@ -27,13 +35,7 @@ export async function findByIngredients(
   ingredients: string[],
   opts: FindByIngredientsOptions = {},
 ): Promise<SpoonacularRecipe[]> {
-  const apiKey = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'Missing EXPO_PUBLIC_SPOONACULAR_API_KEY. Sign up at spoonacular.com/food-api ' +
-      'and add the key to apps/mobile/.env.local.',
-    );
-  }
+  const apiKey = requireApiKey();
   if (ingredients.length === 0) {
     return [];
   }
@@ -42,7 +44,7 @@ export async function findByIngredients(
     ingredients: ingredients.join(','),
     number: String(opts.number ?? 5),
     ignorePantry: String(opts.ignorePantry ?? true),
-    ranking: '1',  // maximize used ingredients
+    ranking: '1', // maximize used ingredients
     apiKey,
   });
 
@@ -50,11 +52,71 @@ export async function findByIngredients(
   if (!res.ok) {
     const body = await res.text();
     throw new Error(
-      `Spoonacular request failed: ${res.status} ${res.statusText}. ` +
-      `Body: ${body.slice(0, 200)}`,
+      `Spoonacular request failed: ${res.status} ${res.statusText}. Body: ${body.slice(0, 200)}`,
     );
   }
 
   const data = (await res.json()) as FindByIngredientsResponse;
   return data;
+}
+
+export interface SearchByMealOptions {
+  type?: MealType; // omit for "any"
+  number?: number;
+}
+
+// Subset of complexSearch's result shape we consume (with fillIngredients=true).
+interface ComplexSearchResult {
+  id: number;
+  title: string;
+  image: string;
+  usedIngredientCount?: number;
+  missedIngredientCount?: number;
+  likes?: number;
+}
+interface ComplexSearchResponse {
+  results?: ComplexSearchResult[];
+}
+
+/**
+ * complexSearch by pantry ingredients, optionally constrained to a meal type.
+ * fillIngredients=true gives used/missed counts so results map to SpoonacularRecipe
+ * and the Cook This screen can re-rank them exactly like findByIngredients output.
+ */
+export async function searchByMeal(
+  ingredients: string[],
+  opts: SearchByMealOptions = {},
+): Promise<SpoonacularRecipe[]> {
+  const apiKey = requireApiKey();
+  if (ingredients.length === 0) {
+    return [];
+  }
+
+  const params = new URLSearchParams({
+    includeIngredients: ingredients.join(','),
+    sort: 'max-used-ingredients',
+    fillIngredients: 'true',
+    ignorePantry: 'true',
+    number: String(opts.number ?? 8),
+    apiKey,
+  });
+  if (opts.type) params.set('type', opts.type);
+
+  const res = await fetch(`${SPOONACULAR_BASE}/complexSearch?${params.toString()}`);
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(
+      `Spoonacular complexSearch failed: ${res.status} ${res.statusText}. Body: ${body.slice(0, 200)}`,
+    );
+  }
+
+  const data = (await res.json()) as ComplexSearchResponse;
+  return (data.results ?? []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    image: r.image,
+    usedIngredientCount: r.usedIngredientCount ?? 0,
+    missedIngredientCount: r.missedIngredientCount ?? 0,
+    likes: r.likes ?? 0,
+  }));
 }

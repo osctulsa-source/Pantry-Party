@@ -1,17 +1,13 @@
 /**
- * RecipesScreen — "Cook This" with swipeable suggestions + on-device learning.
+ * RecipesScreen — "Cook This" with time-of-day awareness, meal-type filtering,
+ * swipeable suggestions, and on-device learning.
  *
- * Pulls the pantry, asks Spoonacular what we can cook, then shows the top 1-3
- * suggestions in a swipeable pager. Each card has ♥ Like / ✕ Skip / View, and
- * opens are recorded implicitly. Those signals feed a per-household preference
- * map (@breadbox/core recipePrefs, persisted via useRecipePrefs) that re-ranks
- * future suggestions toward what you engage with.
- *
- * Above the pager, the differentiator: a reason line tying tonight's cook to the
- * soonest-expiring pantry item. Below it, the rest as "More from your pantry".
- *
- * Supersedes the single-hero pass (PR #23). Server-side ranking stays deferred
- * to the full Killer 3 engine; taps open the recipe on spoonacular.com.
+ * The query defaults to the meal that fits the current time (breakfast / entrée /
+ * snack) via @breadbox/core mealtime, and the user can switch with the meal chips
+ * (Any / Breakfast / Entrée / Dessert / Snack) — driving Spoonacular's complexSearch
+ * `type` filter so an entrée request actually returns entrées, not whatever maximized
+ * ingredient use. Results are still re-ranked by learned preference (recipePrefs) and
+ * shown in a swipeable pager with ♥ Like / ✕ Skip / View.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -28,16 +24,35 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getExpiryStatus, scoreTitle, type PantryItem, type PrefEvent, type RecipePrefs } from '@breadbox/core';
+import {
+  defaultMealForHour,
+  getExpiryStatus,
+  mealtimeLabel,
+  scoreTitle,
+  type MealType,
+  type PantryItem,
+  type PrefEvent,
+  type RecipePrefs,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { powerSyncPantry } from '../../data/powerSyncPantry';
-import { findByIngredients } from '../../data/spoonacular/client';
+import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useRecipePrefs } from './useRecipePrefs';
 
 const CARD_W = Dimensions.get('window').width;
+
+type MealChoice = MealType | 'any';
+
+const MEALS: Array<{ label: string; value: MealChoice }> = [
+  { label: 'Any', value: 'any' },
+  { label: 'Breakfast', value: 'breakfast' },
+  { label: 'Entrée', value: 'main course' },
+  { label: 'Dessert', value: 'dessert' },
+  { label: 'Snack', value: 'snack' },
+];
 
 type LoadState =
   | { kind: 'loading' }
@@ -50,7 +65,6 @@ function recipeUrl(r: SpoonacularRecipe): string {
   return `https://spoonacular.com/recipes/${slug}-${r.id}`;
 }
 
-// Soonest-expiring item that needs attention (warning/expired) — drives the reason line.
 function pickUrgent(items: PantryItem[], now: Date): PantryItem | undefined {
   return items
     .filter((i) => i.expiresAt && getExpiryStatus(i, now) !== 'fresh')
@@ -70,10 +84,13 @@ function matchLine(r: SpoonacularRecipe): string {
 export function RecipesScreen() {
   const { activeHouseholdId } = useActiveHousehold();
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
+  const hour = useMemo(() => new Date().getHours(), []);
+  const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   useEffect(() => {
     let cancelled = false;
+    setState({ kind: 'loading' });
     (async () => {
       try {
         const items = await powerSyncPantry.list();
@@ -81,7 +98,10 @@ export function RecipesScreen() {
           if (!cancelled) setState({ kind: 'empty', itemCount: 0 });
           return;
         }
-        const recipes = await findByIngredients(items.map((i) => i.name), { number: 8 });
+        const recipes = await searchByMeal(items.map((i) => i.name), {
+          type: meal === 'any' ? undefined : meal,
+          number: 8,
+        });
         if (cancelled) return;
         if (recipes.length === 0) setState({ kind: 'empty', itemCount: items.length });
         else setState({ kind: 'ok', recipes, items });
@@ -92,10 +112,28 @@ export function RecipesScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [meal]);
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
+      <View style={styles.headerPad}>
+        <Text style={styles.eyebrow}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
+        <View style={styles.chips}>
+          {MEALS.map((m) => {
+            const selected = m.value === meal;
+            return (
+              <Pressable
+                key={m.value}
+                onPress={() => setMeal(m.value)}
+                style={[styles.chip, selected && styles.chipSelected]}
+              >
+                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{m.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
       {state.kind === 'loading' && (
         <View style={styles.center}>
           <ActivityIndicator color={tokens.color.accent} />
@@ -116,7 +154,7 @@ export function RecipesScreen() {
           <Text style={styles.helper}>
             {state.itemCount === 0
               ? "Add a few items to your pantry and we'll suggest recipes from what you have."
-              : `Your pantry has ${state.itemCount} items — try adding a few more staples.`}
+              : `No ${meal === 'any' ? 'matches' : `${meal} ideas`} from your pantry right now — try another meal type above.`}
           </Text>
         </View>
       )}
@@ -147,8 +185,6 @@ function CookThis({
   const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
 
-  // Re-rank by learned preference (title-token overlap) blended with the raw
-  // ingredient match, so cold-start still surfaces good matches.
   const pool = useMemo(
     () =>
       [...recipes].sort(
@@ -178,11 +214,12 @@ function CookThis({
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <View style={styles.headerPad}>
-        <Text style={styles.eyebrow}>Cook this · tonight</Text>
-        {reason && <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>}
-        <Text style={styles.swipeHint}>Swipe through your top picks — ♥ and ✕ teach us what you like.</Text>
-      </View>
+      {reason && (
+        <View style={styles.reasonPad}>
+          <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
+        </View>
+      )}
+      <Text style={styles.swipeHint}>Swipe through your top picks — ♥ and ✕ teach us what you like.</Text>
 
       <FlatList
         data={top}
@@ -290,18 +327,36 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
-  scroll: { paddingTop: tokens.space(6), paddingBottom: tokens.space(10) },
-  headerPad: { paddingHorizontal: tokens.space(6), marginBottom: tokens.space(4) },
+  headerPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(6), paddingBottom: tokens.space(3) },
   eyebrow: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: tokens.color.accent,
-    marginBottom: tokens.space(2),
+    marginBottom: tokens.space(3),
   },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
+  chip: {
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  chipSelected: { backgroundColor: tokens.color.accent },
+  chipText: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
+  chipTextSelected: { color: tokens.color.onAccent },
+  scroll: { paddingBottom: tokens.space(10) },
+  reasonPad: { paddingHorizontal: tokens.space(6) },
   reason: { fontFamily: tokens.font.body.semibold, fontSize: 14, lineHeight: 19, marginBottom: tokens.space(2) },
-  swipeHint: { fontFamily: tokens.font.body.regular, fontSize: 12.5, color: tokens.color.inkMuted, lineHeight: 17 },
+  swipeHint: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 12.5,
+    color: tokens.color.inkMuted,
+    lineHeight: 17,
+    paddingHorizontal: tokens.space(6),
+    marginBottom: tokens.space(4),
+  },
   cardPage: { width: CARD_W, paddingHorizontal: tokens.space(6) },
   hero: {
     backgroundColor: tokens.color.surfaceAlt,
