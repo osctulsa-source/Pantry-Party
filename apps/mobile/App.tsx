@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { SourceSerif4_400Regular, SourceSerif4_600SemiBold, SourceSerif4_700Bold } from '@expo-google-fonts/source-serif-4';
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
+import { Bitter_400Regular, Bitter_600SemiBold, Bitter_700Bold } from '@expo-google-fonts/bitter';
+import { NunitoSans_400Regular, NunitoSans_600SemiBold, NunitoSans_700Bold } from '@expo-google-fonts/nunito-sans';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -126,12 +126,12 @@ function AppRoot() {
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    SourceSerif4_400Regular,
-    SourceSerif4_600SemiBold,
-    SourceSerif4_700Bold,
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
+    Bitter_400Regular,
+    Bitter_600SemiBold,
+    Bitter_700Bold,
+    NunitoSans_400Regular,
+    NunitoSans_600SemiBold,
+    NunitoSans_700Bold,
   });
   const [db, setDb] = useState<PowerSyncDatabase | null>(null);
   const [syncError, setSyncError] = useState<Error | null>(null);

@@ -20,6 +20,7 @@
  *   hook, since screens currently read this static object at module load.
  * - "Crumb" is the internal visual-direction label, not the product name (codename
  *   "Breadbox" via brand.ts) until trademark clearance lands.
+ * - Signature typefaces: Bitter (display) + Nunito Sans (body).
  */
 import { Appearance } from 'react-native';
 
@@ -68,14 +69,14 @@ export interface ThemeTokens {
 // Shared across light + dark (only color/colorScheme differ between the two sets).
 const FONT = {
   display: {
-    regular: 'SourceSerif4_400Regular',
-    semibold: 'SourceSerif4_600SemiBold',
-    bold: 'SourceSerif4_700Bold',
+    regular: 'Bitter_400Regular',
+    semibold: 'Bitter_600SemiBold',
+    bold: 'Bitter_700Bold',
   },
   body: {
-    regular: 'Inter_400Regular',
-    medium: 'Inter_500Medium',
-    semibold: 'Inter_600SemiBold',
+    regular: 'NunitoSans_400Regular',
+    medium: 'NunitoSans_600SemiBold', // Nunito Sans has no 500 — 600 stands in for "medium"
+    semibold: 'NunitoSans_700Bold',
   },
   mono: 'Menlo',
 };
