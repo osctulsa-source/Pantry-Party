@@ -12,7 +12,7 @@
     "android": {
       "package": "com.osctulsa.pantryparty.dev",
       "adaptiveIcon": {
-        "backgroundColor": "#FDFCF8"
+        "backgroundColor": "#F6F2E9"
       }
     },
     "plugins": [
@@ -21,7 +21,7 @@
       [
         "expo-notifications",
         {
-          "color": "#2A4D3E"
+          "color": "#2E5D3A"
         }
       ]
     ],
