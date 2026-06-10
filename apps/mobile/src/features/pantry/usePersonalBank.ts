@@ -5,6 +5,10 @@
  * name, most-recent first. Because pantry_items syncs via PowerSync, this bank
  * follows the user across their devices automatically.
  *
+ * Tombstones: deleted items are excluded (deleted = 0) — an item the user
+ * added and then removed shouldn't keep offering itself back in Quick Add.
+ * Matches the live-row predicate used by PantryScreen's PANTRY_QUERY.
+ *
  * Location is a free string in core (built-ins + custom labels like "Garage"),
  * so we carry the stored value through verbatim — re-adding from the bank lands
  * the item back in whatever location it last lived in.
@@ -20,7 +24,8 @@ export interface BankItem {
 
 const BANK_QUERY =
   'SELECT name, location, MAX(added_at) AS last_added FROM pantry_items ' +
-  'WHERE household_id = ? AND added_by = ? GROUP BY name ORDER BY last_added DESC LIMIT 24';
+  'WHERE household_id = ? AND added_by = ? AND deleted = 0 ' +
+  'GROUP BY name ORDER BY last_added DESC LIMIT 24';
 
 export function usePersonalBank(householdId: string | null, userId: string | null): BankItem[] {
   const { data } = useQuery<{ name: string; location: string }>(BANK_QUERY, [
