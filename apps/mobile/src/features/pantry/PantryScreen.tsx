@@ -1,18 +1,27 @@
 /**
- * PantryScreen — reactive view over PowerSync's local SQLite.
+ * PantryScreen — reactive, sectioned view over PowerSync's local SQLite.
  *
- * Uses `useQuery` from @powersync/react-native, which subscribes to the
- * underlying watched query and re-renders whenever `pantry_items` changes —
- * whether the change came from the local Add Item form, an upload-proxy
- * round-trip, or a sync stream push. No more "navigate back, pull to refresh"
- * dance. The PowerSyncContext.Provider lives in App.tsx.
+ * Replaces the flat list with a collapsible SectionList: a pinned "Use soon"
+ * section (items expiring soon or already expired) on top, then one section per
+ * storage location (Fridge / Freezer / Pantry, and any custom locations). Each
+ * item appears once — "Use soon" is exclusive, so urgent items aren't repeated
+ * in their location section. Within every section, soonest-to-expire is first
+ * (the SQL ORDER BY already sorts that way; grouping preserves it).
  *
- * All styling pulls from `theme/tokens` — no hardcoded colors, fonts, or
- * spacing values (ADR-006). Expiry status is rendered via <ExpiryPill>, the
- * double-encoded (shape + text + color) colorblind-safe indicator.
+ * Sections collapse on header tap (in-memory state). All styling pulls from
+ * theme/tokens (ADR-006); expiry rendered via the colorblind-safe <ExpiryPill>.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  SectionList,
+  type SectionListData,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,20 +36,20 @@ import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
 
-// Scoped to the active household so multi-household users see only the
-// relevant pantry. PowerSync's sync rules already stream every household the
-// user belongs to into local SQLite; the WHERE clause here is the client-side
-// filter that picks the active one.
-// Sorted soonest-to-expire so the items that need using surface first. ISO
-// timestamps sort chronologically as text; `(expires_at IS NULL)` first pushes
-// no-date items (staples) to the bottom; name is the final tiebreaker.
 const PANTRY_QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
   'ORDER BY (expires_at IS NULL), expires_at ASC, name ASC';
 
-// Mirrors rowToPantryItem in powerSyncPantry.ts. Duplicated intentionally so
-// this PR stays scoped to two files (App.tsx + this one). If a third consumer
-// of the mapping shows up, lift it into a shared helper.
+// Order locations sensibly; unknown/custom locations sort after, alphabetically.
+const LOCATION_ORDER = ['fridge', 'freezer', 'pantry'];
+
+interface PantrySection {
+  title: string;
+  urgent: boolean;
+  count: number; // full size, even when collapsed
+  data: PantryItem[]; // empty when collapsed
+}
+
 function rowToPantryItem(row: PantryItemRow): PantryItem {
   return parsePantryItem({
     id: row.id,
@@ -61,20 +70,16 @@ function rowToPantryItem(row: PantryItemRow): PantryItem {
   });
 }
 
+function titleCase(s: string): string {
+  return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
 
-  // Bind to an empty string when no active household is set — the query stays
-  // valid (returns 0 rows) and we render the loading state below before
-  // showing the empty list.
-  const { data: rows, isLoading, error } = useQuery<PantryItemRow>(
-    PANTRY_QUERY,
-    [activeHouseholdId ?? ''],
-  );
-  // Keep the last good list across transient errors (e.g. SQLite disconnect on
-  // sign-out): if `error` is set, we log and preserve `items` from the prior
-  // successful render. Otherwise we map the latest rows through parsePantryItem.
+  const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
+
   const [items, setItems] = useState<PantryItem[]>([]);
   useEffect(() => {
     if (error) {
@@ -84,29 +89,68 @@ export function PantryScreen() {
     setItems(rows.map(rowToPantryItem));
   }, [rows, error]);
 
-  // Pull-to-refresh is preserved as a brief visual ack — the watch is the
-  // single source of truth, so there's nothing to actually refetch. Keeping
-  // the gesture handled because some users tap it instinctively.
   const [refreshing, setRefreshing] = useState(false);
   function onRefresh() {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 400);
   }
 
+  // Collapsed section titles (in-memory; resets if you leave the screen).
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  function toggleSection(title: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) next.delete(title);
+      else next.add(title);
+      return next;
+    });
+  }
+
   useExpiryNotifications(items);
 
-  // Compute once per render so every row sees the same "now" — avoids drift mid-list.
   const now = useMemo(() => new Date(), [items]);
 
-  // How many items need attention (warning or expired). Drives the header summary.
   const soonCount = useMemo(
     () => items.filter((i) => getExpiryStatus(i, now) !== 'fresh').length,
     [items, now],
   );
 
-  // Loading covers (a) AsyncStorage bootstrap of the active household, (b) the
-  // null gap before bootstrap picks a default, and (c) the initial reactive
-  // query before any rows arrive.
+  // Build sections: "Use soon" (urgent, exclusive) + one per location. Items
+  // arrive already soonest-first, so each bucket preserves that order.
+  const sections = useMemo<PantrySection[]>(() => {
+    const urgent: PantryItem[] = [];
+    const byLocation = new Map<string, PantryItem[]>();
+    for (const item of items) {
+      if (getExpiryStatus(item, now) !== 'fresh') {
+        urgent.push(item);
+        continue;
+      }
+      const loc = item.location || 'pantry';
+      const bucket = byLocation.get(loc) ?? [];
+      bucket.push(item);
+      byLocation.set(loc, bucket);
+    }
+
+    const out: PantrySection[] = [];
+    if (urgent.length > 0) {
+      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') ? [] : urgent });
+    }
+
+    const locations = [...byLocation.keys()].sort((a, b) => {
+      const ia = LOCATION_ORDER.indexOf(a);
+      const ib = LOCATION_ORDER.indexOf(b);
+      const ra = ia === -1 ? LOCATION_ORDER.length : ia;
+      const rb = ib === -1 ? LOCATION_ORDER.length : ib;
+      return ra !== rb ? ra - rb : a.localeCompare(b);
+    });
+    for (const loc of locations) {
+      const bucket = byLocation.get(loc) ?? [];
+      const title = titleCase(loc);
+      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) ? [] : bucket });
+    }
+    return out;
+  }, [items, now, collapsed]);
+
   if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -148,21 +192,41 @@ export function PantryScreen() {
           <Text style={styles.actionBtnText}>＋ Quick add</Text>
         </Pressable>
       </View>
-      <FlatList
-        data={items}
+      <SectionList<PantryItem, PantrySection>
+        sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PantryRow
-            item={item}
-            now={now}
-            onPress={() => navigation.navigate('EditItem', { itemId: item.id })}
-          />
+          <PantryRow item={item} now={now} onPress={() => navigation.navigate('EditItem', { itemId: item.id })} />
         )}
+        renderSectionHeader={({ section }) => (
+          <SectionHeader section={section} collapsed={collapsed.has(section.title)} onToggle={() => toggleSection(section.title)} />
+        )}
+        stickySectionHeadersEnabled
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
-        ListEmptyComponent={<PantryEmpty onAdd={() => navigation.navigate('AddItem')} />}
+        ListEmptyComponent={items.length === 0 ? <PantryEmpty onAdd={() => navigation.navigate('AddItem')} /> : undefined}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
       />
     </SafeAreaView>
+  );
+}
+
+function SectionHeader({
+  section,
+  collapsed,
+  onToggle,
+}: {
+  section: SectionListData<PantryItem, PantrySection>;
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Pressable style={styles.sectionHeader} onPress={onToggle}>
+      <Text style={[styles.sectionTitle, section.urgent && styles.sectionTitleUrgent]}>{section.title}</Text>
+      <View style={styles.sectionRight}>
+        <Text style={styles.sectionCount}>{section.count}</Text>
+        <Text style={styles.sectionChevron}>{collapsed ? '▸' : '▾'}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -170,10 +234,7 @@ function PantryRow({ item, now, onPress }: { item: PantryItem; now: Date; onPres
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
       <View style={styles.rowMain}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.meta}>
@@ -203,15 +264,8 @@ function PantryEmpty({ onAdd }: { onAdd: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: tokens.color.surface,
-  },
-  loading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  root: { flex: 1, backgroundColor: tokens.color.surface },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -220,47 +274,14 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space(4),
     paddingBottom: tokens.space(3),
   },
-  headerMain: {
-    flex: 1,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: tokens.space(4),
-    paddingTop: tokens.space(2),
-  },
-  addItem: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 13,
-    color: tokens.color.success,
-  },
-  settings: {
-    fontFamily: tokens.font.body.medium,
-    fontSize: 13,
-    color: tokens.color.accent,
-  },
-  brand: {
-    fontFamily: tokens.font.display.bold,
-    fontSize: 28,
-    color: tokens.color.ink,
-    letterSpacing: -0.5,
-  },
-  count: {
-    marginTop: tokens.space(1),
-    fontFamily: tokens.font.body.regular,
-    fontSize: 13,
-    color: tokens.color.inkMuted,
-  },
-  countSoon: {
-    fontFamily: tokens.font.body.semibold,
-    color: tokens.semantic.expiry.warning,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: tokens.space(3),
-    marginHorizontal: tokens.space(6),
-    marginBottom: tokens.space(3),
-  },
+  headerMain: { flex: 1 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(4), paddingTop: tokens.space(2) },
+  addItem: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.success },
+  settings: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.accent },
+  brand: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
+  count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
+  countSoon: { fontFamily: tokens.font.body.semibold, color: tokens.semantic.expiry.warning },
+  actionRow: { flexDirection: 'row', gap: tokens.space(3), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   actionBtn: {
     flex: 1,
     paddingVertical: tokens.space(3),
@@ -269,17 +290,29 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
-  actionBtnText: {
+  actionBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  list: { paddingBottom: tokens.space(8) },
+  listEmpty: { flexGrow: 1 },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(4),
+    paddingBottom: tokens.space(2),
+    backgroundColor: tokens.color.surface, // opaque so sticky headers don't show rows through
+  },
+  sectionTitle: {
     fontFamily: tokens.font.body.semibold,
-    fontSize: 14,
-    color: tokens.color.accent,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: tokens.color.inkMuted,
   },
-  list: {
-    paddingBottom: tokens.space(8),
-  },
-  listEmpty: {
-    flexGrow: 1,
-  },
+  sectionTitleUrgent: { color: tokens.semantic.expiry.warning },
+  sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
+  sectionCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
+  sectionChevron: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -288,30 +321,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tokens.color.line,
   },
-  rowPressed: {
-    backgroundColor: tokens.color.surfaceAlt,
-  },
-  rowMain: {
-    flex: 1,
-    marginRight: tokens.space(3),
-  },
-  name: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.color.ink,
-  },
-  meta: {
-    marginTop: 2,
-    fontFamily: tokens.font.body.regular,
-    fontSize: 12,
-    color: tokens.color.inkMuted,
-  },
-  emptyWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: tokens.space(8),
-  },
+  rowPressed: { backgroundColor: tokens.color.surfaceAlt },
+  rowMain: { flex: 1, marginRight: tokens.space(3) },
+  name: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
+  meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
+  emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,
     fontSize: 20,
@@ -333,9 +347,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(6),
     borderRadius: tokens.radius.md,
   },
-  emptyBtnText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 15,
-    color: tokens.color.onAccent,
-  },
+  emptyBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
 });
