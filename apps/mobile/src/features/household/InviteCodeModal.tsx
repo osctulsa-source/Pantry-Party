@@ -9,8 +9,13 @@
  *
  * State machine:
  *   loading  → spinner + "Generating code..."
- *   success  → code + expiry note + Copy + Done
+ *   success  → code + expiry note + Share + Copy + Done
  *   error    → message + Retry
+ *
+ * Sharing: the primary action is the native share sheet (Share.share) with a
+ * message carrying both the plain code and the pantryparty:// deep link —
+ * one tap from "generated" to "in my roommate's Messages". Copy remains as
+ * the fallback for channels the share sheet doesn't cover.
  *
  * Auth: the access token is pulled from the live Supabase session via
  * useAuth(); the household id is a route param.
@@ -19,6 +24,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -31,6 +37,7 @@ import * as Clipboard from 'expo-clipboard';
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { generateInvite, type InviteResponse } from '../../data/api/householdClient';
+import { buildInviteShareMessage } from './inviteLink';
 import type { RootStackParamList } from '../../../App';
 
 type InviteCodeModalNav = NativeStackNavigationProp<RootStackParamList, 'InviteCodeModal'>;
@@ -72,6 +79,15 @@ export function InviteCodeModal() {
     void fetchInvite();
   }, [fetchInvite]);
 
+  async function onShare(code: string) {
+    try {
+      await Share.share({ message: buildInviteShareMessage(code) });
+    } catch {
+      // Share sheet dismissed or unavailable — nothing to clean up; the
+      // code is still on screen with Copy as the fallback.
+    }
+  }
+
   async function onCopy(code: string) {
     await Clipboard.setStringAsync(code);
     setCopied(true);
@@ -98,9 +114,20 @@ export function InviteCodeModal() {
 
               <Pressable
                 style={styles.primaryButton}
+                accessibilityRole="button"
+                accessibilityLabel="Share invite"
+                onPress={() => onShare(inviteState.data.invite_code)}
+              >
+                <Text style={styles.primaryButtonText}>Share invite</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.outlineButton}
+                accessibilityRole="button"
+                accessibilityLabel="Copy invite code"
                 onPress={() => onCopy(inviteState.data.invite_code)}
               >
-                <Text style={styles.primaryButtonText}>
+                <Text style={styles.outlineButtonText}>
                   {copied ? 'Copied!' : 'Copy code'}
                 </Text>
               </Pressable>
@@ -189,6 +216,19 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
     color: tokens.color.surface,
+  },
+  outlineButton: {
+    paddingVertical: tokens.space(4),
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+    marginBottom: tokens.space(3),
+  },
+  outlineButtonText: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+    color: tokens.color.accent,
   },
   secondaryButton: {
     paddingVertical: tokens.space(4),

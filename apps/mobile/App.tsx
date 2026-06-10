@@ -5,7 +5,7 @@ import { Bitter_400Regular, Bitter_600SemiBold, Bitter_700Bold } from '@expo-goo
 import { NunitoSans_400Regular, NunitoSans_600SemiBold, NunitoSans_700Bold } from '@expo-google-fonts/nunito-sans';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PowerSyncContext, type PowerSyncDatabase } from '@powersync/react-native';
 
@@ -20,6 +20,7 @@ import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
 import { JoinHouseholdScreen } from './src/features/household/JoinHouseholdScreen';
+import { INVITE_URL_SCHEME } from './src/features/household/inviteLink';
 import { ActiveHouseholdProvider } from './src/features/household/ActiveHouseholdContext';
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
@@ -37,7 +38,7 @@ export type RootStackParamList = {
   Settings: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
-  JoinHousehold: undefined;
+  JoinHousehold: { code?: string } | undefined;
 };
 
 export type AuthStackParamList = {
@@ -47,6 +48,25 @@ export type AuthStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const AuthStackNav = createNativeStackNavigator<AuthStackParamList>();
+
+/**
+ * Deep links: pantryparty://invite/BREAD-7K2M → JoinHousehold with the code
+ * pre-filled (see JoinHouseholdScreen). The scheme is also declared in
+ * app.json ("scheme") — both sides must match, and the app.json side is baked
+ * into the native binary, so changing it needs a dev-client rebuild.
+ *
+ * V1 caveat: links resolve only while the AppStack is mounted (signed in +
+ * onboarded). A signed-out user tapping a link lands on sign-in and the link
+ * is dropped — buffering pending links through auth is a V2 refinement.
+ */
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: [`${INVITE_URL_SCHEME}://`],
+  config: {
+    screens: {
+      JoinHousehold: 'invite/:code',
+    },
+  },
+};
 
 function AppStack() {
   return (
@@ -175,7 +195,7 @@ export default function App() {
               and PowerSync (for the user_households bootstrap query), so it
               must sit inside both. See features/household/ActiveHouseholdContext. */}
           <ActiveHouseholdProvider>
-            <NavigationContainer>
+            <NavigationContainer linking={linking}>
               <AppRoot />
             </NavigationContainer>
           </ActiveHouseholdProvider>
