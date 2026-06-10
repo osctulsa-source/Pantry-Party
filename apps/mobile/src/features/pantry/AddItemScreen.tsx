@@ -1,11 +1,11 @@
 /**
- * AddItemScreen — manual pantry entry with smart expiry.
+ * AddItemScreen — manual pantry entry with smart expiry + custom locations.
  *
- * Quick-add staples now live on their own screen (QuickAddScreen); this screen
- * is the "add your own" form. We still suggest a "best before" from the item's
- * name (shelf-life by inferred category, @breadbox/core) and let the user adjust
- * with ExpiryField (presets + ±1-day steppers). Writes go through addPantryItem()
- * → PowerSync local SQLite → upload-proxy → Postgres (offline-first).
+ * Quick-add staples live on their own screen (QuickAddScreen); this is the "add
+ * your own" form. We suggest a "best before" from the item's name (shelf-life by
+ * inferred category) and let the user adjust with ExpiryField. Location uses the
+ * shared LocationPicker (built-in + custom locations). Writes go through
+ * addPantryItem() → PowerSync local SQLite → upload-proxy → Postgres.
  */
 import { useMemo, useState } from 'react';
 import {
@@ -23,17 +23,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { StorageLocation, addDaysUTC, suggestShelfLifeDays } from '@breadbox/core';
+import { addDaysUTC, suggestShelfLifeDays, type StorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
 import { ExpiryField } from './ExpiryField';
+import { LocationPicker } from './LocationPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
-const LOCATIONS = StorageLocation.options;
-type Location = (typeof LOCATIONS)[number];
 
 export function AddItemScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'AddItem'>>();
@@ -42,7 +41,7 @@ export function AddItemScreen() {
 
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
-  const [location, setLocation] = useState<Location>('pantry');
+  const [location, setLocation] = useState<StorageLocation>('pantry');
   const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [expiryTouched, setExpiryTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +53,6 @@ export function AddItemScreen() {
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
   const formValid = nameValid && qtyValid && activeHouseholdId !== null;
 
-  // Smart default: infer shelf life from the name until the user picks their own.
   const suggestedDays = useMemo(() => suggestShelfLifeDays({ name: trimmedName }), [trimmedName]);
   const effectiveDays = expiryTouched ? expiryDays : suggestedDays;
 
@@ -122,19 +120,8 @@ export function AddItemScreen() {
           />
 
           <Text style={styles.label}>Location</Text>
-          <View style={styles.segmented}>
-            {LOCATIONS.map((loc) => {
-              const selected = loc === location;
-              return (
-                <Pressable
-                  key={loc}
-                  onPress={() => setLocation(loc)}
-                  style={[styles.segment, selected && styles.segmentSelected]}
-                >
-                  <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{loc}</Text>
-                </Pressable>
-              );
-            })}
+          <View style={styles.locationWrap}>
+            <LocationPicker value={location} onChange={setLocation} householdId={activeHouseholdId} />
           </View>
 
           <Text style={styles.label}>Best before{expiryHint}</Text>
@@ -181,22 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: tokens.color.ink,
   },
-  segmented: { flexDirection: 'row', marginBottom: tokens.space(4), gap: tokens.space(2) },
-  segment: {
-    flex: 1,
-    paddingVertical: tokens.space(3),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: tokens.radius.md,
-    alignItems: 'center',
-  },
-  segmentSelected: { backgroundColor: tokens.color.accent },
-  segmentText: {
-    fontFamily: tokens.font.body.medium,
-    fontSize: 14,
-    color: tokens.color.inkMuted,
-    textTransform: 'capitalize',
-  },
-  segmentTextSelected: { color: tokens.color.onAccent },
+  locationWrap: { marginBottom: tokens.space(4) },
   expiryWrap: { marginBottom: tokens.space(4) },
   error: {
     marginTop: tokens.space(2),
