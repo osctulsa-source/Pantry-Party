@@ -12,6 +12,10 @@
  * hydrate, addDaysUTC on save. An already-expired item hydrates to a negative
  * day count (ExpiryField renders "N days ago").
  *
+ * Location uses the shared LocationPicker (built-in defaults + custom locations
+ * already in use across the household). Location is a free string in core, so an
+ * item stored under a custom location ("Garage") hydrates and re-saves as-is.
+ *
  * The rest of the form is intentionally duplicated from AddItemScreen rather
  * than extracted — revisit when a third consumer appears (project doc).
  */
@@ -32,20 +36,15 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@powersync/react-native';
 
-import { StorageLocation, addDaysUTC } from '@breadbox/core';
+import { addDaysUTC, type StorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryField } from './ExpiryField';
+import { LocationPicker } from './LocationPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
-const LOCATIONS = StorageLocation.options;
-type Location = (typeof LOCATIONS)[number];
-
-function toLocation(value: string): Location {
-  return (LOCATIONS as readonly string[]).includes(value) ? (value as Location) : 'pantry';
-}
 
 // Stored ISO expiry → whole days from today (UTC-midnight basis, the inverse of
 // addDaysUTC). Negative when the item is already past its date.
@@ -71,7 +70,7 @@ export function EditItemScreen() {
 
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
-  const [location, setLocation] = useState<Location>('pantry');
+  const [location, setLocation] = useState<StorageLocation>('pantry');
   const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -84,7 +83,7 @@ export function EditItemScreen() {
     hydrated.current = true;
     setName(item.name);
     setQuantity(String(item.quantity));
-    setLocation(toLocation(item.location));
+    setLocation(item.location);
     setExpiryDays(isoToDays(item.expires_at, new Date()));
   }, [item]);
 
@@ -193,19 +192,8 @@ export function EditItemScreen() {
             />
 
             <Text style={styles.label}>Location</Text>
-            <View style={styles.segmented}>
-              {LOCATIONS.map((loc) => {
-                const selected = loc === location;
-                return (
-                  <Pressable
-                    key={loc}
-                    onPress={() => setLocation(loc)}
-                    style={[styles.segment, selected && styles.segmentSelected]}
-                  >
-                    <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>{loc}</Text>
-                  </Pressable>
-                );
-              })}
+            <View style={styles.locationWrap}>
+              <LocationPicker value={location} onChange={setLocation} householdId={item.household_id} />
             </View>
 
             <Text style={styles.label}>Best before</Text>
@@ -270,29 +258,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: tokens.color.ink,
   },
-  segmented: {
-    flexDirection: 'row',
+  locationWrap: {
     marginBottom: tokens.space(4),
-    gap: tokens.space(2),
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: tokens.space(3),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: tokens.radius.md,
-    alignItems: 'center',
-  },
-  segmentSelected: {
-    backgroundColor: tokens.color.success,
-  },
-  segmentText: {
-    fontFamily: tokens.font.body.medium,
-    fontSize: 14,
-    color: tokens.color.inkMuted,
-    textTransform: 'capitalize',
-  },
-  segmentTextSelected: {
-    color: tokens.color.surface,
   },
   expiryWrap: {
     marginBottom: tokens.space(4),

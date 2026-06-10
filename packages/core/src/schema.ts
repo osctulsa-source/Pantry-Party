@@ -11,9 +11,13 @@
 
 import { z } from "zod";
 
-/** Where the item physically lives. First-class, not a tag — the freezer is under-served
- *  by every competitor and we treat it as a peer of pantry and fridge. */
-export const StorageLocation = z.enum(["pantry", "fridge", "freezer"]);
+/** Built-in storage locations — suggestions that seed the picker. The freezer is a
+ *  first-class peer of pantry and fridge (under-served by competitors). */
+export const DEFAULT_LOCATIONS = ["pantry", "fridge", "freezer"] as const;
+
+/** Where the item physically lives. Any non-empty label up to 40 chars: the built-ins
+ *  above are the defaults, and users can create their own (e.g. "Garage", "Spice rack"). */
+export const StorageLocation = z.string().min(1).max(40);
 export type StorageLocation = z.infer<typeof StorageLocation>;
 
 /** How the item got into the pantry — useful for analytics on capture-mode success. */
