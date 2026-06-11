@@ -8,12 +8,23 @@
  * in their location section. Within every section, soonest-to-expire is first
  * (the SQL ORDER BY already sorts that way; grouping preserves it).
  *
- * Sections collapse on header tap (in-memory state). All styling pulls from
- * theme/tokens (ADR-006); expiry rendered via the colorblind-safe <ExpiryPill>.
+ * Sections collapse on header tap (in-memory state). The "Use soon" header
+ * carries a View → tap-through to ExpiringSoonScreen (per-item Used / Tossed /
+ * Snooze). Long-pressing any row enters multi-select: tap to toggle, then mark
+ * the batch Used (tombstone + rescue events) or Remove (tombstone only) from
+ * the selection bar — "clear out four expired things" is one gesture, not
+ * twelve taps.
+ *
+ * The header shows a sync dot driven by PowerSync's live status (green synced /
+ * ochre syncing / muted offline) — sync failures stop being invisible.
+ *
+ * All styling pulls from theme/tokens (ADR-006); expiry rendered via the
+ * colorblind-safe <ExpiryPill>.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   RefreshControl,
   SectionList,
@@ -25,13 +36,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useQuery } from '@powersync/react-native';
+import { useQuery, useStatus } from '@powersync/react-native';
 
 import { tokens } from '../../theme/tokens';
+import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { formatExpiryMeta } from './expiryFormat';
 import { ExpiryPill } from '../../components/ExpiryPill';
+import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
@@ -74,6 +87,24 @@ function titleCase(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
+/** Live sync indicator: PowerSync status → one calm dot + label. */
+function SyncDot() {
+  const status = useStatus();
+  const syncing = status.dataFlowStatus.uploading || status.dataFlowStatus.downloading;
+  const color = status.connected
+    ? syncing
+      ? tokens.semantic.expiry.warning
+      : tokens.color.success
+    : tokens.color.inkMuted;
+  const label = status.connected ? (syncing ? 'Syncing' : 'Synced') : 'Offline';
+  return (
+    <View style={styles.syncWrap} accessibilityLabel={`Sync status: ${label}`}>
+      <View style={[styles.syncDot, { backgroundColor: color }]} />
+      <Text style={styles.syncLabel}>{label}</Text>
+    </View>
+  );
+}
+
 export function PantryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
@@ -104,6 +135,51 @@ export function PantryScreen() {
       else next.add(title);
       return next;
     });
+  }
+
+  // Multi-select (long-press to enter; empty set = normal mode).
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const selecting = selected.size > 0;
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function bulkResolve(kind: 'used' | 'remove') {
+    if (bulkBusy || selected.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const targets = items.filter((i) => selected.has(i.id));
+      const db = getPowerSync();
+      const now = Date.now();
+      await db.writeTransaction(async (tx) => {
+        for (const t of targets) {
+          // Tombstone — identical to Edit Item's delete path.
+          await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
+            now,
+            t.id,
+          ]);
+        }
+      });
+      if (kind === 'used') {
+        const at = new Date().toISOString();
+        await recordExpiryEvents(
+          activeHouseholdId,
+          targets.map((t) => ({ kind: 'used' as const, itemName: t.name, at })),
+        );
+      }
+      setSelected(new Set());
+    } catch (e: unknown) {
+      Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
+    } finally {
+      setBulkBusy(false);
+    }
   }
 
   useExpiryNotifications(items);
@@ -165,7 +241,10 @@ export function PantryScreen() {
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={styles.headerMain}>
-          <Text style={styles.brand}>{tokens.brandName}</Text>
+          <View style={styles.brandRow}>
+            <Text style={styles.brand}>{tokens.brandName}</Text>
+            <SyncDot />
+          </View>
           <Text style={styles.count}>
             {items.length} {items.length === 1 ? 'item' : 'items'}
             {soonCount > 0 ? (
@@ -184,22 +263,50 @@ export function PantryScreen() {
           </Pressable>
         </View>
       </View>
-      <View style={styles.actionRow}>
-        <Pressable onPress={() => navigation.navigate('Recipes')} style={styles.actionBtn}>
-          <Text style={styles.actionBtnText}>Find recipes →</Text>
-        </Pressable>
-        <Pressable onPress={() => navigation.navigate('QuickAdd')} style={styles.actionBtn}>
-          <Text style={styles.actionBtnText}>＋ Quick add</Text>
-        </Pressable>
-      </View>
+      {selecting ? (
+        <View style={styles.selectBar}>
+          <Text style={styles.selectCount}>{selected.size} selected</Text>
+          <Pressable onPress={() => bulkResolve('used')} disabled={bulkBusy} hitSlop={6}>
+            <Text style={styles.selectUsed}>✓ Used</Text>
+          </Pressable>
+          <Pressable onPress={() => bulkResolve('remove')} disabled={bulkBusy} hitSlop={6}>
+            <Text style={styles.selectRemove}>Remove</Text>
+          </Pressable>
+          <Pressable onPress={() => setSelected(new Set())} disabled={bulkBusy} hitSlop={6}>
+            <Text style={styles.selectCancel}>Cancel</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <View style={styles.actionRow}>
+          <Pressable onPress={() => navigation.navigate('Recipes')} style={styles.actionBtn}>
+            <Text style={styles.actionBtnText}>Find recipes →</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('QuickAdd')} style={styles.actionBtn}>
+            <Text style={styles.actionBtnText}>＋ Quick add</Text>
+          </Pressable>
+        </View>
+      )}
       <SectionList<PantryItem, PantrySection>
         sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <PantryRow item={item} now={now} onPress={() => navigation.navigate('EditItem', { itemId: item.id })} />
+          <PantryRow
+            item={item}
+            now={now}
+            selected={selected.has(item.id)}
+            onPress={() =>
+              selecting ? toggleSelect(item.id) : navigation.navigate('EditItem', { itemId: item.id })
+            }
+            onLongPress={() => toggleSelect(item.id)}
+          />
         )}
         renderSectionHeader={({ section }) => (
-          <SectionHeader section={section} collapsed={collapsed.has(section.title)} onToggle={() => toggleSection(section.title)} />
+          <SectionHeader
+            section={section}
+            collapsed={collapsed.has(section.title)}
+            onToggle={() => toggleSection(section.title)}
+            onViewAll={section.urgent ? () => navigation.navigate('ExpiringSoon') : undefined}
+          />
         )}
         stickySectionHeadersEnabled
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
@@ -214,15 +321,22 @@ function SectionHeader({
   section,
   collapsed,
   onToggle,
+  onViewAll,
 }: {
   section: SectionListData<PantryItem, PantrySection>;
   collapsed: boolean;
   onToggle: () => void;
+  onViewAll?: () => void;
 }) {
   return (
     <Pressable style={styles.sectionHeader} onPress={onToggle}>
       <Text style={[styles.sectionTitle, section.urgent && styles.sectionTitleUrgent]}>{section.title}</Text>
       <View style={styles.sectionRight}>
+        {onViewAll && (
+          <Pressable onPress={onViewAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="View all expiring items">
+            <Text style={styles.sectionView}>View →</Text>
+          </Pressable>
+        )}
         <Text style={styles.sectionCount}>{section.count}</Text>
         <Text style={styles.sectionChevron}>{collapsed ? '▸' : '▾'}</Text>
       </View>
@@ -230,13 +344,33 @@ function SectionHeader({
   );
 }
 
-function PantryRow({ item, now, onPress }: { item: PantryItem; now: Date; onPress: () => void }) {
+function PantryRow({
+  item,
+  now,
+  selected,
+  onPress,
+  onLongPress,
+}: {
+  item: PantryItem;
+  now: Date;
+  selected: boolean;
+  onPress: () => void;
+  onLongPress: () => void;
+}) {
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}>
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityState={{ selected }}
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed, selected && styles.rowSelected]}
+    >
       <View style={styles.rowMain}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>
+          {selected ? '✓  ' : ''}
+          {item.name}
+        </Text>
         <Text style={styles.meta}>
           {item.quantity}
           {item.unit ? ` ${item.unit}` : ''}
@@ -278,7 +412,11 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(4), paddingTop: tokens.space(2) },
   addItem: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.success },
   settings: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.accent },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
   brand: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
+  syncWrap: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), paddingTop: tokens.space(2) },
+  syncDot: { width: 8, height: 8, borderRadius: 999 },
+  syncLabel: { fontFamily: tokens.font.body.medium, fontSize: 11, color: tokens.color.inkMuted },
   count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   countSoon: { fontFamily: tokens.font.body.semibold, color: tokens.semantic.expiry.warning },
   actionRow: { flexDirection: 'row', gap: tokens.space(3), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
@@ -291,6 +429,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  selectBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(4),
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.md,
+  },
+  selectCount: { flex: 1, fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.ink },
+  selectUsed: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.success },
+  selectRemove: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.semantic.expiry.expired },
+  selectCancel: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.inkMuted },
   list: { paddingBottom: tokens.space(8) },
   listEmpty: { flexGrow: 1 },
   sectionHeader: {
@@ -310,7 +463,8 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
   },
   sectionTitleUrgent: { color: tokens.semantic.expiry.warning },
-  sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
+  sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
+  sectionView: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   sectionCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
   sectionChevron: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   row: {
@@ -322,6 +476,7 @@ const styles = StyleSheet.create({
     borderBottomColor: tokens.color.line,
   },
   rowPressed: { backgroundColor: tokens.color.surfaceAlt },
+  rowSelected: { backgroundColor: tokens.color.accentSoft },
   rowMain: { flex: 1, marginRight: tokens.space(3) },
   name: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
   meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
