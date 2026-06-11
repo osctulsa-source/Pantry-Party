@@ -15,6 +15,7 @@ import { PantryScreen } from './src/features/pantry/PantryScreen';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
+import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
 import { RecipesScreen } from './src/features/recipes/RecipesScreen';
 import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
@@ -34,6 +35,7 @@ export type RootStackParamList = {
   AddItem: undefined;
   QuickAdd: undefined;
   EditItem: { itemId: string };
+  ExpiringSoon: undefined;
   Recipes: undefined;
   Settings: undefined;
   Household: undefined;
@@ -85,6 +87,7 @@ function AppStack() {
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
+      <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
       <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
       <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
