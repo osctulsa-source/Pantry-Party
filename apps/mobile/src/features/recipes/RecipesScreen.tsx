@@ -29,7 +29,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, Leaf, RefreshCw } from 'lucide-react-native';
 
 import {
   defaultMealForHour,
@@ -98,6 +98,7 @@ export function RecipesScreen() {
 
   const [items, setItems] = useState<PantryItem[] | null>(null);
   const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
+  const [healthy, setHealthy] = useState(false);
   const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
   const [offset, setOffset] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -213,6 +214,18 @@ export function RecipesScreen() {
               )}
             </View>
           </Pressable>
+          <Pressable
+            style={[styles.ctrlBtn, healthy && styles.ctrlBtnOn]}
+            onPress={() => setHealthy((v) => !v)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: healthy }}
+            accessibilityLabel="Healthier picks"
+          >
+            <View style={styles.ctrlInner}>
+              <Leaf size={13} color={healthy ? tokens.color.onAccent : tokens.color.accent} />
+              <Text style={[styles.ctrlBtnTxt, healthy && styles.ctrlBtnTxtOn]}>Healthy</Text>
+            </View>
+          </Pressable>
           {canReset && (
             <Pressable hitSlop={6} onPress={reset}>
               <Text style={styles.resetTxt}>Reset</Text>
@@ -282,6 +295,7 @@ export function RecipesScreen() {
           prefs={prefs}
           record={record}
           householdId={activeHouseholdId}
+          healthy={healthy}
         />
       )}
     </SafeAreaView>
@@ -294,12 +308,14 @@ function CookThis({
   prefs,
   record,
   householdId,
+  healthy,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
   prefs: RecipePrefs;
   record: (title: string, event: PrefEvent) => void;
   householdId: string | null;
+  healthy: boolean;
 }) {
   const now = useMemo(() => new Date(), []);
   const urgent = pickUrgent(items, now);
@@ -313,16 +329,22 @@ function CookThis({
   const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
   const [cookedNote, setCookedNote] = useState<string | null>(null);
 
-  const pool = useMemo(
-    () =>
-      [...recipes].sort(
-        (a, b) =>
-          scoreTitle(prefs, b.title) * 1.5 +
-          b.usedIngredientCount -
-          (scoreTitle(prefs, a.title) * 1.5 + a.usedIngredientCount),
-      ),
-    [recipes, prefs],
-  );
+  const pool = useMemo(() => {
+    // Healthy mode: drop low-scoring recipes (unless that would empty the
+    // list — badges still tell the story) and boost healthiness in the blend.
+    // Pantry-match still dominates: this is greener Cook This, not a diet app.
+    // Same cached response serves both toggle states — zero extra quota.
+    let candidates = recipes;
+    if (healthy) {
+      const fit = recipes.filter((r) => (r.healthScore ?? 0) >= 35);
+      if (fit.length > 0) candidates = fit;
+    }
+    const blend = (r: SpoonacularRecipe) =>
+      scoreTitle(prefs, r.title) * 1.5 +
+      r.usedIngredientCount +
+      (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0);
+    return [...candidates].sort((a, b) => blend(b) - blend(a));
+  }, [recipes, prefs, healthy]);
 
   const top = pool.slice(0, 3);
   const alternates = pool.slice(3);
@@ -426,7 +448,10 @@ function CookThis({
                 <Text style={styles.altName} numberOfLines={1}>
                   {r.title}
                 </Text>
-                <Text style={styles.altMeta}>{matchLine(r)}</Text>
+                <Text style={styles.altMeta}>
+                  {matchLine(r)}
+                  {r.healthScore !== null && r.healthScore >= 70 ? ' · very healthy' : ''}
+                </Text>
               </View>
             </Pressable>
           ))}
@@ -473,6 +498,14 @@ function HeroCard({
             {recipe.title}
           </Text>
           <Text style={styles.match}>{matchLine(recipe)}</Text>
+          {recipe.healthScore !== null && recipe.healthScore >= 55 && (
+            <View style={styles.healthRow}>
+              <Leaf size={12} color={tokens.color.success} />
+              <Text style={styles.healthTxt}>
+                {recipe.healthScore >= 70 ? 'Very healthy' : 'Healthy pick'} · {recipe.healthScore}
+              </Text>
+            </View>
+          )}
         </View>
       </Pressable>
       <View style={styles.actions}>
@@ -540,6 +573,10 @@ const styles = StyleSheet.create({
   },
   ctrlBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   ctrlInner: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1) },
+  ctrlBtnOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
+  ctrlBtnTxtOn: { color: tokens.color.onAccent },
+  healthRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), marginTop: tokens.space(2) },
+  healthTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.success },
   resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
   ingWrap: { marginTop: tokens.space(3) },
   ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },

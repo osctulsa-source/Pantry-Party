@@ -68,6 +68,11 @@ const UPSTREAM_RESULT = {
     { name: 'milk', aisle: 'Dairy' },
     { name: '' },
   ],
+  healthScore: 72,
+  vegetarian: true,
+  vegan: false,
+  glutenFree: false,
+  cuisines: ['american'], // extra upstream noise — must be trimmed away
 };
 
 describe('POST /recipes/search', () => {
@@ -115,6 +120,10 @@ describe('POST /recipes/search', () => {
         likes: 11,
         // names only — aisle/amount trimmed, empty names dropped
         usedIngredients: [{ name: 'banana' }, { name: 'milk' }],
+        healthScore: 72,
+        vegetarian: true,
+        vegan: false,
+        glutenFree: false,
       },
     ]);
 
@@ -124,6 +133,7 @@ describe('POST /recipes/search', () => {
     expect(calledUrl).toContain('type=breakfast');
     expect(calledUrl).toContain('offset=8');
     expect(calledUrl).toContain('fillIngredients=true');
+    expect(calledUrl).toContain('addRecipeInformation=true');
   });
 
   it('serves identical searches from cache — one upstream call, no quota burn', async () => {

@@ -84,6 +84,10 @@ export async function findByIngredients(
     missedIngredientCount: r.missedIngredientCount ?? 0,
     likes: r.likes ?? 0,
     usedIngredientNames: ingredientNames(r.usedIngredients),
+    healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
+    vegetarian: r.vegetarian ?? false,
+    vegan: r.vegan ?? false,
+    glutenFree: r.glutenFree ?? false,
   }));
 }
 
@@ -102,6 +106,10 @@ interface ComplexSearchResult {
   missedIngredientCount?: number;
   likes?: number;
   usedIngredients?: Array<{ name?: string }>;
+  healthScore?: number | null;
+  vegetarian?: boolean;
+  vegan?: boolean;
+  glutenFree?: boolean;
 }
 interface ComplexSearchResponse {
   results?: ComplexSearchResult[];
@@ -134,5 +142,9 @@ export async function searchByMeal(
     missedIngredientCount: r.missedIngredientCount ?? 0,
     likes: r.likes ?? 0,
     usedIngredientNames: ingredientNames(r.usedIngredients),
+    healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
+    vegetarian: r.vegetarian ?? false,
+    vegan: r.vegan ?? false,
+    glutenFree: r.glutenFree ?? false,
   }));
 }
