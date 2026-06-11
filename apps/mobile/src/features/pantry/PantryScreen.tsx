@@ -32,6 +32,7 @@ import {
   type SectionListData,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,7 +41,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useStatus } from '@powersync/react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, ChevronRight } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Search, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
@@ -141,6 +142,12 @@ export function PantryScreen() {
     });
   }
 
+  // Search (name or brand, case-insensitive). Searching ignores collapsed
+  // state — a match hidden inside a collapsed section would read as missing.
+  const [query, setQuery] = useState('');
+  const trimmedQuery = query.trim().toLowerCase();
+  const isSearching = trimmedQuery.length > 0;
+
   // Multi-select (long-press to enter; empty set = normal mode).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -206,12 +213,24 @@ export function PantryScreen() {
     [items, now],
   );
 
+  const visibleItems = useMemo(
+    () =>
+      isSearching
+        ? items.filter(
+            (i) =>
+              i.name.toLowerCase().includes(trimmedQuery) ||
+              (i.brand ?? '').toLowerCase().includes(trimmedQuery),
+          )
+        : items,
+    [items, isSearching, trimmedQuery],
+  );
+
   // Build sections: "Use soon" (urgent, exclusive) + one per location. Items
   // arrive already soonest-first, so each bucket preserves that order.
   const sections = useMemo<PantrySection[]>(() => {
     const urgent: PantryItem[] = [];
     const byLocation = new Map<string, PantryItem[]>();
-    for (const item of items) {
+    for (const item of visibleItems) {
       if (getExpiryStatus(item, now) !== 'fresh') {
         urgent.push(item);
         continue;
@@ -224,7 +243,7 @@ export function PantryScreen() {
 
     const out: PantrySection[] = [];
     if (urgent.length > 0) {
-      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') ? [] : urgent });
+      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') && !isSearching ? [] : urgent });
     }
 
     const locations = [...byLocation.keys()].sort((a, b) => {
@@ -237,10 +256,10 @@ export function PantryScreen() {
     for (const loc of locations) {
       const bucket = byLocation.get(loc) ?? [];
       const title = titleCase(loc);
-      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) ? [] : bucket });
+      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) && !isSearching ? [] : bucket });
     }
     return out;
-  }, [items, now, collapsed]);
+  }, [visibleItems, now, collapsed, isSearching]);
 
   if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
@@ -301,6 +320,26 @@ export function PantryScreen() {
           </Pressable>
         </View>
       )}
+      {items.length > 0 && (
+        <View style={styles.searchWrap}>
+          <Search size={15} color={tokens.color.inkMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search your pantry"
+            placeholderTextColor={tokens.color.inkMuted}
+            value={query}
+            onChangeText={setQuery}
+            autoCorrect={false}
+            returnKeyType="search"
+            accessibilityLabel="Search your pantry"
+          />
+          {isSearching && (
+            <Pressable onPress={() => setQuery('')} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear search">
+              <X size={15} color={tokens.color.inkMuted} />
+            </Pressable>
+          )}
+        </View>
+      )}
       <SectionList<PantryItem, PantrySection>
         sections={sections}
         keyExtractor={(item) => item.id}
@@ -326,8 +365,17 @@ export function PantryScreen() {
           />
         )}
         stickySectionHeadersEnabled
-        contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
-        ListEmptyComponent={items.length === 0 ? <PantryEmpty onAdd={() => navigation.navigate('AddItem')} /> : undefined}
+        contentContainerStyle={items.length === 0 || visibleItems.length === 0 ? styles.listEmpty : styles.list}
+        ListEmptyComponent={
+          items.length === 0 ? (
+            <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
+          ) : visibleItems.length === 0 ? (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyTitle}>No matches</Text>
+              <Text style={styles.emptySub}>Nothing in your pantry matches “{query.trim()}”.</Text>
+            </View>
+          ) : undefined
+        }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
       />
     </SafeAreaView>
@@ -479,6 +527,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(2),
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    paddingVertical: tokens.space(2),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.md,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: tokens.space(1),
+    fontFamily: tokens.font.body.regular,
+    fontSize: 14,
+    color: tokens.color.ink,
+  },
   selectBar: {
     flexDirection: 'row',
     alignItems: 'center',
