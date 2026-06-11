@@ -28,6 +28,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react-native';
 
 import {
   defaultMealForHour,
@@ -196,12 +198,20 @@ export function RecipesScreen() {
 
         <View style={styles.controls}>
           <Pressable style={styles.ctrlBtn} onPress={refresh}>
-            <Text style={styles.ctrlBtnTxt}>↻ Refresh</Text>
+            <View style={styles.ctrlInner}>
+              <RefreshCw size={13} color={tokens.color.accent} />
+              <Text style={styles.ctrlBtnTxt}>Refresh</Text>
+            </View>
           </Pressable>
           <Pressable style={styles.ctrlBtn} onPress={() => setShowIngredients((v) => !v)}>
-            <Text style={styles.ctrlBtnTxt}>
-              Ingredients · {items ? items.length : 0} {showIngredients ? '▴' : '▾'}
-            </Text>
+            <View style={styles.ctrlInner}>
+              <Text style={styles.ctrlBtnTxt}>Ingredients · {items ? items.length : 0}</Text>
+              {showIngredients ? (
+                <ChevronUp size={13} color={tokens.color.accent} />
+              ) : (
+                <ChevronDown size={13} color={tokens.color.accent} />
+              )}
+            </View>
           </Pressable>
           {canReset && (
             <Pressable hitSlop={6} onPress={reset}>
@@ -339,10 +349,12 @@ function CookThis({
   }, [cooking, items]);
 
   function onLike(r: SpoonacularRecipe) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     record(r.title, 'like');
     setLiked((prev) => new Set(prev).add(r.id));
   }
   function onSkip(r: SpoonacularRecipe) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     record(r.title, 'skip');
     setSkipped((prev) => new Set(prev).add(r.id));
   }
@@ -356,6 +368,7 @@ function CookThis({
   }
   function onCookDone(r: SpoonacularRecipe, updatedCount: number) {
     // Cooking a recipe is the strongest preference signal we collect.
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     record(r.title, 'like');
     setCooking(null);
     setCookedNote(
@@ -526,6 +539,7 @@ const styles = StyleSheet.create({
     borderColor: tokens.color.line,
   },
   ctrlBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  ctrlInner: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1) },
   resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
   ingWrap: { marginTop: tokens.space(3) },
   ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },

@@ -29,6 +29,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 import { decrementedQuantity, defaultCookAction, type CookAction } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -113,6 +114,7 @@ export function CookedItSheet({
         cookedAt: new Date().toISOString(),
         itemsUsed: updates.length,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       onDone(updates.length);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Could not update your pantry. Try again.');

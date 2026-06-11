@@ -33,6 +33,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
@@ -80,6 +81,7 @@ export function InviteCodeModal() {
   }, [fetchInvite]);
 
   async function onShare(code: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     try {
       await Share.share({ message: buildInviteShareMessage(code) });
     } catch {
@@ -90,6 +92,7 @@ export function InviteCodeModal() {
 
   async function onCopy(code: string) {
     await Clipboard.setStringAsync(code);
+    Haptics.selectionAsync().catch(() => {});
     setCopied(true);
   }
 
