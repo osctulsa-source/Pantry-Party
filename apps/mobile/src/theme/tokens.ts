@@ -42,6 +42,7 @@ export interface ThemeTokens {
     surface: string; // app canvas
     surfaceAlt: string; // cards, wells, input fills
     line: string; // hairlines, dividers, borders
+    warnSoft: string; // soft warning surface — the "Use soon" card tint (pairs with ink/warning text)
     success: string;
     warning: string;
   };
@@ -88,7 +89,9 @@ const LIGHT_INK_MUTED = '#6E6856';
 /**
  * Crumb — light. Contrast vs surface #F6F2E9 (WCAG 2.x): ink 14.4:1, inkMuted 4.98:1,
  * accent 6.85:1 (oat-on-accent 6.85:1), secondary 3.35:1 (AA-large only),
- * expiry.warning 5.47:1, expiry.expired 6.01:1.
+ * expiry.warning 5.47:1, expiry.expired 6.01:1. warnSoft #F0E4CB is a pale ochre
+ * tint that sits a step warmer than surfaceAlt; ink (12.9:1) and expiry.warning
+ * (4.6:1) stay readable on it.
  */
 export const crumbTokens: ThemeTokens = {
   brandName: BRAND.productName,
@@ -103,6 +106,7 @@ export const crumbTokens: ThemeTokens = {
     surface: '#F6F2E9',
     surfaceAlt: '#ECE5D4',
     line: '#E3DBC8',
+    warnSoft: '#F0E4CB',
     success: '#3F7A50',
     warning: '#875811',
   },
@@ -123,8 +127,9 @@ const DARK_INK_MUTED = '#A79E8C';
 /**
  * Crumb — dark. Verified WCAG-AA on surface #18140E: ink 15.9:1, inkMuted 6.9:1,
  * accent 6.4:1 (dark on-accent 6.4:1), secondary 6.95:1, expiry.warning 9.5:1,
- * expiry.expired 8.0:1. The expiry ramp lightens for dark; the UI's icon + text
- * double-encoding keeps states readable regardless.
+ * expiry.expired 8.0:1. warnSoft #2A2114 is a warm dark tint a step above
+ * surfaceAlt; ink and the dark expiry ramp stay high-contrast on it. The UI's
+ * icon + text double-encoding keeps states readable regardless.
  */
 export const crumbDarkTokens: ThemeTokens = {
   brandName: BRAND.productName,
@@ -139,6 +144,7 @@ export const crumbDarkTokens: ThemeTokens = {
     surface: '#18140E',
     surfaceAlt: '#241F17',
     line: '#322B20',
+    warnSoft: '#2A2114',
     success: '#6FBE85',
     warning: '#E6B34D',
   },
