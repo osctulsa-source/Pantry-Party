@@ -47,8 +47,9 @@ services:
       }
 
   # ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-  #    Drains PowerSync's local CRUD queue back to pg-db. Single endpoint
-  #    (POST /sync/upload). See services/api/README.md.
+  #    Drains PowerSync's local CRUD queue back to pg-db, handles household
+  #    invites, and proxies Spoonacular recipe search (server-side key + per-
+  #    user rate limit + 24h cache). See services/api/README.md.
   api:
     restart: unless-stopped
     build:
@@ -63,6 +64,10 @@ services:
       # Same Supabase JWKS as PowerSync — one source of identity for the stack.
       API_JWKS_URI: ${PS_SUPABASE_JWKS_URI}
       API_PORT: ${API_PORT:-8090}
+      # Spoonacular key for /recipes/search — SERVER-SIDE ONLY (never ship it
+      # in the mobile bundle). Set SPOONACULAR_API_KEY in docker/.env; empty
+      # value degrades recipe search to 503 without breaking the stack.
+      SPOONACULAR_API_KEY: ${SPOONACULAR_API_KEY:-}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://localhost:${API_PORT:-8090}/health']
       interval: 5s
