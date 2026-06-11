@@ -3,6 +3,12 @@
  *
  * State machine: idle → submitting → (success → navigate back) | (error → display)
  *
+ * Deep links: the route accepts an optional `code` param
+ * (pantryparty://invite/BREAD-7K2M → JoinHousehold with code pre-filled, see
+ * App.tsx linking config). The param seeds the input but the user still taps
+ * Join — auto-submitting on open would make a mistyped or stale link fire a
+ * request with no chance to review.
+ *
  * Error copy is keyed off the HTTP status surfaced via err.status on the
  * AcceptInviteError thrown by householdClient.acceptInvite:
  *   400 → "Invalid code format..."
@@ -32,7 +38,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
@@ -42,6 +48,7 @@ import { acceptInvite, type AcceptInviteError } from '../../data/api/householdCl
 import type { RootStackParamList } from '../../../App';
 
 type JoinHouseholdNav = NativeStackNavigationProp<RootStackParamList, 'JoinHousehold'>;
+type JoinHouseholdRoute = RouteProp<RootStackParamList, 'JoinHousehold'>;
 
 // WORD-XXXX is 4-12 chars depending on word length; cap at 12 to match the
 // generator's longest possible output.
@@ -73,12 +80,24 @@ function messageForError(err: unknown): string {
   return "Couldn't connect. Try again.";
 }
 
+/** Deep-link params arrive URL-encoded and possibly lowercased; normalize to
+ *  the canonical WORD-XXXX form the input would have produced. */
+function normalizeIncomingCode(raw: string | undefined): string {
+  if (!raw) return '';
+  try {
+    return decodeURIComponent(raw).trim().toUpperCase().slice(0, MAX_CODE_LENGTH);
+  } catch {
+    return raw.trim().toUpperCase().slice(0, MAX_CODE_LENGTH);
+  }
+}
+
 export function JoinHouseholdScreen() {
   const navigation = useNavigation<JoinHouseholdNav>();
+  const route = useRoute<JoinHouseholdRoute>();
   const { state: authState } = useAuth();
   const { setActiveHouseholdId } = useActiveHousehold();
 
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => normalizeIncomingCode(route.params?.code));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -114,7 +133,11 @@ export function JoinHouseholdScreen() {
         <View style={styles.center}>
           <View style={styles.card}>
             <Text style={styles.title}>Join a household</Text>
-            <Text style={styles.subtitle}>Enter the code someone shared with you.</Text>
+            <Text style={styles.subtitle}>
+              {route.params?.code
+                ? 'Check the code below, then tap Join.'
+                : 'Enter the code someone shared with you.'}
+            </Text>
 
             <TextInput
               style={styles.input}
@@ -125,7 +148,7 @@ export function JoinHouseholdScreen() {
               autoCapitalize="characters"
               autoCorrect={false}
               maxLength={MAX_CODE_LENGTH}
-              autoFocus
+              autoFocus={!route.params?.code}
             />
 
             <Pressable
