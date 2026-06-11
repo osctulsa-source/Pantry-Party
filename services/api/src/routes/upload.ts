@@ -73,10 +73,12 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
 // reassigned, so attempting to set one is a 400 (not a silent drop) — a client
 // trying to move an item between households or rewrite provenance is a bug or
 // an attack, and we want it loud. `deleted` is here because the mobile "delete"
-// is a tombstone (UPDATE deleted = 1), not a row removal.
+// is a tombstone (UPDATE deleted = 1), not a row removal. `unit` joined the
+// list with the quantity-units feature (July 2026 — UnitPicker in Add/Edit).
 const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
   'name',
   'quantity',
+  'unit',
   'location',
   'expires_at',
   'deleted',

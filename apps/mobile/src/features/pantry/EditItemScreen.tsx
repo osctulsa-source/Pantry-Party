@@ -16,6 +16,9 @@
  * already in use across the household). Location is a free string in core, so an
  * item stored under a custom location ("Garage") hydrates and re-saves as-is.
  *
+ * Unit uses the shared UnitPicker (optional; legacy free-text units hydrate as
+ * unselected — saving writes the picked unit or null).
+ *
  * The rest of the form is intentionally duplicated from AddItemScreen rather
  * than extracted — revisit when a third consumer appears (project doc).
  */
@@ -36,12 +39,13 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@powersync/react-native';
 
-import { addDaysUTC, type StorageLocation } from '@breadbox/core';
+import { addDaysUTC, UNITS, type StorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryField } from './ExpiryField';
 import { LocationPicker } from './LocationPicker';
+import { UnitPicker } from './UnitPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -57,6 +61,15 @@ function isoToDays(iso: string | null | undefined, now: Date): number | null {
   return Math.round((b - a) / 86_400_000);
 }
 
+// Legacy rows may hold free-text units ("gal", "fl oz"). The picker only
+// renders canonical UNITS, so anything else hydrates as unselected — saving
+// then writes the picked unit or null. Non-destructive for untouched rows in
+// the common case (user edits name/qty and the unit was already canonical).
+function hydrateUnit(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  return (UNITS as readonly string[]).includes(raw) ? raw : null;
+}
+
 export function EditItemScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'EditItem'>>();
   const { params } = useRoute<RouteProp<RootStackParamList, 'EditItem'>>();
@@ -70,6 +83,7 @@ export function EditItemScreen() {
 
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
+  const [unit, setUnit] = useState<string | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
   const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +97,7 @@ export function EditItemScreen() {
     hydrated.current = true;
     setName(item.name);
     setQuantity(String(item.quantity));
+    setUnit(hydrateUnit(item.unit));
     setLocation(item.location);
     setExpiryDays(isoToDays(item.expires_at, new Date()));
   }, [item]);
@@ -106,9 +121,9 @@ export function EditItemScreen() {
 
       await db.execute(
         `UPDATE pantry_items
-           SET name = ?, quantity = ?, location = ?, expires_at = ?, updated_at = ?
+           SET name = ?, quantity = ?, unit = ?, location = ?, expires_at = ?, updated_at = ?
          WHERE id = ?`,
-        [trimmedName, parsedQty, location, expiresIso, Date.now(), itemId],
+        [trimmedName, parsedQty, unit, location, expiresIso, Date.now(), itemId],
       );
       navigation.goBack();
     } catch (e: unknown) {
@@ -191,6 +206,11 @@ export function EditItemScreen() {
               keyboardType="number-pad"
             />
 
+            <Text style={styles.label}>Unit (optional)</Text>
+            <View style={styles.unitWrap}>
+              <UnitPicker value={unit} onChange={setUnit} />
+            </View>
+
             <Text style={styles.label}>Location</Text>
             <View style={styles.locationWrap}>
               <LocationPicker value={location} onChange={setLocation} householdId={item.household_id} />
@@ -257,6 +277,9 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.regular,
     fontSize: 16,
     color: tokens.color.ink,
+  },
+  unitWrap: {
+    marginBottom: tokens.space(4),
   },
   locationWrap: {
     marginBottom: tokens.space(4),

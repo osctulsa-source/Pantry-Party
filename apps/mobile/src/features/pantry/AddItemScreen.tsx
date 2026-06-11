@@ -4,7 +4,8 @@
  * Quick-add staples live on their own screen (QuickAddScreen); this is the "add
  * your own" form. We suggest a "best before" from the item's name (shelf-life by
  * inferred category) and let the user adjust with ExpiryField. Location uses the
- * shared LocationPicker (built-in + custom locations). Writes go through
+ * shared LocationPicker (built-in + custom locations). Unit is optional via the
+ * shared UnitPicker (counts need no unit). Writes go through
  * addPantryItem() → PowerSync local SQLite → upload-proxy → Postgres.
  */
 import { useMemo, useState } from 'react';
@@ -30,6 +31,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
 import { ExpiryField } from './ExpiryField';
 import { LocationPicker } from './LocationPicker';
+import { UnitPicker } from './UnitPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -41,6 +43,7 @@ export function AddItemScreen() {
 
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
+  const [unit, setUnit] = useState<string | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
   const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [expiryTouched, setExpiryTouched] = useState(false);
@@ -81,6 +84,7 @@ export function AddItemScreen() {
         userId,
         name: trimmedName,
         quantity: parsedQty,
+        unit,
         location,
         expiresIso: effectiveDays === null ? null : addDaysUTC(new Date(), effectiveDays).toISOString(),
         source: 'manual',
@@ -118,6 +122,11 @@ export function AddItemScreen() {
             onChangeText={setQuantity}
             keyboardType="number-pad"
           />
+
+          <Text style={styles.label}>Unit (optional)</Text>
+          <View style={styles.unitWrap}>
+            <UnitPicker value={unit} onChange={setUnit} />
+          </View>
 
           <Text style={styles.label}>Location</Text>
           <View style={styles.locationWrap}>
@@ -168,6 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: tokens.color.ink,
   },
+  unitWrap: { marginBottom: tokens.space(4) },
   locationWrap: { marginBottom: tokens.space(4) },
   expiryWrap: { marginBottom: tokens.space(4) },
   error: {

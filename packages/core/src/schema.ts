@@ -24,6 +24,16 @@ export type StorageLocation = z.infer<typeof StorageLocation>;
 export const CaptureSource = z.enum(["barcode", "receipt", "manual", "restock"]);
 export type CaptureSource = z.infer<typeof CaptureSource>;
 
+/**
+ * Canonical quantity units offered by the UnitPicker (July 2026 quick-strike).
+ * New writes come from this list (or null for unitless counts); the `unit`
+ * column itself stays free-text-tolerant so legacy rows and future
+ * OCR-extracted units ("gal", "fl oz") never fail validation. Unit-aware math
+ * (recipe scaling, precise cook decrements) builds on this list later.
+ */
+export const UNITS = ["ct", "oz", "lb", "g", "kg", "ml", "L", "cup", "tbsp", "tsp"] as const;
+export type Unit = (typeof UNITS)[number];
+
 export const PantryItem = z.object({
   id: z.string().uuid(),
   householdId: z.string().uuid(),
@@ -34,7 +44,7 @@ export const PantryItem = z.object({
   barcode: z.string().max(20).optional(),
 
   quantity: z.number().nonnegative().default(1),
-  unit: z.string().max(20).optional(), // "lb", "gal", "ct" — free text in v1, enum later
+  unit: z.string().max(20).optional(), // picker-constrained on write (UNITS); column tolerates legacy free text
 
   location: StorageLocation.default("pantry"),
   addedAt: z.string().datetime(),

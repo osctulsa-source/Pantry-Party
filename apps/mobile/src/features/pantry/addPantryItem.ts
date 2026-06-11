@@ -16,6 +16,8 @@ export interface NewPantryItem {
   userId: string;
   name: string;
   quantity: number;
+  /** Canonical UNITS value or null for unitless counts (UnitPicker). */
+  unit?: string | null;
   location: StorageLocation;
   expiresIso: string | null;
   source?: CaptureSource;
@@ -25,13 +27,14 @@ export async function addPantryItem(input: NewPantryItem): Promise<void> {
   const db = getPowerSync();
   await db.execute(
     `INSERT INTO pantry_items
-       (id, household_id, name, quantity, location, expires_at, added_at, source, added_by, updated_at, deleted)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, household_id, name, quantity, unit, location, expires_at, added_at, source, added_by, updated_at, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       Crypto.randomUUID(),
       input.householdId,
       input.name,
       input.quantity,
+      input.unit ?? null,
       input.location,
       input.expiresIso,
       new Date().toISOString(),
