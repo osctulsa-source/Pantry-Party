@@ -15,6 +15,11 @@ export interface SpoonacularRecipe {
    * Feeds the "I cooked this" pantry matcher; empty when the API omits them.
    */
   usedIngredientNames: string[];
+  /** Spoonacular 0–100 healthiness score; null when the API omits it. */
+  healthScore: number | null;
+  vegetarian: boolean;
+  vegan: boolean;
+  glutenFree: boolean;
 }
 
 /** Raw findByIngredients response item — the superset we map down from. */

@@ -43,6 +43,11 @@ export interface TrimmedRecipe {
   missedIngredientCount: number;
   likes: number;
   usedIngredients: Array<{ name: string }>;
+  /** Spoonacular 0–100 healthiness score; null when the API omits it. */
+  healthScore: number | null;
+  vegetarian: boolean;
+  vegan: boolean;
+  glutenFree: boolean;
 }
 
 interface UpstreamResult {
@@ -53,6 +58,10 @@ interface UpstreamResult {
   missedIngredientCount?: number;
   likes?: number;
   usedIngredients?: Array<{ name?: string }>;
+  healthScore?: number;
+  vegetarian?: boolean;
+  vegan?: boolean;
+  glutenFree?: boolean;
 }
 interface UpstreamResponse {
   results?: UpstreamResult[];
@@ -117,6 +126,10 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
       sort: 'max-used-ingredients',
       fillIngredients: 'true',
       ignorePantry: 'true',
+      // Recipe info rides along so every result carries healthScore + diet
+      // booleans — the mobile Healthy toggle re-ranks CLIENT-side from the
+      // same cached response (zero extra quota for toggling).
+      addRecipeInformation: 'true',
       number: String(number),
       apiKey: key,
     });
@@ -143,6 +156,10 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
         usedIngredients: (r.usedIngredients ?? [])
           .map((i) => ({ name: i.name ?? '' }))
           .filter((i) => i.name.length > 0),
+        healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
+        vegetarian: r.vegetarian ?? false,
+        vegan: r.vegan ?? false,
+        glutenFree: r.glutenFree ?? false,
       }));
       cache.set(cacheKey, results);
       res.json({ ok: true, cached: false, results });
