@@ -5,6 +5,14 @@
  * New here: you can drop pantry ingredients from the search (tap a chip to leave
  * out e.g. bananas) and Refresh for new ideas (pages Spoonacular's results via
  * offset). The reason line follows the ingredients you're actually cooking with.
+ *
+ * "I cooked this" (the loop-closer): each hero card carries a confirm action
+ * that opens CookedItSheet — matched pantry items get marked used-up /
+ * decremented through PowerSync. Note: `items` here is a one-shot snapshot
+ * (powerSyncPantry.list()), so this screen's chips/reason line go stale after a
+ * cook until remount; PantryScreen is reactive and reflects the writes
+ * immediately. Moving this screen to useQuery fixes that holistically — tracked
+ * follow-up.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -24,6 +32,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   defaultMealForHour,
   getExpiryStatus,
+  matchCookedItems,
   mealtimeLabel,
   scoreTitle,
   type MealType,
@@ -38,6 +47,7 @@ import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useRecipePrefs } from './useRecipePrefs';
+import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 
 const CARD_W = Dimensions.get('window').width;
 const PAGE = 8;
@@ -256,7 +266,13 @@ export function RecipesScreen() {
       )}
 
       {recipeState.kind === 'ok' && (
-        <CookThis recipes={recipeState.recipes} items={activeItems} prefs={prefs} record={record} />
+        <CookThis
+          recipes={recipeState.recipes}
+          items={activeItems}
+          prefs={prefs}
+          record={record}
+          householdId={activeHouseholdId}
+        />
       )}
     </SafeAreaView>
   );
@@ -267,11 +283,13 @@ function CookThis({
   items,
   prefs,
   record,
+  householdId,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
   prefs: RecipePrefs;
   record: (title: string, event: PrefEvent) => void;
+  householdId: string | null;
 }) {
   const now = useMemo(() => new Date(), []);
   const urgent = pickUrgent(items, now);
@@ -282,6 +300,8 @@ function CookThis({
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
+  const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
+  const [cookedNote, setCookedNote] = useState<string | null>(null);
 
   const pool = useMemo(
     () =>
@@ -297,6 +317,27 @@ function CookThis({
   const top = pool.slice(0, 3);
   const alternates = pool.slice(3);
 
+  // Rows for the cooked-it sheet: matched pantry items (pre-selected) when the
+  // API gave us ingredient names, otherwise the full active pantry defaulting
+  // to "Kept" so the user can mark things manually.
+  const sheetItems = useMemo<CookedSheetItem[]>(() => {
+    if (!cooking) return [];
+    const matches = matchCookedItems(
+      cooking.usedIngredientNames,
+      items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
+    );
+    if (matches.length > 0) {
+      return matches.map((m) => ({
+        itemId: m.itemId,
+        itemName: m.itemName,
+        quantity: m.quantity,
+        matched: true,
+        matchedIngredient: m.matchedIngredient,
+      }));
+    }
+    return items.map((i) => ({ itemId: i.id, itemName: i.name, quantity: i.quantity, matched: false }));
+  }, [cooking, items]);
+
   function onLike(r: SpoonacularRecipe) {
     record(r.title, 'like');
     setLiked((prev) => new Set(prev).add(r.id));
@@ -309,6 +350,20 @@ function CookThis({
     record(r.title, 'open');
     Linking.openURL(recipeUrl(r));
   }
+  function onCooked(r: SpoonacularRecipe) {
+    setCookedNote(null);
+    setCooking(r);
+  }
+  function onCookDone(r: SpoonacularRecipe, updatedCount: number) {
+    // Cooking a recipe is the strongest preference signal we collect.
+    record(r.title, 'like');
+    setCooking(null);
+    setCookedNote(
+      updatedCount > 0
+        ? `Pantry updated — ${updatedCount} item${updatedCount === 1 ? '' : 's'} marked used ✓`
+        : null,
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -317,6 +372,7 @@ function CookThis({
           <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
         </View>
       )}
+      {cookedNote && <Text style={styles.cookedNote}>{cookedNote}</Text>}
       <Text style={styles.swipeHint}>Swipe through your top picks — ♥ and ✕ teach us what you like.</Text>
 
       <FlatList
@@ -334,6 +390,7 @@ function CookThis({
             onLike={onLike}
             onSkip={onSkip}
             onOpen={onOpen}
+            onCooked={onCooked}
           />
         )}
       />
@@ -362,6 +419,17 @@ function CookThis({
           ))}
         </View>
       )}
+
+      {cooking && (
+        <CookedItSheet
+          recipeId={cooking.id}
+          recipeTitle={cooking.title}
+          items={sheetItems}
+          householdId={householdId}
+          onClose={() => setCooking(null)}
+          onDone={(n) => onCookDone(cooking, n)}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -373,6 +441,7 @@ function HeroCard({
   onLike,
   onSkip,
   onOpen,
+  onCooked,
 }: {
   recipe: SpoonacularRecipe;
   liked: boolean;
@@ -380,6 +449,7 @@ function HeroCard({
   onLike: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
+  onCooked: (r: SpoonacularRecipe) => void;
 }) {
   return (
     <View style={styles.cardPage}>
@@ -403,6 +473,14 @@ function HeroCard({
           <Text style={[styles.actTxt, styles.viewTxt]}>View →</Text>
         </Pressable>
       </View>
+      <Pressable
+        style={styles.cookedBtn}
+        onPress={() => onCooked(recipe)}
+        accessibilityRole="button"
+        accessibilityLabel="I cooked this — update pantry"
+      >
+        <Text style={styles.cookedBtnTxt}>I cooked this — update pantry</Text>
+      </Pressable>
     </View>
   );
 }
@@ -464,6 +542,13 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: tokens.space(10) },
   reasonPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(2) },
   reason: { fontFamily: tokens.font.body.semibold, fontSize: 14, lineHeight: 19, marginBottom: tokens.space(2) },
+  cookedNote: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 13,
+    color: tokens.color.success,
+    paddingHorizontal: tokens.space(6),
+    marginBottom: tokens.space(2),
+  },
   swipeHint: {
     fontFamily: tokens.font.body.regular,
     fontSize: 12.5,
@@ -493,6 +578,14 @@ const styles = StyleSheet.create({
   actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink },
   actTxtLiked: { color: tokens.color.accent },
   viewTxt: { color: tokens.color.onAccent },
+  cookedBtn: {
+    marginTop: tokens.space(2),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.accentSoft,
+    alignItems: 'center',
+  },
+  cookedBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: tokens.space(2), marginTop: tokens.space(4) },
   dot: { width: 7, height: 7, borderRadius: 999, backgroundColor: tokens.color.line },
   dotActive: { backgroundColor: tokens.color.accent },

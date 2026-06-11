@@ -26,6 +26,11 @@ function requireApiKey(): string {
   return apiKey;
 }
 
+/** Extract clean ingredient names from an API usedIngredients array. */
+function ingredientNames(used: Array<{ name?: string }> | undefined): string[] {
+  return (used ?? []).map((i) => i.name ?? '').filter((n) => n.length > 0);
+}
+
 export interface FindByIngredientsOptions {
   number?: number; // how many recipes to return (default 5)
   ignorePantry?: boolean; // ignore common staples like salt/pepper (default true)
@@ -57,7 +62,15 @@ export async function findByIngredients(
   }
 
   const data = (await res.json()) as FindByIngredientsResponse;
-  return data;
+  return data.map((r) => ({
+    id: r.id,
+    title: r.title,
+    image: r.image,
+    usedIngredientCount: r.usedIngredientCount ?? 0,
+    missedIngredientCount: r.missedIngredientCount ?? 0,
+    likes: r.likes ?? 0,
+    usedIngredientNames: ingredientNames(r.usedIngredients),
+  }));
 }
 
 export interface SearchByMealOptions {
@@ -74,6 +87,7 @@ interface ComplexSearchResult {
   usedIngredientCount?: number;
   missedIngredientCount?: number;
   likes?: number;
+  usedIngredients?: Array<{ name?: string }>;
 }
 interface ComplexSearchResponse {
   results?: ComplexSearchResult[];
@@ -120,5 +134,6 @@ export async function searchByMeal(
     usedIngredientCount: r.usedIngredientCount ?? 0,
     missedIngredientCount: r.missedIngredientCount ?? 0,
     likes: r.likes ?? 0,
+    usedIngredientNames: ingredientNames(r.usedIngredients),
   }));
 }
