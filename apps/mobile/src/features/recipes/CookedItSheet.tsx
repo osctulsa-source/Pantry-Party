@@ -229,7 +229,13 @@ function Choice({
 const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    // Explicit edges, not the StyleSheet absolute-fill spread helper — that
+    // static is gone from this RN version's types (TS2551 on main; hotfix).
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
   card: {
