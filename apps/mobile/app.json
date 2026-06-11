@@ -24,7 +24,8 @@
         {
           "color": "#2E5D3A"
         }
-      ]
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": false
