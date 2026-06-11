@@ -74,9 +74,11 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
 // trying to move an item between households or rewrite provenance is a bug or
 // an attack, and we want it loud. `deleted` is here because the mobile "delete"
 // is a tombstone (UPDATE deleted = 1), not a row removal. `unit` joined the
-// list with the quantity-units feature (July 2026 — UnitPicker in Add/Edit).
+// list with the quantity-units feature (July 2026 — UnitPicker in Add/Edit);
+// `brand` joined with the brand-entry feature (Add/Edit brand field).
 const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
   'name',
+  'brand',
   'quantity',
   'unit',
   'location',

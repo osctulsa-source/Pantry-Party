@@ -17,7 +17,8 @@
  * item stored under a custom location ("Garage") hydrates and re-saves as-is.
  *
  * Unit uses the shared UnitPicker (optional; legacy free-text units hydrate as
- * unselected — saving writes the picked unit or null).
+ * unselected — saving writes the picked unit or null). Brand is optional free
+ * text (matches Add Item; brand is PATCH-allowed on the upload-proxy).
  *
  * The rest of the form is intentionally duplicated from AddItemScreen rather
  * than extracted — revisit when a third consumer appears (project doc).
@@ -49,6 +50,7 @@ import { UnitPicker } from './UnitPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
+const MAX_BRAND_LENGTH = 120; // matches @breadbox/core PantryItem.brand max
 
 // Stored ISO expiry → whole days from today (UTC-midnight basis, the inverse of
 // addDaysUTC). Negative when the item is already past its date.
@@ -82,6 +84,7 @@ export function EditItemScreen() {
   const item = rows[0];
 
   const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState<string | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
@@ -96,6 +99,7 @@ export function EditItemScreen() {
     if (hydrated.current || !item) return;
     hydrated.current = true;
     setName(item.name);
+    setBrand(item.brand ?? '');
     setQuantity(String(item.quantity));
     setUnit(hydrateUnit(item.unit));
     setLocation(item.location);
@@ -103,6 +107,7 @@ export function EditItemScreen() {
   }, [item]);
 
   const trimmedName = name.trim();
+  const trimmedBrand = brand.trim();
   const parsedQty = parseInt(quantity, 10);
   const qtyValid = Number.isInteger(parsedQty) && parsedQty > 0;
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
@@ -121,9 +126,9 @@ export function EditItemScreen() {
 
       await db.execute(
         `UPDATE pantry_items
-           SET name = ?, quantity = ?, unit = ?, location = ?, expires_at = ?, updated_at = ?
+           SET name = ?, brand = ?, quantity = ?, unit = ?, location = ?, expires_at = ?, updated_at = ?
          WHERE id = ?`,
-        [trimmedName, parsedQty, unit, location, expiresIso, Date.now(), itemId],
+        [trimmedName, trimmedBrand || null, parsedQty, unit, location, expiresIso, Date.now(), itemId],
       );
       navigation.goBack();
     } catch (e: unknown) {
@@ -194,6 +199,17 @@ export function EditItemScreen() {
               value={name}
               onChangeText={setName}
               maxLength={MAX_NAME_LENGTH}
+            />
+
+            <Text style={styles.label}>Brand (optional)</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. Horizon"
+              placeholderTextColor={tokens.color.inkMuted}
+              value={brand}
+              onChangeText={setBrand}
+              maxLength={MAX_BRAND_LENGTH}
+              autoCapitalize="words"
             />
 
             <Text style={styles.label}>Quantity</Text>
