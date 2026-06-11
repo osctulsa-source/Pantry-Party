@@ -5,6 +5,8 @@
 import * as Notifications from 'expo-notifications';
 import type { NotificationScheduler } from '@breadbox/core';
 
+import { EXPIRY_CATEGORY } from './notificationActions';
+
 export const expoScheduler: NotificationScheduler = {
   async cancelAll() {
     await Notifications.cancelAllScheduledNotificationsAsync();
@@ -12,7 +14,9 @@ export const expoScheduler: NotificationScheduler = {
   async schedule({ id, title, body, triggerDate }) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
-      content: { title, body },
+      // categoryIdentifier attaches the "✓ Used / Snooze 2 days" actions;
+      // data.itemId is what the response handler resolves against.
+      content: { title, body, categoryIdentifier: EXPIRY_CATEGORY, data: { itemId: id } },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: triggerDate,
