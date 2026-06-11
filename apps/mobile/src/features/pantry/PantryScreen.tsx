@@ -8,9 +8,13 @@
  * in their location section. Within every section, soonest-to-expire is first
  * (the SQL ORDER BY already sorts that way; grouping preserves it).
  *
- * Sections collapse on header tap (in-memory state). The "Use soon" header
- * carries a View → tap-through to ExpiringSoonScreen (per-item Used / Tossed /
- * Snooze). Two row-level resolution paths share one write helper:
+ * The "Use soon" section reads as a distinct soft-warning CARD: a tinted sticky
+ * header carrying a primary "Cook these →" CTA (into the recipe surface) plus a
+ * "Triage all" link to ExpiringSoonScreen, and its rows wear a status-colored
+ * left bar so the urgent block is unmissable the second the app opens.
+ *
+ * Sections collapse on header tap (in-memory state). Two row-level resolution
+ * paths share one write helper:
  *   - swipe a row left (gesture-handler Swipeable) → ✓ Used / Remove
  *   - long-press → multi-select → bulk bar (✓ Used / Remove / Cancel)
  * "Used" records a rescue event (expiryEvents) on top of the tombstone; swipe
@@ -19,8 +23,10 @@
  * The header shows a sync dot driven by PowerSync's live status (green synced /
  * ochre syncing / muted offline) — sync failures stop being invisible.
  *
- * All styling pulls from theme/tokens (ADR-006); expiry rendered via the
- * colorblind-safe <ExpiryPill>; haptics confirm destructive resolutions.
+ * Expiry is "silenced" when it isn't actionable: the colorblind-safe <ExpiryPill>
+ * shows for warning/expired items always, and as a calm preview for items within
+ * SOON_PREVIEW_DAYS — everything further out (incl. shelf-stable staples) stays
+ * clean. All styling pulls from theme/tokens (ADR-006).
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -47,7 +53,7 @@ import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
-import { formatExpiryMeta } from './expiryFormat';
+import { formatExpiryMeta, daysUntilExpiry } from './expiryFormat';
 import { ExpiryPill } from '../../components/ExpiryPill';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
@@ -60,6 +66,11 @@ const PANTRY_QUERY =
 
 // Order locations sensibly; unknown/custom locations sort after, alphabetically.
 const LOCATION_ORDER = ['fridge', 'freezer', 'pantry'];
+
+// Items further out than this (and not already warning/expired) show no expiry
+// pill — a 361-day staple shouldn't shout a countdown. ~2 weeks gives a calm
+// heads-up window before the warning ramp (DEFAULT_EXPIRY_WARNING_DAYS) kicks in.
+const SOON_PREVIEW_DAYS = 14;
 
 interface PantrySection {
   title: string;
@@ -208,11 +219,6 @@ export function PantryScreen() {
 
   const now = useMemo(() => new Date(), [items]);
 
-  const soonCount = useMemo(
-    () => items.filter((i) => getExpiryStatus(i, now) !== 'fresh').length,
-    [items, now],
-  );
-
   const visibleItems = useMemo(
     () =>
       isSearching
@@ -280,12 +286,7 @@ export function PantryScreen() {
             <SyncDot />
           </View>
           <Text style={styles.count}>
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-            {soonCount > 0 ? (
-              <Text style={styles.countSoon}>{`  ·  ${soonCount} to use soon`}</Text>
-            ) : (
-              ' in your pantry'
-            )}
+            {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
           </Text>
         </View>
         <View style={styles.headerActions}>
@@ -312,11 +313,21 @@ export function PantryScreen() {
         </View>
       ) : (
         <View style={styles.actionRow}>
-          <Pressable onPress={() => navigation.navigate('Recipes')} style={styles.actionBtn}>
-            <Text style={styles.actionBtnText}>Find recipes →</Text>
+          <Pressable
+            onPress={() => navigation.navigate('Recipes')}
+            style={[styles.actionBtn, styles.actionPrimary]}
+            accessibilityRole="button"
+            accessibilityLabel="Find recipes from your pantry"
+          >
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>Find recipes →</Text>
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('QuickAdd')} style={styles.actionBtn}>
-            <Text style={styles.actionBtnText}>＋ Quick add</Text>
+          <Pressable
+            onPress={() => navigation.navigate('QuickAdd')}
+            style={[styles.actionBtn, styles.actionGhost]}
+            accessibilityRole="button"
+            accessibilityLabel="Quick add staples"
+          >
+            <Text style={[styles.actionText, styles.actionTextGhost]}>＋ Quick add</Text>
           </Pressable>
         </View>
       )}
@@ -361,6 +372,7 @@ export function PantryScreen() {
             section={section}
             collapsed={collapsed.has(section.title)}
             onToggle={() => toggleSection(section.title)}
+            onCook={section.urgent ? () => navigation.navigate('Recipes') : undefined}
             onViewAll={section.urgent ? () => navigation.navigate('ExpiringSoon') : undefined}
           />
         )}
@@ -386,30 +398,49 @@ function SectionHeader({
   section,
   collapsed,
   onToggle,
+  onCook,
   onViewAll,
 }: {
   section: SectionListData<PantryItem, PantrySection>;
   collapsed: boolean;
   onToggle: () => void;
+  onCook?: () => void;
   onViewAll?: () => void;
 }) {
+  const urgent = section.urgent;
   return (
-    <Pressable style={styles.sectionHeader} onPress={onToggle}>
-      <Text style={[styles.sectionTitle, section.urgent && styles.sectionTitleUrgent]}>{section.title}</Text>
-      <View style={styles.sectionRight}>
-        {onViewAll && (
-          <Pressable onPress={onViewAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="View all expiring items">
-            <Text style={styles.sectionView}>View →</Text>
-          </Pressable>
-        )}
-        <Text style={styles.sectionCount}>{section.count}</Text>
-        {collapsed ? (
-          <ChevronRight size={15} color={tokens.color.inkMuted} accessibilityLabel="Expand section" />
-        ) : (
-          <ChevronDown size={15} color={tokens.color.inkMuted} accessibilityLabel="Collapse section" />
-        )}
-      </View>
-    </Pressable>
+    <View style={[styles.sectionHeaderWrap, urgent && styles.sectionHeaderUrgent]}>
+      <Pressable style={styles.sectionHeaderTop} onPress={onToggle}>
+        <Text style={[styles.sectionTitle, urgent && styles.sectionTitleUrgent]}>{section.title}</Text>
+        <View style={styles.sectionRight}>
+          <Text style={[styles.sectionCount, urgent && styles.sectionCountUrgent]}>{section.count}</Text>
+          {collapsed ? (
+            <ChevronRight size={15} color={tokens.color.inkMuted} accessibilityLabel="Expand section" />
+          ) : (
+            <ChevronDown size={15} color={tokens.color.inkMuted} accessibilityLabel="Collapse section" />
+          )}
+        </View>
+      </Pressable>
+      {urgent && !collapsed && (
+        <View style={styles.useSoonCta}>
+          {onCook && (
+            <Pressable
+              style={styles.cookBtn}
+              onPress={onCook}
+              accessibilityRole="button"
+              accessibilityLabel="Find recipes for items expiring soon"
+            >
+              <Text style={styles.cookBtnText}>Cook these →</Text>
+            </Pressable>
+          )}
+          {onViewAll && (
+            <Pressable onPress={onViewAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="Triage all expiring items">
+              <Text style={styles.triageLink}>Triage all</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -432,6 +463,21 @@ function PantryRow({
 }) {
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
+  const days = daysUntilExpiry(item, now);
+  // Silence far-out timelines: pill shows for warning/expired always, plus a
+  // calm preview while an item is within SOON_PREVIEW_DAYS. Everything else
+  // (incl. undated staples) renders no pill. The `expiryText !== undefined`
+  // guard at the JSX site narrows the label to string for strict TS.
+  const withinSoonWindow =
+    status !== 'fresh' || (days !== undefined && days <= SOON_PREVIEW_DAYS);
+  // Urgent rows get a status-colored left bar so the "Use soon" block reads as
+  // one contiguous card (fresh rows have no bar).
+  const barColor =
+    status === 'expired'
+      ? tokens.semantic.expiry.expired
+      : status === 'warning'
+        ? tokens.semantic.expiry.warning
+        : undefined;
   return (
     <Swipeable
       enabled={swipeEnabled}
@@ -461,7 +507,12 @@ function PantryRow({
         onPress={onPress}
         onLongPress={onLongPress}
         accessibilityState={{ selected }}
-        style={({ pressed }) => [styles.row, pressed && styles.rowPressed, selected && styles.rowSelected]}
+        style={({ pressed }) => [
+          styles.row,
+          barColor ? { borderLeftWidth: 3, borderLeftColor: barColor } : null,
+          pressed && styles.rowPressed,
+          selected && styles.rowSelected,
+        ]}
       >
         <View style={styles.rowMain}>
           <Text style={styles.name}>
@@ -475,7 +526,9 @@ function PantryRow({
             {item.brand ? ` · ${item.brand}` : ''}
           </Text>
         </View>
-        {expiryText && <ExpiryPill status={status} label={expiryText} />}
+        {expiryText !== undefined && withinSoonWindow && (
+          <ExpiryPill status={status} label={expiryText} />
+        )}
       </Pressable>
     </Swipeable>
   );
@@ -516,17 +569,20 @@ const styles = StyleSheet.create({
   syncDot: { width: 8, height: 8, borderRadius: 999 },
   syncLabel: { fontFamily: tokens.font.body.medium, fontSize: 11, color: tokens.color.inkMuted },
   count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
-  countSoon: { fontFamily: tokens.font.body.semibold, color: tokens.semantic.expiry.warning },
   actionRow: { flexDirection: 'row', gap: tokens.space(3), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   actionBtn: {
     flex: 1,
     paddingVertical: tokens.space(3),
     paddingHorizontal: tokens.space(4),
-    backgroundColor: tokens.color.surfaceAlt,
     borderRadius: tokens.radius.md,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  actionBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  actionPrimary: { backgroundColor: tokens.color.accent },
+  actionGhost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: tokens.color.line },
+  actionText: { fontFamily: tokens.font.body.semibold, fontSize: 14 },
+  actionTextPrimary: { color: tokens.color.onAccent },
+  actionTextGhost: { color: tokens.color.accent },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -562,14 +618,17 @@ const styles = StyleSheet.create({
   selectCancel: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.inkMuted },
   list: { paddingBottom: tokens.space(8) },
   listEmpty: { flexGrow: 1 },
-  sectionHeader: {
+  sectionHeaderWrap: {
+    backgroundColor: tokens.color.surface, // opaque so sticky headers don't show rows through
+  },
+  sectionHeaderUrgent: { backgroundColor: tokens.color.warnSoft },
+  sectionHeaderTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: tokens.space(6),
     paddingTop: tokens.space(4),
     paddingBottom: tokens.space(2),
-    backgroundColor: tokens.color.surface, // opaque so sticky headers don't show rows through
   },
   sectionTitle: {
     fontFamily: tokens.font.body.semibold,
@@ -580,8 +639,24 @@ const styles = StyleSheet.create({
   },
   sectionTitleUrgent: { color: tokens.semantic.expiry.warning },
   sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
-  sectionView: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   sectionCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
+  sectionCountUrgent: { color: tokens.semantic.expiry.warning },
+  useSoonCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(4),
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(1),
+    paddingBottom: tokens.space(3),
+  },
+  cookBtn: {
+    backgroundColor: tokens.color.accent,
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(4),
+    borderRadius: tokens.radius.sm,
+  },
+  cookBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
+  triageLink: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

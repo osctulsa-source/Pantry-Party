@@ -32,3 +32,23 @@ export function formatExpiryMeta(
   if (days === -1) return 'Expired yesterday';
   return `Expired ${-days} days ago`;
 }
+
+/**
+ * Calendar-day count until expiry (negative = already past). undefined when the
+ * item has no usable date. Same rounding as formatExpiryMeta, so the two agree.
+ *
+ * Used to "silence" far-out timelines: the list shows an expiry pill only when an
+ * item is within a near-term window (or already warning/expired), keeping the
+ * common shelf-stable case clean instead of shouting "Expires in 361 days".
+ */
+export function daysUntilExpiry(
+  item: { expiresAt?: string },
+  now: Date,
+): number | undefined {
+  if (!item.expiresAt) return undefined;
+  const expiry = new Date(item.expiresAt);
+  if (Number.isNaN(expiry.getTime())) return undefined;
+  return Math.round(
+    (startOfDay(expiry).getTime() - startOfDay(now).getTime()) / 86_400_000,
+  );
+}
