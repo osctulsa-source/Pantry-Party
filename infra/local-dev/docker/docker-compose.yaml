@@ -68,6 +68,9 @@ services:
       # in the mobile bundle). Set SPOONACULAR_API_KEY in docker/.env; empty
       # value degrades recipe search to 503 without breaking the stack.
       SPOONACULAR_API_KEY: ${SPOONACULAR_API_KEY:-}
+      # Sentry DSN for the api (optional) — Node project at sentry.io. Empty
+      # disables error reporting without breaking the stack.
+      SENTRY_DSN: ${SENTRY_DSN:-}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://localhost:${API_PORT:-8090}/health']
       interval: 5s
