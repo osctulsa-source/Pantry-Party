@@ -10,16 +10,17 @@
  *
  * Sections collapse on header tap (in-memory state). The "Use soon" header
  * carries a View → tap-through to ExpiringSoonScreen (per-item Used / Tossed /
- * Snooze). Long-pressing any row enters multi-select: tap to toggle, then mark
- * the batch Used (tombstone + rescue events) or Remove (tombstone only) from
- * the selection bar — "clear out four expired things" is one gesture, not
- * twelve taps.
+ * Snooze). Two row-level resolution paths share one write helper:
+ *   - swipe a row left (gesture-handler Swipeable) → ✓ Used / Remove
+ *   - long-press → multi-select → bulk bar (✓ Used / Remove / Cancel)
+ * "Used" records a rescue event (expiryEvents) on top of the tombstone; swipe
+ * is disabled while selecting so the gestures don't fight.
  *
  * The header shows a sync dot driven by PowerSync's live status (green synced /
  * ochre syncing / muted offline) — sync failures stop being invisible.
  *
  * All styling pulls from theme/tokens (ADR-006); expiry rendered via the
- * colorblind-safe <ExpiryPill>.
+ * colorblind-safe <ExpiryPill>; haptics confirm destructive resolutions.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -37,6 +38,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useStatus } from '@powersync/react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
+import { ChevronDown, ChevronRight } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
@@ -139,10 +143,11 @@ export function PantryScreen() {
 
   // Multi-select (long-press to enter; empty set = normal mode).
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkBusy, setBulkBusy] = useState(false);
+  const [busy, setBusy] = useState(false);
   const selecting = selected.size > 0;
 
   function toggleSelect(id: string) {
+    Haptics.selectionAsync().catch(() => {});
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -151,11 +156,16 @@ export function PantryScreen() {
     });
   }
 
-  async function bulkResolve(kind: 'used' | 'remove') {
-    if (bulkBusy || selected.size === 0) return;
-    setBulkBusy(true);
+  /**
+   * Shared resolution path for swipe actions (single id) and the bulk bar
+   * (all selected ids): tombstone in one writeTransaction; "used" also logs
+   * rescue events for the savings/streak data.
+   */
+  async function resolveItems(ids: string[], kind: 'used' | 'remove') {
+    if (busy || ids.length === 0) return;
+    setBusy(true);
     try {
-      const targets = items.filter((i) => selected.has(i.id));
+      const targets = items.filter((i) => ids.includes(i.id));
       const db = getPowerSync();
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
@@ -174,11 +184,16 @@ export function PantryScreen() {
           targets.map((t) => ({ kind: 'used' as const, itemName: t.name, at })),
         );
       }
-      setSelected(new Set());
+      setSelected((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.delete(id);
+        return next;
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     } finally {
-      setBulkBusy(false);
+      setBusy(false);
     }
   }
 
@@ -266,13 +281,13 @@ export function PantryScreen() {
       {selecting ? (
         <View style={styles.selectBar}>
           <Text style={styles.selectCount}>{selected.size} selected</Text>
-          <Pressable onPress={() => bulkResolve('used')} disabled={bulkBusy} hitSlop={6}>
+          <Pressable onPress={() => resolveItems([...selected], 'used')} disabled={busy} hitSlop={6}>
             <Text style={styles.selectUsed}>✓ Used</Text>
           </Pressable>
-          <Pressable onPress={() => bulkResolve('remove')} disabled={bulkBusy} hitSlop={6}>
+          <Pressable onPress={() => resolveItems([...selected], 'remove')} disabled={busy} hitSlop={6}>
             <Text style={styles.selectRemove}>Remove</Text>
           </Pressable>
-          <Pressable onPress={() => setSelected(new Set())} disabled={bulkBusy} hitSlop={6}>
+          <Pressable onPress={() => setSelected(new Set())} disabled={busy} hitSlop={6}>
             <Text style={styles.selectCancel}>Cancel</Text>
           </Pressable>
         </View>
@@ -294,10 +309,12 @@ export function PantryScreen() {
             item={item}
             now={now}
             selected={selected.has(item.id)}
+            swipeEnabled={!selecting && !busy}
             onPress={() =>
               selecting ? toggleSelect(item.id) : navigation.navigate('EditItem', { itemId: item.id })
             }
             onLongPress={() => toggleSelect(item.id)}
+            onResolve={(target, kind) => resolveItems([target.id], kind)}
           />
         )}
         renderSectionHeader={({ section }) => (
@@ -338,7 +355,11 @@ function SectionHeader({
           </Pressable>
         )}
         <Text style={styles.sectionCount}>{section.count}</Text>
-        <Text style={styles.sectionChevron}>{collapsed ? '▸' : '▾'}</Text>
+        {collapsed ? (
+          <ChevronRight size={15} color={tokens.color.inkMuted} accessibilityLabel="Expand section" />
+        ) : (
+          <ChevronDown size={15} color={tokens.color.inkMuted} accessibilityLabel="Collapse section" />
+        )}
       </View>
     </Pressable>
   );
@@ -348,38 +369,67 @@ function PantryRow({
   item,
   now,
   selected,
+  swipeEnabled,
   onPress,
   onLongPress,
+  onResolve,
 }: {
   item: PantryItem;
   now: Date;
   selected: boolean;
+  swipeEnabled: boolean;
   onPress: () => void;
   onLongPress: () => void;
+  onResolve: (item: PantryItem, kind: 'used' | 'remove') => void;
 }) {
   const status = getExpiryStatus(item, now);
   const expiryText = formatExpiryMeta(item, now);
   return (
-    <Pressable
-      onPress={onPress}
-      onLongPress={onLongPress}
-      accessibilityState={{ selected }}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed, selected && styles.rowSelected]}
+    <Swipeable
+      enabled={swipeEnabled}
+      overshootRight={false}
+      renderRightActions={() => (
+        <View style={styles.swipeActions}>
+          <Pressable
+            style={[styles.swipeBtn, styles.swipeUsed]}
+            onPress={() => onResolve(item, 'used')}
+            accessibilityRole="button"
+            accessibilityLabel={`Mark ${item.name} used`}
+          >
+            <Text style={styles.swipeTxt}>✓ Used</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.swipeBtn, styles.swipeRemove]}
+            onPress={() => onResolve(item, 'remove')}
+            accessibilityRole="button"
+            accessibilityLabel={`Remove ${item.name}`}
+          >
+            <Text style={styles.swipeTxt}>Remove</Text>
+          </Pressable>
+        </View>
+      )}
     >
-      <View style={styles.rowMain}>
-        <Text style={styles.name}>
-          {selected ? '✓  ' : ''}
-          {item.name}
-        </Text>
-        <Text style={styles.meta}>
-          {item.quantity}
-          {item.unit ? ` ${item.unit}` : ''}
-          {item.location ? ` · ${item.location}` : ''}
-          {item.brand ? ` · ${item.brand}` : ''}
-        </Text>
-      </View>
-      {expiryText && <ExpiryPill status={status} label={expiryText} />}
-    </Pressable>
+      <Pressable
+        onPress={onPress}
+        onLongPress={onLongPress}
+        accessibilityState={{ selected }}
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed, selected && styles.rowSelected]}
+      >
+        <View style={styles.rowMain}>
+          <Text style={styles.name}>
+            {selected ? '✓  ' : ''}
+            {item.name}
+          </Text>
+          <Text style={styles.meta}>
+            {item.quantity}
+            {item.unit ? ` ${item.unit}` : ''}
+            {item.location ? ` · ${item.location}` : ''}
+            {item.brand ? ` · ${item.brand}` : ''}
+          </Text>
+        </View>
+        {expiryText && <ExpiryPill status={status} label={expiryText} />}
+      </Pressable>
+    </Swipeable>
   );
 }
 
@@ -466,7 +516,6 @@ const styles = StyleSheet.create({
   sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
   sectionView: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   sectionCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
-  sectionChevron: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -474,12 +523,18 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space(3),
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tokens.color.line,
+    backgroundColor: tokens.color.surface, // opaque so swipe actions hide when closed
   },
   rowPressed: { backgroundColor: tokens.color.surfaceAlt },
   rowSelected: { backgroundColor: tokens.color.accentSoft },
   rowMain: { flex: 1, marginRight: tokens.space(3) },
   name: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
   meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
+  swipeActions: { flexDirection: 'row' },
+  swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
+  swipeUsed: { backgroundColor: tokens.color.success },
+  swipeRemove: { backgroundColor: tokens.semantic.expiry.expired },
+  swipeTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,
