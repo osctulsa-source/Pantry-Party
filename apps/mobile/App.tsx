@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PowerSyncContext, type PowerSyncDatabase } from '@powersync/react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
@@ -188,6 +189,7 @@ export default function App() {
   }
 
   return (
+    <GestureHandlerRootView style={styles.flex}>
     <SafeAreaProvider>
       <StatusBar style={tokens.colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* PowerSyncContext makes the db instance available to useQuery() hooks
@@ -205,10 +207,12 @@ export default function App() {
         </AuthProvider>
       </PowerSyncContext.Provider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   loading: {
     flex: 1,
     alignItems: 'center',

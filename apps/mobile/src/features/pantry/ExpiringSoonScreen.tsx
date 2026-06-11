@@ -20,6 +20,7 @@ import { useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@powersync/react-native';
+import * as Haptics from 'expo-haptics';
 
 import { addDaysUTC, getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -79,6 +80,7 @@ export function ExpiringSoonScreen() {
       await recordExpiryEvents(activeHouseholdId, [
         { kind, itemName: item.name, at: new Date().toISOString() },
       ]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     } finally {
@@ -97,6 +99,7 @@ export function ExpiringSoonScreen() {
         Date.now(),
         item.id,
       ]);
+      Haptics.selectionAsync().catch(() => {});
     } catch (e: unknown) {
       Alert.alert('Could not snooze', e instanceof Error ? e.message : 'Try again.');
     } finally {
