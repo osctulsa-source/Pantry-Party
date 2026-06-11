@@ -6,10 +6,13 @@
 //    the promotion trigger has fired. That route shipped as the LAST Express
 //    addition; the next endpoint belongs to the promoted backend.
 
+// Sentry first — the SDK must load before express to auto-instrument.
+import './sentry.js';
 import express from 'express';
 import { householdRouter } from './routes/household.js';
 import { uploadRouter } from './routes/upload.js';
 import { recipesRouter } from './routes/recipes.js';
+import { attachSentryErrorHandler } from './sentry.js';
 
 const PORT = Number(process.env.API_PORT ?? '8090');
 
@@ -38,6 +41,9 @@ app.get('/health', (_req, res) => {
 app.use(uploadRouter);
 app.use(householdRouter);
 app.use(recipesRouter);
+
+// Sentry's Express error handler sits after the routes (no-op when disabled).
+attachSentryErrorHandler(app);
 
 app.listen(PORT, () => {
   console.log(`[api] listening on :${PORT}`);
