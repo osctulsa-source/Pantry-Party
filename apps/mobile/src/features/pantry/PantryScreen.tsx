@@ -466,10 +466,10 @@ function PantryRow({
   const days = daysUntilExpiry(item, now);
   // Silence far-out timelines: pill shows for warning/expired always, plus a
   // calm preview while an item is within SOON_PREVIEW_DAYS. Everything else
-  // (incl. undated staples) renders no pill.
-  const showPill =
-    expiryText !== undefined &&
-    (status !== 'fresh' || (days !== undefined && days <= SOON_PREVIEW_DAYS));
+  // (incl. undated staples) renders no pill. The `expiryText !== undefined`
+  // guard at the JSX site narrows the label to string for strict TS.
+  const withinSoonWindow =
+    status !== 'fresh' || (days !== undefined && days <= SOON_PREVIEW_DAYS);
   // Urgent rows get a status-colored left bar so the "Use soon" block reads as
   // one contiguous card (fresh rows have no bar).
   const barColor =
@@ -526,7 +526,9 @@ function PantryRow({
             {item.brand ? ` · ${item.brand}` : ''}
           </Text>
         </View>
-        {showPill && <ExpiryPill status={status} label={expiryText} />}
+        {expiryText !== undefined && withinSoonWindow && (
+          <ExpiryPill status={status} label={expiryText} />
+        )}
       </Pressable>
     </Swipeable>
   );
