@@ -52,7 +52,13 @@ import { ChevronDown, ChevronRight, Search, X } from 'lucide-react-native';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
-import { getExpiryStatus, parsePantryItem, type PantryItem } from '@breadbox/core';
+import {
+  getExpiryStatus,
+  groupIdenticalItems,
+  parsePantryItem,
+  type PantryItem,
+  type PantryItemGroup,
+} from '@breadbox/core';
 import { formatExpiryMeta, daysUntilExpiry } from './expiryFormat';
 import { ExpiryPill } from '../../components/ExpiryPill';
 import { recordExpiryEvents } from './expiryEvents';
@@ -75,8 +81,20 @@ const SOON_PREVIEW_DAYS = 14;
 interface PantrySection {
   title: string;
   urgent: boolean;
-  count: number; // full size, even when collapsed
-  data: PantryItem[]; // empty when collapsed
+  count: number; // full ITEM count, even when collapsed (rows may be fewer after merge)
+  data: PantryItemGroup[]; // display groups (safe-merged); empty when collapsed
+}
+
+/** Wrap items as one-group-each — used in search mode, where we don't merge so
+ *  every match is individually visible and editable. */
+function singletonGroups(items: PantryItem[]): PantryItemGroup[] {
+  return items.map((item) => ({
+    key: item.id,
+    items: [item],
+    representative: item,
+    count: 1,
+    totalQuantity: item.quantity,
+  }));
 }
 
 function rowToPantryItem(row: PantryItemRow): PantryItem {
@@ -164,12 +182,18 @@ export function PantryScreen() {
   const [busy, setBusy] = useState(false);
   const selecting = selected.size > 0;
 
-  function toggleSelect(id: string) {
+  // A merged row represents N underlying records; selection is all-or-nothing
+  // across the group so bulk actions (and the swipe path) stay consistent.
+  function toggleSelectGroup(ids: string[]) {
+    if (ids.length === 0) return;
     Haptics.selectionAsync().catch(() => {});
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const allSelected = ids.every((id) => next.has(id));
+      for (const id of ids) {
+        if (allSelected) next.delete(id);
+        else next.add(id);
+      }
       return next;
     });
   }
@@ -247,9 +271,14 @@ export function PantryScreen() {
       byLocation.set(loc, bucket);
     }
 
+    // Merge identical rows for display — but not while searching, where every
+    // match should be individually visible/editable.
+    const toGroups = (bucket: PantryItem[]) =>
+      isSearching ? singletonGroups(bucket) : groupIdenticalItems(bucket);
+
     const out: PantrySection[] = [];
     if (urgent.length > 0) {
-      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') && !isSearching ? [] : urgent });
+      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') && !isSearching ? [] : toGroups(urgent) });
     }
 
     const locations = [...byLocation.keys()].sort((a, b) => {
@@ -262,7 +291,7 @@ export function PantryScreen() {
     for (const loc of locations) {
       const bucket = byLocation.get(loc) ?? [];
       const title = titleCase(loc);
-      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) && !isSearching ? [] : bucket });
+      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) && !isSearching ? [] : toGroups(bucket) });
     }
     return out;
   }, [visibleItems, now, collapsed, isSearching]);
@@ -351,22 +380,28 @@ export function PantryScreen() {
           )}
         </View>
       )}
-      <SectionList<PantryItem, PantrySection>
+      <SectionList<PantryItemGroup, PantrySection>
         sections={sections}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PantryRow
-            item={item}
-            now={now}
-            selected={selected.has(item.id)}
-            swipeEnabled={!selecting && !busy}
-            onPress={() =>
-              selecting ? toggleSelect(item.id) : navigation.navigate('EditItem', { itemId: item.id })
-            }
-            onLongPress={() => toggleSelect(item.id)}
-            onResolve={(target, kind) => resolveItems([target.id], kind)}
-          />
-        )}
+        keyExtractor={(group) => group.representative.id}
+        renderItem={({ item: group }) => {
+          const ids = group.items.map((i) => i.id);
+          const groupSelected = group.items.every((i) => selected.has(i.id));
+          return (
+            <PantryGroupRow
+              group={group}
+              now={now}
+              selected={groupSelected}
+              swipeEnabled={!selecting && !busy}
+              onPress={() =>
+                selecting
+                  ? toggleSelectGroup(ids)
+                  : navigation.navigate('EditItem', { itemId: group.representative.id })
+              }
+              onLongPress={() => toggleSelectGroup(ids)}
+              onResolve={(kind) => resolveItems(ids, kind)}
+            />
+          );
+        }}
         renderSectionHeader={({ section }) => (
           <SectionHeader
             section={section}
@@ -401,7 +436,7 @@ function SectionHeader({
   onCook,
   onViewAll,
 }: {
-  section: SectionListData<PantryItem, PantrySection>;
+  section: SectionListData<PantryItemGroup, PantrySection>;
   collapsed: boolean;
   onToggle: () => void;
   onCook?: () => void;
@@ -444,8 +479,19 @@ function SectionHeader({
   );
 }
 
-function PantryRow({
-  item,
+/**
+ * One row = one display group (safe-merged identical items). Status/expiry come
+ * from the representative (all members share the same date by construction).
+ * Swipe + multi-select act on the WHOLE group: resolving "used"/"remove" hits
+ * every underlying record, and selection toggles all member ids together.
+ *
+ * v1 limitation: tap-to-edit opens the representative record. Members are
+ * identical in every displayed field, so this is well-defined for all of them
+ * except per-record quantity; editing the date/name/unit of the representative
+ * naturally splits it back out of the group.
+ */
+function PantryGroupRow({
+  group,
   now,
   selected,
   swipeEnabled,
@@ -453,21 +499,22 @@ function PantryRow({
   onLongPress,
   onResolve,
 }: {
-  item: PantryItem;
+  group: PantryItemGroup;
   now: Date;
   selected: boolean;
   swipeEnabled: boolean;
   onPress: () => void;
   onLongPress: () => void;
-  onResolve: (item: PantryItem, kind: 'used' | 'remove') => void;
+  onResolve: (kind: 'used' | 'remove') => void;
 }) {
-  const status = getExpiryStatus(item, now);
-  const expiryText = formatExpiryMeta(item, now);
-  const days = daysUntilExpiry(item, now);
+  const rep = group.representative;
+  const status = getExpiryStatus(rep, now);
+  const expiryText = formatExpiryMeta(rep, now);
+  const days = daysUntilExpiry(rep, now);
   // Silence far-out timelines: pill shows for warning/expired always, plus a
-  // calm preview while an item is within SOON_PREVIEW_DAYS. Everything else
-  // (incl. undated staples) renders no pill. The `expiryText !== undefined`
-  // guard at the JSX site narrows the label to string for strict TS.
+  // calm preview while within SOON_PREVIEW_DAYS. Everything else (incl. undated
+  // staples) renders no pill. The `expiryText !== undefined` guard at the JSX
+  // site narrows the label to string for strict TS.
   const withinSoonWindow =
     status !== 'fresh' || (days !== undefined && days <= SOON_PREVIEW_DAYS);
   // Urgent rows get a status-colored left bar so the "Use soon" block reads as
@@ -478,6 +525,10 @@ function PantryRow({
       : status === 'warning'
         ? tokens.semantic.expiry.warning
         : undefined;
+  // Summed quantity; trim float noise from fractional sums (e.g. 0.1 + 0.2).
+  const qty = Number.isInteger(group.totalQuantity)
+    ? group.totalQuantity
+    : Math.round(group.totalQuantity * 100) / 100;
   return (
     <Swipeable
       enabled={swipeEnabled}
@@ -486,17 +537,17 @@ function PantryRow({
         <View style={styles.swipeActions}>
           <Pressable
             style={[styles.swipeBtn, styles.swipeUsed]}
-            onPress={() => onResolve(item, 'used')}
+            onPress={() => onResolve('used')}
             accessibilityRole="button"
-            accessibilityLabel={`Mark ${item.name} used`}
+            accessibilityLabel={group.count > 1 ? `Mark ${group.count} ${rep.name} used` : `Mark ${rep.name} used`}
           >
             <Text style={styles.swipeTxt}>✓ Used</Text>
           </Pressable>
           <Pressable
             style={[styles.swipeBtn, styles.swipeRemove]}
-            onPress={() => onResolve(item, 'remove')}
+            onPress={() => onResolve('remove')}
             accessibilityRole="button"
-            accessibilityLabel={`Remove ${item.name}`}
+            accessibilityLabel={group.count > 1 ? `Remove ${group.count} ${rep.name}` : `Remove ${rep.name}`}
           >
             <Text style={styles.swipeTxt}>Remove</Text>
           </Pressable>
@@ -515,15 +566,22 @@ function PantryRow({
         ]}
       >
         <View style={styles.rowMain}>
-          <Text style={styles.name}>
-            {selected ? '✓  ' : ''}
-            {item.name}
-          </Text>
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>
+              {selected ? '✓  ' : ''}
+              {rep.name}
+            </Text>
+            {group.count > 1 && (
+              <View style={styles.countChip} accessibilityLabel={`${group.count} entries`}>
+                <Text style={styles.countChipText}>×{group.count}</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.meta}>
-            {item.quantity}
-            {item.unit ? ` ${item.unit}` : ''}
-            {item.location ? ` · ${item.location}` : ''}
-            {item.brand ? ` · ${item.brand}` : ''}
+            {qty}
+            {rep.unit ? ` ${rep.unit}` : ''}
+            {rep.location ? ` · ${rep.location}` : ''}
+            {rep.brand ? ` · ${rep.brand}` : ''}
           </Text>
         </View>
         {expiryText !== undefined && withinSoonWindow && (
@@ -669,7 +727,20 @@ const styles = StyleSheet.create({
   rowPressed: { backgroundColor: tokens.color.surfaceAlt },
   rowSelected: { backgroundColor: tokens.color.accentSoft },
   rowMain: { flex: 1, marginRight: tokens.space(3) },
-  name: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
+  name: { flexShrink: 1, fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
+  countChip: {
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: tokens.space(2),
+    paddingVertical: 1,
+  },
+  countChipText: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    color: tokens.color.accent,
+    fontVariant: ['tabular-nums'],
+  },
   meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
   swipeActions: { flexDirection: 'row' },
   swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
