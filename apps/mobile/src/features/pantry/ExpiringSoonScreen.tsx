@@ -13,11 +13,12 @@
  *            date — an item that expired last week should re-surface the day
  *            after tomorrow, not stay buried in the past)
  *
- * Reactive via useQuery — resolved rows disappear live. Events feed the
- * November motivation arc (savings math, positive-action streak).
+ * Reactive via useQuery — resolved rows ease out live (rows animate via
+ * LayoutAnimation when the urgent count changes; Phase 3 motion pass). Events
+ * feed the November motivation arc (savings math, positive-action streak).
  */
-import { useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, FlatList, LayoutAnimation, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@powersync/react-native';
 import * as Haptics from 'expo-haptics';
@@ -65,6 +66,19 @@ export function ExpiringSoonScreen() {
     () => rows.map(rowToPantryItem).filter((i) => getExpiryStatus(i, now) !== 'fresh'),
     [rows, now],
   );
+
+  // Resolved/snoozed rows ease out instead of blinking away (Phase 3 motion
+  // pass). Keyed on the urgent COUNT; first emission exempt so the initial
+  // list doesn't play an entrance animation.
+  const lastUrgentCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (lastUrgentCount.current !== null && lastUrgentCount.current !== urgent.length) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      );
+    }
+    lastUrgentCount.current = urgent.length;
+  }, [urgent]);
 
   async function resolve(item: PantryItem, kind: ExpiryEventKind) {
     if (busyId) return;

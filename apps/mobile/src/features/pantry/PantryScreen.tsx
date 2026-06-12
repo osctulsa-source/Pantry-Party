@@ -32,10 +32,12 @@
  * SOON_PREVIEW_DAYS — everything further out (incl. shelf-stable staples) stays
  * clean. All styling pulls from theme/tokens (ADR-006).
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
+  LayoutAnimation,
   Pressable,
   RefreshControl,
   SectionList,
@@ -139,10 +141,10 @@ function titleCase(s: string): string {
 
 /**
  * Live sync indicator: PowerSync status → one calm, label-free dot in the
- * header corner (Phase 2 streamline — the offline-first engine should hum in
- * the background, not occupy real estate). State is still fully exposed to
- * assistive tech via the accessibility label; a subtle pulse while syncing is
- * queued for the Phase 3 motion pass.
+ * header corner (the offline-first engine should hum in the background, not
+ * occupy real estate). Motion IS the status language: a gentle opacity pulse
+ * while data is in flight, dead still when settled or offline. State stays
+ * fully exposed to assistive tech via the accessibility label.
  */
 function SyncDot() {
   const status = useStatus();
@@ -153,9 +155,25 @@ function SyncDot() {
       : tokens.color.success
     : tokens.color.inkMuted;
   const label = status.connected ? (syncing ? 'Syncing' : 'Synced') : 'Offline';
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (!syncing) {
+      pulse.stopAnimation();
+      pulse.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 0.35, duration: 600, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [syncing, pulse]);
   return (
     <View style={styles.syncWrap} accessibilityLabel={`Sync status: ${label}`}>
-      <View style={[styles.syncDot, { backgroundColor: color }]} />
+      <Animated.View style={[styles.syncDot, { backgroundColor: color, opacity: pulse }]} />
     </View>
   );
 }
@@ -167,12 +185,24 @@ export function PantryScreen() {
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
 
   const [items, setItems] = useState<PantryItem[]>([]);
+  // Animate list reshapes when the item COUNT changes (resolve/remove/add —
+  // local or synced in from another device), so rows ease out instead of
+  // blinking away. First emission is exempt (no entrance animation on load);
+  // searching/collapsing don't pass through here, so they stay instant.
+  const lastCount = useRef<number | null>(null);
   useEffect(() => {
     if (error) {
       console.warn('[PantryScreen] reactive query error:', error);
       return;
     }
-    setItems(rows.map(rowToPantryItem));
+    const next = rows.map(rowToPantryItem);
+    if (lastCount.current !== null && lastCount.current !== next.length) {
+      LayoutAnimation.configureNext(
+        LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+      );
+    }
+    lastCount.current = next.length;
+    setItems(next);
   }, [rows, error]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -418,7 +448,15 @@ export function PantryScreen() {
             section={section}
             collapsed={collapsed.has(section.title)}
             onToggle={() => toggleSection(section.title)}
-            onCook={section.urgent ? () => navigation.navigate('CookTab') : undefined}
+            onCook={
+              section.urgent
+                ? () => {
+                    // Light impact — this is the differentiator moment (expiry → cook).
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                    navigation.navigate('CookTab');
+                  }
+                : undefined
+            }
             onViewAll={section.urgent ? () => navigation.navigate('ExpiringSoon') : undefined}
           />
         )}
