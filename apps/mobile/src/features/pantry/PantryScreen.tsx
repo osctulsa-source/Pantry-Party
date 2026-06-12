@@ -71,6 +71,8 @@ import { ExpiryPill } from '../../components/ExpiryPill';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useAuth } from '../auth/AuthContext';
+import { addToShoppingList } from '../shopping/addToShoppingList';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -169,6 +171,10 @@ function SyncDot() {
 export function PantryScreen() {
   const navigation = useNavigation<PantryNav>();
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
+  const { state: authState } = useAuth();
+  const authedUserId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  // Rows whose running-low "+ List" was tapped this session (feedback state).
+  const [listed, setListed] = useState<Set<string>>(new Set());
 
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
 
@@ -295,6 +301,25 @@ export function PantryScreen() {
       );
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
+    }
+  }
+
+  /** Running-low → shopping list: dedupe-aware add with source 'low'. */
+  async function addLowToList(item: PantryItem) {
+    if (!authedUserId || !activeHouseholdId) return;
+    Haptics.selectionAsync().catch(() => {});
+    try {
+      await addToShoppingList({
+        householdId: activeHouseholdId,
+        userId: authedUserId,
+        name: item.name,
+        source: 'low',
+        unit: item.unit ?? null,
+      });
+      // 'already' also means it's on the list — same feedback either way.
+      setListed((prev) => new Set(prev).add(item.id));
+    } catch (e: unknown) {
+      Alert.alert('Could not add to list', e instanceof Error ? e.message : 'Try again.');
     }
   }
 
@@ -457,6 +482,8 @@ export function PantryScreen() {
               onLongPress={() => toggleSelectGroup(ids)}
               onResolve={(kind) => resolveItems(ids, kind)}
               onCycleFill={(target) => cycleFill(target)}
+              onAddToList={(target) => void addLowToList(target)}
+              isListed={group.items.some((i) => listed.has(i.id))}
             />
           );
         }}
@@ -565,6 +592,8 @@ function PantryGroupRow({
   onLongPress,
   onResolve,
   onCycleFill,
+  onAddToList,
+  isListed,
 }: {
   group: PantryItemGroup;
   now: Date;
@@ -574,6 +603,8 @@ function PantryGroupRow({
   onLongPress: () => void;
   onResolve: (kind: 'used' | 'remove') => void;
   onCycleFill: (item: PantryItem) => void;
+  onAddToList: (item: PantryItem) => void;
+  isListed: boolean;
 }) {
   const rep = group.representative;
   const status = getExpiryStatus(rep, now);
@@ -689,6 +720,24 @@ function PantryGroupRow({
                     rep.fillLevel <= 0.25 && styles.fillBarLow,
                   ]}
                 />
+              </Pressable>
+            )}
+            {rep.fillLevel !== undefined && rep.fillLevel <= 0.25 && group.count === 1 && (
+              // Running low → one tap onto the shopping list (dedupe-aware).
+              <Pressable
+                onPress={() => onAddToList(rep)}
+                hitSlop={6}
+                disabled={isListed}
+                pointerEvents={swipeEnabled ? 'auto' : 'none'}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isListed ? `${rep.name} is on the shopping list` : `Add ${rep.name} to the shopping list`
+                }
+                style={[styles.listChip, isListed && styles.listChipDone]}
+              >
+                <Text style={[styles.listChipTxt, isListed && styles.listChipTxtDone]}>
+                  {isListed ? '✓ Listed' : '+ List'}
+                </Text>
               </Pressable>
             )}
           </View>
@@ -858,6 +907,16 @@ const styles = StyleSheet.create({
   },
   fillBar: { height: 6, borderRadius: 999, backgroundColor: tokens.color.accent },
   fillBarLow: { backgroundColor: tokens.semantic.expiry.warning },
+  listChip: {
+    paddingVertical: 2,
+    paddingHorizontal: tokens.space(2),
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  listChipDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
+  listChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent },
+  listChipTxtDone: { color: tokens.color.accent },
   swipeActions: { flexDirection: 'row' },
   swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
   swipeUsed: { backgroundColor: tokens.color.success },
