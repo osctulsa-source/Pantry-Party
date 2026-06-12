@@ -13,9 +13,15 @@
  * mount and handled in notificationActions.ts — resolving from the lock
  * screen rides the same write paths as the in-app buttons, and the resulting
  * items change re-triggers this reconciler automatically.
+ *
+ * Android: notifications on 8+ require a CHANNEL or the system falls back to
+ * an auto-created "Miscellaneous" one the user can't recognize. We configure
+ * the 'default' channel (which expo-notifications routes channel-less
+ * notifications to) once at mount — named, high-importance, Crumb-accented.
+ * iOS ignores channels entirely.
  */
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { computeScheduleIntents, type PantryItem } from '@breadbox/core';
 
@@ -23,6 +29,24 @@ import { expoScheduler, ensureNotificationPermission } from './expoScheduler';
 import { handleExpiryActionResponse, registerExpiryCategory } from './notificationActions';
 
 const NOTIFICATION_TITLE = 'Pantry';
+
+/**
+ * Android 8+ notification channel. Configures the 'default' channel that
+ * expo-notifications uses for notifications scheduled without an explicit
+ * channelId — so the scheduler stays untouched. Color matches the
+ * expo-notifications plugin accent in app.config.js (brand-stable literal,
+ * not the theme token, because channels are system-level and outlive the
+ * app's light/dark choice).
+ */
+async function ensureAndroidChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  await Notifications.setNotificationChannelAsync('default', {
+    name: 'Expiry reminders',
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 200],
+    lightColor: '#2E5D3A',
+  });
+}
 
 function bodyFor(itemName: string, days: number): string {
   if (days >= 2) return `${itemName} expires in ${days} days`;
@@ -46,8 +70,11 @@ async function reconcile(items: PantryItem[]): Promise<void> {
 }
 
 export function useExpiryNotifications(items: PantryItem[]): void {
-  // One-time: register the action category + listen for action taps.
+  // One-time: Android channel + action category + action-tap listener.
   useEffect(() => {
+    ensureAndroidChannel().catch((err) =>
+      console.warn('[expiry] android channel setup failed', err),
+    );
     registerExpiryCategory().catch((err) =>
       console.warn('[expiry] category registration failed', err),
     );
