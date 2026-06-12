@@ -20,33 +20,14 @@
 import { useMemo } from 'react';
 import { useQuery } from '@powersync/react-native';
 
-import { parsePantryItem, type PantryItem } from '@breadbox/core';
+import type { PantryItem } from '@breadbox/core';
+import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 
 const PANTRY_QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
   'ORDER BY (expires_at IS NULL), expires_at ASC, name ASC';
-
-function rowToPantryItem(row: PantryItemRow): PantryItem {
-  return parsePantryItem({
-    id: row.id,
-    householdId: row.household_id,
-    name: row.name,
-    brand: row.brand ?? undefined,
-    category: row.category ?? undefined,
-    barcode: row.barcode ?? undefined,
-    quantity: row.quantity,
-    unit: row.unit ?? undefined,
-    location: row.location,
-    addedAt: row.added_at,
-    expiresAt: row.expires_at ?? undefined,
-    source: row.source,
-    addedBy: row.added_by,
-    updatedAt: row.updated_at,
-    deleted: row.deleted === 1,
-  });
-}
 
 export function usePantryItems(): {
   items: PantryItem[];
