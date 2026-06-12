@@ -19,16 +19,18 @@
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
-import { Carrot, ChefHat, Settings as SettingsGear } from 'lucide-react-native';
+import { Carrot, ChefHat, Settings as SettingsGear, ShoppingCart } from 'lucide-react-native';
 
 import { tokens } from '../theme/tokens';
 import { PantryScreen } from '../features/pantry/PantryScreen';
 import { RecipesScreen } from '../features/recipes/RecipesScreen';
+import { ShoppingScreen } from '../features/shopping/ShoppingScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 
 export type TabParamList = {
   PantryTab: undefined;
   CookTab: undefined;
+  ShoppingTab: undefined;
   SettingsTab: undefined;
 };
 
@@ -77,6 +79,14 @@ export function MainTabs() {
         options={{
           title: 'Cook',
           tabBarIcon: ({ color, size }) => <ChefHat size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="ShoppingTab"
+        component={ShoppingScreen}
+        options={{
+          title: 'Shopping',
+          tabBarIcon: ({ color, size }) => <ShoppingCart size={size} color={color} />,
         }}
       />
       <Tab.Screen
