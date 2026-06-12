@@ -28,7 +28,7 @@ type CrudEntry = z.infer<typeof CrudEntrySchema>;
 // The set of tables this throwaway service knows how to write. New tables
 // require an entry here AND a matching apply* function. Anything else 4xx's
 // rather than silently no-op'ing.
-const KNOWN_TABLES = new Set(['households', 'user_households', 'pantry_items']);
+const KNOWN_TABLES = new Set(['households', 'user_households', 'pantry_items', 'shopping_list_items']);
 
 // For each table, the columns we'll accept and forward to Postgres. Anything
 // else in `data` is dropped — defensive against future schema additions on the
@@ -59,6 +59,20 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'deleted',
     'fill_level',
   ],
+  shopping_list_items: [
+    'id',
+    'household_id',
+    'name',
+    'quantity',
+    'unit',
+    'note',
+    'checked',
+    'source',
+    'added_by',
+    'added_at',
+    'updated_at',
+    'deleted',
+  ],
 };
 
 // Columns whose value MUST equal req.userId (the verified JWT `sub`). This is
@@ -67,29 +81,41 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
   households: ['created_by'],
   user_households: ['user_id'],
   pantry_items: ['added_by'],
+  shopping_list_items: ['added_by'],
 };
 
-// Editable columns for a PATCH on pantry_items. Everything else is immutable
+// Editable columns for a PATCH, per table. Everything else is immutable
 // post-insert: id / household_id / added_by / source / added_at can never be
 // reassigned, so attempting to set one is a 400 (not a silent drop) — a client
 // trying to move an item between households or rewrite provenance is a bug or
-// an attack, and we want it loud. `deleted` is here because the mobile "delete"
-// is a tombstone (UPDATE deleted = 1), not a row removal. `unit` joined the
-// list with the quantity-units feature (July 2026 — UnitPicker in Add/Edit);
-// `brand` joined with the brand-entry feature (Add/Edit brand field);
-// `fill_level` joined with the fill-level feature (Edit "How full?" + the
-// pantry row's tap-to-cycle bar). Range is DB-CHECK-guarded (migration 0001).
-const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
-  'name',
-  'brand',
-  'quantity',
-  'unit',
-  'location',
-  'expires_at',
-  'deleted',
-  'updated_at',
-  'fill_level',
-]);
+// an attack, and we want it loud. `deleted` is present because mobile "delete"
+// is a tombstone (UPDATE deleted = 1), not a row removal.
+// pantry_items history: `unit` joined with quantity-units (July 2026); `brand`
+// with the brand field; `fill_level` with the fill-level feature (range is
+// DB-CHECK-guarded by migration 0001). shopping_list_items joined with the
+// August shopping-list arc (`checked` is the check-off toggle).
+const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
+  pantry_items: new Set([
+    'name',
+    'brand',
+    'quantity',
+    'unit',
+    'location',
+    'expires_at',
+    'deleted',
+    'updated_at',
+    'fill_level',
+  ]),
+  shopping_list_items: new Set([
+    'name',
+    'quantity',
+    'unit',
+    'note',
+    'checked',
+    'deleted',
+    'updated_at',
+  ]),
+};
 
 // Carries an HTTP status alongside the message so the route can translate a
 // failure deep inside the transaction (e.g. tenancy 403, row-not-found 404)
@@ -105,7 +131,9 @@ export class UploadError extends Error {
 }
 
 /**
- * Applies a single PATCH op to pantry_items inside an already-open transaction.
+ * Applies a single PATCH op inside an already-open transaction, for any table
+ * with a PATCH_ALLOWED_BY_TABLE entry (pantry_items, shopping_list_items —
+ * both household-scoped with identical tenancy shape).
  *
  * Edit AND delete both arrive here: delete is just a PATCH with deleted = 1
  * (tombstone). Order of checks matters — shape/allowlist (400) before any IO,
@@ -115,19 +143,26 @@ export class UploadError extends Error {
  * payload only carries the columns being changed, never household_id (it's
  * immutable + forbidden), so we must read the target row to learn which
  * household it belongs to and confirm the caller is a member. Without this a
- * user could edit another household's items by spoofing item IDs.
+ * user could edit another household's rows by spoofing ids.
  *
  * Idempotent: re-applying the same payload sets the same values, so a PowerSync
  * retry of an already-applied op doesn't drift state.
+ *
+ * Name note: kept as handlePatchPantryItem (its original single-table name)
+ * so existing imports/tests stay stable; rename to handlePatch at the ADR-008
+ * NestJS promotion.
  */
 export async function handlePatchPantryItem(
   entry: CrudEntry,
   userId: string,
   client: PoolClient,
 ): Promise<void> {
-  if (entry.type !== 'pantry_items') {
+  const allowed = PATCH_ALLOWED_BY_TABLE[entry.type];
+  if (!allowed) {
     throw new UploadError(400, `PATCH not supported for table "${entry.type}"`);
   }
+  // entry.type is allowlist-validated above — never raw user input in SQL.
+  const table = entry.type;
 
   const data = entry.data ?? {};
   const columns = Object.keys(data);
@@ -135,16 +170,18 @@ export async function handlePatchPantryItem(
     throw new UploadError(400, 'PATCH data must set at least one column');
   }
   for (const col of columns) {
-    if (!PATCH_ALLOWED_COLUMNS.has(col)) {
+    if (!allowed.has(col)) {
+      // Message kept byte-identical to the single-table era — wire tests
+      // assert on it.
       throw new UploadError(400, `column "${col}" is not editable via PATCH`);
     }
   }
 
-  const found = await client.query('SELECT household_id FROM pantry_items WHERE id = $1', [
+  const found = await client.query(`SELECT household_id FROM ${table} WHERE id = $1`, [
     entry.id,
   ]);
   if ((found.rowCount ?? 0) === 0) {
-    throw new UploadError(404, `pantry_items row "${entry.id}" not found`);
+    throw new UploadError(404, `${table} row "${entry.id}" not found`);
   }
   const householdId = found.rows[0]?.household_id;
 
@@ -156,11 +193,11 @@ export async function handlePatchPantryItem(
     throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
   }
 
-  // Dynamic but fully parameterized: column names come from the allowlist above
-  // (never user input), values are bound. `id` takes the final placeholder.
+  // Dynamic but fully parameterized: table + column names come from the
+  // allowlists above (never user input), values are bound. `id` is last.
   const setClause = columns.map((col, i) => `${col} = $${i + 1}`).join(', ');
   const values = columns.map((col) => data[col]);
-  await client.query(`UPDATE pantry_items SET ${setClause} WHERE id = $${columns.length + 1}`, [
+  await client.query(`UPDATE ${table} SET ${setClause} WHERE id = $${columns.length + 1}`, [
     ...values,
     entry.id,
   ]);

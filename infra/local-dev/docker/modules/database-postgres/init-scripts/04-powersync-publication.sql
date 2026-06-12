@@ -12,23 +12,19 @@
 --   1. ALTER PUBLICATION powersync ADD TABLE <new_table>;
 --   2. add the stream to sync-config.yaml
 --
--- Renumbered from 02- to 03- in PR A of Shared Household so the
--- 02-household-invites.sql table-creation script runs before this one
--- (a publication can only list tables that already exist).
+-- Renumbered 03- → 04- in the shopping-list arc so 03-shopping-list-items.sql
+-- creates its table first (a publication can only list existing tables) —
+-- same precedent as the earlier 02- → 03- renumbering.
 --
 -- Note: Init scripts run only when the Postgres data directory is empty (first
--- container start). Existing dev volumes keep the old FOR ALL TABLES
--- publication until reset. To apply this change to a live dev database without
--- a volume reset, run:
---   DROP PUBLICATION powersync;
---   CREATE PUBLICATION powersync FOR TABLE
---     households, user_households, pantry_items, household_invites;
--- then restart the powersync service container so it re-reads the slot.
--- Or do a full reset:
---   powersync docker stop --remove --remove-volumes && powersync docker reset
+-- container start). Existing dev volumes evolve via ../migrations/ instead —
+-- migration 0003 ADDs shopping_list_items to the live publication (guarded).
+-- After publication changes, restart the powersync service container so it
+-- re-reads the slot.
 
 CREATE PUBLICATION powersync FOR TABLE
   households,
   user_households,
   pantry_items,
-  household_invites;
+  household_invites,
+  shopping_list_items;
