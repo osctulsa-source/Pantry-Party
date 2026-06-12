@@ -7,17 +7,25 @@
  * - Default staple sections, minus any you've hidden.
  * - Customize mode: pin/remove custom items and show/hide default sections. Layout
  *   config is saved per user on-device (useQuickAddConfig); the bank syncs itself.
+ *
+ * Refinement (guided specificity, PR 2): chips whose food has a known kind
+ * guide carry a small chevron — the chip body stays one-tap instant-add, the
+ * chevron opens RefineSheet (kind + brand + quantity) pre-filled. A refined
+ * add registers the REFINED name in `added` (the base chip stays available:
+ * penne tonight doesn't preclude spaghetti).
  */
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ChevronDown } from 'lucide-react-native';
 
-import { suggestExpiryISO, type StorageLocation } from '@breadbox/core';
+import { guideFor, suggestExpiryISO, type StorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
 import { QuickAddStaples } from './QuickAddStaples';
+import { RefineSheet, type RefineResult } from './RefineSheet';
 import { STAPLE_GROUPS } from './staples';
 import { usePersonalBank } from './usePersonalBank';
 import { useQuickAddConfig, type QuickAddConfig } from './useQuickAddConfig';
@@ -41,6 +49,7 @@ export function QuickAddScreen() {
   const [editing, setEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [refining, setRefining] = useState<AddSpec | null>(null);
 
   // "Your items" = pinned custom items first, then the derived bank, de-duped by name.
   const yourItems = useMemo<AddSpec[]>(() => {
@@ -81,6 +90,30 @@ export function QuickAddScreen() {
     }
   }
 
+  /** Insert from the refine sheet: refined name + brand + quantity, with the
+   *  staple's location/expiry defaults. Registers the REFINED name in `added`
+   *  so the base chip stays available for a different kind. */
+  async function addRefined(base: AddSpec, result: RefineResult) {
+    if (!userId || !activeHouseholdId) return;
+    try {
+      await addPantryItem({
+        householdId: activeHouseholdId,
+        userId,
+        name: result.name,
+        brand: result.brand,
+        quantity: result.quantity,
+        location: base.location,
+        expiresIso: base.noExpiry ? null : suggestExpiryISO({ name: result.name, category: base.category }),
+        source: 'manual',
+      });
+      setAdded((prev) => (prev.includes(result.name) ? prev : [...prev, result.name]));
+      setRefining(null);
+    } catch (e: unknown) {
+      setRefining(null);
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }
+
   function onAddCustom() {
     const name = newName.trim();
     if (!name) return;
@@ -111,7 +144,10 @@ export function QuickAddScreen() {
           />
         ) : (
           <>
-            <Text style={styles.hint}>Tap to add — we set a sensible location and expiry. Added items show a ✓.</Text>
+            <Text style={styles.hint}>
+              Tap to add — we set a sensible location and expiry. Added items show a ✓. Chips with a
+              ⌄ can be refined (kind, brand, quantity).
+            </Text>
 
             {yourItems.length > 0 && (
               <View style={styles.group}>
@@ -119,27 +155,53 @@ export function QuickAddScreen() {
                 <View style={styles.chips}>
                   {yourItems.map((it) => {
                     const isAdded = added.includes(it.name);
+                    const refinable = guideFor(it.name) !== undefined;
                     return (
-                      <Pressable
-                        key={it.name}
-                        onPress={() => addOne(it)}
-                        disabled={isAdded}
-                        style={[styles.staple, isAdded && styles.stapleAdded]}
-                      >
-                        <Text style={[styles.stapleTxt, isAdded && styles.stapleTxtAdded]}>
-                          {isAdded ? `✓ ${it.name}` : `+ ${it.name}`}
-                        </Text>
-                      </Pressable>
+                      <View key={it.name} style={[styles.staple, isAdded && styles.stapleAdded]}>
+                        <Pressable onPress={() => addOne(it)} disabled={isAdded} hitSlop={4}>
+                          <Text style={[styles.stapleTxt, isAdded && styles.stapleTxtAdded]}>
+                            {isAdded ? `✓ ${it.name}` : `+ ${it.name}`}
+                          </Text>
+                        </Pressable>
+                        {refinable && (
+                          <Pressable
+                            onPress={() => setRefining(it)}
+                            hitSlop={6}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Refine ${it.name} — choose kind or brand`}
+                            style={styles.refineBtn}
+                          >
+                            <ChevronDown
+                              size={13}
+                              color={isAdded ? tokens.color.accent : tokens.color.inkMuted}
+                            />
+                          </Pressable>
+                        )}
+                      </View>
                     );
                   })}
                 </View>
               </View>
             )}
 
-            <QuickAddStaples added={added} onAdd={(s) => addOne(s)} hiddenGroups={config.hiddenGroups} />
+            <QuickAddStaples
+              added={added}
+              onAdd={(s) => addOne(s)}
+              onRefine={(s) => setRefining(s)}
+              hiddenGroups={config.hiddenGroups}
+            />
           </>
         )}
       </ScrollView>
+
+      {refining && (
+        <RefineSheet
+          baseName={refining.name}
+          householdId={activeHouseholdId}
+          onAdd={(result) => addRefined(refining, result)}
+          onClose={() => setRefining(null)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -241,6 +303,8 @@ const styles = StyleSheet.create({
   sectionGap: { marginTop: tokens.space(6) },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
   staple: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: tokens.space(2),
     paddingHorizontal: tokens.space(3),
     backgroundColor: tokens.color.surfaceAlt,
@@ -249,6 +313,12 @@ const styles = StyleSheet.create({
   stapleAdded: { backgroundColor: tokens.color.accentSoft },
   stapleTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
   stapleTxtAdded: { color: tokens.color.accent },
+  refineBtn: {
+    marginLeft: tokens.space(2),
+    paddingLeft: tokens.space(2),
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: tokens.color.line,
+  },
   muted: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
   manageRow: {
     flexDirection: 'row',
