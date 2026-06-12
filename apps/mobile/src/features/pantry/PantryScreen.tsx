@@ -578,6 +578,14 @@ function PantryGroupRow({
   const qty = Number.isInteger(group.totalQuantity)
     ? group.totalQuantity
     : Math.round(group.totalQuantity * 100) / 100;
+  // Count pips: a glanceable dot-per-item for countable stock (eggs, cans) —
+  // whole counts of 2–12 with a count unit (ct) or none. Deliberately neutral
+  // and denominator-free: without knowing the starting count, "low" can't be
+  // inferred honestly (1 jar ≠ last egg) — the running-low signal arrives
+  // with fill_level. Pips are hidden from screen readers (the "N ct" text
+  // already carries the value).
+  const showPips =
+    (rep.unit == null || rep.unit === 'ct') && Number.isInteger(qty) && qty >= 2 && qty <= 12;
   return (
     <Swipeable
       enabled={swipeEnabled}
@@ -626,6 +634,17 @@ function PantryGroupRow({
               </View>
             )}
           </View>
+          {showPips && (
+            <View
+              style={styles.pipsRow}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              {Array.from({ length: qty }).map((_, i) => (
+                <View key={i} style={styles.pip} />
+              ))}
+            </View>
+          )}
           <Text style={styles.meta}>
             {qty}
             {rep.unit ? ` ${rep.unit}` : ''}
@@ -785,6 +804,8 @@ const styles = StyleSheet.create({
     color: tokens.color.accent,
     fontVariant: ['tabular-nums'],
   },
+  pipsRow: { flexDirection: 'row', gap: 3, marginTop: 4 },
+  pip: { width: 5, height: 5, borderRadius: 999, backgroundColor: tokens.color.inkMuted },
   meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
   swipeActions: { flexDirection: 'row' },
   swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
