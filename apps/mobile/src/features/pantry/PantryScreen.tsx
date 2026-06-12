@@ -58,11 +58,11 @@ import { ChevronDown, ChevronRight, Search, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
+import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import {
   getExpiryStatus,
   groupIdenticalItems,
-  parsePantryItem,
   type PantryItem,
   type PantryItemGroup,
 } from '@breadbox/core';
@@ -113,26 +113,6 @@ function singletonGroups(items: PantryItem[]): PantryItemGroup[] {
     count: 1,
     totalQuantity: item.quantity,
   }));
-}
-
-function rowToPantryItem(row: PantryItemRow): PantryItem {
-  return parsePantryItem({
-    id: row.id,
-    householdId: row.household_id,
-    name: row.name,
-    brand: row.brand ?? undefined,
-    category: row.category ?? undefined,
-    barcode: row.barcode ?? undefined,
-    quantity: row.quantity,
-    unit: row.unit ?? undefined,
-    location: row.location,
-    addedAt: row.added_at,
-    expiresAt: row.expires_at ?? undefined,
-    source: row.source,
-    addedBy: row.added_by,
-    updatedAt: row.updated_at,
-    deleted: row.deleted === 1,
-  });
 }
 
 function titleCase(s: string): string {
