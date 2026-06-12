@@ -18,6 +18,8 @@ import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
+import { ScanScreen } from './src/features/capture/ScanScreen';
+import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
@@ -43,6 +45,8 @@ import { useOnboarding } from './src/features/onboarding/useOnboarding';
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   AddItem: undefined;
+  Scan: undefined;
+  BulkPaste: undefined;
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
@@ -96,6 +100,8 @@ function AppStack() {
     >
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
+      <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan a barcode' }} />
+      <Stack.Screen name="BulkPaste" component={BulkPasteScreen} options={{ title: 'Paste a list' }} />
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
