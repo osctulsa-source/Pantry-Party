@@ -25,8 +25,9 @@ const SPOONACULAR_BASE = 'https://api.spoonacular.com/recipes';
  *     touching the quota or the limiter.
  *
  * Body mirrors the mobile client's searchByMeal options. The response is the
- * trimmed complexSearch shape the client already maps (results[].usedIngredients
- * carries names for the "I cooked this" matcher).
+ * trimmed complexSearch shape the client already maps: results[].usedIngredients
+ * carries names for the "I cooked this" matcher, and results[].missedIngredients
+ * carries names for "Add N missing to list" (shopping arc S2b-B).
  */
 const BodySchema = z.object({
   ingredients: z.array(z.string().trim().min(1).max(80)).min(1).max(60),
@@ -43,6 +44,7 @@ export interface TrimmedRecipe {
   missedIngredientCount: number;
   likes: number;
   usedIngredients: Array<{ name: string }>;
+  missedIngredients: Array<{ name: string }>;
   /** Spoonacular 0–100 healthiness score; null when the API omits it. */
   healthScore: number | null;
   vegetarian: boolean;
@@ -58,6 +60,7 @@ interface UpstreamResult {
   missedIngredientCount?: number;
   likes?: number;
   usedIngredients?: Array<{ name?: string }>;
+  missedIngredients?: Array<{ name?: string }>;
   healthScore?: number;
   vegetarian?: boolean;
   vegan?: boolean;
@@ -65,6 +68,11 @@ interface UpstreamResult {
 }
 interface UpstreamResponse {
   results?: UpstreamResult[];
+}
+
+/** Names only — aisle/amount and other upstream noise trimmed, blanks dropped. */
+function trimIngredientNames(list: Array<{ name?: string }> | undefined): Array<{ name: string }> {
+  return (list ?? []).map((i) => ({ name: i.name ?? '' })).filter((i) => i.name.length > 0);
 }
 
 export interface RecipesRouterOptions {
@@ -153,9 +161,8 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
         usedIngredientCount: r.usedIngredientCount ?? 0,
         missedIngredientCount: r.missedIngredientCount ?? 0,
         likes: r.likes ?? 0,
-        usedIngredients: (r.usedIngredients ?? [])
-          .map((i) => ({ name: i.name ?? '' }))
-          .filter((i) => i.name.length > 0),
+        usedIngredients: trimIngredientNames(r.usedIngredients),
+        missedIngredients: trimIngredientNames(r.missedIngredients),
         healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
         vegetarian: r.vegetarian ?? false,
         vegan: r.vegan ?? false,

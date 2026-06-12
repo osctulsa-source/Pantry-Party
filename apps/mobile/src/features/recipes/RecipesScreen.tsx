@@ -52,7 +52,9 @@ import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
 import { usePantryItems } from '../pantry/usePantryItems';
+import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 
@@ -98,6 +100,8 @@ function matchLine(r: SpoonacularRecipe): string {
 
 export function RecipesScreen() {
   const { activeHouseholdId } = useActiveHousehold();
+  const { state: authState } = useAuth();
+  const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
   const hour = useMemo(() => new Date().getHours(), []);
 
@@ -296,6 +300,7 @@ export function RecipesScreen() {
           prefs={prefs}
           record={record}
           householdId={activeHouseholdId}
+          userId={userId}
           healthy={healthy}
         />
       )}
@@ -309,6 +314,7 @@ function CookThis({
   prefs,
   record,
   householdId,
+  userId,
   healthy,
 }: {
   recipes: SpoonacularRecipe[];
@@ -316,6 +322,7 @@ function CookThis({
   prefs: RecipePrefs;
   record: (title: string, event: PrefEvent) => void;
   householdId: string | null;
+  userId: string | null;
   healthy: boolean;
 }) {
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
@@ -331,6 +338,19 @@ function CookThis({
   const [page, setPage] = useState(0);
   const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
   const [cookedNote, setCookedNote] = useState<string | null>(null);
+  // Recipes whose missing ingredients were added to the shopping list (feedback).
+  const [missingAdded, setMissingAdded] = useState<Set<number>>(new Set());
+
+  /** What's-missing → shopping list, dedupe-aware, source 'recipe'. */
+  async function onAddMissing(r: SpoonacularRecipe) {
+    if (!householdId || !userId || r.missedIngredientNames.length === 0) return;
+    Haptics.selectionAsync().catch(() => {});
+    for (const name of r.missedIngredientNames) {
+      await addToShoppingList({ householdId, userId, name, source: 'recipe' });
+    }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    setMissingAdded((prev) => new Set(prev).add(r.id));
+  }
 
   const pool = useMemo(() => {
     // Healthy mode: drop low-scoring recipes (unless that would empty the
@@ -425,10 +445,12 @@ function CookThis({
             recipe={item}
             liked={liked.has(item.id)}
             skipped={skipped.has(item.id)}
+            missingAdded={missingAdded.has(item.id)}
             onLike={onLike}
             onSkip={onSkip}
             onOpen={onOpen}
             onCooked={onCooked}
+            onAddMissing={(r) => void onAddMissing(r)}
           />
         )}
       />
@@ -479,18 +501,22 @@ function HeroCard({
   recipe,
   liked,
   skipped,
+  missingAdded,
   onLike,
   onSkip,
   onOpen,
   onCooked,
+  onAddMissing,
 }: {
   recipe: SpoonacularRecipe;
   liked: boolean;
   skipped: boolean;
+  missingAdded: boolean;
   onLike: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
   onCooked: (r: SpoonacularRecipe) => void;
+  onAddMissing: (r: SpoonacularRecipe) => void;
 }) {
   return (
     <View style={styles.cardPage}>
@@ -522,6 +548,25 @@ function HeroCard({
           <Text style={[styles.actTxt, styles.viewTxt]}>View →</Text>
         </Pressable>
       </View>
+      {recipe.missedIngredientCount > 0 && recipe.missedIngredientNames.length > 0 && (
+        <Pressable
+          style={[styles.missingBtn, missingAdded && styles.missingBtnDone]}
+          onPress={() => onAddMissing(recipe)}
+          disabled={missingAdded}
+          accessibilityRole="button"
+          accessibilityLabel={
+            missingAdded
+              ? 'Missing ingredients are on the shopping list'
+              : `Add ${recipe.missedIngredientCount} missing ingredients to the shopping list`
+          }
+        >
+          <Text style={styles.missingBtnTxt}>
+            {missingAdded
+              ? '✓ Missing ingredients on the list'
+              : `＋ Add ${recipe.missedIngredientCount} missing to list`}
+          </Text>
+        </Pressable>
+      )}
       <Pressable
         style={styles.cookedBtn}
         onPress={() => onCooked(recipe)}
@@ -639,6 +684,16 @@ const styles = StyleSheet.create({
   actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink },
   actTxtLiked: { color: tokens.color.accent },
   viewTxt: { color: tokens.color.onAccent },
+  missingBtn: {
+    marginTop: tokens.space(2),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+    alignItems: 'center',
+  },
+  missingBtnDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
+  missingBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   cookedBtn: {
     marginTop: tokens.space(2),
     paddingVertical: tokens.space(3),

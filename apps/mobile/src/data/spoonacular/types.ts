@@ -15,6 +15,12 @@ export interface SpoonacularRecipe {
    * Feeds the "I cooked this" pantry matcher; empty when the API omits them.
    */
   usedIngredientNames: string[];
+  /**
+   * Names of the ingredients the recipe needs that the caller DOESN'T have —
+   * feeds "Add N missing to list" (shopping). Empty when the API omits them
+   * (older cached proxy responses predate the passthrough).
+   */
+  missedIngredientNames: string[];
   /** Spoonacular 0–100 healthiness score; null when the API omits it. */
   healthScore: number | null;
   vegetarian: boolean;
@@ -31,6 +37,7 @@ export interface RawFindByIngredientsRecipe {
   missedIngredientCount?: number;
   likes?: number;
   usedIngredients?: Array<{ name?: string }>;
+  missedIngredients?: Array<{ name?: string }>;
 }
 
 export type FindByIngredientsResponse = RawFindByIngredientsRecipe[];

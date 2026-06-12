@@ -68,6 +68,10 @@ const UPSTREAM_RESULT = {
     { name: 'milk', aisle: 'Dairy' },
     { name: '' },
   ],
+  missedIngredients: [
+    { name: 'maple syrup', aisle: 'Breakfast', amount: 0.5 },
+    { name: '' },
+  ],
   healthScore: 72,
   vegetarian: true,
   vegan: false,
@@ -120,6 +124,7 @@ describe('POST /recipes/search', () => {
         likes: 11,
         // names only — aisle/amount trimmed, empty names dropped
         usedIngredients: [{ name: 'banana' }, { name: 'milk' }],
+        missedIngredients: [{ name: 'maple syrup' }],
         healthScore: 72,
         vegetarian: true,
         vegan: false,
