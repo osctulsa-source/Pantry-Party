@@ -42,6 +42,13 @@ module.exports = {
       'expo-font',
       'expo-dev-client',
       [
+        'expo-camera',
+        {
+          cameraPermission:
+            'Pantry Party uses the camera to scan product barcodes so items add themselves.',
+        },
+      ],
+      [
         'expo-notifications',
         {
           color: '#2E5D3A',
