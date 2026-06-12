@@ -11,6 +11,9 @@
  *   `ignorePantry` is applied server-side.
  * - searchByMeal: meal-type filtered + offset-paged search. Returns SpoonacularRecipe[].
  *
+ * Results carry used-ingredient names (the "I cooked this" matcher) and
+ * missed-ingredient names (the "Add N missing to list" shopping feeder).
+ *
  * Auth: the proxy validates the same Supabase access token the upload-proxy
  * does; we read it from the live session.
  */
@@ -19,9 +22,9 @@ import type { MealType } from '@breadbox/core';
 import { supabase } from '../supabase/client';
 import type { SpoonacularRecipe } from './types';
 
-/** Extract clean ingredient names from an API usedIngredients array. */
-function ingredientNames(used: Array<{ name?: string }> | undefined): string[] {
-  return (used ?? []).map((i) => i.name ?? '').filter((n) => n.length > 0);
+/** Extract clean ingredient names from an API ingredient array. */
+function ingredientNames(list: Array<{ name?: string }> | undefined): string[] {
+  return (list ?? []).map((i) => i.name ?? '').filter((n) => n.length > 0);
 }
 
 export interface FindByIngredientsOptions {
@@ -67,6 +70,23 @@ async function proxySearch(body: ProxySearchBody): Promise<ComplexSearchResponse
   return (await res.json()) as ComplexSearchResponse;
 }
 
+function mapResult(r: ComplexSearchResult): SpoonacularRecipe {
+  return {
+    id: r.id,
+    title: r.title,
+    image: r.image,
+    usedIngredientCount: r.usedIngredientCount ?? 0,
+    missedIngredientCount: r.missedIngredientCount ?? 0,
+    likes: r.likes ?? 0,
+    usedIngredientNames: ingredientNames(r.usedIngredients),
+    missedIngredientNames: ingredientNames(r.missedIngredients),
+    healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
+    vegetarian: r.vegetarian ?? false,
+    vegan: r.vegan ?? false,
+    glutenFree: r.glutenFree ?? false,
+  };
+}
+
 export async function findByIngredients(
   ingredients: string[],
   opts: FindByIngredientsOptions = {},
@@ -76,19 +96,7 @@ export async function findByIngredients(
   }
 
   const data = await proxySearch({ ingredients, number: opts.number ?? 5 });
-  return (data.results ?? []).map((r) => ({
-    id: r.id,
-    title: r.title,
-    image: r.image,
-    usedIngredientCount: r.usedIngredientCount ?? 0,
-    missedIngredientCount: r.missedIngredientCount ?? 0,
-    likes: r.likes ?? 0,
-    usedIngredientNames: ingredientNames(r.usedIngredients),
-    healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
-    vegetarian: r.vegetarian ?? false,
-    vegan: r.vegan ?? false,
-    glutenFree: r.glutenFree ?? false,
-  }));
+  return (data.results ?? []).map(mapResult);
 }
 
 export interface SearchByMealOptions {
@@ -106,6 +114,7 @@ interface ComplexSearchResult {
   missedIngredientCount?: number;
   likes?: number;
   usedIngredients?: Array<{ name?: string }>;
+  missedIngredients?: Array<{ name?: string }>;
   healthScore?: number | null;
   vegetarian?: boolean;
   vegan?: boolean;
@@ -119,7 +128,8 @@ interface ComplexSearchResponse {
  * Search by pantry ingredients, optionally constrained to a meal type and
  * paged via `offset`. The proxy requests fillIngredients upstream, so results
  * carry used/missed counts and ingredient names — the Cook This screen re-ranks
- * them and the "I cooked this" matcher reads the names.
+ * them, the "I cooked this" matcher reads the used names, and the shopping
+ * feeder reads the missed names.
  */
 export async function searchByMeal(
   ingredients: string[],
@@ -134,17 +144,5 @@ export async function searchByMeal(
   if (opts.offset) body.offset = opts.offset;
 
   const data = await proxySearch(body);
-  return (data.results ?? []).map((r) => ({
-    id: r.id,
-    title: r.title,
-    image: r.image,
-    usedIngredientCount: r.usedIngredientCount ?? 0,
-    missedIngredientCount: r.missedIngredientCount ?? 0,
-    likes: r.likes ?? 0,
-    usedIngredientNames: ingredientNames(r.usedIngredients),
-    healthScore: typeof r.healthScore === 'number' ? r.healthScore : null,
-    vegetarian: r.vegetarian ?? false,
-    vegan: r.vegan ?? false,
-    glutenFree: r.glutenFree ?? false,
-  }));
+  return (data.results ?? []).map(mapResult);
 }
