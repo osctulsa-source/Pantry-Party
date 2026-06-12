@@ -23,7 +23,7 @@
  * The rest of the form is intentionally duplicated from AddItemScreen rather
  * than extracted — revisit when a third consumer appears (project doc).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
