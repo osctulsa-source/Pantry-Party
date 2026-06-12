@@ -18,6 +18,7 @@
  */
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import * as Haptics from 'expo-haptics';
 import { Carrot, ChefHat, Settings as SettingsGear } from 'lucide-react-native';
 
 import { tokens } from '../theme/tokens';
@@ -37,8 +38,18 @@ export function MainTabs() {
   return (
     <Tab.Navigator
       initialRouteName="PantryTab"
+      screenListeners={{
+        // A quiet selection tick on every tab switch — the same haptic
+        // vocabulary as toggles elsewhere (Phase 3 motion pass).
+        tabPress: () => {
+          Haptics.selectionAsync().catch(() => {});
+        },
+      }}
       screenOptions={{
         headerShown: false,
+        // Soft cross-shift between tabs (built on RN Animated — no reanimated
+        // dependency). 'none' felt inert; a full slide felt heavy.
+        animation: 'shift',
         tabBarActiveTintColor: tokens.color.accent,
         tabBarInactiveTintColor: tokens.color.inkMuted,
         tabBarStyle: {
