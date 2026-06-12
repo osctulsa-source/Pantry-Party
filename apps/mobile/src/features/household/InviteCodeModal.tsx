@@ -19,6 +19,10 @@
  *
  * Auth: the access token is pulled from the live Supabase session via
  * useAuth(); the household id is a route param.
+ *
+ * Phase 3 sweep: error text uses the semantic expired red (it was
+ * tokens.color.accent — RED in the oxblood era, brand GREEN since the Crumb
+ * re-skin) and on-accent text uses color.onAccent rather than color.surface.
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -218,7 +222,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: tokens.color.surface,
+    color: tokens.color.onAccent,
   },
   outlineButton: {
     paddingVertical: tokens.space(4),
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontFamily: tokens.font.body.medium,
     fontSize: 14,
-    color: tokens.color.accent,
+    color: tokens.semantic.expiry.expired,
     textAlign: 'center',
   },
 });
