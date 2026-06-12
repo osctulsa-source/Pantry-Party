@@ -5,20 +5,22 @@ import { Bitter_400Regular, Bitter_600SemiBold, Bitter_700Bold } from '@expo-goo
 import { NunitoSans_400Regular, NunitoSans_600SemiBold, NunitoSans_700Bold } from '@expo-google-fonts/nunito-sans';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect } from 'react';
-import { NavigationContainer, type LinkingOptions } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type LinkingOptions,
+  type NavigatorScreenParams,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { PowerSyncContext, type PowerSyncDatabase } from '@powersync/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
-import { PantryScreen } from './src/features/pantry/PantryScreen';
+import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
-import { RecipesScreen } from './src/features/recipes/RecipesScreen';
-import { SettingsScreen } from './src/features/settings/SettingsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
 import { JoinHouseholdScreen } from './src/features/household/JoinHouseholdScreen';
@@ -29,16 +31,21 @@ import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
-import { BRAND } from './src/theme/brand';
 
+/**
+ * Root stack (Phase 2 IA): the FIRST screen is the bottom-tab navigator
+ * (Pantry / Cook / Settings — see src/navigation/MainTabs), and every detail
+ * screen lives at this level so it pushes OVER the tab bar, full-screen, with
+ * the native-stack header + back. Pantry / Recipes / Settings are no longer
+ * stack routes — navigate to MainTabs' tabs (PantryTab / CookTab /
+ * SettingsTab) instead.
+ */
 export type RootStackParamList = {
-  Pantry: undefined;
+  MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   AddItem: undefined;
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
-  Recipes: undefined;
-  Settings: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
   JoinHousehold: { code?: string } | undefined;
@@ -58,6 +65,9 @@ const AuthStackNav = createNativeStackNavigator<AuthStackParamList>();
  * app.json ("scheme") — both sides must match, and the app.json side is baked
  * into the native binary, so changing it needs a dev-client rebuild.
  *
+ * JoinHousehold stays a ROOT-stack screen (not nested in a tab) precisely so
+ * this config keeps resolving unchanged under the tab IA.
+ *
  * V1 caveat: links resolve only while the AppStack is mounted (signed in +
  * onboarded). A signed-out user tapping a link lands on sign-in and the link
  * is dropped — buffering pending links through auth is a V2 refinement.
@@ -74,7 +84,7 @@ const linking: LinkingOptions<RootStackParamList> = {
 function AppStack() {
   return (
     <Stack.Navigator
-      initialRouteName="Pantry"
+      initialRouteName="MainTabs"
       screenOptions={{
         headerStyle: { backgroundColor: tokens.color.surface },
         headerTintColor: tokens.color.accent,
@@ -84,13 +94,11 @@ function AppStack() {
         },
       }}
     >
-      <Stack.Screen name="Pantry" component={PantryScreen} options={{ title: BRAND.productName }} />
+      <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
-      <Stack.Screen name="Recipes" component={RecipesScreen} options={{ title: 'What you can cook' }} />
-      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
       <Stack.Screen
         name="InviteCodeModal"

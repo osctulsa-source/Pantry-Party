@@ -20,8 +20,12 @@
  * "Used" records a rescue event (expiryEvents) on top of the tombstone; swipe
  * is disabled while selecting so the gestures don't fight.
  *
- * The header shows a sync dot driven by PowerSync's live status (green synced /
- * ochre syncing / muted offline) — sync failures stop being invisible.
+ * Phase 2: this screen is the home TAB (see navigation/MainTabs) and fully
+ * self-heads — a quiet "Pantry" title plus a label-free sync dot in the top
+ * corner (green synced / ochre syncing / muted offline; the accessibility
+ * label still spells it out). Add item is the screen's primary action; recipe
+ * browsing lives on the Cook tab, and the Use Soon card's "Cook these →"
+ * switches to it with the expiry context.
  *
  * Expiry is "silenced" when it isn't actionable: the colorblind-safe <ExpiryPill>
  * shows for warning/expired items always, and as a calm preview for items within
@@ -42,8 +46,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useQuery, useStatus } from '@powersync/react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -64,7 +69,18 @@ import { ExpiryPill } from '../../components/ExpiryPill';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
+
+/**
+ * Composite navigation: this screen lives inside the tab navigator (so it can
+ * switch tabs — CookTab) but also pushes root-stack detail screens (AddItem,
+ * EditItem, QuickAdd, ExpiringSoon) OVER the tab bar.
+ */
+type PantryNav = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList, 'PantryTab'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 const PANTRY_QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
@@ -121,7 +137,13 @@ function titleCase(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-/** Live sync indicator: PowerSync status → one calm dot + label. */
+/**
+ * Live sync indicator: PowerSync status → one calm, label-free dot in the
+ * header corner (Phase 2 streamline — the offline-first engine should hum in
+ * the background, not occupy real estate). State is still fully exposed to
+ * assistive tech via the accessibility label; a subtle pulse while syncing is
+ * queued for the Phase 3 motion pass.
+ */
 function SyncDot() {
   const status = useStatus();
   const syncing = status.dataFlowStatus.uploading || status.dataFlowStatus.downloading;
@@ -134,13 +156,12 @@ function SyncDot() {
   return (
     <View style={styles.syncWrap} accessibilityLabel={`Sync status: ${label}`}>
       <View style={[styles.syncDot, { backgroundColor: color }]} />
-      <Text style={styles.syncLabel}>{label}</Text>
     </View>
   );
 }
 
 export function PantryScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Pantry'>>();
+  const navigation = useNavigation<PantryNav>();
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
 
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
@@ -310,22 +331,12 @@ export function PantryScreen() {
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
         <View style={styles.headerMain}>
-          <View style={styles.brandRow}>
-            <Text style={styles.brand}>{tokens.brandName}</Text>
-            <SyncDot />
-          </View>
+          <Text style={styles.title}>Pantry</Text>
           <Text style={styles.count}>
             {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
           </Text>
         </View>
-        <View style={styles.headerActions}>
-          <Pressable onPress={() => navigation.navigate('AddItem')} hitSlop={8}>
-            <Text style={styles.addItem}>+ Add</Text>
-          </Pressable>
-          <Pressable onPress={() => navigation.navigate('Settings')} hitSlop={8}>
-            <Text style={styles.settings}>Settings</Text>
-          </Pressable>
-        </View>
+        <SyncDot />
       </View>
       {selecting ? (
         <View style={styles.selectBar}>
@@ -343,12 +354,12 @@ export function PantryScreen() {
       ) : (
         <View style={styles.actionRow}>
           <Pressable
-            onPress={() => navigation.navigate('Recipes')}
+            onPress={() => navigation.navigate('AddItem')}
             style={[styles.actionBtn, styles.actionPrimary]}
             accessibilityRole="button"
-            accessibilityLabel="Find recipes from your pantry"
+            accessibilityLabel="Add an item to your pantry"
           >
-            <Text style={[styles.actionText, styles.actionTextPrimary]}>Find recipes →</Text>
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>＋ Add item</Text>
           </Pressable>
           <Pressable
             onPress={() => navigation.navigate('QuickAdd')}
@@ -356,7 +367,7 @@ export function PantryScreen() {
             accessibilityRole="button"
             accessibilityLabel="Quick add staples"
           >
-            <Text style={[styles.actionText, styles.actionTextGhost]}>＋ Quick add</Text>
+            <Text style={[styles.actionText, styles.actionTextGhost]}>Quick add</Text>
           </Pressable>
         </View>
       )}
@@ -407,7 +418,7 @@ export function PantryScreen() {
             section={section}
             collapsed={collapsed.has(section.title)}
             onToggle={() => toggleSection(section.title)}
-            onCook={section.urgent ? () => navigation.navigate('Recipes') : undefined}
+            onCook={section.urgent ? () => navigation.navigate('CookTab') : undefined}
             onViewAll={section.urgent ? () => navigation.navigate('ExpiringSoon') : undefined}
           />
         )}
@@ -618,14 +629,9 @@ const styles = StyleSheet.create({
     paddingBottom: tokens.space(3),
   },
   headerMain: { flex: 1 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(4), paddingTop: tokens.space(2) },
-  addItem: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.success },
-  settings: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.accent },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
-  brand: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
-  syncWrap: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), paddingTop: tokens.space(2) },
-  syncDot: { width: 8, height: 8, borderRadius: 999 },
-  syncLabel: { fontFamily: tokens.font.body.medium, fontSize: 11, color: tokens.color.inkMuted },
+  title: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
+  syncWrap: { paddingTop: tokens.space(3), paddingLeft: tokens.space(3) },
+  syncDot: { width: 10, height: 10, borderRadius: 999 },
   count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   actionRow: { flexDirection: 'row', gap: tokens.space(3), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   actionBtn: {

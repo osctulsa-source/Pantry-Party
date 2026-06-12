@@ -1,18 +1,23 @@
 /**
  * RecipesScreen — "Cook This": time-of-day aware, meal-type filtered, swipeable,
- * learning suggestions, with ingredient controls.
+ * learning suggestions, with ingredient controls. As of Phase 2 this is the
+ * permanent Cook TAB (see navigation/MainTabs), not a pushed screen.
  *
- * New here: you can drop pantry ingredients from the search (tap a chip to leave
- * out e.g. bananas) and Refresh for new ideas (pages Spoonacular's results via
+ * You can drop pantry ingredients from the search (tap a chip to leave out
+ * e.g. bananas) and Refresh for new ideas (pages Spoonacular's results via
  * offset). The reason line follows the ingredients you're actually cooking with.
  *
  * "I cooked this" (the loop-closer): each hero card carries a confirm action
  * that opens CookedItSheet — matched pantry items get marked used-up /
- * decremented through PowerSync. Note: `items` here is a one-shot snapshot
- * (powerSyncPantry.list()), so this screen's chips/reason line go stale after a
- * cook until remount; PantryScreen is reactive and reflects the writes
- * immediately. Moving this screen to useQuery fixes that holistically — tracked
- * follow-up.
+ * decremented through PowerSync.
+ *
+ * Pantry data is REACTIVE via usePantryItems (a persistent tab can't afford the
+ * old one-shot snapshot — chips/reason line would go stale after a cook or an
+ * edit). To keep reactivity from hammering Spoonacular, the recipe fetch keys
+ * on a stable signature of the pantry's distinct ingredient NAMES: quantity
+ * changes and expiry edits re-render the chips/reason instantly but do NOT
+ * refetch; an ingredient appearing or disappearing (added, fully used up)
+ * does — at which point fresh suggestions are exactly what you want.
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -43,10 +48,10 @@ import {
   type RecipePrefs,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { powerSyncPantry } from '../../data/powerSyncPantry';
 import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
+import { usePantryItems } from '../pantry/usePantryItems';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
@@ -96,7 +101,8 @@ export function RecipesScreen() {
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
   const hour = useMemo(() => new Date().getHours(), []);
 
-  const [items, setItems] = useState<PantryItem[] | null>(null);
+  const { items, isLoading: pantryLoading, error: pantryError } = usePantryItems();
+
   const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
   const [healthy, setHealthy] = useState(false);
   const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
@@ -106,33 +112,27 @@ export function RecipesScreen() {
 
   const excludedKey = excluded.join('|');
 
-  // Load the pantry once; the ingredient chips render from this.
-  useEffect(() => {
-    let cancelled = false;
-    powerSyncPantry
-      .list()
-      .then((list) => {
-        if (!cancelled) setItems(list);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setItems([]);
-          setRecipeState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Stable fingerprint of the pantry's DISTINCT ingredient names — the only
+  // pantry dimension the recipe search actually depends on. Keying the fetch
+  // effect on this (not on the reactive `items` array identity, which changes
+  // on every emission) is what keeps live pantry updates from refetching.
+  const pantrySignature = useMemo(
+    () => [...new Set(items.map((i) => i.name.toLowerCase()))].sort().join('|'),
+    [items],
+  );
 
   const activeItems = useMemo(
-    () => (items ?? []).filter((i) => !excluded.includes(i.name.toLowerCase())),
+    () => items.filter((i) => !excluded.includes(i.name.toLowerCase())),
     [items, excludedKey],
   );
 
-  // Query recipes whenever the pantry, meal, exclusions, or page change.
+  // Query recipes when the pantry's name-set, meal, exclusions, or page change.
   useEffect(() => {
-    if (items === null) return;
+    if (pantryLoading) return;
+    if (pantryError) {
+      setRecipeState({ kind: 'error', message: pantryError.message });
+      return;
+    }
     let cancelled = false;
     if (items.length === 0) {
       setRecipeState({ kind: 'empty', reason: 'no-pantry' });
@@ -161,7 +161,7 @@ export function RecipesScreen() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, meal, excludedKey, offset]);
+  }, [pantryLoading, pantryError, pantrySignature, meal, excludedKey, offset]);
 
   function changeMeal(m: MealChoice) {
     setMeal(m);
@@ -183,8 +183,9 @@ export function RecipesScreen() {
   const canReset = excluded.length > 0 || offset > 0;
 
   return (
-    <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.headerPad}>
+        <Text style={styles.screenTitle}>Cook</Text>
         <Text style={styles.eyebrow}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
         <View style={styles.chips}>
           {MEALS.map((m) => {
@@ -206,7 +207,7 @@ export function RecipesScreen() {
           </Pressable>
           <Pressable style={styles.ctrlBtn} onPress={() => setShowIngredients((v) => !v)}>
             <View style={styles.ctrlInner}>
-              <Text style={styles.ctrlBtnTxt}>Ingredients · {items ? items.length : 0}</Text>
+              <Text style={styles.ctrlBtnTxt}>Ingredients · {items.length}</Text>
               {showIngredients ? (
                 <ChevronUp size={13} color={tokens.color.accent} />
               ) : (
@@ -233,7 +234,7 @@ export function RecipesScreen() {
           )}
         </View>
 
-        {showIngredients && items && items.length > 0 && (
+        {showIngredients && items.length > 0 && (
           <View style={styles.ingWrap}>
             <Text style={styles.ingHint}>Tap an ingredient to leave it out of suggestions.</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.ingRow}>
@@ -317,7 +318,9 @@ function CookThis({
   householdId: string | null;
   healthy: boolean;
 }) {
-  const now = useMemo(() => new Date(), []);
+  // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
+  // sit mounted across midnight, so a fixed `new Date()` would drift.
+  const now = useMemo(() => new Date(), [items]);
   const urgent = pickUrgent(items, now);
   const reason = urgent ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}` : null;
   const reasonColor =
@@ -549,7 +552,14 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
-  headerPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(6), paddingBottom: tokens.space(3) },
+  headerPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(3) },
+  screenTitle: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 28,
+    color: tokens.color.ink,
+    letterSpacing: -0.5,
+    marginBottom: tokens.space(1),
+  },
   eyebrow: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
