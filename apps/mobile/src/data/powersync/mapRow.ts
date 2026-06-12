@@ -33,5 +33,6 @@ export function rowToPantryItem(row: PantryItemRow): PantryItem {
     addedBy: row.added_by,
     updatedAt: row.updated_at,
     deleted: row.deleted === 1,
+    fillLevel: row.fill_level ?? undefined,
   });
 }

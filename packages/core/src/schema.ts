@@ -46,6 +46,11 @@ export const PantryItem = z.object({
   quantity: z.number().nonnegative().default(1),
   unit: z.string().max(20).optional(), // picker-constrained on write (UNITS); column tolerates legacy free text
 
+  /** How full the (single, continuous) package is — 1/0.75/0.5/0.25 from the
+   *  UI. undefined = not tracked (fill tracking is opt-in per item). Drives
+   *  the pantry row's mini fill bar and the running-low signal. */
+  fillLevel: z.number().min(0).max(1).optional(),
+
   location: StorageLocation.default("pantry"),
   addedAt: z.string().datetime(),
   expiresAt: z.string().datetime().optional(),

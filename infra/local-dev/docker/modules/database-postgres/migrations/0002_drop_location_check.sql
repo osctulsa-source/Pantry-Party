@@ -1,0 +1,23 @@
+-- Migration 0002 — drop the pantry_items.location CHECK constraint.
+--
+-- BUG FIX. The original CREATE TABLE constrained location to
+-- ('pantry','fridge','freezer'), but the app ships CUSTOM locations
+-- (LocationPicker "+ New"; @breadbox/core's StorageLocation allows any
+-- 1–40 char label). A custom location writes fine to the device's local
+-- SQLite, then FAILS this CHECK at the upload-proxy — the whole sync batch
+-- errors and PowerSync retries forever. Local-first UX masks it: the item
+-- looks fine on-device while sync is silently jammed.
+--
+-- Length/shape guarding stays client-side via zod (max 40); server-side
+-- value validation rides the existing upload-proxy hardening backlog item.
+--
+-- Idempotent: DROP CONSTRAINT IF EXISTS. Postgres auto-named the inline
+-- CHECK `pantry_items_location_check` (table_column_check convention). If
+-- custom locations still fail after this runs, list the actual constraint
+-- names and drop the right one:
+--   SELECT conname FROM pg_constraint
+--   WHERE conrelid = 'pantry_items'::regclass AND contype = 'c';
+--
+-- Lockstep: init-scripts/01-pantry-items.sql no longer declares the CHECK.
+
+ALTER TABLE pantry_items DROP CONSTRAINT IF EXISTS pantry_items_location_check;

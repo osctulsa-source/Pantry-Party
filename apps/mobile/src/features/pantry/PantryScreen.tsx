@@ -119,6 +119,14 @@ function titleCase(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
+/** Human description of a fill level for accessibility. */
+function fillLabel(level: number): string {
+  if (level >= 1) return 'full';
+  if (level >= 0.75) return 'three-quarters full';
+  if (level >= 0.5) return 'half full';
+  return 'a quarter full';
+}
+
 /**
  * Live sync indicator: PowerSync status → one calm, label-free dot in the
  * header corner (the offline-first engine should hum in the background, not
@@ -267,6 +275,26 @@ export function PantryScreen() {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * Tap-to-cycle on a row's fill bar: steps DOWN one level (Full → ¾ → ½ → ¼)
+   * then wraps back to Full — matching consumption, with recovery one more tap
+   * away. Writes ride the same PATCH path as every other edit.
+   */
+  async function cycleFill(item: PantryItem) {
+    if (busy) return;
+    const current = item.fillLevel ?? 1;
+    const next = current > 0.75 ? 0.75 : current > 0.5 ? 0.5 : current > 0.25 ? 0.25 : 1;
+    Haptics.selectionAsync().catch(() => {});
+    try {
+      await getPowerSync().execute(
+        'UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?',
+        [next, Date.now(), item.id],
+      );
+    } catch (e: unknown) {
+      Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     }
   }
 
@@ -420,6 +448,7 @@ export function PantryScreen() {
               }
               onLongPress={() => toggleSelectGroup(ids)}
               onResolve={(kind) => resolveItems(ids, kind)}
+              onCycleFill={(target) => cycleFill(target)}
             />
           );
         }}
@@ -527,6 +556,7 @@ function PantryGroupRow({
   onPress,
   onLongPress,
   onResolve,
+  onCycleFill,
 }: {
   group: PantryItemGroup;
   now: Date;
@@ -535,6 +565,7 @@ function PantryGroupRow({
   onPress: () => void;
   onLongPress: () => void;
   onResolve: (kind: 'used' | 'remove') => void;
+  onCycleFill: (item: PantryItem) => void;
 }) {
   const rep = group.representative;
   const status = getExpiryStatus(rep, now);
@@ -625,12 +656,34 @@ function PantryGroupRow({
               ))}
             </View>
           )}
-          <Text style={styles.meta}>
-            {qty}
-            {rep.unit ? ` ${rep.unit}` : ''}
-            {rep.location ? ` · ${rep.location}` : ''}
-            {rep.brand ? ` · ${rep.brand}` : ''}
-          </Text>
+          <View style={styles.metaRow}>
+            <Text style={styles.meta}>
+              {qty}
+              {rep.unit ? ` ${rep.unit}` : ''}
+              {rep.location ? ` · ${rep.location}` : ''}
+              {rep.brand ? ` · ${rep.brand}` : ''}
+            </Text>
+            {rep.fillLevel !== undefined && group.count === 1 && (
+              // Mini fill bar — single continuous items only (a merged stack's
+              // "fullness" is its count; pips' job). Tap steps the level down.
+              <Pressable
+                onPress={() => onCycleFill(rep)}
+                hitSlop={8}
+                pointerEvents={swipeEnabled ? 'auto' : 'none'}
+                accessibilityRole="button"
+                accessibilityLabel={`${rep.name} ${fillLabel(rep.fillLevel)} — tap to set lower`}
+                style={styles.fillTrack}
+              >
+                <View
+                  style={[
+                    styles.fillBar,
+                    { width: Math.max(3, Math.round(44 * rep.fillLevel)) },
+                    rep.fillLevel <= 0.25 && styles.fillBarLow,
+                  ]}
+                />
+              </Pressable>
+            )}
+          </View>
         </View>
         {expiryText !== undefined && withinSoonWindow && (
           <ExpiryPill status={status} label={expiryText} />
@@ -786,7 +839,17 @@ const styles = StyleSheet.create({
   },
   pipsRow: { flexDirection: 'row', gap: 3, marginTop: 4 },
   pip: { width: 5, height: 5, borderRadius: 999, backgroundColor: tokens.color.inkMuted },
-  meta: { marginTop: 2, fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), marginTop: 2 },
+  meta: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
+  fillTrack: {
+    width: 44,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: tokens.color.line,
+    overflow: 'hidden',
+  },
+  fillBar: { height: 6, borderRadius: 999, backgroundColor: tokens.color.accent },
+  fillBarLow: { backgroundColor: tokens.semantic.expiry.warning },
   swipeActions: { flexDirection: 'row' },
   swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
   swipeUsed: { backgroundColor: tokens.color.success },

@@ -61,6 +61,16 @@ import type { RootStackParamList } from '../../../App';
 const MAX_NAME_LENGTH = 100;
 const MAX_BRAND_LENGTH = 120; // matches @breadbox/core PantryItem.brand max
 
+// Fill-level steps offered by "How full?". Stored as 1/.75/.5/.25; null =
+// not tracked — the pantry row's mini bar renders only once a level is set
+// (opt-in), and tapping the selected chip clears back to untracked.
+const FILL_STEPS: Array<{ label: string; value: number }> = [
+  { label: 'Full', value: 1 },
+  { label: '¾', value: 0.75 },
+  { label: '½', value: 0.5 },
+  { label: '¼', value: 0.25 },
+];
+
 // Stored ISO expiry → whole days from today (UTC-midnight basis, the inverse of
 // addDaysUTC). Negative when the item is already past its date.
 function isoToDays(iso: string | null | undefined, now: Date): number | null {
@@ -96,6 +106,7 @@ export function EditItemScreen() {
   const [brand, setBrand] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState<string | null>(null);
+  const [fillLevel, setFillLevel] = useState<number | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
   const [expiryDays, setExpiryDays] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +122,7 @@ export function EditItemScreen() {
     setBrand(item.brand ?? '');
     setQuantity(String(item.quantity));
     setUnit(hydrateUnit(item.unit));
+    setFillLevel(item.fill_level ?? null);
     setLocation(item.location);
     setExpiryDays(isoToDays(item.expires_at, new Date()));
   }, [item]);
@@ -163,9 +175,9 @@ export function EditItemScreen() {
 
       await db.execute(
         `UPDATE pantry_items
-           SET name = ?, brand = ?, quantity = ?, unit = ?, location = ?, expires_at = ?, updated_at = ?
+           SET name = ?, brand = ?, quantity = ?, unit = ?, fill_level = ?, location = ?, expires_at = ?, updated_at = ?
          WHERE id = ?`,
-        [trimmedName, trimmedBrand || null, parsedQty, unit, location, expiresIso, Date.now(), itemId],
+        [trimmedName, trimmedBrand || null, parsedQty, unit, fillLevel, location, expiresIso, Date.now(), itemId],
       );
       navigation.goBack();
     } catch (e: unknown) {
@@ -283,6 +295,20 @@ export function EditItemScreen() {
             <Text style={styles.label}>Unit (optional)</Text>
             <View style={styles.unitWrap}>
               <UnitPicker value={unit} onChange={setUnit} />
+            </View>
+
+            <Text style={styles.label}>How full? (optional)</Text>
+            <View style={styles.unitWrap}>
+              <SuggestChips
+                options={FILL_STEPS.map((s) => s.label)}
+                selected={FILL_STEPS.find((s) => s.value === fillLevel)?.label ?? null}
+                onPick={(label) => {
+                  const step = FILL_STEPS.find((s) => s.label === label);
+                  if (!step) return;
+                  setFillLevel(step.value === fillLevel ? null : step.value);
+                }}
+                accessibilityPrefix="Set fill level"
+              />
             </View>
 
             <Text style={styles.label}>Location</Text>
