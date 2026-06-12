@@ -392,12 +392,20 @@ export function PantryScreen() {
       ) : (
         <View style={styles.actionRow}>
           <Pressable
-            onPress={() => navigation.navigate('AddItem')}
+            onPress={() => navigation.navigate('Scan')}
             style={[styles.actionBtn, styles.actionPrimary]}
+            accessibilityRole="button"
+            accessibilityLabel="Scan a barcode"
+          >
+            <Text style={[styles.actionText, styles.actionTextPrimary]}>⌜ Scan ⌟</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => navigation.navigate('AddItem')}
+            style={[styles.actionBtn, styles.actionGhost]}
             accessibilityRole="button"
             accessibilityLabel="Add an item to your pantry"
           >
-            <Text style={[styles.actionText, styles.actionTextPrimary]}>＋ Add item</Text>
+            <Text style={[styles.actionText, styles.actionTextGhost]}>＋ Add</Text>
           </Pressable>
           <Pressable
             onPress={() => navigation.navigate('QuickAdd')}
