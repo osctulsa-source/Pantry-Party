@@ -24,7 +24,10 @@
  * "least surprise" expectation from locked decision #3) — then navigation.goBack().
  *
  * Layout mirrors SignInScreen / InviteCodeModal: centered card on the surface
- * background, full-width accent submit button.
+ * background, full-width accent submit button. Phase 3 sweep: error text uses
+ * the semantic expired red (it was tokens.color.accent — RED in the oxblood
+ * era, but brand GREEN since the Crumb re-skin) and on-accent text uses
+ * color.onAccent rather than color.surface.
  */
 import { useState } from 'react';
 import {
@@ -157,7 +160,7 @@ export function JoinHouseholdScreen() {
               disabled={!canSubmit}
             >
               {submitting ? (
-                <ActivityIndicator color={tokens.color.surface} />
+                <ActivityIndicator color={tokens.color.onAccent} />
               ) : (
                 <Text style={styles.submitText}>Join</Text>
               )}
@@ -225,13 +228,13 @@ const styles = StyleSheet.create({
   submitText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: tokens.color.surface,
+    color: tokens.color.onAccent,
   },
   error: {
     marginTop: tokens.space(4),
     fontFamily: tokens.font.body.medium,
     fontSize: 14,
-    color: tokens.color.accent,
+    color: tokens.semantic.expiry.expired,
     textAlign: 'center',
   },
 });

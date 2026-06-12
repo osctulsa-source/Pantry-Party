@@ -245,7 +245,7 @@ export function EditItemScreen() {
               disabled={!formValid || submitting}
             >
               {submitting ? (
-                <ActivityIndicator color={tokens.color.surface} />
+                <ActivityIndicator color={tokens.color.onAccent} />
               ) : (
                 <Text style={styles.submitText}>Save changes</Text>
               )}
@@ -309,10 +309,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: tokens.semantic.expiry.expired,
   },
+  // Save matches Add Item's primary (accent + onAccent) — the two sibling
+  // forms previously used two different greens (success vs accent).
   submit: {
     marginTop: tokens.space(1),
     paddingVertical: tokens.space(4),
-    backgroundColor: tokens.color.success,
+    backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.md,
     alignItems: 'center',
   },
@@ -322,20 +324,22 @@ const styles = StyleSheet.create({
   submitText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: tokens.color.surface,
+    color: tokens.color.onAccent,
   },
+  // Destructive action reads destructive: semantic red outline, not brand
+  // accent (a leftover from the oxblood era, when accent WAS red).
   delete: {
     marginTop: tokens.space(4),
     paddingVertical: tokens.space(4),
     borderRadius: tokens.radius.md,
     borderWidth: 1,
-    borderColor: tokens.color.accent,
+    borderColor: tokens.semantic.expiry.expired,
     alignItems: 'center',
   },
   deleteText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: tokens.color.accent,
+    color: tokens.semantic.expiry.expired,
   },
   missing: {
     fontFamily: tokens.font.body.regular,
