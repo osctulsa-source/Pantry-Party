@@ -3,12 +3,13 @@
  * stream down for the current user. See:
  *   - infra/local-dev/docker/modules/database-postgres/init-scripts/00-households.sql
  *   - infra/local-dev/docker/modules/database-postgres/init-scripts/01-pantry-items.sql
+ *   - infra/local-dev/docker/modules/database-postgres/migrations/ (schema evolution)
  *   - infra/local-dev/sync-config.yaml
  *
  * Column types here are PowerSync's local-SQLite types — text/integer/real.
  * UUIDs, ISO timestamps, and enums all serialize as text. Booleans serialize
  * as integer (0/1). @breadbox/core's parsePantryItem handles the JS-side
- * validation when reading rows out.
+ * validation when reading rows out (via data/powersync/mapRow).
  *
  * Note: PowerSync auto-manages an `id` column on every table — don't include
  * it explicitly here. The Postgres `id UUID PRIMARY KEY` maps to PowerSync's
@@ -32,6 +33,9 @@ const pantry_items = new Table({
   added_by: column.text,
   updated_at: column.integer,
   deleted: column.integer,
+  // How full the (single, continuous) package is — 1/0.75/0.5/0.25, NULL =
+  // not tracked (opt-in). Added by migrations/0001_pantry_items_fill_level.sql.
+  fill_level: column.real,
 });
 
 // households / user_households are downloaded from the sync stream AND written
@@ -92,4 +96,5 @@ export interface PantryItemRow {
   added_by: string;
   updated_at: number;
   deleted: number;
+  fill_level: number | null;
 }

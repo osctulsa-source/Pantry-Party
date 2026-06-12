@@ -57,6 +57,7 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'added_by',
     'updated_at',
     'deleted',
+    'fill_level',
   ],
 };
 
@@ -75,7 +76,9 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
 // an attack, and we want it loud. `deleted` is here because the mobile "delete"
 // is a tombstone (UPDATE deleted = 1), not a row removal. `unit` joined the
 // list with the quantity-units feature (July 2026 — UnitPicker in Add/Edit);
-// `brand` joined with the brand-entry feature (Add/Edit brand field).
+// `brand` joined with the brand-entry feature (Add/Edit brand field);
+// `fill_level` joined with the fill-level feature (Edit "How full?" + the
+// pantry row's tap-to-cycle bar). Range is DB-CHECK-guarded (migration 0001).
 const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
   'name',
   'brand',
@@ -85,6 +88,7 @@ const PATCH_ALLOWED_COLUMNS: ReadonlySet<string> = new Set([
   'expires_at',
   'deleted',
   'updated_at',
+  'fill_level',
 ]);
 
 // Carries an HTTP status alongside the message so the route can translate a
