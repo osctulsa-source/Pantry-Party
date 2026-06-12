@@ -38,6 +38,23 @@ const pantry_items = new Table({
   fill_level: column.real,
 });
 
+// shopping_list_items: one shared list per household (August arc). Streams via
+// the household_data sync rule; writes drain through the upload-proxy like
+// pantry_items. Mirrors init-scripts/03-shopping-list-items.sql.
+const shopping_list_items = new Table({
+  household_id: column.text,
+  name: column.text,
+  quantity: column.real,
+  unit: column.text,
+  note: column.text,
+  checked: column.integer,
+  source: column.text,
+  added_by: column.text,
+  added_at: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
 // households / user_households are downloaded from the sync stream AND written
 // to locally by ensureDefaultHousehold() so a fresh user gets a pantry to live
 // in without manual SQL provisioning. Local writes drain to Postgres via
@@ -75,7 +92,23 @@ export const AppSchema = new Schema({
   households,
   user_households,
   household_invites,
+  shopping_list_items,
 });
+
+export interface ShoppingListItemRow {
+  id: string;
+  household_id: string;
+  name: string;
+  quantity: number;
+  unit: string | null;
+  note: string | null;
+  checked: number;
+  source: string;
+  added_by: string;
+  added_at: string;
+  updated_at: number;
+  deleted: number;
+}
 
 // Row shape SELECT returns. Kept here so consumers don't reach into PowerSync
 // internals. parsePantryItem in @breadbox/core does the real validation; this
