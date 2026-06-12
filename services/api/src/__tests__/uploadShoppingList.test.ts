@@ -154,6 +154,9 @@ describe('POST /sync/upload — shopping_list_items', () => {
   });
 
   it('rejects PATCHing a column not in the shopping allowlist (fill_level is pantry-only)', async () => {
+    // The allowlist check runs inside the transaction, so a (never-queried)
+    // client must still exist for connect/BEGIN/ROLLBACK.
+    mockClient([]);
     const res = await request(buildApp())
       .post('/sync/upload')
       .set('Authorization', `Bearer test:${USER}`)

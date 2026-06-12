@@ -171,7 +171,9 @@ export async function handlePatchPantryItem(
   }
   for (const col of columns) {
     if (!allowed.has(col)) {
-      throw new UploadError(400, `column "${col}" is not editable via PATCH on ${table}`);
+      // Message kept byte-identical to the single-table era — wire tests
+      // assert on it.
+      throw new UploadError(400, `column "${col}" is not editable via PATCH`);
     }
   }
 
@@ -188,7 +190,7 @@ export async function handlePatchPantryItem(
     [userId, householdId],
   );
   if ((member.rowCount ?? 0) === 0) {
-    throw new UploadError(403, `tenancy: row "${entry.id}" is not in one of the caller's households`);
+    throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
   }
 
   // Dynamic but fully parameterized: table + column names come from the
