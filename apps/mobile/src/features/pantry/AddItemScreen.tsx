@@ -5,7 +5,8 @@
  * your own" form. We suggest a "best before" from the item's name (shelf-life by
  * inferred category) and let the user adjust with ExpiryField. Location uses the
  * shared LocationPicker (built-in + custom locations). Unit is optional via the
- * shared UnitPicker (counts need no unit). Writes go through
+ * shared UnitPicker (counts need no unit). Brand is optional free text (qualifies
+ * the name; also feeds search + the safe-merge dedup key). Writes go through
  * addPantryItem() → PowerSync local SQLite → upload-proxy → Postgres.
  */
 import { useMemo, useState } from 'react';
@@ -36,6 +37,7 @@ import { UnitPicker } from './UnitPicker';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
+const MAX_BRAND_LENGTH = 120; // matches @breadbox/core PantryItem.brand max
 
 export function AddItemScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'AddItem'>>();
@@ -43,6 +45,7 @@ export function AddItemScreen() {
   const { activeHouseholdId } = useActiveHousehold();
 
   const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState<string | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
@@ -52,6 +55,7 @@ export function AddItemScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const trimmedName = name.trim();
+  const trimmedBrand = brand.trim();
   const parsedQty = parseInt(quantity, 10);
   const qtyValid = Number.isInteger(parsedQty) && parsedQty > 0;
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
@@ -84,6 +88,7 @@ export function AddItemScreen() {
         householdId: activeHouseholdId,
         userId,
         name: trimmedName,
+        brand: trimmedBrand || null,
         quantity: parsedQty,
         unit,
         location,
@@ -113,6 +118,17 @@ export function AddItemScreen() {
             onChangeText={setName}
             maxLength={MAX_NAME_LENGTH}
             autoFocus
+          />
+
+          <Text style={styles.label}>Brand (optional)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. Horizon"
+            placeholderTextColor={tokens.color.inkMuted}
+            value={brand}
+            onChangeText={setBrand}
+            maxLength={MAX_BRAND_LENGTH}
+            autoCapitalize="words"
           />
 
           <Text style={styles.label}>Quantity</Text>
