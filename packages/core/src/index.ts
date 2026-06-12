@@ -6,3 +6,4 @@ export * from "./recipePrefs.ts";
 export * from "./mealtime.ts";
 export * from "./cooked.ts";
 export * from "./itemGroups.ts";
+export * from "./foodKinds.ts";

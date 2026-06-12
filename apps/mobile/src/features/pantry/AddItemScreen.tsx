@@ -26,14 +26,23 @@ import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { addDaysUTC, suggestShelfLifeDays, type StorageLocation } from '@breadbox/core';
+import {
+  addDaysUTC,
+  guideFor,
+  makeRefinedName,
+  plainName,
+  suggestShelfLifeDays,
+  type StorageLocation,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
 import { ExpiryField } from './ExpiryField';
 import { LocationPicker } from './LocationPicker';
+import { SuggestChips } from './SuggestChips';
 import { UnitPicker } from './UnitPicker';
+import { useLearnedBrands } from './useLearnedBrands';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -63,6 +72,34 @@ export function AddItemScreen() {
 
   const suggestedDays = useMemo(() => suggestShelfLifeDays({ name: trimmedName }), [trimmedName]);
   const effectiveDays = expiryTouched ? expiryDays : suggestedDays;
+
+  // Guided specificity: a generic food name ("pasta") surfaces its common
+  // kinds as chips; a refined name ("Penne pasta") keeps the row visible with
+  // that kind selected (tap again to undo). Brand chips rank the household's
+  // own learned brands first, then seed common brands from the guide.
+  const guideMatch = useMemo(() => guideFor(trimmedName), [trimmedName]);
+  const learnedBrands = useLearnedBrands(
+    activeHouseholdId,
+    guideMatch ? guideMatch.guide.food : trimmedName,
+  );
+  const brandOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const b of [...learnedBrands, ...(guideMatch?.guide.brands ?? [])]) {
+      const key = b.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(b);
+      }
+      if (out.length >= 6) break;
+    }
+    return out;
+  }, [learnedBrands, guideMatch]);
+
+  function onPickKind(kind: string) {
+    if (!guideMatch) return;
+    setName(kind === guideMatch.activeKind ? plainName(guideMatch.guide) : makeRefinedName(guideMatch.guide, kind));
+  }
 
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
 
@@ -119,6 +156,17 @@ export function AddItemScreen() {
             maxLength={MAX_NAME_LENGTH}
             autoFocus
           />
+          {guideMatch && (
+            <View style={styles.suggestWrap}>
+              <Text style={styles.suggestLabel}>Which kind? (optional)</Text>
+              <SuggestChips
+                options={guideMatch.guide.kinds}
+                selected={guideMatch.activeKind}
+                onPick={onPickKind}
+                accessibilityPrefix="Set kind"
+              />
+            </View>
+          )}
 
           <Text style={styles.label}>Brand (optional)</Text>
           <TextInput
@@ -130,6 +178,16 @@ export function AddItemScreen() {
             maxLength={MAX_BRAND_LENGTH}
             autoCapitalize="words"
           />
+          {brandOptions.length > 0 && (
+            <View style={styles.suggestWrap}>
+              <SuggestChips
+                options={brandOptions}
+                selected={trimmedBrand || null}
+                onPick={(b) => setBrand(b.toLowerCase() === trimmedBrand.toLowerCase() ? '' : b)}
+                accessibilityPrefix="Set brand"
+              />
+            </View>
+          )}
 
           <Text style={styles.label}>Quantity</Text>
           <TextInput
@@ -194,6 +252,14 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.regular,
     fontSize: 16,
     color: tokens.color.ink,
+  },
+  // Suggestion rows tuck under their field (inputs carry marginBottom 4).
+  suggestWrap: { marginTop: -tokens.space(2), marginBottom: tokens.space(4) },
+  suggestLabel: {
+    marginBottom: tokens.space(2),
+    fontFamily: tokens.font.body.medium,
+    fontSize: 12,
+    color: tokens.color.inkMuted,
   },
   unitWrap: { marginBottom: tokens.space(4) },
   locationWrap: { marginBottom: tokens.space(4) },
