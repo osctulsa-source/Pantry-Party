@@ -138,7 +138,9 @@ describe('DELETE /account', () => {
 
     // Supabase admin delete was called.
     expect(fetchMock).toHaveBeenCalledOnce();
-    const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const call = fetchMock.mock.calls[0];
+    expect(call).toBeDefined();
+    const [url, opts] = call as unknown as [string, RequestInit];
     expect(url).toContain(`/auth/v1/admin/users/${USER}`);
     expect(opts.method).toBe('DELETE');
     expect(opts.headers).toHaveProperty('authorization', 'Bearer test-service-key');

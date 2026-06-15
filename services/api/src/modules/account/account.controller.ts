@@ -24,8 +24,8 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { pool } from '../db.js';
-import { requireUser, type AuthedRequest } from '../middleware/auth.js';
+import { pool } from '../../db.js';
+import { requireUser, type AuthedRequest } from '../../middleware/auth.js';
 
 // Supabase admin API — requires the service-role key (server-side only,
 // never in the client bundle). The SUPABASE_URL is the same one the mobile
