@@ -14,39 +14,29 @@
  * screen rides the same write paths as the in-app buttons, and the resulting
  * items change re-triggers this reconciler automatically.
  *
- * Android: notifications on 8+ require a CHANNEL or the system falls back to
- * an auto-created "Miscellaneous" one the user can't recognize. We configure
- * the 'default' channel (which expo-notifications routes channel-less
- * notifications to) once at mount — named, high-importance, Crumb-accented.
- * iOS ignores channels entirely.
+ * Streak-saver (PR 3 of the streak arc): when the streak is ≥3 and a
+ * warning-zone item exists, an extra notification carries a personalised
+ * nudge ("Your 7-day streak is on the line — use or freeze your Chicken
+ * before tomorrow"). Occupies one slot in the 64-intent budget.
  */
 import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { computeScheduleIntents, type PantryItem } from '@breadbox/core';
+import {
+  computeScheduleIntents,
+  computeStreakSaverIntent,
+  streakSaverBody,
+  type PantryItem,
+} from '@breadbox/core';
 
 import { expoScheduler, ensureNotificationPermission } from './expoScheduler';
 import { handleExpiryActionResponse, registerExpiryCategory } from './notificationActions';
+import { readExpiryEvents } from '../pantry/expiryEvents';
+import { readCookEvents } from '../recipes/cookLog';
+import { computeInsights } from '@breadbox/core';
 
 const NOTIFICATION_TITLE = 'Pantry';
-
-/**
- * Android 8+ notification channel. Configures the 'default' channel that
- * expo-notifications uses for notifications scheduled without an explicit
- * channelId — so the scheduler stays untouched. Color matches the
- * expo-notifications plugin accent in app.config.js (brand-stable literal,
- * not the theme token, because channels are system-level and outlive the
- * app's light/dark choice).
- */
-async function ensureAndroidChannel(): Promise<void> {
-  if (Platform.OS !== 'android') return;
-  await Notifications.setNotificationChannelAsync('default', {
-    name: 'Expiry reminders',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 200],
-    lightColor: '#2E5D3A',
-  });
-}
+const STREAK_TITLE = 'Streak alert';
 
 function bodyFor(itemName: string, days: number): string {
   if (days >= 2) return `${itemName} expires in ${days} days`;
@@ -54,10 +44,30 @@ function bodyFor(itemName: string, days: number): string {
   return `${itemName} expires today`;
 }
 
-async function reconcile(items: PantryItem[]): Promise<void> {
+/**
+ * Android 8+ requires a notification channel; without one, notifications
+ * land in an auto-created "Miscellaneous" channel. iOS ignores this call.
+ * Named once at mount — subsequent calls with the same id are no-ops.
+ */
+async function ensureAndroidChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  await Notifications.setNotificationChannelAsync('default', {
+    name: 'Expiry reminders',
+    importance: Notifications.AndroidImportance.HIGH,
+    lightColor: '#2E5D3A', // Crumb accent
+  });
+}
+
+async function reconcile(
+  items: PantryItem[],
+  householdId: string | null,
+): Promise<void> {
   const granted = await ensureNotificationPermission();
   if (!granted) return;
-  const intents = computeScheduleIntents(items, new Date());
+  const now = new Date();
+
+  // Regular expiry intents (budget: 63 slots — reserve 1 for streak-saver).
+  const intents = computeScheduleIntents(items, now);
   await expoScheduler.cancelAll();
   for (const intent of intents) {
     await expoScheduler.schedule({
@@ -67,10 +77,38 @@ async function reconcile(items: PantryItem[]): Promise<void> {
       triggerDate: intent.triggerDate,
     });
   }
+
+  // Streak-saver: one extra notification when the streak ≥3 and a
+  // warning-zone item exists. Reads the on-device event logs (fast,
+  // AsyncStorage) to compute the current streak inline — the reconciler
+  // already runs on every items-change and foreground, so it's always fresh.
+  if (householdId) {
+    try {
+      const [expiryEvents, cookEvents] = await Promise.all([
+        readExpiryEvents(householdId),
+        readCookEvents(householdId),
+      ]);
+      const { streakDays } = computeInsights(expiryEvents, cookEvents, now);
+      const saver = computeStreakSaverIntent(streakDays, items, now);
+      if (saver) {
+        await expoScheduler.schedule({
+          id: saver.id,
+          title: STREAK_TITLE,
+          body: streakSaverBody(saver),
+          triggerDate: saver.triggerDate,
+        });
+      }
+    } catch {
+      // Streak-saver is best-effort — never break the regular notification flow.
+    }
+  }
 }
 
-export function useExpiryNotifications(items: PantryItem[]): void {
-  // One-time: Android channel + action category + action-tap listener.
+export function useExpiryNotifications(
+  items: PantryItem[],
+  householdId?: string | null,
+): void {
+  // One-time: register the action category + listen for action taps.
   useEffect(() => {
     ensureAndroidChannel().catch((err) =>
       console.warn('[expiry] android channel setup failed', err),
@@ -92,20 +130,22 @@ export function useExpiryNotifications(items: PantryItem[]): void {
     return () => sub.remove();
   }, []);
 
+  const hid = householdId ?? null;
+
   useEffect(() => {
-    reconcile(items).catch((err) =>
+    reconcile(items, hid).catch((err) =>
       console.warn('[expiry] reconcile failed', err),
     );
-  }, [items]);
+  }, [items, hid]);
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        reconcile(items).catch((err) =>
+        reconcile(items, hid).catch((err) =>
           console.warn('[expiry] reconcile on foreground failed', err),
         );
       }
     });
     return () => sub.remove();
-  }, [items]);
+  }, [items, hid]);
 }

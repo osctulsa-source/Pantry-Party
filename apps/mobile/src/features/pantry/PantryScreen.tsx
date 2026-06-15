@@ -326,7 +326,7 @@ export function PantryScreen() {
     }
   }
 
-  useExpiryNotifications(items);
+  useExpiryNotifications(items, activeHouseholdId);
 
   const now = useMemo(() => new Date(), [items]);
 
