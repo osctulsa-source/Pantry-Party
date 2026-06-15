@@ -7,5 +7,6 @@ export * from "./mealtime.ts";
 export * from "./cooked.ts";
 export * from "./itemGroups.ts";
 export * from "./foodKinds.ts";
-export * from "./shoppingList.ts";
 export * from "./streakStats.ts";
+export * from "./streakSaver.ts";
+export * from "./shoppingList.ts";
