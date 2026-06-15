@@ -19,6 +19,8 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { tokens } from '../../theme/tokens';
 import { Body, Button, Caption, Heading, ListRow, Screen } from '../../components/ui';
 import { useAuth } from '../auth/AuthContext';
+import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useInsights } from '../insights/useInsights';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -30,6 +32,8 @@ type SettingsNav = CompositeNavigationProp<
 export function SettingsScreen() {
   const navigation = useNavigation<SettingsNav>();
   const { state, signOut } = useAuth();
+  const { activeHouseholdId } = useActiveHousehold();
+  const { insights } = useInsights(activeHouseholdId);
   const [signingOut, setSigningOut] = useState(false);
 
   const email = state.status === 'authenticated' ? state.session.user.email ?? '—' : '—';
@@ -51,6 +55,11 @@ export function SettingsScreen() {
             <Body size={16}>{email}</Body>
           </View>
 
+          <ListRow
+            label="Your impact"
+            value={insights.streakDays > 0 ? `🔥 ${insights.streakDays}d` : undefined}
+            onPress={() => navigation.navigate('Insights')}
+          />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 

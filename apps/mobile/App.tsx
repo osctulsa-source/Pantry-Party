@@ -23,6 +23,7 @@ import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
+import { InsightsScreen } from './src/features/insights/InsightsScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
 import { JoinHouseholdScreen } from './src/features/household/JoinHouseholdScreen';
@@ -50,6 +51,7 @@ export type RootStackParamList = {
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
+  Insights: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
   JoinHousehold: { code?: string } | undefined;
@@ -105,6 +107,7 @@ function AppStack() {
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
+      <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
       <Stack.Screen
         name="InviteCodeModal"

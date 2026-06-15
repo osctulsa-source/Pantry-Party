@@ -72,6 +72,8 @@ import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
+import { useInsights } from '../insights/useInsights';
+import { StreakChip } from '../insights/StreakChip';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
@@ -173,6 +175,7 @@ export function PantryScreen() {
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
   const { state: authState } = useAuth();
   const authedUserId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const { insights } = useInsights(activeHouseholdId);
   // Rows whose running-low "+ List" was tapped this session (feedback state).
   const [listed, setListed] = useState<Set<string>>(new Set());
 
@@ -442,6 +445,7 @@ export function PantryScreen() {
           </Pressable>
         </View>
       )}
+      <StreakChip days={insights.streakDays} onPress={() => navigation.navigate('Insights')} />
       {items.length > 0 && (
         <View style={styles.searchWrap}>
           <Search size={15} color={tokens.color.inkMuted} />
