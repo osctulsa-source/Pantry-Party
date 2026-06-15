@@ -150,8 +150,7 @@ export function DeleteAccountScreen() {
           </Pressable>
 
           <Text style={styles.reassurance}>
-            Changed your mind? Just go back — nothing happens until you tap the
-            button above.
+            Not sure? Just go back — nothing happens until you confirm.
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

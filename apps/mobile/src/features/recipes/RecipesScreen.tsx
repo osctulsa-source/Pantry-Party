@@ -258,7 +258,7 @@ export function RecipesScreen() {
       {recipeState.kind === 'loading' && (
         <View style={styles.center}>
           <ActivityIndicator color={tokens.color.accent} />
-          <Text style={styles.helper}>Finding what you can cook…</Text>
+          <Text style={styles.helper}>Checking what you can make…</Text>
         </View>
       )}
 
@@ -272,18 +272,18 @@ export function RecipesScreen() {
       {recipeState.kind === 'empty' && (
         <View style={styles.center}>
           <Text style={styles.errorTitle}>
-            {recipeState.reason === 'no-pantry'
-              ? 'Nothing to cook yet'
-              : recipeState.reason === 'all-excluded'
-                ? 'Everything is left out'
-                : 'No more ideas'}
+            {recipeState.reason === ‘no-pantry’
+              ? ‘Your pantry is the menu’
+              : recipeState.reason === ‘all-excluded’
+                ? "Everything’s on the bench"
+                : "That’s everything we found"}
           </Text>
           <Text style={styles.helper}>
-            {recipeState.reason === 'no-pantry'
-              ? "Add a few items to your pantry and we'll suggest recipes from what you have."
-              : recipeState.reason === 'all-excluded'
-                ? 'You’ve left out every ingredient — tap Reset or add some back.'
-                : 'That’s all we found — try Reset, a different meal type, or add some ingredients back.'}
+            {recipeState.reason === ‘no-pantry’
+              ? "Add what’s in your fridge and we’ll figure out dinner."
+              : recipeState.reason === ‘all-excluded’
+                ? "You excluded all your ingredients — bring some back or hit Reset."
+                : "Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration."}
           </Text>
           {canReset && (
             <Pressable style={styles.resetBtn} onPress={reset}>
@@ -431,7 +431,7 @@ function CookThis({
         </View>
       )}
       {cookedNote && <Text style={styles.cookedNote}>{cookedNote}</Text>}
-      <Text style={styles.swipeHint}>Swipe through your top picks — ♥ and ✕ teach us what you like.</Text>
+      <Text style={styles.swipeHint}>Swipe to browse — like what looks good, skip what doesn't. We learn your taste.</Text>
 
       <FlatList
         data={top}
@@ -573,7 +573,7 @@ function HeroCard({
         accessibilityRole="button"
         accessibilityLabel="I cooked this — update pantry"
       >
-        <Text style={styles.cookedBtnTxt}>I cooked this — update pantry</Text>
+        <Text style={styles.cookedBtnTxt}>I made this!</Text>
       </Pressable>
     </View>
   );

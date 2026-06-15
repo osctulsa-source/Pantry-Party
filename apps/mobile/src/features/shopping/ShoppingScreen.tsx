@@ -182,12 +182,12 @@ export function ShoppingScreen() {
         <View style={styles.headerMain}>
           <Text style={styles.title}>Shopping</Text>
           <Text style={styles.count}>
-            {open.length} {open.length === 1 ? 'item' : 'items'} to buy
+            {open.length} to pick up
           </Text>
         </View>
         {done.length > 0 && (
           <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
-            <Text style={styles.clear}>Clear checked</Text>
+            <Text style={styles.clear}>Clear done</Text>
           </Pressable>
         )}
       </View>
@@ -195,7 +195,7 @@ export function ShoppingScreen() {
       <View style={styles.addRow}>
         <TextInput
           style={styles.input}
-          placeholder="Add to the list"
+          placeholder="What do you need?"
           placeholderTextColor={tokens.color.inkMuted}
           value={draft}
           onChangeText={setDraft}
@@ -222,10 +222,10 @@ export function ShoppingScreen() {
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>Nothing on the list</Text>
+            <Text style={styles.emptyTitle}>All stocked up</Text>
             <Text style={styles.emptySub}>
-              Add what you're out of — running-low items and missing recipe ingredients will land
-              here too.
+              When you run low on something or a recipe needs an ingredient you don't have, it'll
+              show up here automatically.
             </Text>
           </View>
         }
@@ -261,7 +261,7 @@ export function ShoppingScreen() {
                 accessibilityLabel={`Move ${item.name} to pantry`}
                 style={styles.pantryBtn}
               >
-                <Text style={styles.pantryBtnTxt}>→ Pantry</Text>
+                <Text style={styles.pantryBtnTxt}>Stocked ✓</Text>
               </Pressable>
             )}
             <Pressable

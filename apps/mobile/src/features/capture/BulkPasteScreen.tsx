@@ -86,8 +86,8 @@ export function BulkPasteScreen() {
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.hint}>
-          Paste your list — one item per line (commas work too). Each gets a sensible expiry you
-          can adjust later.
+          Paste what you bought — one per line or separated by commas. We'll set a smart expiry for
+          each one.
         </Text>
         <TextInput
           style={styles.area}

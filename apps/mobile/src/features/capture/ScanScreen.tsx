@@ -124,13 +124,13 @@ export function ScanScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <Text style={styles.permTitle}>Camera access needed</Text>
+          <Text style={styles.permTitle}>Point, scan, done</Text>
           <Text style={styles.permSub}>
-            Scanning barcodes is the fastest way to fill your pantry — the camera is only used
-            while this screen is open.
+            The fastest way to fill your pantry. We only use the camera while you're on this screen
+            — nothing is stored.
           </Text>
           <Pressable style={styles.permBtn} onPress={() => void requestPermission()}>
-            <Text style={styles.permBtnTxt}>Allow camera</Text>
+            <Text style={styles.permBtnTxt}>Turn on the camera</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -165,7 +165,7 @@ export function ScanScreen() {
         {added > 0 && phase.kind === 'scanning' && (
           <View style={styles.addedChip} pointerEvents="none">
             <Text style={styles.addedChipTxt}>
-              ✓ {added} added — keep scanning
+              ✓ {added} added — keep going!
             </Text>
           </View>
         )}
@@ -174,9 +174,9 @@ export function ScanScreen() {
       <View style={styles.panel}>
         {phase.kind === 'scanning' && (
           <>
-            <Text style={styles.hint}>Line a barcode up in the frame.</Text>
+            <Text style={styles.hint}>Point at any barcode</Text>
             <Pressable onPress={() => navigation.navigate('BulkPaste')} hitSlop={8}>
-              <Text style={styles.bulkLink}>Paste a list instead</Text>
+              <Text style={styles.bulkLink}>Or paste a list</Text>
             </Pressable>
           </>
         )}
@@ -184,7 +184,7 @@ export function ScanScreen() {
         {phase.kind === 'looking' && (
           <View style={styles.lookupRow}>
             <ActivityIndicator color={tokens.color.accent} />
-            <Text style={styles.hint}>Looking up {phase.barcode}…</Text>
+            <Text style={styles.hint}>Looking that up…</Text>
           </View>
         )}
 
@@ -198,7 +198,7 @@ export function ScanScreen() {
               )}
               <View style={styles.confirmMeta}>
                 <Text style={styles.confirmEyebrow}>
-                  {phase.product?.name ? 'Found it' : 'Not in the product database'}
+                  {phase.product?.name ? 'Got it!' : 'New to us — type the name'}
                 </Text>
                 <Text style={styles.confirmCode}>
                   {phase.barcode}
@@ -234,11 +234,11 @@ export function ScanScreen() {
               {busy ? (
                 <ActivityIndicator color={tokens.color.onAccent} />
               ) : (
-                <Text style={styles.addBtnTxt}>Add to pantry</Text>
+                <Text style={styles.addBtnTxt}>Add this</Text>
               )}
             </Pressable>
             <Pressable style={styles.skip} onPress={resumeScanning} disabled={busy} hitSlop={6}>
-              <Text style={styles.skipTxt}>Skip — keep scanning</Text>
+              <Text style={styles.skipTxt}>Skip, keep scanning</Text>
             </Pressable>
           </View>
         )}

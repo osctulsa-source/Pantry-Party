@@ -399,7 +399,7 @@ export function PantryScreen() {
         <View style={styles.headerMain}>
           <Text style={styles.title}>Pantry</Text>
           <Text style={styles.count}>
-            {items.length} {items.length === 1 ? 'item' : 'items'} in your pantry
+            {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
         </View>
         <SyncDot />
@@ -516,7 +516,7 @@ export function PantryScreen() {
           ) : visibleItems.length === 0 ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.emptyTitle}>No matches</Text>
-              <Text style={styles.emptySub}>Nothing in your pantry matches “{query.trim()}”.</Text>
+              <Text style={styles.emptySub}>No match for “{query.trim()}” — try a shorter name or check the other tabs.</Text>
             </View>
           ) : undefined
         }
@@ -567,7 +567,7 @@ function SectionHeader({
           )}
           {onViewAll && (
             <Pressable onPress={onViewAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="Triage all expiring items">
-              <Text style={styles.triageLink}>Triage all</Text>
+              <Text style={styles.triageLink}>See all</Text>
             </Pressable>
           )}
         </View>
@@ -757,12 +757,12 @@ function PantryGroupRow({
 function PantryEmpty({ onAdd }: { onAdd: () => void }) {
   return (
     <View style={styles.emptyWrap}>
-      <Text style={styles.emptyTitle}>Your pantry's empty</Text>
+      <Text style={styles.emptyTitle}>Fresh start</Text>
       <Text style={styles.emptySub}>
-        Add an item to start tracking freshness and get recipe ideas from what you already have.
+        Scan a barcode, snap a receipt, or add something by hand — we'll handle the rest.
       </Text>
       <Pressable style={styles.emptyBtn} onPress={onAdd}>
-        <Text style={styles.emptyBtnText}>Add your first item</Text>
+        <Text style={styles.emptyBtnText}>Let's stock up</Text>
       </Pressable>
     </View>
   );
