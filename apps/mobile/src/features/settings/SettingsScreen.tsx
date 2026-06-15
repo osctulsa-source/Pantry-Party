@@ -11,7 +11,7 @@
  * navigation from this screen.
  */
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -63,7 +63,18 @@ export function SettingsScreen() {
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 
-        <Button title="Sign out" onPress={onSignOut} loading={signingOut} />
+        <View style={styles.bottomGroup}>
+          <Button title="Sign out" onPress={onSignOut} loading={signingOut} />
+
+          <Pressable
+            onPress={() => navigation.navigate('DeleteAccount')}
+            style={styles.deleteRow}
+            accessibilityRole="button"
+            accessibilityLabel="Delete my account"
+          >
+            <Text style={styles.deleteText}>Delete my account</Text>
+          </Pressable>
+        </View>
       </View>
     </Screen>
   );
@@ -82,5 +93,17 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: tokens.space(1),
+  },
+  bottomGroup: {
+    gap: tokens.space(4),
+  },
+  deleteRow: {
+    alignItems: 'center',
+    paddingVertical: tokens.space(3),
+  },
+  deleteText: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 14,
+    color: tokens.semantic.expiry.expired,
   },
 });

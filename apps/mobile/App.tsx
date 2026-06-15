@@ -24,6 +24,7 @@ import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
 import { InsightsScreen } from './src/features/insights/InsightsScreen';
+import { DeleteAccountScreen } from './src/features/account/DeleteAccountScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
 import { JoinHouseholdScreen } from './src/features/household/JoinHouseholdScreen';
@@ -52,6 +53,7 @@ export type RootStackParamList = {
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
   Insights: undefined;
+  DeleteAccount: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
   JoinHousehold: { code?: string } | undefined;
@@ -108,6 +110,7 @@ function AppStack() {
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
+      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: 'Delete account' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
       <Stack.Screen
         name="InviteCodeModal"
