@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { suggestExpiryISO } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { BRAND } from '../../theme/brand';
+import { OnboardingHeroArt } from '../../components/illustrations/OnboardingHeroArt';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from '../pantry/addPantryItem';
@@ -54,6 +55,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <OnboardingHeroArt />
         <Text style={styles.eyebrow}>Welcome to {BRAND.productName}</Text>
         <Text style={styles.title}>Let's stock your pantry</Text>
         <Text style={styles.hint}>
