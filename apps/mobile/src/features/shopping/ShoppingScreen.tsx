@@ -19,9 +19,11 @@
  * Writes ride the existing PowerSync CRUD → upload-proxy path (PR #69's
  * table allowlists). All styling from theme/tokens (ADR-006).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Animated,
+  Easing,
   LayoutAnimation,
   Pressable,
   SectionList,
@@ -64,6 +66,20 @@ export function ShoppingScreen() {
 
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // The row mid-swoosh (flying off to the pantry). One at a time; the shared
+  // animated value drives its fly-out and is reused for the next restock.
+  const [departingId, setDepartingId] = useState<string | null>(null);
+  const swoosh = useRef(new Animated.Value(0)).current;
+
+  // Once the departing row is actually gone from the synced list (the move
+  // committed and the reactive query dropped it), release the shared value.
+  useEffect(() => {
+    if (departingId && !items.some((i) => i.id === departingId)) {
+      setDepartingId(null);
+      swoosh.setValue(0);
+    }
+  }, [items, departingId, swoosh]);
 
   const open = useMemo(() => items.filter((i) => !i.checked), [items]);
   const done = useMemo(() => items.filter((i) => i.checked), [items]);
@@ -147,10 +163,39 @@ export function ShoppingScreen() {
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e: unknown) {
+      // The row swooshed away already — bring it back so a failed write never
+      // makes an item silently disappear from the list.
+      setDepartingId(null);
+      swoosh.setValue(0);
       Alert.alert('Could not move to pantry', e instanceof Error ? e.message : 'Try again.');
     } finally {
       setBusy(false);
     }
+  }
+
+  /**
+   * Stocked tap → the swoosh. The row flies up-and-away and fades, then the
+   * real move runs (insert into pantry + tombstone the list row). The row
+   * stays hidden through the async write so it never flashes back before the
+   * reactive query drops it; moveToPantry restores it if the write fails.
+   */
+  function onStockPress(item: ShoppingListItem) {
+    if (busy || departingId) return;
+    setDepartingId(item.id);
+    swoosh.setValue(0);
+    Animated.timing(swoosh, {
+      toValue: 1,
+      duration: 380,
+      easing: Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        void moveToPantry(item);
+      } else {
+        setDepartingId(null);
+        swoosh.setValue(0);
+      }
+    });
   }
 
   async function clearChecked() {
@@ -175,6 +220,18 @@ export function ShoppingScreen() {
       setBusy(false);
     }
   }
+
+  // One shared fly-out transform; only the departing row wears it. translateX
+  // drifts it right, translateY lifts it up, scale shrinks it as it fades —
+  // the "off to the pantry" whoosh.
+  const swooshStyle = {
+    opacity: swoosh.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+    transform: [
+      { translateX: swoosh.interpolate({ inputRange: [0, 1], outputRange: [0, 72] }) },
+      { translateY: swoosh.interpolate({ inputRange: [0, 1], outputRange: [0, -26] }) },
+      { scale: swoosh.interpolate({ inputRange: [0, 1], outputRange: [1, 0.82] }) },
+    ],
+  };
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -229,52 +286,60 @@ export function ShoppingScreen() {
             </Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => toggleChecked(item)}
-            accessibilityRole="button"
-            accessibilityState={{ checked: item.checked }}
-            accessibilityLabel={`${item.name}${item.checked ? ', in the cart' : ''}`}
-            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-          >
-            <View style={[styles.checkbox, item.checked && styles.checkboxOn]}>
-              {item.checked && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <View style={styles.rowMain}>
-              <Text style={[styles.name, item.checked && styles.nameDone]} numberOfLines={1}>
-                {item.name}
-              </Text>
-              {(item.quantity !== 1 || item.unit || item.note) && (
-                <Text style={styles.meta} numberOfLines={1}>
-                  {item.quantity !== 1 ? `${item.quantity}` : ''}
-                  {item.unit ? ` ${item.unit}` : ''}
-                  {item.note ? `${item.quantity !== 1 || item.unit ? ' · ' : ''}${item.note}` : ''}
-                </Text>
-              )}
-            </View>
-            {item.checked && (
-              <Pressable
-                onPress={() => moveToPantry(item)}
-                hitSlop={6}
-                disabled={busy}
-                accessibilityRole="button"
-                accessibilityLabel={`Move ${item.name} to pantry`}
-                style={styles.pantryBtn}
-              >
-                <Text style={styles.pantryBtnTxt}>Stocked ✓</Text>
-              </Pressable>
-            )}
-            <Pressable
-              onPress={() => removeItem(item)}
-              hitSlop={8}
-              accessibilityRole="button"
-              accessibilityLabel={`Remove ${item.name} from the list`}
-              style={styles.removeBtn}
+        renderItem={({ item }) => {
+          const departing = item.id === departingId;
+          return (
+            <Animated.View
+              pointerEvents={departing ? 'none' : 'auto'}
+              style={departing ? swooshStyle : undefined}
             >
-              <X size={15} color={tokens.color.inkMuted} />
-            </Pressable>
-          </Pressable>
-        )}
+              <Pressable
+                onPress={() => toggleChecked(item)}
+                accessibilityRole="button"
+                accessibilityState={{ checked: item.checked }}
+                accessibilityLabel={`${item.name}${item.checked ? ', in the cart' : ''}`}
+                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+              >
+                <View style={[styles.checkbox, item.checked && styles.checkboxOn]}>
+                  {item.checked && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <View style={styles.rowMain}>
+                  <Text style={[styles.name, item.checked && styles.nameDone]} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  {(item.quantity !== 1 || item.unit || item.note) && (
+                    <Text style={styles.meta} numberOfLines={1}>
+                      {item.quantity !== 1 ? `${item.quantity}` : ''}
+                      {item.unit ? ` ${item.unit}` : ''}
+                      {item.note ? `${item.quantity !== 1 || item.unit ? ' · ' : ''}${item.note}` : ''}
+                    </Text>
+                  )}
+                </View>
+                {item.checked && (
+                  <Pressable
+                    onPress={() => onStockPress(item)}
+                    hitSlop={6}
+                    disabled={busy}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Move ${item.name} to pantry`}
+                    style={styles.pantryBtn}
+                  >
+                    <Text style={styles.pantryBtnTxt}>Stocked ✓</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => removeItem(item)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${item.name} from the list`}
+                  style={styles.removeBtn}
+                >
+                  <X size={15} color={tokens.color.inkMuted} />
+                </Pressable>
+              </Pressable>
+            </Animated.View>
+          );
+        }}
       />
     </SafeAreaView>
   );
