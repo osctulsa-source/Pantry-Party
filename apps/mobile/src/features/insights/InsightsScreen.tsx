@@ -21,6 +21,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { tokens } from '../../theme/tokens';
+import { InsightsEmptyArt } from '../../components/illustrations/InsightsEmptyArt';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useInsights } from './useInsights';
 import { readExpiryEvents, type ExpiryEvent } from '../pantry/expiryEvents';
@@ -165,6 +166,7 @@ export function InsightsScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
+            <InsightsEmptyArt />
             <Text style={styles.emptyTitle}>Your story starts here</Text>
             <Text style={styles.emptySub}>
               Every item you rescue and every meal you cook writes a chapter. Get started — we're
