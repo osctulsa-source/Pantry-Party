@@ -72,6 +72,7 @@ import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useInsights } from '../insights/useInsights';
+import { PantrySearchEmptyArt } from '../../components/illustrations/PantrySearchEmptyArt';
 import { StreakChip } from '../insights/StreakChip';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import { PantryListSkeleton } from './PantryListSkeleton';
@@ -513,6 +514,7 @@ export function PantryScreen() {
             <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
           ) : visibleItems.length === 0 ? (
             <View style={styles.emptyWrap}>
+              <PantrySearchEmptyArt />
               <Text style={styles.emptyTitle}>No matches</Text>
               <Text style={styles.emptySub}>No match for “{query.trim()}” — try a shorter name or check the other tabs.</Text>
             </View>
