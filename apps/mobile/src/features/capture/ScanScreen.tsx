@@ -3,21 +3,18 @@
  *
  * CameraView (expo-camera, Rebuild 2) with retail barcode types, a Crumb
  * viewfinder, and a torch toggle. Detection is debounced; a hit haptic fires,
- * the frame freezes into a CONFIRM card (Open Food Facts prefill — name,
- * brand, package size, thumbnail; everything editable), and Add inserts via
- * addPantryItem with the smart-expiry suggester, source 'barcode'.
+ * the frame freezes into a CONFIRM card that SPRINGS up from the bottom
+ * (Delight D2) with the product image scaling in — the "magic" moment.
+ * Add inserts via addPantryItem with the smart-expiry suggester.
  *
- * OFF misses (unknown product / offline / timeout) fall back to the same card
- * with the barcode shown and the name empty — capture never dead-ends.
- * "Add another" resumes scanning for continuous capture. Every scan records
- * hit/miss to the on-device scanLog (the ≥90% capture-gate dataset).
- *
- * "Paste a list instead" links the bulk-paste interim path (receipt OCR's
- * stand-in until the dataset-gated October arc).
+ * OFF misses fall back to the same card with the barcode shown and the name
+ * empty — capture never dead-ends. "Add another" resumes scanning for
+ * continuous capture. Every scan records hit/miss to the on-device scanLog.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Image,
   Pressable,
   StyleSheet,
@@ -63,6 +60,24 @@ export function ScanScreen() {
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(0);
   const lastScan = useRef<{ code: string; at: number }>({ code: '', at: 0 });
+
+  // D2: confirm card spring entrance — slides up from below with overshoot.
+  const cardSlide = useRef(new Animated.Value(300)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const thumbScale = useRef(new Animated.Value(0.7)).current;
+
+  useEffect(() => {
+    if (phase.kind === 'confirm') {
+      cardSlide.setValue(300);
+      cardOpacity.setValue(0);
+      thumbScale.setValue(0.7);
+      Animated.parallel([
+        Animated.spring(cardSlide, { toValue: 0, tension: 65, friction: 9, useNativeDriver: true }),
+        Animated.timing(cardOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.spring(thumbScale, { toValue: 1, tension: 80, friction: 6, useNativeDriver: true, delay: 150 }),
+      ]).start();
+    }
+  }, [phase.kind, cardSlide, cardOpacity, thumbScale]);
 
   async function onBarcode(result: BarcodeScanningResult) {
     if (phase.kind !== 'scanning') return;
@@ -165,7 +180,7 @@ export function ScanScreen() {
         {added > 0 && phase.kind === 'scanning' && (
           <View style={styles.addedChip} pointerEvents="none">
             <Text style={styles.addedChipTxt}>
-              ✓ {added} added — keep going!
+              {'✓'} {added} added — keep going!
             </Text>
           </View>
         )}
@@ -184,15 +199,18 @@ export function ScanScreen() {
         {phase.kind === 'looking' && (
           <View style={styles.lookupRow}>
             <ActivityIndicator color={tokens.color.accent} />
-            <Text style={styles.hint}>Looking that up…</Text>
+            <Text style={styles.hint}>Looking that up...</Text>
           </View>
         )}
 
         {confirming && phase.kind === 'confirm' && (
-          <View>
+          <Animated.View style={{ transform: [{ translateY: cardSlide }], opacity: cardOpacity }}>
             <View style={styles.confirmHead}>
               {phase.product?.imageUrl ? (
-                <Image source={{ uri: phase.product.imageUrl }} style={styles.thumb} />
+                <Animated.Image
+                  source={{ uri: phase.product.imageUrl }}
+                  style={[styles.thumb, { transform: [{ scale: thumbScale }] }]}
+                />
               ) : (
                 <View style={[styles.thumb, styles.thumbEmpty]} />
               )}
@@ -240,7 +258,7 @@ export function ScanScreen() {
             <Pressable style={styles.skip} onPress={resumeScanning} disabled={busy} hitSlop={6}>
               <Text style={styles.skipTxt}>Skip, keep scanning</Text>
             </Pressable>
-          </View>
+          </Animated.View>
         )}
       </View>
     </SafeAreaView>
