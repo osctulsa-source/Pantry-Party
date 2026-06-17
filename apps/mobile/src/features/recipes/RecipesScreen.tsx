@@ -21,7 +21,6 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -58,6 +57,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
+import { CookSkeleton } from './CookSkeleton';
 
 const CARD_W = Dimensions.get('window').width;
 const PAGE = 8;
@@ -256,12 +256,7 @@ export function RecipesScreen() {
         )}
       </View>
 
-      {recipeState.kind === 'loading' && (
-        <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
-          <Text style={styles.helper}>Checking what you can make…</Text>
-        </View>
-      )}
+      {recipeState.kind === 'loading' && <CookSkeleton />}
 
       {recipeState.kind === 'error' && (
         <View style={styles.center}>

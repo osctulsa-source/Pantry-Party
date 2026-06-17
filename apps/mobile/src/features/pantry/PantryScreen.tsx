@@ -34,7 +34,6 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   LayoutAnimation,
@@ -75,6 +74,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useInsights } from '../insights/useInsights';
 import { StreakChip } from '../insights/StreakChip';
 import { addToShoppingList } from '../shopping/addToShoppingList';
+import { PantryListSkeleton } from './PantryListSkeleton';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -386,9 +386,7 @@ export function PantryScreen() {
   if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
       <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-        <View style={styles.loading}>
-          <ActivityIndicator color={tokens.color.accent} />
-        </View>
+        <PantryListSkeleton />
       </SafeAreaView>
     );
   }
@@ -770,7 +768,6 @@ function PantryEmpty({ onAdd }: { onAdd: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
-  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
