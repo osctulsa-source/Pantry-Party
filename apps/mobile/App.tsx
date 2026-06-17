@@ -36,14 +36,6 @@ import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
 
-/**
- * Root stack (Phase 2 IA): the FIRST screen is the bottom-tab navigator
- * (Pantry / Cook / Settings — see src/navigation/MainTabs), and every detail
- * screen lives at this level so it pushes OVER the tab bar, full-screen, with
- * the native-stack header + back. Pantry / Recipes / Settings are no longer
- * stack routes — navigate to MainTabs' tabs (PantryTab / CookTab /
- * SettingsTab) instead.
- */
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   AddItem: undefined;
@@ -67,19 +59,6 @@ export type AuthStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const AuthStackNav = createNativeStackNavigator<AuthStackParamList>();
 
-/**
- * Deep links: pantryparty://invite/BREAD-7K2M → JoinHousehold with the code
- * pre-filled (see JoinHouseholdScreen). The scheme is also declared in
- * app.json ("scheme") — both sides must match, and the app.json side is baked
- * into the native binary, so changing it needs a dev-client rebuild.
- *
- * JoinHousehold stays a ROOT-stack screen (not nested in a tab) precisely so
- * this config keeps resolving unchanged under the tab IA.
- *
- * V1 caveat: links resolve only while the AppStack is mounted (signed in +
- * onboarded). A signed-out user tapping a link lands on sign-in and the link
- * is dropped — buffering pending links through auth is a V2 refinement.
- */
 const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [`${INVITE_URL_SCHEME}://`],
   config: {
@@ -138,7 +117,6 @@ function AuthStack() {
 function AppRoot() {
   const { state } = useAuth();
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
-  // Hook is called unconditionally (Rules of Hooks); it no-ops until userId is set.
   const { needsOnboarding, loading: onboardingLoading, complete } = useOnboarding(userId);
 
   if (state.status === 'loading') {
@@ -212,13 +190,8 @@ export default function App() {
     <GestureHandlerRootView style={styles.flex}>
     <SafeAreaProvider>
       <StatusBar style={tokens.colorScheme === 'dark' ? 'light' : 'dark'} />
-      {/* PowerSyncContext makes the db instance available to useQuery() hooks
-          inside any screen — see PantryScreen for the first consumer. */}
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
-          {/* ActiveHouseholdProvider depends on BOTH AuthContext (for user_id)
-              and PowerSync (for the user_households bootstrap query), so it
-              must sit inside both. See features/household/ActiveHouseholdContext. */}
           <ActiveHouseholdProvider>
             <NavigationContainer linking={linking}>
               <AppRoot />
