@@ -57,6 +57,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
+import { CookSuccessBurst } from './CookSuccessBurst';
 
 const CARD_W = Dimensions.get('window').width;
 const PAGE = 8;
@@ -337,7 +338,7 @@ function CookThis({
   const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
   const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
-  const [cookedNote, setCookedNote] = useState<string | null>(null);
+  const [cookedNote, setCookedNote] = useState<number | null>(null);
   // Recipes whose missing ingredients were added to the shopping list (feedback).
   const [missingAdded, setMissingAdded] = useState<Set<number>>(new Set());
 
@@ -416,11 +417,7 @@ function CookThis({
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     record(r.title, 'like');
     setCooking(null);
-    setCookedNote(
-      updatedCount > 0
-        ? `Pantry updated — ${updatedCount} item${updatedCount === 1 ? '' : 's'} marked used ✓`
-        : null,
-    );
+    setCookedNote(updatedCount > 0 ? updatedCount : null);
   }
 
   return (
@@ -430,7 +427,7 @@ function CookThis({
           <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
         </View>
       )}
-      {cookedNote && <Text style={styles.cookedNote}>{cookedNote}</Text>}
+      {cookedNote !== null && <CookSuccessBurst itemCount={cookedNote} />}
       <Text style={styles.swipeHint}>Swipe to browse — like what looks good, skip what doesn't. We learn your taste.</Text>
 
       <FlatList
