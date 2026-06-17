@@ -10,6 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
 import { Body, Button, Heading, Input, Screen } from '../../components/ui';
+import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from './AuthContext';
 import type { AuthStackParamList } from '../../../App';
 
@@ -33,6 +34,9 @@ export function SignInScreen() {
     <Screen edges={['top', 'left', 'right', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.center}>
+          <View style={styles.brand}>
+            <BrandMark size={76} label="Breadbox" />
+          </View>
           <Heading size="xl">Welcome back</Heading>
           <Body tone="muted" style={styles.subtitle}>
             Sign in to your {tokens.brandName} account
@@ -78,6 +82,7 @@ export function SignInScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', paddingHorizontal: tokens.space(6) },
+  brand: { alignItems: 'center', marginBottom: tokens.space(6) },
   subtitle: { marginTop: tokens.space(2), marginBottom: tokens.space(6) },
   inputGap: { marginTop: tokens.space(3) },
   error: { marginTop: tokens.space(3) },
