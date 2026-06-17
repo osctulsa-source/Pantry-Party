@@ -48,6 +48,7 @@ import {
   type RecipePrefs,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
 import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
@@ -272,6 +273,7 @@ export function RecipesScreen() {
 
       {recipeState.kind === 'empty' && (
         <View style={styles.center}>
+          <CookEmptyArt />
           <Text style={styles.errorTitle}>
             {recipeState.reason === 'no-pantry'
               ? 'Your pantry is the menu'
