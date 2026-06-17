@@ -68,6 +68,7 @@ import {
 } from '@breadbox/core';
 import { formatExpiryMeta, daysUntilExpiry } from './expiryFormat';
 import { ExpiryPill } from '../../components/ExpiryPill';
+import { PantryEmptyArt } from '../../components/illustrations/PantryEmptyArt';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -757,6 +758,7 @@ function PantryGroupRow({
 function PantryEmpty({ onAdd }: { onAdd: () => void }) {
   return (
     <View style={styles.emptyWrap}>
+      <PantryEmptyArt />
       <Text style={styles.emptyTitle}>Fresh start</Text>
       <Text style={styles.emptySub}>
         Scan a barcode, snap a receipt, or add something by hand — we'll handle the rest.
