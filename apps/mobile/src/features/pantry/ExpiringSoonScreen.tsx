@@ -111,15 +111,15 @@ export function ExpiringSoonScreen() {
         ListHeaderComponent={
           urgent.length > 0 ? (
             <Text style={styles.hint}>
-              One tap per item — Used logs a rescue, Tossed keeps the waste math honest, +2d
-              snoozes the reminder.
+              One tap per item. Used it? That's a rescue. Tossed it? Honest data helps. Not ready?
+              Snooze it.
             </Text>
           ) : null
         }
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>Nothing needs attention</Text>
-            <Text style={styles.emptySub}>Everything in your pantry is still fresh. Nice.</Text>
+            <Text style={styles.emptyTitle}>Everything's fresh</Text>
+            <Text style={styles.emptySub}>Nothing expiring soon — you're on top of it 🎉</Text>
           </View>
         }
         renderItem={({ item }) => {

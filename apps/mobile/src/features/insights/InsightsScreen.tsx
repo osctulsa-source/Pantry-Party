@@ -139,10 +139,10 @@ export function InsightsScreen() {
               <Text style={styles.heroFlame}>🔥</Text>
               <CountUp target={insights.streakDays} />
               <Text style={styles.heroLabel}>
-                {insights.streakDays === 1 ? 'day without food waste' : 'days without food waste'}
+                {insights.streakDays === 1 ? 'day without wasting food' : 'days without wasting food'}
               </Text>
               {insights.bestStreak > insights.streakDays && (
-                <Text style={styles.heroBest}>Personal best: {insights.bestStreak} days</Text>
+                <Text style={styles.heroBest}>Your record: {insights.bestStreak} days 🏆</Text>
               )}
             </View>
 
@@ -156,7 +156,7 @@ export function InsightsScreen() {
 
             {/* Savings context */}
             <Text style={styles.savingsNote}>
-              Based on the EPA estimate of ~$2.50 per rescued item (US household of four average).
+              The average US household wastes ~$2.50 per item (EPA). Every rescue counts.
             </Text>
 
             {/* Activity header */}
@@ -165,9 +165,10 @@ export function InsightsScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyTitle}>No activity yet</Text>
+            <Text style={styles.emptyTitle}>Your story starts here</Text>
             <Text style={styles.emptySub}>
-              Start using items from your pantry — every rescue and cook shows up here.
+              Every item you rescue and every meal you cook writes a chapter. Get started — we're
+              keeping score.
             </Text>
           </View>
         }
