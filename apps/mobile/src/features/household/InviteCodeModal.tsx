@@ -43,6 +43,7 @@ import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
 import { generateInvite, type InviteResponse } from '../../data/api/householdClient';
 import { buildInviteShareMessage } from './inviteLink';
+import { BrandMark } from '../../components/BrandMark';
 import type { RootStackParamList } from '../../../App';
 
 type InviteCodeModalNav = NativeStackNavigationProp<RootStackParamList, 'InviteCodeModal'>;
@@ -98,6 +99,7 @@ export function InviteCodeModal() {
     await Clipboard.setStringAsync(code);
     Haptics.selectionAsync().catch(() => {});
     setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -114,10 +116,14 @@ export function InviteCodeModal() {
 
           {inviteState.status === 'success' && (
             <>
-              <Text style={styles.code} accessibilityLabel={`Invite code ${inviteState.data.invite_code}`}>
-                {inviteState.data.invite_code}
-              </Text>
-              <Text style={styles.subtitle}>Expires in 24 hours</Text>
+              <View style={styles.inviteCard}>
+                <BrandMark size={48} />
+                <Text style={styles.inviteCardLabel}>Your invite code</Text>
+                <Text style={styles.code} accessibilityLabel={`Invite code ${inviteState.data.invite_code}`}>
+                  {inviteState.data.invite_code}
+                </Text>
+                <Text style={styles.subtitle}>Share it so they can join your pantry. Expires in 24 hours.</Text>
+              </View>
 
               <Pressable
                 style={styles.primaryButton}
@@ -179,6 +185,22 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.lg,
     paddingVertical: tokens.space(4),
   },
+  inviteCard: {
+    alignItems: 'center',
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: tokens.radius.lg,
+    paddingVertical: tokens.space(6),
+    paddingHorizontal: tokens.space(5),
+    marginBottom: tokens.space(6),
+  },
+  inviteCardLabel: {
+    marginTop: tokens.space(3),
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: tokens.color.accent,
+  },
   eyebrow: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 12,
@@ -203,14 +225,14 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
     textAlign: 'center',
     color: tokens.color.ink,
-    paddingVertical: tokens.space(4),
+    paddingVertical: tokens.space(2),
   },
   subtitle: {
     fontFamily: tokens.font.body.regular,
     fontSize: 14,
     color: tokens.color.inkMuted,
     textAlign: 'center',
-    marginBottom: tokens.space(6),
+    marginBottom: 0,
   },
   primaryButton: {
     paddingVertical: tokens.space(4),
