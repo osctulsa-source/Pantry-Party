@@ -1,19 +1,17 @@
+/**
+ * SignUpScreen — migrated onto the UI primitives (Screen/Heading/Body/Input/Button),
+ * matching SignInScreen, with the Breadbox mark up top.
+ *
+ * Success path: AuthContext state flips to 'authenticated' → App.tsx renders AppStack.
+ */
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
+import { Body, Button, Heading, Input, Screen } from '../../components/ui';
+import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from './AuthContext';
 import type { AuthStackParamList } from '../../../App';
 
@@ -31,133 +29,65 @@ export function SignUpScreen() {
     const { error: err } = await signUp(email.trim(), password);
     setSubmitting(false);
     if (err) setError(err);
-    // Success path: AuthContext state flips to 'authenticated' → AppStack renders.
+    // Success path: AuthContext flips to 'authenticated' → AppStack renders.
   }
 
   return (
-    <SafeAreaView style={styles.root}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+    <Screen edges={['top', 'left', 'right', 'bottom']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.center}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Create your account</Text>
-            <Text style={styles.subtitle}>Build your pantry. Sync across devices.</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              placeholderTextColor={tokens.color.inkMuted}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={tokens.color.inkMuted}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              textContentType="newPassword"
-            />
-
-            {error && <Text style={styles.error}>{error}</Text>}
-
-            <Pressable
-              style={[styles.submit, submitting && styles.submitDisabled]}
-              onPress={onSubmit}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <ActivityIndicator color={tokens.color.surface} />
-              ) : (
-                <Text style={styles.submitText}>Create account</Text>
-              )}
-            </Pressable>
-
-            <Pressable style={styles.footerLink} onPress={() => navigation.navigate('SignIn')}>
-              <Text style={styles.footerText}>Already have an account? Sign in</Text>
-            </Pressable>
+          <View style={styles.brand}>
+            <BrandMark size={76} label="Breadbox" />
           </View>
+          <Heading size="xl">Create your account</Heading>
+          <Body tone="muted" style={styles.subtitle}>
+            Build your pantry. Sync across devices.
+          </Body>
+
+          <Input
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+          <Input
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            textContentType="newPassword"
+            style={styles.inputGap}
+          />
+
+          {error && (
+            <Body tone="accent" weight="medium" size={13} style={styles.error}>
+              {error}
+            </Body>
+          )}
+
+          <Button title="Create account" onPress={onSubmit} loading={submitting} style={styles.submit} />
+
+          <Pressable style={styles.footerLink} onPress={() => navigation.navigate('SignIn')}>
+            <Body tone="accent" weight="medium" size={14}>
+              Already have an account? Sign in
+            </Body>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: tokens.color.surface,
-  },
-  flex: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: tokens.space(6),
-  },
-  card: {
-    backgroundColor: tokens.color.surface,
-    borderRadius: tokens.radius.lg,
-  },
-  title: {
-    fontFamily: tokens.font.display.bold,
-    fontSize: 32,
-    color: tokens.color.ink,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    marginTop: tokens.space(2),
-    marginBottom: tokens.space(6),
-    fontFamily: tokens.font.body.regular,
-    fontSize: 15,
-    color: tokens.color.inkMuted,
-  },
-  input: {
-    marginBottom: tokens.space(3),
-    paddingVertical: tokens.space(3),
-    paddingHorizontal: tokens.space(4),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: tokens.radius.md,
-    fontFamily: tokens.font.body.regular,
-    fontSize: 16,
-    color: tokens.color.ink,
-  },
-  error: {
-    marginBottom: tokens.space(3),
-    fontFamily: tokens.font.body.medium,
-    fontSize: 13,
-    color: tokens.color.accent,
-  },
-  submit: {
-    marginTop: tokens.space(1),
-    paddingVertical: tokens.space(4),
-    backgroundColor: tokens.color.success,
-    borderRadius: tokens.radius.md,
-    alignItems: 'center',
-  },
-  submitDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.color.surface,
-  },
-  footerLink: {
-    marginTop: tokens.space(5),
-    alignItems: 'center',
-  },
-  footerText: {
-    fontFamily: tokens.font.body.medium,
-    fontSize: 14,
-    color: tokens.color.accent,
-  },
+  flex: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', paddingHorizontal: tokens.space(6) },
+  brand: { alignItems: 'center', marginBottom: tokens.space(6) },
+  subtitle: { marginTop: tokens.space(2), marginBottom: tokens.space(6) },
+  inputGap: { marginTop: tokens.space(3) },
+  error: { marginTop: tokens.space(3) },
+  submit: { marginTop: tokens.space(4) },
+  footerLink: { marginTop: tokens.space(5), alignItems: 'center' },
 });

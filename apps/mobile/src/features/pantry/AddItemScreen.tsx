@@ -43,6 +43,7 @@ import { LocationPicker } from './LocationPicker';
 import { SuggestChips } from './SuggestChips';
 import { UnitPicker } from './UnitPicker';
 import { useLearnedBrands } from './useLearnedBrands';
+import { QtyStepper } from './QtyStepper';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -190,14 +191,7 @@ export function AddItemScreen() {
           )}
 
           <Text style={styles.label}>Quantity</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="1"
-            placeholderTextColor={tokens.color.inkMuted}
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="number-pad"
-          />
+          <QtyStepper value={quantity} onChange={setQuantity} />
 
           <Text style={styles.label}>Unit (optional)</Text>
           <View style={styles.unitWrap}>
