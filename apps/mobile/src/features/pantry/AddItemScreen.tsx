@@ -218,7 +218,7 @@ export function AddItemScreen() {
             {submitting ? (
               <ActivityIndicator color={tokens.color.onAccent} />
             ) : (
-              <Text style={styles.submitText}>Add item</Text>
+              <Text style={styles.submitText}>Add to pantry</Text>
             )}
           </Pressable>
         </ScrollView>

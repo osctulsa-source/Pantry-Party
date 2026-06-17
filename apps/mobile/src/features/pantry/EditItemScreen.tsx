@@ -36,6 +36,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@powersync/react-native';
@@ -180,6 +181,7 @@ export function EditItemScreen() {
          WHERE id = ?`,
         [trimmedName, trimmedBrand || null, parsedQty, unit, fillLevel, location, expiresIso, Date.now(), itemId],
       );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       navigation.goBack();
     } catch (e: unknown) {
       const err = e instanceof Error ? e : new Error(String(e));
@@ -206,6 +208,7 @@ export function EditItemScreen() {
         Date.now(),
         itemId,
       ]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       navigation.goBack();
     } catch (e: unknown) {
       const err = e instanceof Error ? e : new Error(String(e));
