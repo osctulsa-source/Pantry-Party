@@ -272,16 +272,16 @@ export function RecipesScreen() {
       {recipeState.kind === 'empty' && (
         <View style={styles.center}>
           <Text style={styles.errorTitle}>
-            {recipeState.reason === ‘no-pantry’
-              ? ‘Your pantry is the menu’
-              : recipeState.reason === ‘all-excluded’
-                ? "Everything’s on the bench"
-                : "That’s everything we found"}
+            {recipeState.reason === 'no-pantry'
+              ? 'Your pantry is the menu'
+              : recipeState.reason === 'all-excluded'
+                ? "Everything's on the bench"
+                : "That's everything we found"}
           </Text>
           <Text style={styles.helper}>
-            {recipeState.reason === ‘no-pantry’
-              ? "Add what’s in your fridge and we’ll figure out dinner."
-              : recipeState.reason === ‘all-excluded’
+            {recipeState.reason === 'no-pantry'
+              ? "Add what's in your fridge and we'll figure out dinner."
+              : recipeState.reason === 'all-excluded'
                 ? "You excluded all your ingredients — bring some back or hit Reset."
                 : "Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration."}
           </Text>
