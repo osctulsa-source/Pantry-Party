@@ -56,6 +56,7 @@ import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
+import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
@@ -261,6 +262,7 @@ export function RecipesScreen() {
 
       {recipeState.kind === 'error' && (
         <View style={styles.center}>
+          <CookErrorArt />
           <Text style={styles.errorTitle}>Couldn't load recipes</Text>
           <Text style={styles.helper}>{recipeState.message}</Text>
         </View>
