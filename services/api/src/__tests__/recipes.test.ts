@@ -77,6 +77,27 @@ const UPSTREAM_RESULT = {
   vegan: false,
   glutenFree: false,
   cuisines: ['american'], // extra upstream noise — must be trimmed away
+  // detail-screen payload (rides along via addRecipeInformation + fillIngredients)
+  readyInMinutes: 25,
+  servings: 4,
+  sourceUrl: 'https://foodista.com/banana-pancakes',
+  sourceName: 'Foodista',
+  summary: '<b>Banana pancakes</b> are delicious. <a href="x">source</a>',
+  extendedIngredients: [
+    { id: 1, name: 'banana', original: '2 bananas', amount: 2, unit: '', aisle: 'Produce', image: 'banana.png' },
+    { name: 'milk', original: '1 cup milk', amount: 1, unit: 'cup' },
+    { name: '', original: '' }, // blank — dropped
+  ],
+  analyzedInstructions: [
+    {
+      name: '',
+      steps: [
+        { number: 1, step: 'Mash the bananas.', ingredients: [{ name: 'banana' }], equipment: [] },
+        { number: 2, step: 'Cook on a hot griddle.' },
+        { number: 3, step: '' }, // blank — dropped
+      ],
+    },
+  ],
 };
 
 describe('POST /recipes/search', () => {
@@ -129,6 +150,25 @@ describe('POST /recipes/search', () => {
         vegetarian: true,
         vegan: false,
         glutenFree: false,
+        // detail-screen fields — cuisines and per-ingredient/step noise dropped
+        readyInMinutes: 25,
+        servings: 4,
+        sourceUrl: 'https://foodista.com/banana-pancakes',
+        sourceName: 'Foodista',
+        summary: '<b>Banana pancakes</b> are delicious. <a href="x">source</a>',
+        ingredients: [
+          { name: 'banana', original: '2 bananas', amount: 2, unit: '' },
+          { name: 'milk', original: '1 cup milk', amount: 1, unit: 'cup' },
+        ],
+        instructions: [
+          {
+            name: '',
+            steps: [
+              { number: 1, step: 'Mash the bananas.' },
+              { number: 2, step: 'Cook on a hot griddle.' },
+            ],
+          },
+        ],
       },
     ]);
 

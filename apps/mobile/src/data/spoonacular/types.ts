@@ -2,6 +2,27 @@
  * Subset of Spoonacular's recipe responses — only the fields we use.
  * Full schema at https://spoonacular.com/food-api/docs#Search-Recipes-by-Ingredients.
  */
+
+/** One ingredient line for the detail screen. `original` is the display string ("2 cups flour"). */
+export interface RecipeIngredient {
+  name: string;
+  original: string;
+  amount: number | null;
+  unit: string;
+}
+
+/** A numbered step in the detail screen's instructions. */
+export interface RecipeStep {
+  number: number;
+  step: string;
+}
+
+/** A (possibly named) block of steps, e.g. "For the sauce". `name` is '' for the main block. */
+export interface RecipeInstructionGroup {
+  name: string;
+  steps: RecipeStep[];
+}
+
 export interface SpoonacularRecipe {
   id: number;
   title: string;
@@ -26,6 +47,24 @@ export interface SpoonacularRecipe {
   vegetarian: boolean;
   vegan: boolean;
   glutenFree: boolean;
+  // --- detail-screen fields (recipe-detail arc) -------------------------
+  // All ride along on the SAME proxy response the cards already use — the
+  // server stopped discarding them. Empty / null for older cached responses
+  // that predate the passthrough, so the detail screen must degrade gracefully.
+  /** Minutes to make; null when the API omits it. */
+  readyInMinutes: number | null;
+  /** Servings the recipe yields; null when the API omits it. */
+  servings: number | null;
+  /** Original recipe URL — shown as attribution (Spoonacular terms). '' when absent. */
+  sourceUrl: string;
+  /** Human-readable source/site name for attribution. '' when absent. */
+  sourceName: string;
+  /** Spoonacular HTML summary — strip before display. '' when absent. */
+  summary: string;
+  /** Full ingredient list with display strings + amounts. Empty for older cached responses. */
+  ingredients: RecipeIngredient[];
+  /** Grouped, numbered step-by-step instructions. Empty when the API omits them. */
+  instructions: RecipeInstructionGroup[];
 }
 
 /** Raw findByIngredients response item — the superset we map down from. */
