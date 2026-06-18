@@ -29,9 +29,10 @@
  * era, but brand GREEN since the Crumb re-skin) and on-accent text uses
  * color.onAccent rather than color.surface.
  */
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -41,10 +42,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
+import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from './ActiveHouseholdContext';
 import { acceptInvite, type AcceptInviteError } from '../../data/api/householdClient';
@@ -103,6 +106,13 @@ export function JoinHouseholdScreen() {
   const [code, setCode] = useState(() => normalizeIncomingCode(route.params?.code));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [joined, setJoined] = useState(false);
+  const burst = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!joined) return;
+    Animated.spring(burst, { toValue: 1, tension: 120, friction: 7, useNativeDriver: true }).start();
+  }, [joined, burst]);
 
   const trimmedCode = code.trim();
   const canSubmit = trimmedCode.length > 0 && !submitting;
@@ -120,11 +130,29 @@ export function JoinHouseholdScreen() {
       // Set the newly-joined household as active before navigating away — the
       // user explicitly chose this one, so it should be what they see next.
       setActiveHouseholdId(response.household_id);
-      navigation.goBack();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      setJoined(true);
+      setTimeout(() => navigation.goBack(), 1400);
     } catch (e: unknown) {
       setError(messageForError(e));
       setSubmitting(false);
     }
+  }
+
+  if (joined) {
+    const opacity = burst.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: 'clamp' });
+    const scale = burst.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+    return (
+      <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
+        <View style={styles.center}>
+          <Animated.View style={[styles.joined, { opacity, transform: [{ scale }] }]}>
+            <BrandMark size={72} />
+            <Text style={styles.joinedTitle}>You're in!</Text>
+            <Text style={styles.joinedSub}>Welcome to the household.</Text>
+          </Animated.View>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -186,6 +214,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: tokens.space(6),
+  },
+  joined: {
+    alignItems: 'center',
+    paddingHorizontal: tokens.space(6),
+  },
+  joinedTitle: {
+    marginTop: tokens.space(4),
+    fontFamily: tokens.font.display.bold,
+    fontSize: 28,
+    color: tokens.color.ink,
+    letterSpacing: -0.5,
+  },
+  joinedSub: {
+    marginTop: tokens.space(2),
+    fontFamily: tokens.font.body.regular,
+    fontSize: 15,
+    color: tokens.color.inkMuted,
   },
   card: {
     backgroundColor: tokens.color.surface,
