@@ -37,7 +37,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, ChevronUp, Leaf, RefreshCw } from 'lucide-react-native';
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Clock,
+  Heart,
+  Leaf,
+  Plus,
+  RefreshCw,
+  Users,
+  X,
+} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -472,11 +485,13 @@ function CookThis({
                 <Text style={styles.altName} numberOfLines={1}>
                   {r.title}
                 </Text>
-                <Text style={styles.altMeta}>
+                <Text style={styles.altMeta} numberOfLines={1}>
+                  {r.readyInMinutes !== null ? `${r.readyInMinutes} min · ` : ''}
                   {matchLine(r)}
                   {r.healthScore !== null && r.healthScore >= 70 ? ' · very healthy' : ''}
                 </Text>
               </View>
+              <ChevronRight size={18} color={tokens.color.inkMuted} />
             </Pressable>
           ))}
         </View>
@@ -525,26 +540,68 @@ function HeroCard({
           <Text style={styles.heroTitle} numberOfLines={2}>
             {recipe.title}
           </Text>
-          <Text style={styles.match}>{matchLine(recipe)}</Text>
-          {recipe.healthScore !== null && recipe.healthScore >= 55 && (
-            <View style={styles.healthRow}>
-              <Leaf size={12} color={tokens.color.success} />
-              <Text style={styles.healthTxt}>
-                {recipe.healthScore >= 70 ? 'Very healthy' : 'Healthy pick'} · {recipe.healthScore}
-              </Text>
+          {(recipe.readyInMinutes !== null ||
+            recipe.servings !== null ||
+            (recipe.healthScore !== null && recipe.healthScore >= 55)) && (
+            <View style={styles.metaRow}>
+              {recipe.readyInMinutes !== null && (
+                <View style={styles.metaChip}>
+                  <Clock size={12} color={tokens.color.inkMuted} />
+                  <Text style={styles.metaTxt}>{recipe.readyInMinutes} min</Text>
+                </View>
+              )}
+              {recipe.servings !== null && (
+                <View style={styles.metaChip}>
+                  <Users size={12} color={tokens.color.inkMuted} />
+                  <Text style={styles.metaTxt}>Serves {recipe.servings}</Text>
+                </View>
+              )}
+              {recipe.healthScore !== null && recipe.healthScore >= 55 && (
+                <View style={styles.metaChip}>
+                  <Leaf size={12} color={tokens.color.success} />
+                  <Text style={[styles.metaTxt, styles.metaTxtHealth]}>
+                    {recipe.healthScore >= 70 ? 'Very healthy' : 'Healthy'} · {recipe.healthScore}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
+          <Text style={styles.match}>{matchLine(recipe)}</Text>
         </View>
       </Pressable>
       <View style={styles.actions}>
-        <Pressable style={[styles.actBtn, liked && styles.actBtnLiked]} onPress={() => onLike(recipe)}>
-          <Text style={[styles.actTxt, liked && styles.actTxtLiked]}>{liked ? '♥ Liked' : '♥ Like'}</Text>
+        <Pressable
+          style={[styles.actBtn, liked && styles.actBtnLiked]}
+          onPress={() => onLike(recipe)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: liked }}
+          accessibilityLabel={liked ? 'Liked' : 'Like this recipe'}
+        >
+          <Heart
+            size={15}
+            color={liked ? tokens.color.accent : tokens.color.ink}
+            fill={liked ? tokens.color.accent : 'transparent'}
+          />
+          <Text style={[styles.actTxt, liked && styles.actTxtLiked]}>{liked ? 'Liked' : 'Like'}</Text>
         </Pressable>
-        <Pressable style={[styles.actBtn, skipped && styles.actBtnSkipped]} onPress={() => onSkip(recipe)}>
-          <Text style={styles.actTxt}>{skipped ? '✕ Skipped' : '✕ Skip'}</Text>
+        <Pressable
+          style={[styles.actBtn, skipped && styles.actBtnSkipped]}
+          onPress={() => onSkip(recipe)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: skipped }}
+          accessibilityLabel={skipped ? 'Skipped' : 'Skip this recipe'}
+        >
+          <X size={15} color={tokens.color.ink} />
+          <Text style={styles.actTxt}>{skipped ? 'Skipped' : 'Skip'}</Text>
         </Pressable>
-        <Pressable style={[styles.actBtn, styles.viewBtn]} onPress={() => onOpen(recipe)}>
-          <Text style={[styles.actTxt, styles.viewTxt]}>View →</Text>
+        <Pressable
+          style={[styles.actBtn, styles.viewBtn]}
+          onPress={() => onOpen(recipe)}
+          accessibilityRole="button"
+          accessibilityLabel="View recipe details"
+        >
+          <Text style={[styles.actTxt, styles.viewTxt]}>View</Text>
+          <ArrowRight size={15} color={tokens.color.onAccent} />
         </Pressable>
       </View>
       {recipe.missedIngredientCount > 0 && recipe.missedIngredientNames.length > 0 && (
@@ -559,10 +616,15 @@ function HeroCard({
               : `Add ${recipe.missedIngredientCount} missing ingredients to the shopping list`
           }
         >
+          {missingAdded ? (
+            <Check size={14} color={tokens.color.accent} />
+          ) : (
+            <Plus size={14} color={tokens.color.accent} />
+          )}
           <Text style={styles.missingBtnTxt}>
             {missingAdded
-              ? '✓ Missing ingredients on the list'
-              : `＋ Add ${recipe.missedIngredientCount} missing to list`}
+              ? 'Missing ingredients on the list'
+              : `Add ${recipe.missedIngredientCount} missing to list`}
           </Text>
         </Pressable>
       )}
@@ -629,8 +691,18 @@ const styles = StyleSheet.create({
   ctrlInner: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1) },
   ctrlBtnOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
   ctrlBtnTxtOn: { color: tokens.color.onAccent },
-  healthRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), marginTop: tokens.space(2) },
-  healthTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.success },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  metaChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(1),
+    paddingVertical: tokens.space(1),
+    paddingHorizontal: tokens.space(2),
+    backgroundColor: tokens.color.surface,
+    borderRadius: 999,
+  },
+  metaTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
+  metaTxtHealth: { color: tokens.color.success },
   resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
   ingWrap: { marginTop: tokens.space(3) },
   ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
@@ -671,12 +743,21 @@ const styles = StyleSheet.create({
     borderColor: tokens.color.line,
   },
   heroDim: { opacity: 0.5 },
-  heroImg: { width: '100%', height: 170, backgroundColor: tokens.color.line },
+  heroImg: { width: '100%', height: 190, backgroundColor: tokens.color.line },
   heroPad: { padding: tokens.space(4) },
   heroTitle: { fontFamily: tokens.font.display.bold, fontSize: 21, color: tokens.color.ink, letterSpacing: -0.3, lineHeight: 25 },
   match: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: tokens.space(2) },
   actions: { flexDirection: 'row', gap: tokens.space(2), marginTop: tokens.space(3) },
-  actBtn: { flex: 1, paddingVertical: tokens.space(3), borderRadius: tokens.radius.md, backgroundColor: tokens.color.surfaceAlt, alignItems: 'center' },
+  actBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: tokens.space(1),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actBtnLiked: { backgroundColor: tokens.color.accentSoft },
   actBtnSkipped: { opacity: 0.6 },
   viewBtn: { backgroundColor: tokens.color.accent },
@@ -684,6 +765,9 @@ const styles = StyleSheet.create({
   actTxtLiked: { color: tokens.color.accent },
   viewTxt: { color: tokens.color.onAccent },
   missingBtn: {
+    flexDirection: 'row',
+    gap: tokens.space(1),
+    justifyContent: 'center',
     marginTop: tokens.space(2),
     paddingVertical: tokens.space(3),
     borderRadius: tokens.radius.md,
@@ -703,7 +787,7 @@ const styles = StyleSheet.create({
   cookedBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: tokens.space(2), marginTop: tokens.space(4) },
   dot: { width: 7, height: 7, borderRadius: 999, backgroundColor: tokens.color.line },
-  dotActive: { backgroundColor: tokens.color.accent },
+  dotActive: { backgroundColor: tokens.color.accent, width: 18 },
   altsPad: { paddingHorizontal: tokens.space(6), marginTop: tokens.space(7) },
   altHead: {
     fontFamily: tokens.font.body.semibold,
