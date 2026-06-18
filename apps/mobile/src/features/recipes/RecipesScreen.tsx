@@ -7,6 +7,11 @@
  * e.g. bananas) and Refresh for new ideas (pages Spoonacular's results via
  * offset). The reason line follows the ingredients you're actually cooking with.
  *
+ * Tapping a recipe (hero, "View", or an alternate row) opens the in-app
+ * RecipeDetail screen (ingredients, steps, time, source) — no more bouncing out
+ * to spoonacular.com. The full recipe data rides along on the search response,
+ * so detail opens instantly with no extra fetch.
+ *
  * "I cooked this" (the loop-closer): each hero card carries a confirm action
  * that opens CookedItSheet — matched pantry items get marked used-up /
  * decremented through PowerSync.
@@ -24,7 +29,6 @@ import {
   Dimensions,
   FlatList,
   Image,
-  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -34,6 +38,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { ChevronDown, ChevronUp, Leaf, RefreshCw } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   defaultMealForHour,
@@ -60,6 +66,7 @@ import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
+import type { RootStackParamList } from '../../../App';
 
 const CARD_W = Dimensions.get('window').width;
 const PAGE = 8;
@@ -79,11 +86,6 @@ type RecipeState =
   | { kind: 'ok'; recipes: SpoonacularRecipe[] }
   | { kind: 'empty'; reason: 'no-pantry' | 'all-excluded' | 'no-match' }
   | { kind: 'error'; message: string };
-
-function recipeUrl(r: SpoonacularRecipe): string {
-  const slug = r.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return `https://spoonacular.com/recipes/${slug}-${r.id}`;
-}
 
 function pickUrgent(items: PantryItem[], now: Date): PantryItem | undefined {
   return items
@@ -325,6 +327,7 @@ function CookThis({
   userId: string | null;
   healthy: boolean;
 }) {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
@@ -405,7 +408,7 @@ function CookThis({
   }
   function onOpen(r: SpoonacularRecipe) {
     record(r.title, 'open');
-    Linking.openURL(recipeUrl(r));
+    navigation.navigate('RecipeDetail', { recipe: r });
   }
   function onCooked(r: SpoonacularRecipe) {
     setCookedNote(null);

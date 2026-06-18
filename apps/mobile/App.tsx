@@ -24,6 +24,7 @@ import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
 import { InsightsScreen } from './src/features/insights/InsightsScreen';
+import { RecipeDetailScreen } from './src/features/recipes/RecipeDetailScreen';
 import { DeleteAccountScreen } from './src/features/account/DeleteAccountScreen';
 import { HouseholdScreen } from './src/features/household/HouseholdScreen';
 import { InviteCodeModal } from './src/features/household/InviteCodeModal';
@@ -35,6 +36,7 @@ import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
+import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
@@ -45,6 +47,7 @@ export type RootStackParamList = {
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
   Insights: undefined;
+  RecipeDetail: { recipe: SpoonacularRecipe };
   DeleteAccount: undefined;
   Household: undefined;
   InviteCodeModal: { householdId: string };
@@ -89,6 +92,7 @@ function AppStack() {
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
+      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: 'Delete account' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />
       <Stack.Screen
