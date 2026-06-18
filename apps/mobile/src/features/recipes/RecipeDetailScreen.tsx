@@ -32,6 +32,7 @@ import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useRecipePrefs } from './useRecipePrefs';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
+import { CookModeView } from './CookModeView';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -87,6 +88,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 
   const scrollRef = useRef<ScrollView>(null);
   const [cooking, setCooking] = useState(false);
+  const [cookMode, setCookMode] = useState(false);
   const [cookedCount, setCookedCount] = useState<number | null>(null);
   const [missingAdded, setMissingAdded] = useState(false);
 
@@ -249,13 +251,23 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
             </Text>
           )}
 
+          {hasSteps && (
+            <Pressable
+              style={styles.cookBtn}
+              onPress={() => setCookMode(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Start step-by-step cooking"
+            >
+              <Text style={styles.cookBtnTxt}>Start cooking</Text>
+            </Pressable>
+          )}
           <Pressable
-            style={styles.cookBtn}
+            style={hasSteps ? styles.madeBtn : styles.cookBtn}
             onPress={() => setCooking(true)}
             accessibilityRole="button"
             accessibilityLabel="I made this — update pantry"
           >
-            <Text style={styles.cookBtnTxt}>I made this!</Text>
+            <Text style={hasSteps ? styles.madeBtnTxt : styles.cookBtnTxt}>I made this!</Text>
           </Pressable>
 
           {recipe.sourceUrl ? (
@@ -292,6 +304,17 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           householdId={activeHouseholdId}
           onClose={() => setCooking(false)}
           onDone={onCookDone}
+        />
+      )}
+
+      {cookMode && (
+        <CookModeView
+          recipe={recipe}
+          onClose={() => setCookMode(false)}
+          onFinish={() => {
+            setCookMode(false);
+            setCooking(true);
+          }}
         />
       )}
     </View>
@@ -407,6 +430,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cookBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.onAccent },
+  madeBtn: {
+    marginTop: tokens.space(3),
+    paddingVertical: tokens.space(4),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1.5,
+    borderColor: tokens.color.accent,
+    alignItems: 'center',
+  },
+  madeBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.accent },
   sourceLink: {
     flexDirection: 'row',
     alignItems: 'center',

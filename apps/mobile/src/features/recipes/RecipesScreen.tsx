@@ -24,7 +24,7 @@
  * refetch; an ingredient appearing or disappearing (added, fully used up)
  * does — at which point fresh suggestions are exactly what you want.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
@@ -51,7 +51,7 @@ import {
   Users,
   X,
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -121,16 +121,32 @@ export function RecipesScreen() {
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
-  const hour = useMemo(() => new Date().getHours(), []);
 
   const { items, isLoading: pantryLoading, error: pantryError } = usePantryItems();
 
+  const [hour, setHour] = useState(() => new Date().getHours());
   const [meal, setMeal] = useState<MealChoice>(() => defaultMealForHour(hour));
+  const userPickedMeal = useRef(false);
+
+  // Re-evaluate the time-of-day default each time the Cook tab is focused — a
+  // tab mounted at app launch would otherwise keep the launch-time meal +
+  // eyebrow forever. We never override a meal the user picked themselves.
+  useFocusEffect(
+    useCallback(() => {
+      const h = new Date().getHours();
+      setHour(h);
+      if (!userPickedMeal.current) setMeal(defaultMealForHour(h));
+    }, []),
+  );
   const [healthy, setHealthy] = useState(false);
   const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
   const [offset, setOffset] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
   const [recipeState, setRecipeState] = useState<RecipeState>({ kind: 'loading' });
+  // Cook confirmation lives HERE (not in CookThis) so it survives the refetch a
+  // cook can trigger: finishing an item changes the pantry name-set, which
+  // remounts CookThis and would otherwise drop the success burst.
+  const [cooked, setCooked] = useState<{ count: number; key: number } | null>(null);
 
   const excludedKey = excluded.join('|');
 
@@ -185,7 +201,15 @@ export function RecipesScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pantryLoading, pantryError, pantrySignature, meal, excludedKey, offset]);
 
+  // Auto-dismiss the cook confirmation once it's had time to play + read.
+  useEffect(() => {
+    if (!cooked) return;
+    const t = setTimeout(() => setCooked(null), 2600);
+    return () => clearTimeout(t);
+  }, [cooked]);
+
   function changeMeal(m: MealChoice) {
+    userPickedMeal.current = true;
     setMeal(m);
     setOffset(0);
   }
@@ -273,6 +297,8 @@ export function RecipesScreen() {
         )}
       </View>
 
+      {cooked && <CookSuccessBurst key={cooked.key} itemCount={cooked.count} />}
+
       {recipeState.kind === 'loading' && <CookSkeleton />}
 
       {recipeState.kind === 'error' && (
@@ -317,6 +343,7 @@ export function RecipesScreen() {
           householdId={activeHouseholdId}
           userId={userId}
           healthy={healthy}
+          onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
         />
       )}
     </SafeAreaView>
@@ -331,6 +358,7 @@ function CookThis({
   householdId,
   userId,
   healthy,
+  onCookComplete,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -339,6 +367,7 @@ function CookThis({
   householdId: string | null;
   userId: string | null;
   healthy: boolean;
+  onCookComplete: (updatedCount: number) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
@@ -353,7 +382,6 @@ function CookThis({
   const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
   const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
-  const [cookedNote, setCookedNote] = useState<number | null>(null);
   // Recipes whose missing ingredients were added to the shopping list (feedback).
   const [missingAdded, setMissingAdded] = useState<Set<number>>(new Set());
 
@@ -424,7 +452,6 @@ function CookThis({
     navigation.navigate('RecipeDetail', { recipe: r });
   }
   function onCooked(r: SpoonacularRecipe) {
-    setCookedNote(null);
     setCooking(r);
   }
   function onCookDone(r: SpoonacularRecipe, updatedCount: number) {
@@ -432,7 +459,7 @@ function CookThis({
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     record(r.title, 'like');
     setCooking(null);
-    setCookedNote(updatedCount > 0 ? updatedCount : null);
+    onCookComplete(updatedCount);
   }
 
   return (
@@ -442,7 +469,6 @@ function CookThis({
           <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
         </View>
       )}
-      {cookedNote !== null && <CookSuccessBurst itemCount={cookedNote} />}
       <Text style={styles.swipeHint}>Swipe to browse — like what looks good, skip what doesn't. We learn your taste.</Text>
 
       <FlatList
@@ -719,13 +745,6 @@ const styles = StyleSheet.create({
   scroll: { paddingBottom: tokens.space(10) },
   reasonPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(2) },
   reason: { fontFamily: tokens.font.body.semibold, fontSize: 14, lineHeight: 19, marginBottom: tokens.space(2) },
-  cookedNote: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 13,
-    color: tokens.color.success,
-    paddingHorizontal: tokens.space(6),
-    marginBottom: tokens.space(2),
-  },
   swipeHint: {
     fontFamily: tokens.font.body.regular,
     fontSize: 12.5,
