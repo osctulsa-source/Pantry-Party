@@ -20,6 +20,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Leaf, Plus, Users } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -146,17 +147,27 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + tokens.space(10) }]}
         showsVerticalScrollIndicator={false}
       >
-        {recipe.image ? (
-          <Image source={{ uri: recipe.image }} style={styles.hero} />
-        ) : (
-          <View style={[styles.hero, styles.heroFallback]} />
-        )}
+        <View style={styles.heroWrap}>
+          {recipe.image ? (
+            <Image source={{ uri: recipe.image }} style={styles.hero} />
+          ) : (
+            <View style={[styles.hero, styles.heroFallback]} />
+          )}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.85)'] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.heroScrim}
+          >
+            {recipe.sourceName ? <Text style={styles.heroSourceOnImg}>from {recipe.sourceName}</Text> : null}
+            <Text style={styles.heroTitleOnImg} numberOfLines={3}>
+              {recipe.title}
+            </Text>
+          </LinearGradient>
+        </View>
 
         <View style={styles.body}>
           {cookedCount !== null && <CookSuccessBurst itemCount={cookedCount} />}
-
-          {recipe.sourceName ? <Text style={styles.source}>from {recipe.sourceName}</Text> : null}
-          <Text style={styles.title}>{recipe.title}</Text>
 
           {(recipe.readyInMinutes !== null || recipe.servings !== null || showHealth) && (
             <View style={styles.metaRow}>
@@ -324,8 +335,38 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   scroll: { paddingBottom: tokens.space(10) },
+  heroWrap: { position: 'relative' },
   hero: { width: '100%', height: HERO_H, backgroundColor: tokens.color.surfaceAlt },
   heroFallback: { backgroundColor: tokens.color.surfaceAlt },
+  heroScrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    top: '40%',
+    justifyContent: 'flex-end',
+    paddingHorizontal: tokens.space(6),
+    paddingBottom: tokens.space(5),
+  },
+  // Fixed cream: the scrim is always dark, so these must NOT flip with the theme.
+  heroSourceOnImg: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: 'rgba(246,242,233,0.85)',
+    marginBottom: tokens.space(1),
+  },
+  heroTitleOnImg: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 26,
+    color: '#F6F2E9',
+    letterSpacing: -0.4,
+    lineHeight: 31,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
+  },
   backBtn: {
     position: 'absolute',
     left: tokens.space(4),

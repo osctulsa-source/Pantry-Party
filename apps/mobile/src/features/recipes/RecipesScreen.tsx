@@ -37,6 +37,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   ArrowRight,
   Check,
@@ -561,11 +562,20 @@ function HeroCard({
   return (
     <View style={styles.cardPage}>
       <Pressable style={[styles.hero, skipped && styles.heroDim]} onPress={() => onOpen(recipe)}>
-        <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+        <View style={styles.heroImgWrap}>
+          <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.82)'] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.heroScrim}
+          >
+            <Text style={styles.heroTitleOnImg} numberOfLines={2}>
+              {recipe.title}
+            </Text>
+          </LinearGradient>
+        </View>
         <View style={styles.heroPad}>
-          <Text style={styles.heroTitle} numberOfLines={2}>
-            {recipe.title}
-          </Text>
           {(recipe.readyInMinutes !== null ||
             recipe.servings !== null ||
             (recipe.healthScore !== null && recipe.healthScore >= 55)) && (
@@ -717,7 +727,7 @@ const styles = StyleSheet.create({
   ctrlInner: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1) },
   ctrlBtnOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
   ctrlBtnTxtOn: { color: tokens.color.onAccent },
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
   metaChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -762,7 +772,28 @@ const styles = StyleSheet.create({
     borderColor: tokens.color.line,
   },
   heroDim: { opacity: 0.5 },
+  heroImgWrap: { position: 'relative' },
   heroImg: { width: '100%', height: 190, backgroundColor: tokens.color.line },
+  heroScrim: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    top: '38%',
+    justifyContent: 'flex-end',
+    padding: tokens.space(4),
+  },
+  // Fixed cream: the scrim is always dark, so this must NOT flip with the theme.
+  heroTitleOnImg: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 20,
+    color: '#F6F2E9',
+    letterSpacing: -0.3,
+    lineHeight: 24,
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
+  },
   heroPad: { padding: tokens.space(4) },
   heroTitle: { fontFamily: tokens.font.display.bold, fontSize: 21, color: tokens.color.ink, letterSpacing: -0.3, lineHeight: 25 },
   match: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: tokens.space(2) },
