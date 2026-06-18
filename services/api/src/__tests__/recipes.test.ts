@@ -92,8 +92,13 @@ const UPSTREAM_RESULT = {
     {
       name: '',
       steps: [
-        { number: 1, step: 'Mash the bananas.', ingredients: [{ name: 'banana' }], equipment: [] },
-        { number: 2, step: 'Cook on a hot griddle.' },
+        { number: 1, step: 'Mash the bananas.', ingredients: [{ name: 'banana' }, { name: '' }], equipment: [] },
+        {
+          number: 2,
+          step: 'Cook on a hot griddle.',
+          equipment: [{ name: 'griddle' }],
+          length: { number: 5, unit: 'minutes' },
+        },
         { number: 3, step: '' }, // blank — dropped
       ],
     },
@@ -164,8 +169,8 @@ describe('POST /recipes/search', () => {
           {
             name: '',
             steps: [
-              { number: 1, step: 'Mash the bananas.' },
-              { number: 2, step: 'Cook on a hot griddle.' },
+              { number: 1, step: 'Mash the bananas.', ingredients: ['banana'], equipment: [], lengthMinutes: null },
+              { number: 2, step: 'Cook on a hot griddle.', ingredients: [], equipment: ['griddle'], lengthMinutes: 5 },
             ],
           },
         ],

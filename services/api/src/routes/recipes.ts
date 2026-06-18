@@ -56,10 +56,22 @@ export interface RecipeIngredient {
   unit: string;
 }
 
+/** One instruction step. Carries its own ingredients/equipment/length for the cook-along. */
+export interface RecipeStep {
+  number: number;
+  step: string;
+  /** Ingredient names used in THIS step — the cook-along "for this step: ..." line. */
+  ingredients: string[];
+  /** Equipment names this step needs — feeds mise en place + per-step hints. */
+  equipment: string[];
+  /** Step duration in minutes when Spoonacular tags one — drives in-step timers; null otherwise. */
+  lengthMinutes: number | null;
+}
+
 /** A (possibly named) block of numbered steps, e.g. "For the sauce". */
 export interface RecipeInstructionGroup {
   name: string;
-  steps: Array<{ number: number; step: string }>;
+  steps: RecipeStep[];
 }
 
 export interface TrimmedRecipe {
@@ -112,7 +124,16 @@ interface UpstreamResult {
   sourceName?: string;
   summary?: string;
   extendedIngredients?: Array<{ name?: string; original?: string; amount?: number; unit?: string }>;
-  analyzedInstructions?: Array<{ name?: string; steps?: Array<{ number?: number; step?: string }> }>;
+  analyzedInstructions?: Array<{
+    name?: string;
+    steps?: Array<{
+      number?: number;
+      step?: string;
+      ingredients?: Array<{ name?: string }>;
+      equipment?: Array<{ name?: string }>;
+      length?: { number?: number; unit?: string };
+    }>;
+  }>;
 }
 interface UpstreamResponse {
   results?: UpstreamResult[];
@@ -135,13 +156,37 @@ function trimIngredients(list: UpstreamResult['extendedIngredients']): RecipeIng
     .filter((i) => i.name.length > 0 || i.original.length > 0);
 }
 
-/** Grouped steps — keeps number + text, drops per-step ingredients/equipment/length noise. */
+/** Convert Spoonacular's {number,unit} step length to minutes; null when absent/unknown. */
+function stepLengthMinutes(length: { number?: number; unit?: string } | undefined): number | null {
+  if (!length || typeof length.number !== 'number') return null;
+  const unit = (length.unit ?? '').toLowerCase();
+  if (unit.startsWith('hour')) return Math.round(length.number * 60);
+  if (unit.startsWith('min')) return length.number;
+  return null;
+}
+
+/** Names only — drops Spoonacular's id/image/localizedName noise, blanks removed. */
+function trimNames(list: Array<{ name?: string }> | undefined): string[] {
+  return (list ?? []).map((i) => i.name ?? '').filter((n) => n.length > 0);
+}
+
+/**
+ * Grouped steps. Keeps number + text AND the per-step ingredients / equipment /
+ * length the cook-along uses (inline amounts, mise en place, in-step timers) —
+ * these ride along in analyzedInstructions; we'd been discarding them.
+ */
 function trimInstructions(list: UpstreamResult['analyzedInstructions']): RecipeInstructionGroup[] {
   return (list ?? [])
     .map((group) => ({
       name: group.name ?? '',
       steps: (group.steps ?? [])
-        .map((s) => ({ number: typeof s.number === 'number' ? s.number : 0, step: s.step ?? '' }))
+        .map((s) => ({
+          number: typeof s.number === 'number' ? s.number : 0,
+          step: s.step ?? '',
+          ingredients: trimNames(s.ingredients),
+          equipment: trimNames(s.equipment),
+          lengthMinutes: stepLengthMinutes(s.length),
+        }))
         .filter((s) => s.step.length > 0),
     }))
     .filter((g) => g.steps.length > 0);
