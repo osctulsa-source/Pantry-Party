@@ -28,6 +28,7 @@ module.exports = {
     orientation: 'portrait',
     userInterfaceStyle: 'automatic',
     scheme: 'pantryparty',
+    icon: './assets/icon.png',
     ios: {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
@@ -35,12 +36,22 @@ module.exports = {
     android: {
       package: `com.osctulsa.pantryparty${ID_SUFFIX}`,
       adaptiveIcon: {
-        backgroundColor: '#F6F2E9',
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#C76B43',
       },
     },
     plugins: [
       'expo-font',
       'expo-dev-client',
+      [
+        'expo-splash-screen',
+        {
+          image: './assets/splash-icon.png',
+          imageWidth: 200,
+          resizeMode: 'contain',
+          backgroundColor: '#F6F2E9',
+        },
+      ],
       [
         'expo-camera',
         {
