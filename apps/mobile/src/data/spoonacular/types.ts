@@ -11,10 +11,16 @@ export interface RecipeIngredient {
   unit: string;
 }
 
-/** A numbered step in the detail screen's instructions. */
+/** A numbered step in the detail screen's instructions + the cook-along. */
 export interface RecipeStep {
   number: number;
   step: string;
+  /** Ingredient names used in THIS step (cook-along "for this step" line). Empty for older cached responses. */
+  ingredients: string[];
+  /** Equipment names this step needs (mise en place + per-step hints). Empty for older cached responses. */
+  equipment: string[];
+  /** Step duration in minutes when tagged — drives in-step timers. null otherwise. */
+  lengthMinutes: number | null;
 }
 
 /** A (possibly named) block of steps, e.g. "For the sauce". `name` is '' for the main block. */
