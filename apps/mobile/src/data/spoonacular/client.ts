@@ -11,8 +11,12 @@
  *   `ignorePantry` is applied server-side.
  * - searchByMeal: meal-type filtered + offset-paged search. Returns SpoonacularRecipe[].
  *
- * Results carry used-ingredient names (the "I cooked this" matcher) and
- * missed-ingredient names (the "Add N missing to list" shopping feeder).
+ * Results carry used-ingredient names (the "I cooked this" matcher), missed-
+ * ingredient names (the "Add N missing to list" shopping feeder), and the
+ * detail-screen payload (time, servings, source, summary, full ingredients,
+ * step-by-step instructions) — all on the SAME response, served from cache on
+ * repeat. Detail fields are empty/null for older cached responses that predate
+ * the proxy passthrough; the detail screen degrades gracefully.
  *
  * Auth: the proxy validates the same Supabase access token the upload-proxy
  * does; we read it from the live session.
@@ -20,7 +24,11 @@
 import type { MealType } from '@breadbox/core';
 
 import { supabase } from '../supabase/client';
-import type { SpoonacularRecipe } from './types';
+import type {
+  RecipeIngredient,
+  RecipeInstructionGroup,
+  SpoonacularRecipe,
+} from './types';
 
 /** Extract clean ingredient names from an API ingredient array. */
 function ingredientNames(list: Array<{ name?: string }> | undefined): string[] {
@@ -84,6 +92,15 @@ function mapResult(r: ComplexSearchResult): SpoonacularRecipe {
     vegetarian: r.vegetarian ?? false,
     vegan: r.vegan ?? false,
     glutenFree: r.glutenFree ?? false,
+    // Detail fields — the proxy already trimmed these; default for older
+    // cached responses (and so an empty/short upstream can't crash a render).
+    readyInMinutes: typeof r.readyInMinutes === 'number' ? r.readyInMinutes : null,
+    servings: typeof r.servings === 'number' ? r.servings : null,
+    sourceUrl: r.sourceUrl ?? '',
+    sourceName: r.sourceName ?? '',
+    summary: r.summary ?? '',
+    ingredients: r.ingredients ?? [],
+    instructions: r.instructions ?? [],
   };
 }
 
@@ -119,6 +136,13 @@ interface ComplexSearchResult {
   vegetarian?: boolean;
   vegan?: boolean;
   glutenFree?: boolean;
+  readyInMinutes?: number | null;
+  servings?: number | null;
+  sourceUrl?: string;
+  sourceName?: string;
+  summary?: string;
+  ingredients?: RecipeIngredient[];
+  instructions?: RecipeInstructionGroup[];
 }
 interface ComplexSearchResponse {
   results?: ComplexSearchResult[];

@@ -5,6 +5,13 @@
 //    ADR-008 NOTE: /recipes/search is this service's FOURTH endpoint — the
 //    promotion trigger has fired. This ships as the LAST Express addition;
 //    the next endpoint starts life on the promoted backend instead.
+//
+//    ADR-008 NOTE 2 (recipe-detail arc): the in-app recipe detail screen is
+//    served by WIDENING this existing endpoint's response — NOT by adding a
+//    `/recipes/:id/information` endpoint. A fifth endpoint would have been the
+//    first NestJS change; instead we pass through fields Spoonacular already
+//    returns (addRecipeInformation was already on for healthScore), so the
+//    trigger stays untripped and the detail screen costs zero extra quota.
 
 import { Router } from 'express';
 import { z } from 'zod';
@@ -25,9 +32,14 @@ const SPOONACULAR_BASE = 'https://api.spoonacular.com/recipes';
  *     touching the quota or the limiter.
  *
  * Body mirrors the mobile client's searchByMeal options. The response is the
- * trimmed complexSearch shape the client already maps: results[].usedIngredients
- * carries names for the "I cooked this" matcher, and results[].missedIngredients
- * carries names for "Add N missing to list" (shopping arc S2b-B).
+ * trimmed complexSearch shape the client maps: results[].usedIngredients
+ * carries names for the "I cooked this" matcher, results[].missedIngredients
+ * carries names for "Add N missing to list" (shopping arc S2b-B), and — for the
+ * in-app recipe detail screen — each result also carries readyInMinutes,
+ * servings, source attribution, an HTML summary, the full ingredient list
+ * (with amounts), and grouped step-by-step instructions. All of those ride
+ * along for free: addRecipeInformation + fillIngredients are already requested
+ * upstream; we'd been discarding everything but the card fields.
  */
 const BodySchema = z.object({
   ingredients: z.array(z.string().trim().min(1).max(80)).min(1).max(60),
@@ -35,6 +47,20 @@ const BodySchema = z.object({
   number: z.number().int().min(1).max(12).optional(),
   offset: z.number().int().min(0).max(900).optional(),
 });
+
+/** One ingredient line for the detail screen: `original` is the display string. */
+export interface RecipeIngredient {
+  name: string;
+  original: string;
+  amount: number | null;
+  unit: string;
+}
+
+/** A (possibly named) block of numbered steps, e.g. "For the sauce". */
+export interface RecipeInstructionGroup {
+  name: string;
+  steps: Array<{ number: number; step: string }>;
+}
 
 export interface TrimmedRecipe {
   id: number;
@@ -50,6 +76,21 @@ export interface TrimmedRecipe {
   vegetarian: boolean;
   vegan: boolean;
   glutenFree: boolean;
+  // --- detail-screen fields (recipe-detail arc) -------------------------
+  /** Minutes to make; null when the API omits it. */
+  readyInMinutes: number | null;
+  /** Servings the recipe yields; null when the API omits it. */
+  servings: number | null;
+  /** Original recipe URL — shown as attribution (Spoonacular terms). '' if absent. */
+  sourceUrl: string;
+  /** Human-readable source/site name for attribution. '' if absent. */
+  sourceName: string;
+  /** HTML summary — stripped client-side before display. '' if absent. */
+  summary: string;
+  /** Full ingredient list with display strings + amounts. */
+  ingredients: RecipeIngredient[];
+  /** Grouped, numbered step-by-step instructions. */
+  instructions: RecipeInstructionGroup[];
 }
 
 interface UpstreamResult {
@@ -65,6 +106,13 @@ interface UpstreamResult {
   vegetarian?: boolean;
   vegan?: boolean;
   glutenFree?: boolean;
+  readyInMinutes?: number;
+  servings?: number;
+  sourceUrl?: string;
+  sourceName?: string;
+  summary?: string;
+  extendedIngredients?: Array<{ name?: string; original?: string; amount?: number; unit?: string }>;
+  analyzedInstructions?: Array<{ name?: string; steps?: Array<{ number?: number; step?: string }> }>;
 }
 interface UpstreamResponse {
   results?: UpstreamResult[];
@@ -73,6 +121,30 @@ interface UpstreamResponse {
 /** Names only — aisle/amount and other upstream noise trimmed, blanks dropped. */
 function trimIngredientNames(list: Array<{ name?: string }> | undefined): Array<{ name: string }> {
   return (list ?? []).map((i) => ({ name: i.name ?? '' })).filter((i) => i.name.length > 0);
+}
+
+/** Full ingredient list — keeps the display string + amount, drops aisle/image/id noise. */
+function trimIngredients(list: UpstreamResult['extendedIngredients']): RecipeIngredient[] {
+  return (list ?? [])
+    .map((i) => ({
+      name: i.name ?? '',
+      original: i.original ?? '',
+      amount: typeof i.amount === 'number' ? i.amount : null,
+      unit: i.unit ?? '',
+    }))
+    .filter((i) => i.name.length > 0 || i.original.length > 0);
+}
+
+/** Grouped steps — keeps number + text, drops per-step ingredients/equipment/length noise. */
+function trimInstructions(list: UpstreamResult['analyzedInstructions']): RecipeInstructionGroup[] {
+  return (list ?? [])
+    .map((group) => ({
+      name: group.name ?? '',
+      steps: (group.steps ?? [])
+        .map((s) => ({ number: typeof s.number === 'number' ? s.number : 0, step: s.step ?? '' }))
+        .filter((s) => s.step.length > 0),
+    }))
+    .filter((g) => g.steps.length > 0);
 }
 
 export interface RecipesRouterOptions {
@@ -135,8 +207,9 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
       fillIngredients: 'true',
       ignorePantry: 'true',
       // Recipe info rides along so every result carries healthScore + diet
-      // booleans — the mobile Healthy toggle re-ranks CLIENT-side from the
-      // same cached response (zero extra quota for toggling).
+      // booleans (the mobile Healthy toggle re-ranks CLIENT-side from the same
+      // cached response) AND the detail-screen fields (ingredients, steps,
+      // time, servings, source) — all already in this payload, zero extra cost.
       addRecipeInformation: 'true',
       number: String(number),
       apiKey: key,
@@ -167,6 +240,13 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
         vegetarian: r.vegetarian ?? false,
         vegan: r.vegan ?? false,
         glutenFree: r.glutenFree ?? false,
+        readyInMinutes: typeof r.readyInMinutes === 'number' ? r.readyInMinutes : null,
+        servings: typeof r.servings === 'number' ? r.servings : null,
+        sourceUrl: r.sourceUrl ?? '',
+        sourceName: r.sourceName ?? '',
+        summary: r.summary ?? '',
+        ingredients: trimIngredients(r.extendedIngredients),
+        instructions: trimInstructions(r.analyzedInstructions),
       }));
       cache.set(cacheKey, results);
       res.json({ ok: true, cached: false, results });
