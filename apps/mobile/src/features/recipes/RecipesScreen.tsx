@@ -47,8 +47,10 @@ import {
   Clock,
   Heart,
   Leaf,
+  PackageCheck,
   Plus,
   RefreshCw,
+  Sparkles,
   Users,
   X,
 } from 'lucide-react-native';
@@ -117,6 +119,24 @@ function matchLine(r: SpoonacularRecipe): string {
   return r.missedIngredientCount > 0 ? `${base} · need ${r.missedIngredientCount} more` : base;
 }
 
+function stepCount(r: SpoonacularRecipe): number {
+  return r.instructions.reduce((n, g) => n + g.steps.length, 0);
+}
+
+/** Beginner-friendly: quick, few steps, few ingredients. Unknown step data doesn't disqualify. */
+function isEasy(r: SpoonacularRecipe): boolean {
+  const steps = stepCount(r);
+  const ings = r.ingredients.length || r.usedIngredientCount + r.missedIngredientCount;
+  const quick = r.readyInMinutes !== null ? r.readyInMinutes <= 40 : true;
+  const fewSteps = steps === 0 ? true : steps <= 7;
+  return quick && fewSteps && ings > 0 && ings <= 10;
+}
+
+/** No shopping needed — you already have everything. */
+function isReadyNow(r: SpoonacularRecipe): boolean {
+  return r.missedIngredientCount === 0;
+}
+
 export function RecipesScreen() {
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
@@ -140,6 +160,8 @@ export function RecipesScreen() {
     }, []),
   );
   const [healthy, setHealthy] = useState(false);
+  const [easy, setEasy] = useState(false);
+  const [readyNow, setReadyNow] = useState(false);
   const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
   const [offset, setOffset] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -274,6 +296,30 @@ export function RecipesScreen() {
               <Text style={[styles.ctrlBtnTxt, healthy && styles.ctrlBtnTxtOn]}>Healthy</Text>
             </View>
           </Pressable>
+          <Pressable
+            style={[styles.ctrlBtn, easy && styles.ctrlBtnOn]}
+            onPress={() => setEasy((v) => !v)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: easy }}
+            accessibilityLabel="Beginner-friendly recipes"
+          >
+            <View style={styles.ctrlInner}>
+              <Sparkles size={13} color={easy ? tokens.color.onAccent : tokens.color.accent} />
+              <Text style={[styles.ctrlBtnTxt, easy && styles.ctrlBtnTxtOn]}>Easy</Text>
+            </View>
+          </Pressable>
+          <Pressable
+            style={[styles.ctrlBtn, readyNow && styles.ctrlBtnOn]}
+            onPress={() => setReadyNow((v) => !v)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: readyNow }}
+            accessibilityLabel="Recipes you can make with no shopping"
+          >
+            <View style={styles.ctrlInner}>
+              <PackageCheck size={13} color={readyNow ? tokens.color.onAccent : tokens.color.accent} />
+              <Text style={[styles.ctrlBtnTxt, readyNow && styles.ctrlBtnTxtOn]}>Ready now</Text>
+            </View>
+          </Pressable>
           {canReset && (
             <Pressable hitSlop={6} onPress={reset}>
               <Text style={styles.resetTxt}>Reset</Text>
@@ -344,6 +390,8 @@ export function RecipesScreen() {
           householdId={activeHouseholdId}
           userId={userId}
           healthy={healthy}
+          easy={easy}
+          readyNow={readyNow}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
         />
       )}
@@ -359,6 +407,8 @@ function CookThis({
   householdId,
   userId,
   healthy,
+  easy,
+  readyNow,
   onCookComplete,
 }: {
   recipes: SpoonacularRecipe[];
@@ -368,6 +418,8 @@ function CookThis({
   householdId: string | null;
   userId: string | null;
   healthy: boolean;
+  easy: boolean;
+  readyNow: boolean;
   onCookComplete: (updatedCount: number) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -398,24 +450,35 @@ function CookThis({
   }
 
   const pool = useMemo(() => {
-    // Healthy mode: drop low-scoring recipes (unless that would empty the
-    // list — badges still tell the story) and boost healthiness in the blend.
-    // Pantry-match still dominates: this is greener Cook This, not a diet app.
-    // Same cached response serves both toggle states — zero extra quota.
+    // Healthy / Ready-now / Easy filters stack, each with a keep-all fallback so
+    // a strict filter never leaves an empty screen (badges still tell the
+    // story). Pantry-match stays the dominant signal; toggles filter + nudge.
+    // All run client-side off the same cached response — zero extra quota.
     let candidates = recipes;
     if (healthy) {
       const fit = recipes.filter((r) => (r.healthScore ?? 0) >= 35);
       if (fit.length > 0) candidates = fit;
     }
+    if (readyNow) {
+      const fit = candidates.filter(isReadyNow);
+      if (fit.length > 0) candidates = fit;
+    }
+    if (easy) {
+      const fit = candidates.filter(isEasy);
+      if (fit.length > 0) candidates = fit;
+    }
     const blend = (r: SpoonacularRecipe) =>
       scoreTitle(prefs, r.title) * 1.5 +
       r.usedIngredientCount +
-      (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0);
+      (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
+      (readyNow && isReadyNow(r) ? 3 : 0) +
+      (easy && isEasy(r) ? 3 : 0);
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, healthy]);
+  }, [recipes, prefs, healthy, easy, readyNow]);
 
   const top = pool.slice(0, 3);
   const alternates = pool.slice(3);
+  const first = top[0]; // the pick-one-for-me target (guarded before use)
 
   // Rows for the cooked-it sheet: matched pantry items (pre-selected) when the
   // API gave us ingredient names, otherwise the full active pantry defaulting
@@ -471,6 +534,18 @@ function CookThis({
         </View>
       )}
       <Text style={styles.swipeHint}>Swipe to browse — like what looks good, skip what doesn't. We learn your taste.</Text>
+
+      {first && (
+        <Pressable
+          style={styles.pickForMe}
+          onPress={() => onOpen(first)}
+          accessibilityRole="button"
+          accessibilityLabel="Not sure — pick a recipe for me"
+        >
+          <Sparkles size={14} color={tokens.color.accent} />
+          <Text style={styles.pickForMeTxt}>Not sure? Pick one for me</Text>
+        </Pressable>
+      )}
 
       <FlatList
         data={top}
@@ -578,6 +653,8 @@ function HeroCard({
         <View style={styles.heroPad}>
           {(recipe.readyInMinutes !== null ||
             recipe.servings !== null ||
+            isEasy(recipe) ||
+            isReadyNow(recipe) ||
             (recipe.healthScore !== null && recipe.healthScore >= 55)) && (
             <View style={styles.metaRow}>
               {recipe.readyInMinutes !== null && (
@@ -590,6 +667,18 @@ function HeroCard({
                 <View style={styles.metaChip}>
                   <Users size={12} color={tokens.color.inkMuted} />
                   <Text style={styles.metaTxt}>Serves {recipe.servings}</Text>
+                </View>
+              )}
+              {isEasy(recipe) && (
+                <View style={styles.metaChip}>
+                  <Sparkles size={12} color={tokens.color.accent} />
+                  <Text style={[styles.metaTxt, styles.metaTxtEasy]}>Easy</Text>
+                </View>
+              )}
+              {isReadyNow(recipe) && (
+                <View style={styles.metaChip}>
+                  <PackageCheck size={12} color={tokens.color.success} />
+                  <Text style={[styles.metaTxt, styles.metaTxtHealth]}>Ready now</Text>
                 </View>
               )}
               {recipe.healthScore !== null && recipe.healthScore >= 55 && (
@@ -739,6 +828,7 @@ const styles = StyleSheet.create({
   },
   metaTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
   metaTxtHealth: { color: tokens.color.success },
+  metaTxtEasy: { color: tokens.color.accent },
   resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
   ingWrap: { marginTop: tokens.space(3) },
   ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
@@ -763,6 +853,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(6),
     marginBottom: tokens.space(4),
   },
+  pickForMe: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.space(1),
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(4),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  pickForMeTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
   cardPage: { width: CARD_W, paddingHorizontal: tokens.space(6) },
   hero: {
     backgroundColor: tokens.color.surfaceAlt,
