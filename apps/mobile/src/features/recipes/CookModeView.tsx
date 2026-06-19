@@ -1,20 +1,16 @@
 /**
  * CookModeView — hands-free, step-by-step cooking (the "calm cook-along").
  *
- * Launched from the recipe detail screen. One instruction at a time at a
- * comfortable reading size, and built to take the stress out of following a
- * recipe:
- *  - per-step ingredients: the amounts THIS step needs, inline — no scrolling
- *    back to the ingredient list (#110 per-step payload).
- *  - in-step timer: when a step is tagged with a duration (or one is detected
- *    in the text), a tap starts a countdown so you don't have to guess.
+ * Launched from the recipe detail screen. Designed to take the stress out of
+ * following a recipe:
+ *  - mise en place: a "get set up" screen FIRST — the equipment you'll need and
+ *    a check-off list of everything to gather, so there's no mid-cook scramble.
+ *  - per-step ingredients: the amounts THIS step needs, inline (#110 payload).
+ *  - in-step timer: tagged duration (or one detected in the text) → a countdown.
  *  - reassurance: a calm, stage-aware line so a nervous cook feels guided.
- *  - check-off: mark each step done (satisfying tick), the last one finishes
- *    into the "I made this" pantry decrement.
+ *  - check-off: mark each step done; the last one finishes into the "I made
+ *    this" pantry decrement.
  *  - keep-awake: the screen stays on while you cook.
- *
- * Steps come from the recipe's grouped analyzedInstructions, flattened into a
- * single sequence; a group label ("For the sauce") rides above its steps.
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -25,6 +21,8 @@ import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react
 
 import { tokens } from '../../theme/tokens';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
+
+type Phase = 'prep' | 'steps';
 
 interface FlatStep {
   group: string;
@@ -83,8 +81,28 @@ export function CookModeView({
     return flat;
   }, [recipe.instructions]);
 
+  // Equipment, de-duped across every step — the "you'll need" list for setup.
+  const equipment = useMemo<string[]>(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const group of recipe.instructions) {
+      for (const s of group.steps) {
+        for (const e of s.equipment ?? []) {
+          const k = e.toLowerCase();
+          if (k && !seen.has(k)) {
+            seen.add(k);
+            out.push(e);
+          }
+        }
+      }
+    }
+    return out;
+  }, [recipe.instructions]);
+
+  const [phase, setPhase] = useState<Phase>('prep');
   const [idx, setIdx] = useState(0);
   const [done, setDone] = useState<Set<number>>(new Set());
+  const [gathered, setGathered] = useState<Set<number>>(new Set());
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
 
@@ -112,8 +130,25 @@ export function CookModeView({
     return () => clearTimeout(t);
   }, [running, secondsLeft]);
 
+  function startCooking() {
+    Haptics.selectionAsync().catch(() => {});
+    setPhase('steps');
+  }
+  function toggleGather(i: number) {
+    Haptics.selectionAsync().catch(() => {});
+    setGathered((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
   function goBack() {
     Haptics.selectionAsync().catch(() => {});
+    if (idx === 0) {
+      setPhase('prep'); // Back on step 1 returns to the setup screen.
+      return;
+    }
     setIdx((i) => Math.max(i - 1, 0));
   }
   function onForward() {
@@ -140,6 +175,13 @@ export function CookModeView({
     setRunning(false);
   }
 
+  const metaLine = [
+    recipe.readyInMinutes !== null ? `${recipe.readyInMinutes} min` : null,
+    recipe.servings !== null ? `serves ${recipe.servings}` : null,
+  ]
+    .filter(Boolean)
+    .join('  ·  ');
+
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
@@ -148,17 +190,65 @@ export function CookModeView({
             <X size={24} color={tokens.color.ink} />
           </Pressable>
           <Text style={styles.counter} numberOfLines={1}>
-            {total > 0 ? `Step ${idx + 1} of ${total}` : 'Cook'}
+            {phase === 'prep' ? 'Get set up' : total > 0 ? `Step ${idx + 1} of ${total}` : 'Cook'}
           </Text>
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.track}>
-          <View style={[styles.fill, { width: `${total > 0 ? ((idx + 1) / total) * 100 : 0}%` }]} />
-        </View>
-        <Text style={styles.encourage}>{encouragement(idx, total)}</Text>
+        {phase === 'steps' && (
+          <>
+            <View style={styles.track}>
+              <View style={[styles.fill, { width: `${total > 0 ? ((idx + 1) / total) * 100 : 0}%` }]} />
+            </View>
+            <Text style={styles.encourage}>{encouragement(idx, total)}</Text>
+          </>
+        )}
 
-        {current ? (
+        {phase === 'prep' ? (
+          <ScrollView contentContainerStyle={styles.prepScroll} showsVerticalScrollIndicator={false}>
+            <Text style={styles.prepTitle}>Get set up</Text>
+            <Text style={styles.prepSub}>Gather everything before you start — it makes cooking calmer.</Text>
+            {metaLine.length > 0 && <Text style={styles.prepMeta}>{metaLine}</Text>}
+
+            {equipment.length > 0 && (
+              <View style={styles.prepSection}>
+                <Text style={styles.prepLabel}>You&apos;ll need</Text>
+                <View style={styles.equipChips}>
+                  {equipment.map((e, i) => (
+                    <View key={`${e}-${i}`} style={styles.equipChip}>
+                      <Text style={styles.equipChipTxt}>{e}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            <View style={styles.prepSection}>
+              <Text style={styles.prepLabel}>Gather these</Text>
+              {recipe.ingredients.length > 0 ? (
+                recipe.ingredients.map((ing, i) => {
+                  const got = gathered.has(i);
+                  return (
+                    <Pressable
+                      key={`${ing.name}-${i}`}
+                      style={styles.gatherRow}
+                      onPress={() => toggleGather(i)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: got }}
+                    >
+                      <View style={[styles.checkbox, got && styles.checkboxOn]}>
+                        {got && <Check size={12} color={tokens.color.onAccent} />}
+                      </View>
+                      <Text style={[styles.gatherTxt, got && styles.gatherTxtGot]}>{ing.original || ing.name}</Text>
+                    </Pressable>
+                  );
+                })
+              ) : (
+                <Text style={styles.prepNote}>Ingredients are listed on each step.</Text>
+              )}
+            </View>
+          </ScrollView>
+        ) : current ? (
           <ScrollView contentContainerStyle={styles.stepScroll} showsVerticalScrollIndicator={false}>
             {current.group ? <Text style={styles.group}>{current.group}</Text> : null}
             <View style={styles.stepHead}>
@@ -237,33 +327,45 @@ export function CookModeView({
           </View>
         )}
 
-        <View style={styles.footer}>
-          <Pressable
-            style={[styles.navBtn, idx === 0 && styles.navBtnDisabled]}
-            onPress={goBack}
-            disabled={idx === 0}
-            accessibilityRole="button"
-            accessibilityLabel="Previous step"
-          >
-            <ArrowLeft size={18} color={idx === 0 ? tokens.color.inkMuted : tokens.color.accent} />
-            <Text style={[styles.navTxt, idx === 0 && styles.navTxtDisabled]}>Back</Text>
-          </Pressable>
-          <Pressable
-            style={styles.primaryBtn}
-            onPress={onForward}
-            accessibilityRole="button"
-            accessibilityLabel={isLast ? 'I made this — update pantry' : 'Mark step done and continue'}
-          >
-            {isLast ? (
-              <Text style={styles.primaryTxt}>I made this!</Text>
-            ) : (
-              <>
-                <Check size={18} color={tokens.color.onAccent} />
-                <Text style={styles.primaryTxt}>Done</Text>
-              </>
-            )}
-          </Pressable>
-        </View>
+        {phase === 'prep' ? (
+          <View style={styles.footer}>
+            <Pressable
+              style={styles.primaryBtn}
+              onPress={startCooking}
+              accessibilityRole="button"
+              accessibilityLabel="Start the steps"
+            >
+              <Text style={styles.primaryTxt}>Start the steps</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.footer}>
+            <Pressable
+              style={styles.navBtn}
+              onPress={goBack}
+              accessibilityRole="button"
+              accessibilityLabel={idx === 0 ? 'Back to setup' : 'Previous step'}
+            >
+              <ArrowLeft size={18} color={tokens.color.accent} />
+              <Text style={styles.navTxt}>Back</Text>
+            </Pressable>
+            <Pressable
+              style={styles.primaryBtn}
+              onPress={onForward}
+              accessibilityRole="button"
+              accessibilityLabel={isLast ? 'I made this — update pantry' : 'Mark step done and continue'}
+            >
+              {isLast ? (
+                <Text style={styles.primaryTxt}>I made this!</Text>
+              ) : (
+                <>
+                  <Check size={18} color={tokens.color.onAccent} />
+                  <Text style={styles.primaryTxt}>Done</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -295,6 +397,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(5),
     marginTop: tokens.space(2),
   },
+  // --- prep / mise en place ---
+  prepScroll: { flexGrow: 1, paddingHorizontal: tokens.space(7), paddingTop: tokens.space(5), paddingBottom: tokens.space(8) },
+  prepTitle: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 26,
+    color: tokens.color.ink,
+    letterSpacing: -0.4,
+    marginBottom: tokens.space(2),
+  },
+  prepSub: { fontFamily: tokens.font.body.regular, fontSize: 15, lineHeight: 21, color: tokens.color.inkMuted },
+  prepMeta: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent, marginTop: tokens.space(2) },
+  prepSection: { marginTop: tokens.space(6) },
+  prepLabel: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: tokens.color.inkMuted,
+    marginBottom: tokens.space(3),
+  },
+  equipChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
+  equipChip: {
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  equipChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.ink },
+  gatherRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tokens.color.line,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: tokens.radius.sm,
+    borderWidth: 1.5,
+    borderColor: tokens.color.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
+  gatherTxt: { flex: 1, fontFamily: tokens.font.body.regular, fontSize: 16, color: tokens.color.ink, lineHeight: 21 },
+  gatherTxtGot: { color: tokens.color.inkMuted, textDecorationLine: 'line-through' },
+  prepNote: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, lineHeight: 20 },
+  // --- steps ---
   stepScroll: { flexGrow: 1, paddingHorizontal: tokens.space(7), paddingVertical: tokens.space(6) },
   group: {
     fontFamily: tokens.font.body.semibold,
@@ -395,9 +547,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(4),
     borderRadius: tokens.radius.md,
   },
-  navBtnDisabled: { opacity: 0.5 },
   navTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.accent },
-  navTxtDisabled: { color: tokens.color.inkMuted },
   primaryBtn: {
     flex: 1,
     flexDirection: 'row',
