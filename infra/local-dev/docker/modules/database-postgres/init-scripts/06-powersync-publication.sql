@@ -12,13 +12,13 @@
 --   1. ALTER PUBLICATION powersync ADD TABLE <new_table>;
 --   2. add the stream to sync-config.yaml
 --
--- Renumbered 03- → 04- in the shopping-list arc so 03-shopping-list-items.sql
--- creates its table first (a publication can only list existing tables) —
--- same precedent as the earlier 02- → 03- renumbering.
+-- Renumbered 03- → 04- in the shopping-list arc, then 04- → 06- in the
+-- favorites/history arc, so each new table-creation script (04-favorite-recipes,
+-- 05-activity-events) runs first — a publication can only list existing tables.
 --
 -- Note: Init scripts run only when the Postgres data directory is empty (first
 -- container start). Existing dev volumes evolve via ../migrations/ instead —
--- migration 0003 ADDs shopping_list_items to the live publication (guarded).
+-- migrations 0003/0004/0005 ADD their tables to the live publication (guarded).
 -- After publication changes, restart the powersync service container so it
 -- re-reads the slot.
 
@@ -27,4 +27,6 @@ CREATE PUBLICATION powersync FOR TABLE
   user_households,
   pantry_items,
   household_invites,
-  shopping_list_items;
+  shopping_list_items,
+  favorite_recipes,
+  activity_events;
