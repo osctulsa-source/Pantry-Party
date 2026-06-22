@@ -1,15 +1,17 @@
 /**
- * FavoritesScreen — the household's saved recipes (Favorites feature, PR 2).
+ * FavoritesScreen — the household's saved recipes (Favorites feature).
  *
  * Reached from the heart in the Cook tab header. Lists everything saved via the
  * heart on a recipe card or on Recipe Detail — newest first, household-shared,
  * synced. Tapping a row opens the in-app Recipe Detail from the stored payload
  * (no fetch); the heart on a row un-saves it.
  *
- * The auto "you cook these often" section is intentionally deferred to a later
- * PR — it needs the synced activity log (cook events) to be populated, which
- * lands when the cook write-sites are repointed at activity_events.
+ * "You cook these often" (PR 3): an auto section from the synced activity log —
+ * the recipes you've confirmed cooking most. Informational (a frequency
+ * signal); the cooked events don't carry a full recipe payload, so these rows
+ * aren't openable unless the recipe is also saved below.
  */
+import { useMemo } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -20,13 +22,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { tokens } from '../../theme/tokens';
 import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
 import { useFavorites, favoriteToRecipe } from './useFavorites';
+import { useActivity, topCooked } from '../activity/useActivity';
 import type { RootStackParamList } from '../../../App';
 
 export function FavoritesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, toggleFavorite } = useFavorites();
+  const { events } = useActivity();
+  const cooked = useMemo(() => topCooked(events, 5), [events]);
 
-  if (favorites.length === 0) {
+  if (favorites.length === 0 && cooked.length === 0) {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
@@ -44,50 +49,72 @@ export function FavoritesScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <Text style={styles.count}>
-          {favorites.length} saved {favorites.length === 1 ? 'recipe' : 'recipes'}
-        </Text>
-        {favorites.map((fav) => (
-          <Pressable
-            key={fav.id}
-            style={styles.row}
-            onPress={() => navigation.navigate('RecipeDetail', { recipe: favoriteToRecipe(fav) })}
-            accessibilityRole="button"
-            accessibilityLabel={`Open ${fav.title}`}
-          >
-            {fav.image ? (
-              <Image source={{ uri: fav.image }} style={styles.thumb} />
-            ) : (
-              <View style={[styles.thumb, styles.thumbFallback]} />
-            )}
-            <View style={styles.rowText}>
-              <Text style={styles.rowName} numberOfLines={2}>
-                {fav.title}
-              </Text>
-              {(fav.readyMinutes != null || (fav.healthScore != null && fav.healthScore >= 70)) && (
-                <Text style={styles.rowMeta} numberOfLines={1}>
-                  {fav.readyMinutes != null ? `${fav.readyMinutes} min` : ''}
-                  {fav.readyMinutes != null && fav.healthScore != null && fav.healthScore >= 70
-                    ? ' · '
-                    : ''}
-                  {fav.healthScore != null && fav.healthScore >= 70 ? 'very healthy' : ''}
+        {cooked.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionHead}>You cook these often</Text>
+            {cooked.map((c) => (
+              <View key={c.recipeId} style={styles.cookedRow}>
+                <Text style={styles.cookedName} numberOfLines={1}>
+                  {c.title}
                 </Text>
-              )}
-            </View>
-            <Pressable
-              hitSlop={10}
-              style={styles.heartBtn}
-              onPress={() => {
-                Haptics.selectionAsync().catch(() => {});
-                void toggleFavorite(favoriteToRecipe(fav));
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Remove ${fav.title} from favorites`}
-            >
-              <Heart size={20} color={tokens.color.accent} fill={tokens.color.accent} />
-            </Pressable>
-          </Pressable>
-        ))}
+                <Text style={styles.cookedCount}>
+                  {c.count}× cooked
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {favorites.length > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionHead}>Saved · {favorites.length}</Text>
+            {favorites.map((fav) => (
+              <Pressable
+                key={fav.id}
+                style={styles.row}
+                onPress={() => navigation.navigate('RecipeDetail', { recipe: favoriteToRecipe(fav) })}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${fav.title}`}
+              >
+                {fav.image ? (
+                  <Image source={{ uri: fav.image }} style={styles.thumb} />
+                ) : (
+                  <View style={[styles.thumb, styles.thumbFallback]} />
+                )}
+                <View style={styles.rowText}>
+                  <Text style={styles.rowName} numberOfLines={2}>
+                    {fav.title}
+                  </Text>
+                  {(fav.readyMinutes != null || (fav.healthScore != null && fav.healthScore >= 70)) && (
+                    <Text style={styles.rowMeta} numberOfLines={1}>
+                      {fav.readyMinutes != null ? `${fav.readyMinutes} min` : ''}
+                      {fav.readyMinutes != null && fav.healthScore != null && fav.healthScore >= 70
+                        ? ' · '
+                        : ''}
+                      {fav.healthScore != null && fav.healthScore >= 70 ? 'very healthy' : ''}
+                    </Text>
+                  )}
+                </View>
+                <Pressable
+                  hitSlop={10}
+                  style={styles.heartBtn}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    void toggleFavorite(favoriteToRecipe(fav));
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${fav.title} from favorites`}
+                >
+                  <Heart size={20} color={tokens.color.accent} fill={tokens.color.accent} />
+                </Pressable>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.savedHint}>
+            Nothing saved yet — tap the heart on a recipe to keep it here.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -96,7 +123,8 @@ export function FavoritesScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   scroll: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(10) },
-  count: {
+  section: { marginBottom: tokens.space(5) },
+  sectionHead: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
     letterSpacing: 1.5,
@@ -104,6 +132,17 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     marginBottom: tokens.space(3),
   },
+  cookedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tokens.color.line,
+  },
+  cookedName: { flex: 1, fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.ink },
+  cookedCount: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.accent },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -118,6 +157,12 @@ const styles = StyleSheet.create({
   rowName: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
   rowMeta: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: 2 },
   heartBtn: { padding: tokens.space(2) },
+  savedHint: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+    lineHeight: 19,
+  },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,
