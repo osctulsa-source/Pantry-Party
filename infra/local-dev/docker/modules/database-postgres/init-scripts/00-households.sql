@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS user_households (
   household_id  UUID         NOT NULL REFERENCES households(id) ON DELETE CASCADE,
   role          TEXT         NOT NULL DEFAULT 'member'
                               CHECK (role IN ('owner', 'member')),
+  -- Per-membership display name (Display-names arc). Nullable until the user
+  -- sets one; streamed to co-members via the household_members sync rule so the
+  -- app can show real names + attribute activity. Added for existing volumes by
+  -- migrations/0006_user_households_display_name.sql.
+  display_name  TEXT,
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   UNIQUE (user_id, household_id)
 );

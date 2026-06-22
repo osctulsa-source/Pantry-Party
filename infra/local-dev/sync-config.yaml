@@ -19,12 +19,21 @@ config:
   edition: 3
 
 streams:
-  # Per-user membership: tells the client which households they belong to. Not
-  # filtered by household_id — the client needs the full list to choose / display
-  # a current household.
-  user_memberships:
+  # Household memberships: every membership row for the households the signed-in
+  # user belongs to — the user's OWN memberships PLUS their co-members' (so the
+  # app can list who's in a household and attribute activity by name; the
+  # display_name lives on this row). Single-level subquery, the SAME scoping
+  # shape as household_data — co-members are visible ONLY within shared
+  # households, never cross-tenant. (Broadened from the prior self-only query in
+  # the Display-names arc.)
+  household_members:
     auto_subscribe: true
-    query: SELECT * FROM user_households WHERE user_id = auth.user_id()
+    query: |
+      SELECT * FROM user_households
+      WHERE household_id IN (
+        SELECT household_id FROM user_households
+        WHERE user_id = auth.user_id()
+      )
 
   # Per-household data: pantry items, household metadata, the shared shopping
   # list, saved favorites, and the activity log — scoped to the households the

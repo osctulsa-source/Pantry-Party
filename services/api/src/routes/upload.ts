@@ -47,7 +47,7 @@ const KNOWN_TABLES = new Set([
 // indexed columns.
 const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
   households: ['id', 'name', 'created_by'],
-  user_households: ['id', 'user_id', 'household_id', 'role'],
+  user_households: ['id', 'user_id', 'household_id', 'role', 'display_name'],
   pantry_items: [
     'id',
     'household_id',
@@ -158,6 +158,11 @@ const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
   ]),
   favorite_recipes: new Set(['deleted', 'updated_at']),
   activity_events: new Set(['deleted', 'updated_at']),
+  // user_households is otherwise write-once; the only legal edit is renaming
+  // your OWN membership (display_name). Per-row tenancy (caller must own the
+  // row) is enforced in handlePatchPantryItem — household membership alone is
+  // NOT enough, or you could rename a co-member.
+  user_households: new Set(['display_name']),
 };
 
 // Carries an HTTP status alongside the message so the route can translate a
@@ -221,20 +226,37 @@ export async function handlePatchPantryItem(
     }
   }
 
-  const found = await client.query(`SELECT household_id FROM ${table} WHERE id = $1`, [
-    entry.id,
-  ]);
-  if ((found.rowCount ?? 0) === 0) {
-    throw new UploadError(404, `${table} row "${entry.id}" not found`);
-  }
-  const householdId = found.rows[0]?.household_id;
+  if (table === 'user_households') {
+    // Membership rows are mutable only for display_name, and only on the
+    // caller's OWN row — household membership is NOT sufficient (it would let
+    // any member rename a co-member). Tenancy is the row's user_id, not its
+    // household.
+    const own = await client.query('SELECT user_id FROM user_households WHERE id = $1', [entry.id]);
+    if ((own.rowCount ?? 0) === 0) {
+      throw new UploadError(404, `${table} row "${entry.id}" not found`);
+    }
+    if (own.rows[0]?.user_id !== userId) {
+      throw new UploadError(
+        403,
+        `tenancy: user_households row "${entry.id}" is not the caller's own membership`,
+      );
+    }
+  } else {
+    const found = await client.query(`SELECT household_id FROM ${table} WHERE id = $1`, [
+      entry.id,
+    ]);
+    if ((found.rowCount ?? 0) === 0) {
+      throw new UploadError(404, `${table} row "${entry.id}" not found`);
+    }
+    const householdId = found.rows[0]?.household_id;
 
-  const member = await client.query(
-    'SELECT 1 FROM user_households WHERE user_id = $1 AND household_id = $2',
-    [userId, householdId],
-  );
-  if ((member.rowCount ?? 0) === 0) {
-    throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
+    const member = await client.query(
+      'SELECT 1 FROM user_households WHERE user_id = $1 AND household_id = $2',
+      [userId, householdId],
+    );
+    if ((member.rowCount ?? 0) === 0) {
+      throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
+    }
   }
 
   // Dynamic but fully parameterized: table + column names come from the
