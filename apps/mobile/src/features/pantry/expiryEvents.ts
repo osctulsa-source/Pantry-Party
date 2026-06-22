@@ -1,15 +1,18 @@
 /**
- * On-device expiry-outcome log: what happened to items that needed attention.
+ * expiryEvents — used/tossed outcomes, now SYNCED (Favorites/History arc, PR 3).
  *
- * 'used'   — the item was consumed (a rescue when it was in the warning zone).
- * 'tossed' — the item was wasted. Voluntary, honest data — never required.
+ * Was an on-device AsyncStorage log (cap 200); it is now a thin adapter over
+ * the synced activity_events log (recordActivity). The public API
+ * (recordExpiryEvents / readExpiryEvents) is unchanged, so every call site —
+ * ExpiringSoonScreen, PantryScreen (swipe + multi-select), the lock-screen
+ * notification handler (writes), and the streak readers — keeps working while
+ * moving to household-shared, reinstall-durable data.
  *
- * Together with cookLog this seeds November's motivation arc (positive-action
- * streaks + "you saved ~$X" math) without a new synced table — same
- * local-first discipline as cookLog: per-household AsyncStorage, newest first,
- * capped, best-effort (bookkeeping must never break the flow that records it).
+ * recordExpiryEvents reads the current Supabase session id for the activity
+ * row's tenancy (its callers, incl. the background notification handler, don't
+ * pass one); signed-out = skip (best-effort, never break the action).
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { currentUserId, readActivityEvents, recordActivity } from '../activity/recordActivity';
 
 export type ExpiryEventKind = 'used' | 'tossed';
 
@@ -20,30 +23,31 @@ export interface ExpiryEvent {
   at: string;
 }
 
-const MAX_EVENTS = 200;
-const storageKey = (householdId: string) => `expiryEvents:${householdId}`;
-
 export async function recordExpiryEvents(
   householdId: string | null,
   events: ExpiryEvent[],
 ): Promise<void> {
   if (!householdId || events.length === 0) return;
   try {
-    const raw = await AsyncStorage.getItem(storageKey(householdId));
-    const prior: ExpiryEvent[] = raw ? (JSON.parse(raw) as ExpiryEvent[]) : [];
-    const next = [...events, ...prior].slice(0, MAX_EVENTS);
-    await AsyncStorage.setItem(storageKey(householdId), JSON.stringify(next));
+    const userId = await currentUserId();
+    if (!userId) return;
+    for (const e of events) {
+      await recordActivity({
+        householdId,
+        userId,
+        kind: e.kind,
+        label: e.itemName,
+        occurredAt: e.at,
+      });
+    }
   } catch {
     // Best-effort log — never let bookkeeping break the action.
   }
 }
 
 export async function readExpiryEvents(householdId: string | null): Promise<ExpiryEvent[]> {
-  if (!householdId) return [];
-  try {
-    const raw = await AsyncStorage.getItem(storageKey(householdId));
-    return raw ? (JSON.parse(raw) as ExpiryEvent[]) : [];
-  } catch {
-    return [];
-  }
+  const events = await readActivityEvents(householdId);
+  return events
+    .filter((e) => e.kind === 'used' || e.kind === 'tossed')
+    .map((e) => ({ kind: e.kind as ExpiryEventKind, itemName: e.label, at: e.occurredAt }));
 }

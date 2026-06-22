@@ -45,6 +45,7 @@ import { getPowerSync } from '../../data/powersync/db';
 import { rowToShoppingListItem } from '../../data/powersync/mapShoppingRow';
 import type { ShoppingListItemRow } from '../../data/powersync/schema';
 import { addPantryItem } from '../pantry/addPantryItem';
+import { recordActivity } from '../activity/recordActivity';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 
@@ -158,6 +159,16 @@ export function ShoppingScreen() {
         expiresIso: suggestExpiryISO({ name: item.name }),
         source: 'restock',
       });
+      // Log the restock to the household activity history (best-effort,
+      // non-blocking — a logging hiccup must not roll back the restock).
+      void recordActivity({
+        householdId: activeHouseholdId,
+        userId,
+        kind: 'restocked',
+        label: item.name,
+        quantity: item.quantity,
+        unit: item.unit ?? null,
+      }).catch(() => {});
       await getPowerSync().execute(
         'UPDATE shopping_list_items SET deleted = 1, updated_at = ? WHERE id = ?',
         [Date.now(), item.id],

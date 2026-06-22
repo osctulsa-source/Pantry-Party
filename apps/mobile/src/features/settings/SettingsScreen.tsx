@@ -60,6 +60,7 @@ export function SettingsScreen() {
             value={insights.streakDays > 0 ? `🔥 ${insights.streakDays}d` : undefined}
             onPress={() => navigation.navigate('Insights')}
           />
+          <ListRow label="History" onPress={() => navigation.navigate('History')} />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 
