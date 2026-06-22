@@ -8,7 +8,6 @@
  * "remove an entry" is a natural follow-up).
  */
 import { useMemo, useState } from 'react';
-import type { ComponentType } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, ChefHat, RotateCcw, Trash2 } from 'lucide-react-native';
@@ -27,27 +26,43 @@ const FILTERS: Array<{ label: string; value: Filter }> = [
   { label: 'Tossed', value: 'tossed' },
 ];
 
-type IconCmp = ComponentType<{ size?: number; color?: string }>;
-interface KindStyle {
-  Icon: IconCmp;
+interface KindMeta {
   verb: string;
   color: string;
 }
 
-function kindStyle(kind: string): KindStyle {
+function kindMeta(kind: string): KindMeta {
   switch (kind) {
     case 'cooked':
-      return { Icon: ChefHat, verb: 'Cooked', color: tokens.color.accent };
+      return { verb: 'Cooked', color: tokens.color.accent };
     case 'used':
-      return { Icon: Check, verb: 'Used', color: tokens.color.success };
+      return { verb: 'Used', color: tokens.color.success };
     case 'tossed':
-      return { Icon: Trash2, verb: 'Tossed', color: tokens.semantic.expiry.expired };
+      return { verb: 'Tossed', color: tokens.semantic.expiry.expired };
     case 'expired':
-      return { Icon: Trash2, verb: 'Expired', color: tokens.semantic.expiry.expired };
+      return { verb: 'Expired', color: tokens.semantic.expiry.expired };
     case 'restocked':
-      return { Icon: RotateCcw, verb: 'Restocked', color: tokens.color.inkMuted };
+      return { verb: 'Restocked', color: tokens.color.inkMuted };
     default:
-      return { Icon: Check, verb: 'Logged', color: tokens.color.inkMuted };
+      return { verb: 'Logged', color: tokens.color.inkMuted };
+  }
+}
+
+// Render the kind's icon directly (avoids assigning a lucide
+// ForwardRefExoticComponent into a ComponentType field — not assignable
+// under strict TS).
+function KindIcon({ kind, color }: { kind: string; color: string }) {
+  switch (kind) {
+    case 'cooked':
+      return <ChefHat size={16} color={color} />;
+    case 'tossed':
+    case 'expired':
+      return <Trash2 size={16} color={color} />;
+    case 'restocked':
+      return <RotateCcw size={16} color={color} />;
+    case 'used':
+    default:
+      return <Check size={16} color={color} />;
   }
 }
 
@@ -140,11 +155,11 @@ export function HistoryScreen() {
             <View key={g.label} style={styles.group}>
               <Text style={styles.dayHead}>{g.label}</Text>
               {g.events.map((e) => {
-                const { Icon, verb, color } = kindStyle(e.kind);
+                const { verb, color } = kindMeta(e.kind);
                 return (
                   <View key={e.id} style={styles.row}>
                     <View style={styles.iconWrap}>
-                      <Icon size={16} color={color} />
+                      <KindIcon kind={e.kind} color={color} />
                     </View>
                     <View style={styles.rowText}>
                       <Text style={styles.rowLabel} numberOfLines={1}>
