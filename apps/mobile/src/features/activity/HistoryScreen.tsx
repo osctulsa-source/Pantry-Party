@@ -12,7 +12,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Check, ChefHat, RotateCcw, Trash2 } from 'lucide-react-native';
 
-import type { ActivityEvent } from '@breadbox/core';
+import { groupByDay, timeLabel } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { InsightsEmptyArt } from '../../components/illustrations/InsightsEmptyArt';
 import { useActivity } from './useActivity';
@@ -66,48 +66,6 @@ function KindIcon({ kind, color }: { kind: string; color: string }) {
     default:
       return <Check size={16} color={color} />;
   }
-}
-
-function dayKey(d: Date): string {
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-function dayLabel(iso: string, now: Date): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 'Earlier';
-  const yest = new Date(now);
-  yest.setDate(yest.getDate() - 1);
-  if (dayKey(d) === dayKey(now)) return 'Today';
-  if (dayKey(d) === dayKey(yest)) return 'Yesterday';
-  return d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
-}
-
-function timeLabel(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-}
-
-interface DayGroup {
-  label: string;
-  events: ActivityEvent[];
-}
-
-// Events arrive newest-first and contiguous per calendar day, so a single
-// pass that opens a new group on each label change preserves order.
-function groupByDay(events: ActivityEvent[], now: Date): DayGroup[] {
-  const groups: DayGroup[] = [];
-  let current: DayGroup | null = null;
-  for (const e of events) {
-    const label = dayLabel(e.occurredAt, now);
-    if (!current || current.label !== label) {
-      current = { label, events: [e] };
-      groups.push(current);
-    } else {
-      current.events.push(e);
-    }
-  }
-  return groups;
 }
 
 export function HistoryScreen() {
