@@ -21,7 +21,7 @@ import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Check, ChevronLeft, Clock, ExternalLink, Leaf, Plus, Users } from 'lucide-react-native';
+import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Users } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { matchCookedItems } from '@breadbox/core';
@@ -31,6 +31,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useRecipePrefs } from './useRecipePrefs';
+import { useFavorites } from './useFavorites';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookModeView } from './CookModeView';
@@ -86,6 +87,8 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const { record } = useRecipePrefs(activeHouseholdId);
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const favorited = isFavorited(recipe.id);
 
   const scrollRef = useRef<ScrollView>(null);
   const [cooking, setCooking] = useState(false);
@@ -125,6 +128,13 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setMissingAdded(true);
+  }
+
+  async function onToggleSave() {
+    Haptics.selectionAsync().catch(() => {});
+    const result = await toggleFavorite(recipe);
+    // Saving is a positive preference signal too (mirrors the Cook tab heart).
+    if (result === 'saved') record(recipe.title, 'like');
   }
 
   function onCookDone(updated: number) {
@@ -307,6 +317,21 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
         <ChevronLeft size={24} color={tokens.color.ink} />
       </Pressable>
 
+      <Pressable
+        style={[styles.saveBtn, { top: insets.top + tokens.space(2) }]}
+        onPress={() => void onToggleSave()}
+        accessibilityRole="button"
+        accessibilityState={{ selected: favorited }}
+        accessibilityLabel={favorited ? 'Saved to favorites' : 'Save to favorites'}
+        hitSlop={8}
+      >
+        <Heart
+          size={22}
+          color={favorited ? tokens.color.accent : tokens.color.ink}
+          fill={favorited ? tokens.color.accent : 'transparent'}
+        />
+      </Pressable>
+
       {cooking && (
         <CookedItSheet
           recipeId={recipe.id}
@@ -370,6 +395,21 @@ const styles = StyleSheet.create({
   backBtn: {
     position: 'absolute',
     left: tokens.space(4),
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    backgroundColor: tokens.color.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  saveBtn: {
+    position: 'absolute',
+    right: tokens.space(4),
     width: 40,
     height: 40,
     borderRadius: 999,
