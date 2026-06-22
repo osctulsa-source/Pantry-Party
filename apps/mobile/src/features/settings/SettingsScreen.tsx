@@ -10,16 +10,17 @@
  * SQLite, and App.tsx's auth conditional swaps AppStack → AuthStack. No manual
  * navigation from this screen.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { tokens } from '../../theme/tokens';
-import { Body, Button, Caption, Heading, ListRow, Screen } from '../../components/ui';
+import { Body, Button, Caption, Heading, Input, ListRow, Screen } from '../../components/ui';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useDisplayName } from '../household/useDisplayName';
 import { useInsights } from '../insights/useInsights';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
@@ -34,7 +35,15 @@ export function SettingsScreen() {
   const { state, signOut } = useAuth();
   const { activeHouseholdId } = useActiveHousehold();
   const { insights } = useInsights(activeHouseholdId);
+  const { myName, setMyName } = useDisplayName();
   const [signingOut, setSigningOut] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+
+  // Seed the field once the synced name loads (the reactive query may resolve
+  // after first render); editing thereafter is local until blur/submit saves.
+  useEffect(() => {
+    setNameDraft(myName ?? '');
+  }, [myName]);
 
   const email = state.status === 'authenticated' ? state.session.user.email ?? '—' : '—';
 
@@ -49,6 +58,22 @@ export function SettingsScreen() {
       <View style={styles.content}>
         <View style={styles.topGroup}>
           <Heading size="xl">Settings</Heading>
+
+          <View style={styles.section}>
+            <Caption>Your name</Caption>
+            <Input
+              value={nameDraft}
+              onChangeText={setNameDraft}
+              onEndEditing={() => void setMyName(nameDraft)}
+              placeholder="Add your name"
+              autoCapitalize="words"
+              returnKeyType="done"
+              maxLength={40}
+            />
+            <Body tone="muted" size={12}>
+              Shown to your household on shared items and history.
+            </Body>
+          </View>
 
           <View style={styles.section}>
             <Caption>Account</Caption>

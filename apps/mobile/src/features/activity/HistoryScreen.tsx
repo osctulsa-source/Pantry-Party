@@ -16,6 +16,8 @@ import type { ActivityEvent } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { InsightsEmptyArt } from '../../components/illustrations/InsightsEmptyArt';
 import { useActivity } from './useActivity';
+import { useDisplayName } from '../household/useDisplayName';
+import { useAuth } from '../auth/AuthContext';
 
 type Filter = 'all' | 'cooked' | 'used' | 'tossed';
 
@@ -110,6 +112,9 @@ function groupByDay(events: ActivityEvent[], now: Date): DayGroup[] {
 
 export function HistoryScreen() {
   const { events } = useActivity();
+  const { names } = useDisplayName();
+  const { state } = useAuth();
+  const currentUserId = state.status === 'authenticated' ? state.session.user.id : null;
   const [filter, setFilter] = useState<Filter>('all');
   const now = useMemo(() => new Date(), []);
 
@@ -156,6 +161,10 @@ export function HistoryScreen() {
               <Text style={styles.dayHead}>{g.label}</Text>
               {g.events.map((e) => {
                 const { verb, color } = kindMeta(e.kind);
+                // Attribute to a co-member by name; omit for your own actions
+                // (implicitly you) and when no name is known (avoids id noise).
+                const actor =
+                  e.addedBy && e.addedBy !== currentUserId ? names.get(e.addedBy) : undefined;
                 return (
                   <View key={e.id} style={styles.row}>
                     <View style={styles.iconWrap}>
@@ -166,7 +175,10 @@ export function HistoryScreen() {
                         <Text style={[styles.verb, { color }]}>{verb} </Text>
                         {e.label}
                       </Text>
-                      <Text style={styles.rowTime}>{timeLabel(e.occurredAt)}</Text>
+                      <Text style={styles.rowTime}>
+                        {timeLabel(e.occurredAt)}
+                        {actor ? ` · ${actor}` : ''}
+                      </Text>
                     </View>
                   </View>
                 );

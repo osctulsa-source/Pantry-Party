@@ -43,6 +43,7 @@ interface HouseholdRow {
 interface MemberRow {
   user_id: string;
   role: string;
+  display_name: string | null;
 }
 
 interface DisplayMember {
@@ -78,7 +79,7 @@ export function HouseholdScreen() {
   const activeIdForMembers = activeHousehold?.id ?? '';
 
   const { data: memberRows, isLoading: membersLoading } = useQuery<MemberRow>(
-    'SELECT user_id, role FROM user_households WHERE household_id = ? ORDER BY created_at ASC',
+    'SELECT user_id, role, display_name FROM user_households WHERE household_id = ? ORDER BY created_at ASC',
     [activeIdForMembers],
   );
 
@@ -110,9 +111,12 @@ export function HouseholdScreen() {
 
   const members: DisplayMember[] = memberRows.map((row) => {
     const isCurrentUser = row.user_id === currentUserId;
-    const label = isCurrentUser
-      ? currentUserEmail ?? 'You'
-      : `member ${row.user_id.slice(0, 8)}`;
+    const name = row.display_name?.trim();
+    const label = name
+      ? name
+      : isCurrentUser
+        ? currentUserEmail ?? 'You'
+        : `member ${row.user_id.slice(0, 8)}`;
     return {
       userId: row.user_id,
       role: row.role,
