@@ -55,6 +55,43 @@ const shopping_list_items = new Table({
   deleted: column.integer,
 });
 
+// favorite_recipes: recipes a household has saved (Favorites feature). Streams
+// via household_data; writes drain through the upload-proxy. The full recipe
+// rides in `payload` (JSON) so Recipe Detail opens instantly + offline.
+// Mirrors init-scripts/04-favorite-recipes.sql and @breadbox/core FavoriteRecipe.
+const favorite_recipes = new Table({
+  household_id: column.text,
+  recipe_id: column.integer,
+  title: column.text,
+  image: column.text,
+  ready_minutes: column.integer,
+  health_score: column.integer,
+  payload: column.text,
+  added_by: column.text,
+  added_at: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
+// activity_events: append-only household activity log (History feature) —
+// cooked / used / tossed / expired / restocked. Streams via household_data;
+// writes drain through the upload-proxy. `kind` is free text (core zod owns the
+// known set). Mirrors init-scripts/05-activity-events.sql and ActivityEvent.
+const activity_events = new Table({
+  household_id: column.text,
+  kind: column.text,
+  ref_id: column.text,
+  label: column.text,
+  quantity: column.real,
+  unit: column.text,
+  image: column.text,
+  meta: column.text,
+  occurred_at: column.text,
+  added_by: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
 // households / user_households are downloaded from the sync stream AND written
 // to locally by ensureDefaultHousehold() so a fresh user gets a pantry to live
 // in without manual SQL provisioning. Local writes drain to Postgres via
@@ -93,6 +130,8 @@ export const AppSchema = new Schema({
   user_households,
   household_invites,
   shopping_list_items,
+  favorite_recipes,
+  activity_events,
 });
 
 export interface ShoppingListItemRow {
@@ -106,6 +145,42 @@ export interface ShoppingListItemRow {
   source: string;
   added_by: string;
   added_at: string;
+  updated_at: number;
+  deleted: number;
+}
+
+// favorite_recipes row shape (Favorites feature). `payload` is the full
+// SpoonacularRecipe as JSON; rowToFavoriteRecipe keeps it a string and
+// favoriteToRecipe() parses it when opening Recipe Detail.
+export interface FavoriteRecipeRow {
+  id: string;
+  household_id: string;
+  recipe_id: number;
+  title: string;
+  image: string | null;
+  ready_minutes: number | null;
+  health_score: number | null;
+  payload: string;
+  added_by: string;
+  added_at: string;
+  updated_at: number;
+  deleted: number;
+}
+
+// activity_events row shape (History feature). `kind` is free text; meta is
+// optional kind-specific JSON. parseActivityEvent validates on read.
+export interface ActivityEventRow {
+  id: string;
+  household_id: string;
+  kind: string;
+  ref_id: string | null;
+  label: string;
+  quantity: number | null;
+  unit: string | null;
+  image: string | null;
+  meta: string | null;
+  occurred_at: string;
+  added_by: string;
   updated_at: number;
   deleted: number;
 }

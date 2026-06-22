@@ -28,7 +28,14 @@ type CrudEntry = z.infer<typeof CrudEntrySchema>;
 // The set of tables this throwaway service knows how to write. New tables
 // require an entry here AND a matching apply* function. Anything else 4xx's
 // rather than silently no-op'ing.
-const KNOWN_TABLES = new Set(['households', 'user_households', 'pantry_items', 'shopping_list_items']);
+const KNOWN_TABLES = new Set([
+  'households',
+  'user_households',
+  'pantry_items',
+  'shopping_list_items',
+  'favorite_recipes',
+  'activity_events',
+]);
 
 // For each table, the columns we'll accept and forward to Postgres. Anything
 // else in `data` is dropped — defensive against future schema additions on the
@@ -73,6 +80,35 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'updated_at',
     'deleted',
   ],
+  favorite_recipes: [
+    'id',
+    'household_id',
+    'recipe_id',
+    'title',
+    'image',
+    'ready_minutes',
+    'health_score',
+    'payload',
+    'added_by',
+    'added_at',
+    'updated_at',
+    'deleted',
+  ],
+  activity_events: [
+    'id',
+    'household_id',
+    'kind',
+    'ref_id',
+    'label',
+    'quantity',
+    'unit',
+    'image',
+    'meta',
+    'occurred_at',
+    'added_by',
+    'updated_at',
+    'deleted',
+  ],
 };
 
 // Columns whose value MUST equal req.userId (the verified JWT `sub`). This is
@@ -82,6 +118,8 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
   user_households: ['user_id'],
   pantry_items: ['added_by'],
   shopping_list_items: ['added_by'],
+  favorite_recipes: ['added_by'],
+  activity_events: ['added_by'],
 };
 
 // Editable columns for a PATCH, per table. Everything else is immutable
@@ -94,6 +132,9 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
 // with the brand field; `fill_level` with the fill-level feature (range is
 // DB-CHECK-guarded by migration 0001). shopping_list_items joined with the
 // August shopping-list arc (`checked` is the check-off toggle).
+// favorite_recipes + activity_events (June 2026, Favorites/History arc) are
+// immutable snapshots/events: the only legal PATCH is the deleted tombstone
+// (favorites un-save / re-save flips it; a history row can be removed).
 const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
   pantry_items: new Set([
     'name',
@@ -115,6 +156,8 @@ const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
     'deleted',
     'updated_at',
   ]),
+  favorite_recipes: new Set(['deleted', 'updated_at']),
+  activity_events: new Set(['deleted', 'updated_at']),
 };
 
 // Carries an HTTP status alongside the message so the route can translate a
@@ -132,8 +175,9 @@ export class UploadError extends Error {
 
 /**
  * Applies a single PATCH op inside an already-open transaction, for any table
- * with a PATCH_ALLOWED_BY_TABLE entry (pantry_items, shopping_list_items —
- * both household-scoped with identical tenancy shape).
+ * with a PATCH_ALLOWED_BY_TABLE entry (pantry_items, shopping_list_items,
+ * favorite_recipes, activity_events — all household-scoped with identical
+ * tenancy shape).
  *
  * Edit AND delete both arrive here: delete is just a PATCH with deleted = 1
  * (tombstone). Order of checks matters — shape/allowlist (400) before any IO,

@@ -26,11 +26,12 @@ streams:
     auto_subscribe: true
     query: SELECT * FROM user_households WHERE user_id = auth.user_id()
 
-  # Per-household data: pantry items, household metadata, and the shared
-  # shopping list, scoped to the households the signed-in user is a member of.
-  # PowerSync implicitly creates one bucket per (user, household) pair from the
-  # subquery, so users see ONLY rows whose household_id matches a row they
-  # appear in via user_households — no cross-tenant leakage.
+  # Per-household data: pantry items, household metadata, the shared shopping
+  # list, saved favorites, and the activity log — scoped to the households the
+  # signed-in user is a member of. PowerSync implicitly creates one bucket per
+  # (user, household) pair from the subquery, so users see ONLY rows whose
+  # household_id matches a row they appear in via user_households — no
+  # cross-tenant leakage.
   household_data:
     auto_subscribe: true
     queries:
@@ -48,6 +49,18 @@ streams:
         )
       - |
         SELECT * FROM shopping_list_items
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
+      - |
+        SELECT * FROM favorite_recipes
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
+      - |
+        SELECT * FROM activity_events
         WHERE household_id IN (
           SELECT household_id FROM user_households
           WHERE user_id = auth.user_id()

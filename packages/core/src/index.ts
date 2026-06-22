@@ -10,3 +10,5 @@ export * from "./foodKinds.ts";
 export * from "./streakStats.ts";
 export * from "./streakSaver.ts";
 export * from "./shoppingList.ts";
+export * from "./favorites.ts";
+export * from "./activity.ts";
