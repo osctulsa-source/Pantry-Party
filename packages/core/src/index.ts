@@ -12,3 +12,4 @@ export * from "./streakSaver.ts";
 export * from "./shoppingList.ts";
 export * from "./favorites.ts";
 export * from "./activity.ts";
+export * from "./taste.ts";
