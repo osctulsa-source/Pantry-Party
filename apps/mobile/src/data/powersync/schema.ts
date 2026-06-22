@@ -107,6 +107,9 @@ const user_households = new Table({
   household_id: column.text,
   role: column.text,
   created_at: column.text,
+  // Per-membership display name (Display-names arc). Streamed to co-members via
+  // the household_members sync rule; written via the upload-proxy PATCH.
+  display_name: column.text,
 });
 
 // household_invites streams down via the user_invites sync rule (sync-config.yaml):

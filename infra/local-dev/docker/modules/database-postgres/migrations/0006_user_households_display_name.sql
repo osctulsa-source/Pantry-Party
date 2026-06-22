@@ -1,0 +1,21 @@
+-- Migration 0006 — user_households.display_name (Display-names arc, June 2026).
+--
+-- A per-membership display name so the app shows PEOPLE, not raw user ids:
+-- a real household member list and "Alex cooked Pasta" in History, instead of
+-- "member 11111111". It lives on the membership row (not a separate profiles
+-- table) because user_households is already household-scoped — so co-members'
+-- names ride the SAME single-level sync subquery the rest of household_data
+-- uses. (A profiles table keyed by user would need a riskier two-hop sync and
+-- wouldn't make co-members visible on its own.)
+--
+-- Nullable: existing memberships have no name until the user sets one. No
+-- updated_at is added — the membership table is otherwise write-once, and a
+-- display-name PATCH carries only this column. user_households is ALREADY in
+-- the powersync publication (PR #39 allowlist), so the new column auto-
+-- replicates; no publication edit is needed. Restart the powersync service
+-- after applying so it re-reads the relation shape.
+--
+-- Idempotent. Lockstep: init-scripts/00-households.sql adds the column for
+-- fresh volumes.
+
+ALTER TABLE user_households ADD COLUMN IF NOT EXISTS display_name TEXT;
