@@ -58,11 +58,14 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  applyPrefEvent,
   defaultMealForHour,
   getExpiryStatus,
   matchCookedItems,
   mealtimeLabel,
   scoreTitle,
+  type ActivityEvent,
+  type FavoriteRecipe,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -79,6 +82,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useFavorites } from './useFavorites';
+import { useActivity, topCooked } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
@@ -136,6 +140,51 @@ function isEasy(r: SpoonacularRecipe): boolean {
 /** No shopping needed — you already have everything. */
 function isReadyNow(r: SpoonacularRecipe): boolean {
   return r.missedIngredientCount === 0;
+}
+
+/**
+ * Build a "taste profile" from the household's SAVED + COOKED recipes (both
+ * synced, so it survives a reinstall even though the on-device prefs map
+ * doesn't). Reuses the same token-weight engine as recipePrefs: each favorite
+ * and each cook nudges its title tokens up, so scoreTitle() against this map
+ * measures how much a candidate looks like what you actually keep and make.
+ */
+function buildTasteProfile(favorites: FavoriteRecipe[], events: ActivityEvent[]): RecipePrefs {
+  let profile: RecipePrefs = {};
+  for (const f of favorites) profile = applyPrefEvent(profile, f.title, 'like');
+  for (const c of topCooked(events, 12)) {
+    // Weight frequently-cooked recipes harder (capped so one dish can't dominate).
+    const reps = Math.min(c.count, 3);
+    for (let i = 0; i < reps; i++) profile = applyPrefEvent(profile, c.title, 'like');
+  }
+  return profile;
+}
+
+/** A compact recipe row (thumb + title + meta), shared by the "Because you
+ *  saved" suggestions and the "More from your pantry" alternates. */
+function RecipeRow({
+  recipe,
+  onOpen,
+}: {
+  recipe: SpoonacularRecipe;
+  onOpen: (r: SpoonacularRecipe) => void;
+}) {
+  return (
+    <Pressable style={styles.altRow} onPress={() => onOpen(recipe)}>
+      <Image source={{ uri: recipe.image }} style={styles.altThumb} />
+      <View style={styles.altText}>
+        <Text style={styles.altName} numberOfLines={1}>
+          {recipe.title}
+        </Text>
+        <Text style={styles.altMeta} numberOfLines={1}>
+          {recipe.readyInMinutes !== null ? `${recipe.readyInMinutes} min · ` : ''}
+          {matchLine(recipe)}
+          {recipe.healthScore !== null && recipe.healthScore >= 70 ? ' · very healthy' : ''}
+        </Text>
+      </View>
+      <ChevronRight size={18} color={tokens.color.inkMuted} />
+    </Pressable>
+  );
 }
 
 export function RecipesScreen() {
@@ -436,7 +485,12 @@ function CookThis({
   onCookComplete: (updatedCount: number) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { isFavorited, toggleFavorite } = useFavorites();
+  const { favorites, isFavorited, toggleFavorite } = useFavorites();
+  const { events: activity } = useActivity();
+  // Synced taste signal from what the household saves + cooks — strengthens the
+  // ranking AND drives the "Because you saved" row, and survives a reinstall
+  // (unlike the on-device prefs map).
+  const tasteProfile = useMemo(() => buildTasteProfile(favorites, activity), [favorites, activity]);
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
@@ -482,15 +536,37 @@ function CookThis({
     }
     const blend = (r: SpoonacularRecipe) =>
       scoreTitle(prefs, r.title) * 1.5 +
+      scoreTitle(tasteProfile, r.title) * 2 +
       r.usedIngredientCount +
       (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
       (readyNow && isReadyNow(r) ? 3 : 0) +
       (easy && isEasy(r) ? 3 : 0);
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, healthy, easy, readyNow]);
+  }, [recipes, prefs, tasteProfile, healthy, easy, readyNow]);
 
   const top = pool.slice(0, 3);
-  const alternates = pool.slice(3);
+  // "Because you saved" — re-rank the rest of the pool by taste-profile match
+  // (synced favorites + cooks). Drawn from pool.slice(3) so it never duplicates
+  // the hero, and carved OUT of the alternates below so each recipe shows once.
+  const suggestions = useMemo(
+    () =>
+      pool
+        .slice(3)
+        .map((r) => ({ r, s: scoreTitle(tasteProfile, r.title) }))
+        .filter((x) => x.s > 0 && !isFavorited(x.r.id))
+        .sort((a, b) => b.s - a.s)
+        .slice(0, 3)
+        .map((x) => x.r),
+    [pool, tasteProfile, isFavorited],
+  );
+  const suggestionIds = useMemo(() => new Set(suggestions.map((r) => r.id)), [suggestions]);
+  const alternates = useMemo(
+    () => pool.slice(3).filter((r) => !suggestionIds.has(r.id)),
+    [pool, suggestionIds],
+  );
+  const tasteLabel = favorites[0]
+    ? `Because you saved ${favorites[0].title}`
+    : 'Because you cook these';
   const first = top[0]; // the pick-one-for-me target (guarded before use)
 
   // Rows for the cooked-it sheet: matched pantry items (pre-selected) when the
@@ -591,24 +667,22 @@ function CookThis({
         </View>
       )}
 
+      {suggestions.length > 0 && (
+        <View style={styles.altsPad}>
+          <Text style={styles.suggestHead} numberOfLines={1}>
+            {tasteLabel}
+          </Text>
+          {suggestions.map((r) => (
+            <RecipeRow key={r.id} recipe={r} onOpen={onOpen} />
+          ))}
+        </View>
+      )}
+
       {alternates.length > 0 && (
         <View style={styles.altsPad}>
           <Text style={styles.altHead}>More from your pantry</Text>
           {alternates.map((r) => (
-            <Pressable key={r.id} style={styles.altRow} onPress={() => onOpen(r)}>
-              <Image source={{ uri: r.image }} style={styles.altThumb} />
-              <View style={styles.altText}>
-                <Text style={styles.altName} numberOfLines={1}>
-                  {r.title}
-                </Text>
-                <Text style={styles.altMeta} numberOfLines={1}>
-                  {r.readyInMinutes !== null ? `${r.readyInMinutes} min · ` : ''}
-                  {matchLine(r)}
-                  {r.healthScore !== null && r.healthScore >= 70 ? ' · very healthy' : ''}
-                </Text>
-              </View>
-              <ChevronRight size={18} color={tokens.color.inkMuted} />
-            </Pressable>
+            <RecipeRow key={r.id} recipe={r} onOpen={onOpen} />
           ))}
         </View>
       )}
@@ -964,6 +1038,13 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     color: tokens.color.inkMuted,
+    marginBottom: tokens.space(2),
+  },
+  suggestHead: {
+    fontFamily: tokens.font.display.semibold,
+    fontSize: 15,
+    color: tokens.color.ink,
+    letterSpacing: -0.2,
     marginBottom: tokens.space(2),
   },
   altRow: {
