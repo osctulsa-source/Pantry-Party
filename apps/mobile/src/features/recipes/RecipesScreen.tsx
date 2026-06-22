@@ -78,6 +78,7 @@ import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
+import { useFavorites } from './useFavorites';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
@@ -138,6 +139,7 @@ function isReadyNow(r: SpoonacularRecipe): boolean {
 }
 
 export function RecipesScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
@@ -254,7 +256,18 @@ export function RecipesScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
       <View style={styles.headerPad}>
-        <Text style={styles.screenTitle}>Cook</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.screenTitle}>Cook</Text>
+          <Pressable
+            onPress={() => navigation.navigate('Favorites')}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel="Your saved recipes"
+            style={styles.favBtn}
+          >
+            <Heart size={22} color={tokens.color.accent} />
+          </Pressable>
+        </View>
         <Text style={styles.eyebrow}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
         <View style={styles.chips}>
           {MEALS.map((m) => {
@@ -423,6 +436,7 @@ function CookThis({
   onCookComplete: (updatedCount: number) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { isFavorited, toggleFavorite } = useFavorites();
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
@@ -431,7 +445,6 @@ function CookThis({
   const reasonColor =
     urgent && getExpiryStatus(urgent, now) === 'expired' ? tokens.semantic.expiry.expired : tokens.semantic.expiry.warning;
 
-  const [liked, setLiked] = useState<Set<number>>(new Set());
   const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(0);
   const [cooking, setCooking] = useState<SpoonacularRecipe | null>(null);
@@ -501,10 +514,11 @@ function CookThis({
     return items.map((i) => ({ itemId: i.id, itemName: i.name, quantity: i.quantity, matched: false }));
   }, [cooking, items]);
 
-  function onLike(r: SpoonacularRecipe) {
+  async function onToggleFavorite(r: SpoonacularRecipe) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    record(r.title, 'like');
-    setLiked((prev) => new Set(prev).add(r.id));
+    const result = await toggleFavorite(r);
+    // Saving is also the strongest "I like this" signal for ranking.
+    if (result === 'saved') record(r.title, 'like');
   }
   function onSkip(r: SpoonacularRecipe) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -557,10 +571,10 @@ function CookThis({
         renderItem={({ item }) => (
           <HeroCard
             recipe={item}
-            liked={liked.has(item.id)}
+            favorited={isFavorited(item.id)}
             skipped={skipped.has(item.id)}
             missingAdded={missingAdded.has(item.id)}
-            onLike={onLike}
+            onToggleFavorite={(r) => void onToggleFavorite(r)}
             onSkip={onSkip}
             onOpen={onOpen}
             onCooked={onCooked}
@@ -615,20 +629,20 @@ function CookThis({
 
 function HeroCard({
   recipe,
-  liked,
+  favorited,
   skipped,
   missingAdded,
-  onLike,
+  onToggleFavorite,
   onSkip,
   onOpen,
   onCooked,
   onAddMissing,
 }: {
   recipe: SpoonacularRecipe;
-  liked: boolean;
+  favorited: boolean;
   skipped: boolean;
   missingAdded: boolean;
-  onLike: (r: SpoonacularRecipe) => void;
+  onToggleFavorite: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
   onCooked: (r: SpoonacularRecipe) => void;
@@ -696,18 +710,18 @@ function HeroCard({
       </Pressable>
       <View style={styles.actions}>
         <Pressable
-          style={[styles.actBtn, liked && styles.actBtnLiked]}
-          onPress={() => onLike(recipe)}
+          style={[styles.actBtn, favorited && styles.actBtnLiked]}
+          onPress={() => onToggleFavorite(recipe)}
           accessibilityRole="button"
-          accessibilityState={{ selected: liked }}
-          accessibilityLabel={liked ? 'Liked' : 'Like this recipe'}
+          accessibilityState={{ selected: favorited }}
+          accessibilityLabel={favorited ? 'Saved to favorites' : 'Save to favorites'}
         >
           <Heart
             size={15}
-            color={liked ? tokens.color.accent : tokens.color.ink}
-            fill={liked ? tokens.color.accent : 'transparent'}
+            color={favorited ? tokens.color.accent : tokens.color.ink}
+            fill={favorited ? tokens.color.accent : 'transparent'}
           />
-          <Text style={[styles.actTxt, liked && styles.actTxtLiked]}>{liked ? 'Liked' : 'Like'}</Text>
+          <Text style={[styles.actTxt, favorited && styles.actTxtLiked]}>{favorited ? 'Saved' : 'Save'}</Text>
         </Pressable>
         <Pressable
           style={[styles.actBtn, skipped && styles.actBtnSkipped]}
@@ -784,6 +798,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   headerPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(3) },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  favBtn: { padding: tokens.space(1), marginBottom: tokens.space(1) },
   screenTitle: {
     fontFamily: tokens.font.display.bold,
     fontSize: 28,
