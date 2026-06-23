@@ -40,6 +40,7 @@ import { X } from 'lucide-react-native';
 
 import { suggestExpiryISO, type ShoppingListItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { ShoppingEmptyArt } from '../../components/illustrations/ShoppingEmptyArt';
 import { getPowerSync } from '../../data/powersync/db';
 import { rowToShoppingListItem } from '../../data/powersync/mapShoppingRow';
@@ -247,19 +248,17 @@ export function ShoppingScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-      <View style={styles.header}>
-        <View style={styles.headerMain}>
-          <Text style={styles.title}>Shopping</Text>
-          <Text style={styles.count}>
-            {open.length} to pick up
-          </Text>
-        </View>
-        {done.length > 0 && (
-          <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
-            <Text style={styles.clear}>Clear done</Text>
-          </Pressable>
-        )}
-      </View>
+      <ScreenHeader
+        title="Shopping"
+        subtitle={`${open.length} to pick up`}
+        right={
+          done.length > 0 ? (
+            <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
+              <Text style={styles.clear}>Clear done</Text>
+            </Pressable>
+          ) : undefined
+        }
+      />
 
       <View style={styles.addRow}>
         <TextInput
@@ -294,8 +293,7 @@ export function ShoppingScreen() {
             <ShoppingEmptyArt />
             <Text style={styles.emptyTitle}>All stocked up</Text>
             <Text style={styles.emptySub}>
-              When you run low on something or a recipe needs an ingredient you don't have, it'll
-              show up here automatically.
+              Items you run low on — and recipe extras — show up here automatically.
             </Text>
           </View>
         }
@@ -360,17 +358,6 @@ export function ShoppingScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
-    paddingBottom: tokens.space(3),
-  },
-  headerMain: { flex: 1 },
-  title: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
-  count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
   clear: { paddingTop: tokens.space(2), fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   addRow: { flexDirection: 'row', gap: tokens.space(2), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   input: {
