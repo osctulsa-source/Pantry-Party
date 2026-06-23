@@ -56,6 +56,11 @@ export interface ThemeTokens {
       fresh: string; // neutral — calm, recedes (color = urgency only)
       warning: string; // 0–3 days to expiry
       expired: string; // past date
+      // Soft tints for the status CARDS on the Pantry screen (faint fills that
+      // pair with the matching expiry color for the title + ink for body text).
+      freshSoft: string;
+      warningSoft: string;
+      expiredSoft: string;
     };
   };
   font: {
@@ -115,6 +120,9 @@ export const crumbTokens: ThemeTokens = {
       fresh: LIGHT_INK_MUTED, // neutral; mirrors inkMuted (4.98:1)
       warning: '#875811', // ochre; AA on oat (5.47:1)
       expired: '#9E3B33', // brick; AA on oat (6.01:1)
+      freshSoft: '#DDE7D6', // soft green (matches accentSoft)
+      warningSoft: '#F0E4CB', // soft ochre (matches warnSoft)
+      expiredSoft: '#F1DCD6', // soft brick; expiry.expired text stays AA on it
     },
   },
   font: FONT,
@@ -153,6 +161,9 @@ export const crumbDarkTokens: ThemeTokens = {
       fresh: DARK_INK_MUTED, // neutral
       warning: '#E6B34D', // amber (9.5:1 on dark)
       expired: '#FF8A7A', // coral (8.0:1 on dark)
+      freshSoft: '#25372A', // soft dark green (matches accentSoft)
+      warningSoft: '#2A2114', // soft dark ochre (matches warnSoft)
+      expiredSoft: '#34201C', // soft dark brick
     },
   },
   font: FONT,

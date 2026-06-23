@@ -1,46 +1,31 @@
 /**
- * PantryScreen — reactive, sectioned view over PowerSync's local SQLite.
+ * PantryScreen — reactive, STATUS-grouped view over PowerSync's local SQLite.
  *
- * Replaces the flat list with a collapsible SectionList: a pinned "Use soon"
- * section (items expiring soon or already expired) on top, then one section per
- * storage location (Fridge / Freezer / Pantry, and any custom locations). Each
- * item appears once — "Use soon" is exclusive, so urgent items aren't repeated
- * in their location section. Within every section, soonest-to-expire is first
- * (the SQL ORDER BY already sorts that way; grouping preserves it).
+ * Declutter redesign: items group into three color-coded status CARDS —
+ * Expired (red), Use soon (amber), Fresh (green, collapsible) — instead of by
+ * storage location. Location demotes to a per-row sub-label, and each row wears
+ * a category icon (CategoryIcon; neutral fallback). The header folds the streak
+ * chip, a search toggle, and the sync dot onto one line; a single "Add items"
+ * button opens an add sheet (Scan / Add manually / Quick add) so the three
+ * entry points stay one tap away without three permanent buttons.
  *
- * The "Use soon" section reads as a distinct soft-warning CARD: a tinted sticky
- * header carrying a primary "Cook these →" CTA (into the recipe surface) plus a
- * "Triage all" link to ExpiringSoonScreen, and its rows wear a status-colored
- * left bar so the urgent block is unmissable the second the app opens.
+ * Row interactions are unchanged from the previous list:
+ *   - swipe left → ✓ Used / Remove
+ *   - long-press → multi-select → bulk bar
+ *   - tap the fill bar → step it down; "+ List" when running low
+ * "Used" records a rescue event on top of the tombstone.
  *
- * Sections collapse on header tap (in-memory state). Two row-level resolution
- * paths share one write helper:
- *   - swipe a row left (gesture-handler Swipeable) → ✓ Used / Remove
- *   - long-press → multi-select → bulk bar (✓ Used / Remove / Cancel)
- * "Used" records a rescue event (expiryEvents) on top of the tombstone; swipe
- * is disabled while selecting so the gestures don't fight.
- *
- * Phase 2: this screen is the home TAB (see navigation/MainTabs) and fully
- * self-heads — a quiet "Pantry" title plus a label-free sync dot in the top
- * corner (green synced / ochre syncing / muted offline; the accessibility
- * label still spells it out). Add item is the screen's primary action; recipe
- * browsing lives on the Cook tab, and the Use Soon card's "Cook these →"
- * switches to it with the expiry context.
- *
- * Expiry is "silenced" when it isn't actionable: the colorblind-safe <ExpiryPill>
- * shows for warning/expired items always, and as a calm preview for items within
- * SOON_PREVIEW_DAYS — everything further out (incl. shelf-stable staples) stays
- * clean. All styling pulls from theme/tokens (ADR-006).
+ * All styling pulls from theme/tokens (ADR-006).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Alert,
   Animated,
   LayoutAnimation,
+  Modal,
   Pressable,
   RefreshControl,
-  SectionList,
-  type SectionListData,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -53,7 +38,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useQuery, useStatus } from '@powersync/react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, Plus, ScanLine, Search, SquarePen, X, Zap } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
@@ -62,10 +47,12 @@ import type { PantryItemRow } from '../../data/powersync/schema';
 import {
   getExpiryStatus,
   groupIdenticalItems,
+  type ExpiryStatus,
   type PantryItem,
   type PantryItemGroup,
 } from '@breadbox/core';
-import { formatExpiryMeta, daysUntilExpiry } from './expiryFormat';
+import { formatExpiryMeta } from './expiryFormat';
+import { CategoryIcon } from './CategoryIcon';
 import { ExpiryPill } from '../../components/ExpiryPill';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
@@ -73,17 +60,11 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useInsights } from '../insights/useInsights';
 import { PantrySearchEmptyArt } from '../../components/illustrations/PantrySearchEmptyArt';
-import { StreakChip } from '../insights/StreakChip';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import { PantryListSkeleton } from './PantryListSkeleton';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
-/**
- * Composite navigation: this screen lives inside the tab navigator (so it can
- * switch tabs — CookTab) but also pushes root-stack detail screens (AddItem,
- * EditItem, QuickAdd, ExpiringSoon) OVER the tab bar.
- */
 type PantryNav = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, 'PantryTab'>,
   NativeStackNavigationProp<RootStackParamList>
@@ -93,20 +74,25 @@ const PANTRY_QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
   'ORDER BY (expires_at IS NULL), expires_at ASC, name ASC';
 
-// Order locations sensibly; unknown/custom locations sort after, alphabetically.
-const LOCATION_ORDER = ['fridge', 'freezer', 'pantry'];
-
-// Items further out than this (and not already warning/expired) show no expiry
-// pill — a 361-day staple shouldn't shout a countdown. ~2 weeks gives a calm
-// heads-up window before the warning ramp (DEFAULT_EXPIRY_WARNING_DAYS) kicks in.
-const SOON_PREVIEW_DAYS = 14;
-
-interface PantrySection {
-  title: string;
-  urgent: boolean;
-  count: number; // full ITEM count, even when collapsed (rows may be fewer after merge)
-  data: PantryItemGroup[]; // display groups (safe-merged); empty when collapsed
-}
+// Visual treatment per expiry status — the three color-coded cards. Soft tint
+// for the card fill, the matching expiry color for the title + status dot.
+const STATUS_CARD: Record<ExpiryStatus, { title: string; tint: string; accent: string }> = {
+  expired: {
+    title: 'Expired',
+    tint: tokens.semantic.expiry.expiredSoft,
+    accent: tokens.semantic.expiry.expired,
+  },
+  warning: {
+    title: 'Use soon',
+    tint: tokens.semantic.expiry.warningSoft,
+    accent: tokens.semantic.expiry.warning,
+  },
+  fresh: {
+    title: 'Fresh',
+    tint: tokens.semantic.expiry.freshSoft,
+    accent: tokens.color.success,
+  },
+};
 
 /** Wrap items as one-group-each — used in search mode, where we don't merge so
  *  every match is individually visible and editable. */
@@ -120,10 +106,6 @@ function singletonGroups(items: PantryItem[]): PantryItemGroup[] {
   }));
 }
 
-function titleCase(s: string): string {
-  return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
-}
-
 /** Human description of a fill level for accessibility. */
 function fillLabel(level: number): string {
   if (level >= 1) return 'full';
@@ -134,10 +116,8 @@ function fillLabel(level: number): string {
 
 /**
  * Live sync indicator: PowerSync status → one calm, label-free dot in the
- * header corner (the offline-first engine should hum in the background, not
- * occupy real estate). Motion IS the status language: a gentle opacity pulse
- * while data is in flight, dead still when settled or offline. State stays
- * fully exposed to assistive tech via the accessibility label.
+ * header (a gentle opacity pulse while data is in flight, still otherwise).
+ * State stays exposed to assistive tech via the accessibility label.
  */
 function SyncDot() {
   const status = useStatus();
@@ -183,10 +163,8 @@ export function PantryScreen() {
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
 
   const [items, setItems] = useState<PantryItem[]>([]);
-  // Animate list reshapes when the item COUNT changes (resolve/remove/add —
-  // local or synced in from another device), so rows ease out instead of
-  // blinking away. First emission is exempt (no entrance animation on load);
-  // searching/collapsing don't pass through here, so they stay instant.
+  // Animate list reshapes when the item COUNT changes (resolve/remove/add), so
+  // rows ease out instead of blinking away. First emission is exempt.
   const lastCount = useRef<number | null>(null);
   useEffect(() => {
     if (error) {
@@ -209,30 +187,23 @@ export function PantryScreen() {
     setTimeout(() => setRefreshing(false), 400);
   }
 
-  // Collapsed section titles (in-memory; resets if you leave the screen).
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  function toggleSection(title: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(title)) next.delete(title);
-      else next.add(title);
-      return next;
-    });
-  }
+  // Fresh is the only collapsible card (usually the longest).
+  const [freshCollapsed, setFreshCollapsed] = useState(false);
 
-  // Search (name or brand, case-insensitive). Searching ignores collapsed
-  // state — a match hidden inside a collapsed section would read as missing.
+  // Search is on-demand: a header icon reveals the field (no permanent band).
+  const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const trimmedQuery = query.trim().toLowerCase();
   const isSearching = trimmedQuery.length > 0;
+
+  // Add menu (Scan / Add manually / Quick add) behind one "Add items" button.
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
 
   // Multi-select (long-press to enter; empty set = normal mode).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const selecting = selected.size > 0;
 
-  // A merged row represents N underlying records; selection is all-or-nothing
-  // across the group so bulk actions (and the swipe path) stay consistent.
   function toggleSelectGroup(ids: string[]) {
     if (ids.length === 0) return;
     Haptics.selectionAsync().catch(() => {});
@@ -248,9 +219,9 @@ export function PantryScreen() {
   }
 
   /**
-   * Shared resolution path for swipe actions (single id) and the bulk bar
-   * (all selected ids): tombstone in one writeTransaction; "used" also logs
-   * rescue events for the savings/streak data.
+   * Shared resolution path for swipe actions (single id) and the bulk bar (all
+   * selected ids): tombstone in one writeTransaction; "used" also logs rescue
+   * events for the savings/streak data.
    */
   async function resolveItems(ids: string[], kind: 'used' | 'remove') {
     if (busy || ids.length === 0) return;
@@ -261,11 +232,7 @@ export function PantryScreen() {
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
         for (const t of targets) {
-          // Tombstone — identical to Edit Item's delete path.
-          await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-            now,
-            t.id,
-          ]);
+          await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [now, t.id]);
         }
       });
       if (kind === 'used') {
@@ -290,8 +257,7 @@ export function PantryScreen() {
 
   /**
    * Tap-to-cycle on a row's fill bar: steps DOWN one level (Full → ¾ → ½ → ¼)
-   * then wraps back to Full — matching consumption, with recovery one more tap
-   * away. Writes ride the same PATCH path as every other edit.
+   * then wraps back to Full. Writes ride the same PATCH path as every edit.
    */
   async function cycleFill(item: PantryItem) {
     if (busy) return;
@@ -299,10 +265,11 @@ export function PantryScreen() {
     const next = current > 0.75 ? 0.75 : current > 0.5 ? 0.5 : current > 0.25 ? 0.25 : 1;
     Haptics.selectionAsync().catch(() => {});
     try {
-      await getPowerSync().execute(
-        'UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?',
-        [next, Date.now(), item.id],
-      );
+      await getPowerSync().execute('UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?', [
+        next,
+        Date.now(),
+        item.id,
+      ]);
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     }
@@ -320,7 +287,6 @@ export function PantryScreen() {
         source: 'low',
         unit: item.unit ?? null,
       });
-      // 'already' also means it's on the list — same feedback either way.
       setListed((prev) => new Set(prev).add(item.id));
     } catch (e: unknown) {
       Alert.alert('Could not add to list', e instanceof Error ? e.message : 'Try again.');
@@ -343,46 +309,19 @@ export function PantryScreen() {
     [items, isSearching, trimmedQuery],
   );
 
-  // Build sections: "Use soon" (urgent, exclusive) + one per location. Items
-  // arrive already soonest-first, so each bucket preserves that order.
-  const sections = useMemo<PantrySection[]>(() => {
-    const urgent: PantryItem[] = [];
-    const byLocation = new Map<string, PantryItem[]>();
-    for (const item of visibleItems) {
-      if (getExpiryStatus(item, now) !== 'fresh') {
-        urgent.push(item);
-        continue;
-      }
-      const loc = item.location || 'pantry';
-      const bucket = byLocation.get(loc) ?? [];
-      bucket.push(item);
-      byLocation.set(loc, bucket);
-    }
-
-    // Merge identical rows for display — but not while searching, where every
-    // match should be individually visible/editable.
-    const toGroups = (bucket: PantryItem[]) =>
-      isSearching ? singletonGroups(bucket) : groupIdenticalItems(bucket);
-
-    const out: PantrySection[] = [];
-    if (urgent.length > 0) {
-      out.push({ title: 'Use soon', urgent: true, count: urgent.length, data: collapsed.has('Use soon') && !isSearching ? [] : toGroups(urgent) });
-    }
-
-    const locations = [...byLocation.keys()].sort((a, b) => {
-      const ia = LOCATION_ORDER.indexOf(a);
-      const ib = LOCATION_ORDER.indexOf(b);
-      const ra = ia === -1 ? LOCATION_ORDER.length : ia;
-      const rb = ib === -1 ? LOCATION_ORDER.length : ib;
-      return ra !== rb ? ra - rb : a.localeCompare(b);
-    });
-    for (const loc of locations) {
-      const bucket = byLocation.get(loc) ?? [];
-      const title = titleCase(loc);
-      out.push({ title, urgent: false, count: bucket.length, data: collapsed.has(title) && !isSearching ? [] : toGroups(bucket) });
-    }
-    return out;
-  }, [visibleItems, now, collapsed, isSearching]);
+  // Bucket by expiry status, then merge identical rows for display (except in
+  // search, where every match should be individually visible). Items arrive
+  // soonest-first, so each bucket preserves that order.
+  const grouped = useMemo(() => {
+    const buckets: Record<ExpiryStatus, PantryItem[]> = { expired: [], warning: [], fresh: [] };
+    for (const item of visibleItems) buckets[getExpiryStatus(item, now)].push(item);
+    const toGroups = (b: PantryItem[]) => (isSearching ? singletonGroups(b) : groupIdenticalItems(b));
+    return {
+      expired: { groups: toGroups(buckets.expired), count: buckets.expired.length },
+      warning: { groups: toGroups(buckets.warning), count: buckets.warning.length },
+      fresh: { groups: toGroups(buckets.fresh), count: buckets.fresh.length },
+    };
+  }, [visibleItems, now, isSearching]);
 
   if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
@@ -391,6 +330,35 @@ export function PantryScreen() {
       </SafeAreaView>
     );
   }
+
+  const renderRows = (groups: PantryItemGroup[]) =>
+    groups.map((group, index) => {
+      const ids = group.items.map((i) => i.id);
+      const groupSelected = group.items.every((i) => selected.has(i.id));
+      return (
+        <PantryGroupRow
+          key={group.representative.id}
+          group={group}
+          now={now}
+          selected={groupSelected}
+          last={index === groups.length - 1}
+          swipeEnabled={!selecting && !busy}
+          onPress={() =>
+            selecting
+              ? toggleSelectGroup(ids)
+              : navigation.navigate('EditItem', { itemId: group.representative.id })
+          }
+          onLongPress={() => toggleSelectGroup(ids)}
+          onResolve={(kind) => resolveItems(ids, kind)}
+          onCycleFill={(target) => cycleFill(target)}
+          onAddToList={(target) => void addLowToList(target)}
+          isListed={group.items.some((i) => listed.has(i.id))}
+        />
+      );
+    });
+
+  const hasAny = items.length > 0;
+  const noMatches = hasAny && visibleItems.length === 0;
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
@@ -401,8 +369,34 @@ export function PantryScreen() {
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </Text>
         </View>
-        <SyncDot />
+        <View style={styles.headerActions}>
+          {insights.streakDays >= 1 && (
+            <Pressable
+              onPress={() => navigation.navigate('Insights')}
+              style={styles.streakChip}
+              accessibilityRole="button"
+              accessibilityLabel={`${insights.streakDays} day streak — tap for details`}
+            >
+              <Text style={styles.streakFlame}>🔥</Text>
+              <Text style={styles.streakTxt}>{insights.streakDays}</Text>
+            </Pressable>
+          )}
+          {hasAny && (
+            <Pressable
+              onPress={() => setSearchOpen((o) => !o)}
+              hitSlop={8}
+              style={styles.iconBtn}
+              accessibilityRole="button"
+              accessibilityLabel={searchOpen ? 'Close search' : 'Search your pantry'}
+            >
+              <Search size={18} color={searchOpen ? tokens.color.accent : tokens.color.inkMuted} />
+            </Pressable>
+          )}
+          <SyncDot />
+        </View>
       </View>
+
+      {/* Exactly one control band: bulk bar (selecting) / search field / Add. */}
       {selecting ? (
         <View style={styles.selectBar}>
           <Text style={styles.selectCount}>{selected.size} selected</Text>
@@ -416,36 +410,7 @@ export function PantryScreen() {
             <Text style={styles.selectCancel}>Cancel</Text>
           </Pressable>
         </View>
-      ) : (
-        <View style={styles.actionRow}>
-          <Pressable
-            onPress={() => navigation.navigate('Scan')}
-            style={[styles.actionBtn, styles.actionPrimary]}
-            accessibilityRole="button"
-            accessibilityLabel="Scan a barcode"
-          >
-            <Text style={[styles.actionText, styles.actionTextPrimary]}>⌜ Scan ⌟</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => navigation.navigate('AddItem')}
-            style={[styles.actionBtn, styles.actionGhost]}
-            accessibilityRole="button"
-            accessibilityLabel="Add an item to your pantry"
-          >
-            <Text style={[styles.actionText, styles.actionTextGhost]}>＋ Add</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => navigation.navigate('QuickAdd')}
-            style={[styles.actionBtn, styles.actionGhost]}
-            accessibilityRole="button"
-            accessibilityLabel="Quick add staples"
-          >
-            <Text style={[styles.actionText, styles.actionTextGhost]}>Quick add</Text>
-          </Pressable>
-        </View>
-      )}
-      <StreakChip days={insights.streakDays} onPress={() => navigation.navigate('Insights')} />
-      {items.length > 0 && (
+      ) : searchOpen ? (
         <View style={styles.searchWrap}>
           <Search size={15} color={tokens.color.inkMuted} />
           <TextInput
@@ -454,107 +419,151 @@ export function PantryScreen() {
             placeholderTextColor={tokens.color.inkMuted}
             value={query}
             onChangeText={setQuery}
+            autoFocus
             autoCorrect={false}
             returnKeyType="search"
             accessibilityLabel="Search your pantry"
           />
-          {isSearching && (
-            <Pressable onPress={() => setQuery('')} hitSlop={8} accessibilityRole="button" accessibilityLabel="Clear search">
-              <X size={15} color={tokens.color.inkMuted} />
-            </Pressable>
-          )}
+          <Pressable
+            onPress={() => {
+              setQuery('');
+              setSearchOpen(false);
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Close search"
+          >
+            <X size={15} color={tokens.color.inkMuted} />
+          </Pressable>
         </View>
+      ) : (
+        <Pressable
+          onPress={() => setAddMenuOpen(true)}
+          style={styles.addBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Add items to your pantry"
+        >
+          <Plus size={18} color={tokens.color.onAccent} />
+          <Text style={styles.addBtnTxt}>Add items</Text>
+        </Pressable>
       )}
-      <SectionList<PantryItemGroup, PantrySection>
-        sections={sections}
-        keyExtractor={(group) => group.representative.id}
-        renderItem={({ item: group }) => {
-          const ids = group.items.map((i) => i.id);
-          const groupSelected = group.items.every((i) => selected.has(i.id));
-          return (
-            <PantryGroupRow
-              group={group}
-              now={now}
-              selected={groupSelected}
-              swipeEnabled={!selecting && !busy}
-              onPress={() =>
-                selecting
-                  ? toggleSelectGroup(ids)
-                  : navigation.navigate('EditItem', { itemId: group.representative.id })
-              }
-              onLongPress={() => toggleSelectGroup(ids)}
-              onResolve={(kind) => resolveItems(ids, kind)}
-              onCycleFill={(target) => cycleFill(target)}
-              onAddToList={(target) => void addLowToList(target)}
-              isListed={group.items.some((i) => listed.has(i.id))}
+
+      {!hasAny ? (
+        <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
+      ) : noMatches ? (
+        <View style={styles.emptyWrap}>
+          <PantrySearchEmptyArt />
+          <Text style={styles.emptyTitle}>No matches</Text>
+          <Text style={styles.emptySub}>No match for “{query.trim()}” — try a shorter name or check the other tabs.</Text>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
+        >
+          {grouped.expired.count > 0 && (
+            <StatusCard status="expired" count={grouped.expired.count}>
+              {renderRows(grouped.expired.groups)}
+            </StatusCard>
+          )}
+          {grouped.warning.count > 0 && (
+            <StatusCard
+              status="warning"
+              count={grouped.warning.count}
+              onCook={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                navigation.navigate('CookTab');
+              }}
+            >
+              {renderRows(grouped.warning.groups)}
+            </StatusCard>
+          )}
+          {grouped.fresh.count > 0 && (
+            <StatusCard
+              status="fresh"
+              count={grouped.fresh.count}
+              collapsed={freshCollapsed}
+              onToggle={() => {
+                LayoutAnimation.configureNext(
+                  LayoutAnimation.create(180, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity),
+                );
+                setFreshCollapsed((c) => !c);
+              }}
+            >
+              {!freshCollapsed && renderRows(grouped.fresh.groups)}
+            </StatusCard>
+          )}
+        </ScrollView>
+      )}
+
+      <Modal visible={addMenuOpen} transparent animationType="fade" onRequestClose={() => setAddMenuOpen(false)}>
+        <Pressable style={styles.sheetBackdrop} onPress={() => setAddMenuOpen(false)}>
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            <Text style={styles.sheetTitle}>Add to pantry</Text>
+            <AddRow
+              icon={<ScanLine size={20} color={tokens.color.accent} />}
+              label="Scan a barcode"
+              onPress={() => {
+                setAddMenuOpen(false);
+                navigation.navigate('Scan');
+              }}
             />
-          );
-        }}
-        renderSectionHeader={({ section }) => (
-          <SectionHeader
-            section={section}
-            collapsed={collapsed.has(section.title)}
-            onToggle={() => toggleSection(section.title)}
-            onCook={
-              section.urgent
-                ? () => {
-                    // Light impact — this is the differentiator moment (expiry → cook).
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                    navigation.navigate('CookTab');
-                  }
-                : undefined
-            }
-            onViewAll={section.urgent ? () => navigation.navigate('ExpiringSoon') : undefined}
-          />
-        )}
-        stickySectionHeadersEnabled
-        contentContainerStyle={items.length === 0 || visibleItems.length === 0 ? styles.listEmpty : styles.list}
-        ListEmptyComponent={
-          items.length === 0 ? (
-            <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
-          ) : visibleItems.length === 0 ? (
-            <View style={styles.emptyWrap}>
-              <PantrySearchEmptyArt />
-              <Text style={styles.emptyTitle}>No matches</Text>
-              <Text style={styles.emptySub}>No match for “{query.trim()}” — try a shorter name or check the other tabs.</Text>
-            </View>
-          ) : undefined
-        }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
-      />
+            <AddRow
+              icon={<SquarePen size={20} color={tokens.color.accent} />}
+              label="Add manually"
+              onPress={() => {
+                setAddMenuOpen(false);
+                navigation.navigate('AddItem');
+              }}
+            />
+            <AddRow
+              icon={<Zap size={20} color={tokens.color.accent} />}
+              label="Quick add staples"
+              onPress={() => {
+                setAddMenuOpen(false);
+                navigation.navigate('QuickAdd');
+              }}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-function SectionHeader({
-  section,
+function StatusCard({
+  status,
+  count,
   collapsed,
   onToggle,
   onCook,
-  onViewAll,
+  children,
 }: {
-  section: SectionListData<PantryItemGroup, PantrySection>;
-  collapsed: boolean;
-  onToggle: () => void;
+  status: ExpiryStatus;
+  count: number;
+  collapsed?: boolean;
+  onToggle?: () => void;
   onCook?: () => void;
-  onViewAll?: () => void;
+  children: ReactNode;
 }) {
-  const urgent = section.urgent;
+  const meta = STATUS_CARD[status];
+  const collapsible = onToggle !== undefined;
   return (
-    <View style={[styles.sectionHeaderWrap, urgent && styles.sectionHeaderUrgent]}>
-      <Pressable style={styles.sectionHeaderTop} onPress={onToggle}>
-        <Text style={[styles.sectionTitle, urgent && styles.sectionTitleUrgent]}>{section.title}</Text>
-        <View style={styles.sectionRight}>
-          <Text style={[styles.sectionCount, urgent && styles.sectionCountUrgent]}>{section.count}</Text>
-          {collapsed ? (
-            <ChevronRight size={15} color={tokens.color.inkMuted} accessibilityLabel="Expand section" />
-          ) : (
-            <ChevronDown size={15} color={tokens.color.inkMuted} accessibilityLabel="Collapse section" />
-          )}
+    <View style={[styles.card, { backgroundColor: meta.tint }]}>
+      <Pressable
+        style={styles.cardHeader}
+        onPress={onToggle}
+        disabled={!collapsible}
+        accessibilityRole={collapsible ? 'button' : undefined}
+        accessibilityLabel={collapsible ? `${meta.title}, ${count} items, ${collapsed ? 'collapsed' : 'expanded'}` : undefined}
+      >
+        <View style={styles.cardHeaderLeft}>
+          <View style={[styles.statusDot, { backgroundColor: meta.accent }]} />
+          <Text style={[styles.cardTitle, { color: meta.accent }]}>{meta.title}</Text>
+          <Text style={styles.cardCount}>{count}</Text>
         </View>
-      </Pressable>
-      {urgent && !collapsed && (
-        <View style={styles.useSoonCta}>
+        <View style={styles.cardHeaderRight}>
           {onCook && (
             <Pressable
               style={styles.cookBtn}
@@ -562,35 +571,48 @@ function SectionHeader({
               accessibilityRole="button"
               accessibilityLabel="Find recipes for items expiring soon"
             >
-              <Text style={styles.cookBtnText}>Cook these →</Text>
+              <Text style={styles.cookBtnTxt}>Cook these</Text>
             </Pressable>
           )}
-          {onViewAll && (
-            <Pressable onPress={onViewAll} hitSlop={8} accessibilityRole="button" accessibilityLabel="Triage all expiring items">
-              <Text style={styles.triageLink}>See all</Text>
-            </Pressable>
-          )}
+          {collapsible &&
+            (collapsed ? (
+              <ChevronRight size={16} color={meta.accent} accessibilityLabel="Expand" />
+            ) : (
+              <ChevronDown size={16} color={meta.accent} accessibilityLabel="Collapse" />
+            ))}
         </View>
-      )}
+      </Pressable>
+      {children}
     </View>
+  );
+}
+
+function AddRow({ icon, label, onPress }: { icon: ReactNode; label: string; onPress: () => void }) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.sheetRow, pressed && styles.sheetRowPressed]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <View style={styles.sheetIcon}>{icon}</View>
+      <Text style={styles.sheetRowTxt}>{label}</Text>
+    </Pressable>
   );
 }
 
 /**
  * One row = one display group (safe-merged identical items). Status/expiry come
- * from the representative (all members share the same date by construction).
- * Swipe + multi-select act on the WHOLE group: resolving "used"/"remove" hits
- * every underlying record, and selection toggles all member ids together.
- *
- * v1 limitation: tap-to-edit opens the representative record. Members are
- * identical in every displayed field, so this is well-defined for all of them
- * except per-record quantity; editing the date/name/unit of the representative
- * naturally splits it back out of the group.
+ * from the representative. Swipe + multi-select act on the WHOLE group. A
+ * category icon sits on the left; the status itself is conveyed by the card the
+ * row lives in (no per-row left bar). The expiry pill shows only for
+ * warning/expired rows (Fresh stays calm).
  */
 function PantryGroupRow({
   group,
   now,
   selected,
+  last,
   swipeEnabled,
   onPress,
   onLongPress,
@@ -602,6 +624,7 @@ function PantryGroupRow({
   group: PantryItemGroup;
   now: Date;
   selected: boolean;
+  last: boolean;
   swipeEnabled: boolean;
   onPress: () => void;
   onLongPress: () => void;
@@ -612,32 +635,15 @@ function PantryGroupRow({
 }) {
   const rep = group.representative;
   const status = getExpiryStatus(rep, now);
+  const accent = STATUS_CARD[status].accent;
   const expiryText = formatExpiryMeta(rep, now);
-  const days = daysUntilExpiry(rep, now);
-  // Silence far-out timelines: pill shows for warning/expired always, plus a
-  // calm preview while within SOON_PREVIEW_DAYS. Everything else (incl. undated
-  // staples) renders no pill. The `expiryText !== undefined` guard at the JSX
-  // site narrows the label to string for strict TS.
-  const withinSoonWindow =
-    status !== 'fresh' || (days !== undefined && days <= SOON_PREVIEW_DAYS);
-  // Urgent rows get a status-colored left bar so the "Use soon" block reads as
-  // one contiguous card (fresh rows have no bar).
-  const barColor =
-    status === 'expired'
-      ? tokens.semantic.expiry.expired
-      : status === 'warning'
-        ? tokens.semantic.expiry.warning
-        : undefined;
   // Summed quantity; trim float noise from fractional sums (e.g. 0.1 + 0.2).
   const qty = Number.isInteger(group.totalQuantity)
     ? group.totalQuantity
     : Math.round(group.totalQuantity * 100) / 100;
-  // Count pips: a glanceable dot-per-item for countable stock (eggs, cans) —
-  // whole counts of 2–12 with a count unit (ct) or none. Deliberately neutral
-  // and denominator-free: without knowing the starting count, "low" can't be
-  // inferred honestly (1 jar ≠ last egg) — the running-low signal arrives
-  // with fill_level. Pips are hidden from screen readers (the "N ct" text
-  // already carries the value).
+  // Count pips: a glanceable dot-per-item for countable stock — whole counts of
+  // 2–12 with a count unit (ct) or none. Hidden from screen readers (the "N ct"
+  // text already carries the value).
   const showPips =
     (rep.unit == null || rep.unit === 'ct') && Number.isInteger(qty) && qty >= 2 && qty <= 12;
   return (
@@ -671,11 +677,14 @@ function PantryGroupRow({
         accessibilityState={{ selected }}
         style={({ pressed }) => [
           styles.row,
-          barColor ? { borderLeftWidth: 3, borderLeftColor: barColor } : null,
+          last && styles.rowLast,
           pressed && styles.rowPressed,
           selected && styles.rowSelected,
         ]}
       >
+        <View style={styles.iconCircle}>
+          <CategoryIcon category={rep.category} size={18} color={accent} />
+        </View>
         <View style={styles.rowMain}>
           <View style={styles.nameRow}>
             <Text style={styles.name} numberOfLines={1}>
@@ -689,11 +698,7 @@ function PantryGroupRow({
             )}
           </View>
           {showPips && (
-            <View
-              style={styles.pipsRow}
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-            >
+            <View style={styles.pipsRow} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
               {Array.from({ length: qty }).map((_, i) => (
                 <View key={i} style={styles.pip} />
               ))}
@@ -707,8 +712,6 @@ function PantryGroupRow({
               {rep.brand ? ` · ${rep.brand}` : ''}
             </Text>
             {rep.fillLevel !== undefined && group.count === 1 && (
-              // Mini fill bar — single continuous items only (a merged stack's
-              // "fullness" is its count; pips' job). Tap steps the level down.
               <Pressable
                 onPress={() => onCycleFill(rep)}
                 hitSlop={8}
@@ -727,16 +730,13 @@ function PantryGroupRow({
               </Pressable>
             )}
             {rep.fillLevel !== undefined && rep.fillLevel <= 0.25 && group.count === 1 && (
-              // Running low → one tap onto the shopping list (dedupe-aware).
               <Pressable
                 onPress={() => onAddToList(rep)}
                 hitSlop={6}
                 disabled={isListed}
                 pointerEvents={swipeEnabled ? 'auto' : 'none'}
                 accessibilityRole="button"
-                accessibilityLabel={
-                  isListed ? `${rep.name} is on the shopping list` : `Add ${rep.name} to the shopping list`
-                }
+                accessibilityLabel={isListed ? `${rep.name} is on the shopping list` : `Add ${rep.name} to the shopping list`}
                 style={[styles.listChip, isListed && styles.listChipDone]}
               >
                 <Text style={[styles.listChipTxt, isListed && styles.listChipTxtDone]}>
@@ -746,9 +746,7 @@ function PantryGroupRow({
             )}
           </View>
         </View>
-        {expiryText !== undefined && withinSoonWindow && (
-          <ExpiryPill status={status} label={expiryText} />
-        )}
+        {status !== 'fresh' && expiryText !== undefined && <ExpiryPill status={status} label={expiryText} />}
       </Pressable>
     </Swipeable>
   );
@@ -758,9 +756,7 @@ function PantryEmpty({ onAdd }: { onAdd: () => void }) {
   return (
     <View style={styles.emptyWrap}>
       <Text style={styles.emptyTitle}>Fresh start</Text>
-      <Text style={styles.emptySub}>
-        Scan a barcode, snap a receipt, or add something by hand — we'll handle the rest.
-      </Text>
+      <Text style={styles.emptySub}>Scan a barcode, snap a receipt, or add something by hand — we'll handle the rest.</Text>
       <Pressable style={styles.emptyBtn} onPress={onAdd}>
         <Text style={styles.emptyBtnText}>Let's stock up</Text>
       </Pressable>
@@ -780,23 +776,34 @@ const styles = StyleSheet.create({
   },
   headerMain: { flex: 1 },
   title: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
-  syncWrap: { paddingTop: tokens.space(3), paddingLeft: tokens.space(3) },
-  syncDot: { width: 10, height: 10, borderRadius: 999 },
   count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
-  actionRow: { flexDirection: 'row', gap: tokens.space(3), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: tokens.space(3),
-    paddingHorizontal: tokens.space(4),
-    borderRadius: tokens.radius.md,
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingTop: tokens.space(2) },
+  streakChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: tokens.space(2),
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: 999,
+  },
+  streakFlame: { fontSize: 12 },
+  streakTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent, fontVariant: ['tabular-nums'] },
+  iconBtn: { padding: 2 },
+  syncWrap: { alignItems: 'center', justifyContent: 'center' },
+  syncDot: { width: 10, height: 10, borderRadius: 999 },
+  addBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: tokens.space(2),
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.accent,
   },
-  actionPrimary: { backgroundColor: tokens.color.accent },
-  actionGhost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: tokens.color.line },
-  actionText: { fontFamily: tokens.font.body.semibold, fontSize: 14 },
-  actionTextPrimary: { color: tokens.color.onAccent },
-  actionTextGhost: { color: tokens.color.accent },
+  addBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -808,13 +815,7 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.surfaceAlt,
     borderRadius: tokens.radius.md,
   },
-  searchInput: {
-    flex: 1,
-    paddingVertical: tokens.space(1),
-    fontFamily: tokens.font.body.regular,
-    fontSize: 14,
-    color: tokens.color.ink,
-  },
+  searchInput: { flex: 1, paddingVertical: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.ink },
   selectBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -830,93 +831,67 @@ const styles = StyleSheet.create({
   selectUsed: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.success },
   selectRemove: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.semantic.expiry.expired },
   selectCancel: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.inkMuted },
-  list: { paddingBottom: tokens.space(8) },
-  listEmpty: { flexGrow: 1 },
-  sectionHeaderWrap: {
-    backgroundColor: tokens.color.surface, // opaque so sticky headers don't show rows through
+  scroll: { paddingBottom: tokens.space(10) },
+  card: {
+    marginHorizontal: tokens.space(6),
+    marginBottom: tokens.space(4),
+    borderRadius: tokens.radius.md,
+    overflow: 'hidden',
   },
-  sectionHeaderUrgent: { backgroundColor: tokens.color.warnSoft },
-  sectionHeaderTop: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
+    paddingTop: tokens.space(3),
     paddingBottom: tokens.space(2),
   },
-  sectionTitle: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 12,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    color: tokens.color.inkMuted,
-  },
-  sectionTitleUrgent: { color: tokens.semantic.expiry.warning },
-  sectionRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
-  sectionCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
-  sectionCountUrgent: { color: tokens.semantic.expiry.warning },
-  useSoonCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: tokens.space(4),
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(1),
-    paddingBottom: tokens.space(3),
-  },
+  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
+  cardHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
+  statusDot: { width: 8, height: 8, borderRadius: 999 },
+  cardTitle: { fontFamily: tokens.font.body.semibold, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' },
+  cardCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
   cookBtn: {
     backgroundColor: tokens.color.accent,
-    paddingVertical: tokens.space(2),
-    paddingHorizontal: tokens.space(4),
+    paddingVertical: tokens.space(1),
+    paddingHorizontal: tokens.space(3),
     borderRadius: tokens.radius.sm,
   },
-  cookBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
-  triageLink: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  cookBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.onAccent },
+  iconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: tokens.color.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: tokens.space(3),
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: tokens.space(6),
+    paddingHorizontal: tokens.space(4),
     paddingVertical: tokens.space(3),
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: tokens.color.line,
-    backgroundColor: tokens.color.surface, // opaque so swipe actions hide when closed
+    backgroundColor: 'transparent',
   },
+  rowLast: { borderBottomWidth: 0 },
   rowPressed: { backgroundColor: tokens.color.surfaceAlt },
   rowSelected: { backgroundColor: tokens.color.accentSoft },
   rowMain: { flex: 1, marginRight: tokens.space(3) },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
   name: { flexShrink: 1, fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
-  countChip: {
-    backgroundColor: tokens.color.accentSoft,
-    borderRadius: tokens.radius.sm,
-    paddingHorizontal: tokens.space(2),
-    paddingVertical: 1,
-  },
-  countChipText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 11,
-    color: tokens.color.accent,
-    fontVariant: ['tabular-nums'],
-  },
+  countChip: { backgroundColor: tokens.color.accentSoft, borderRadius: tokens.radius.sm, paddingHorizontal: tokens.space(2), paddingVertical: 1 },
+  countChipText: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent, fontVariant: ['tabular-nums'] },
   pipsRow: { flexDirection: 'row', gap: 3, marginTop: 4 },
   pip: { width: 5, height: 5, borderRadius: 999, backgroundColor: tokens.color.inkMuted },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), marginTop: 2 },
   meta: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
-  fillTrack: {
-    width: 44,
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: tokens.color.line,
-    overflow: 'hidden',
-  },
+  fillTrack: { width: 44, height: 6, borderRadius: 999, backgroundColor: tokens.color.line, overflow: 'hidden' },
   fillBar: { height: 6, borderRadius: 999, backgroundColor: tokens.color.accent },
   fillBarLow: { backgroundColor: tokens.semantic.expiry.warning },
-  listChip: {
-    paddingVertical: 2,
-    paddingHorizontal: tokens.space(2),
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: tokens.color.line,
-  },
+  listChip: { paddingVertical: 2, paddingHorizontal: tokens.space(2), borderRadius: 999, borderWidth: 1, borderColor: tokens.color.line },
   listChipDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
   listChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent },
   listChipTxtDone: { color: tokens.color.accent },
@@ -925,6 +900,20 @@ const styles = StyleSheet.create({
   swipeUsed: { backgroundColor: tokens.color.success },
   swipeRemove: { backgroundColor: tokens.semantic.expiry.expired },
   swipeTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
+  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: tokens.color.surface,
+    borderTopLeftRadius: tokens.radius.lg,
+    borderTopRightRadius: tokens.radius.lg,
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(5),
+    paddingBottom: tokens.space(10),
+  },
+  sheetTitle: { fontFamily: tokens.font.display.semibold, fontSize: 18, color: tokens.color.ink, marginBottom: tokens.space(3) },
+  sheetRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(4), paddingVertical: tokens.space(4) },
+  sheetRowPressed: { opacity: 0.6 },
+  sheetIcon: { width: 28, alignItems: 'center' },
+  sheetRowTxt: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,
@@ -941,11 +930,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: tokens.space(5),
   },
-  emptyBtn: {
-    backgroundColor: tokens.color.accent,
-    paddingVertical: tokens.space(3),
-    paddingHorizontal: tokens.space(6),
-    borderRadius: tokens.radius.md,
-  },
+  emptyBtn: { backgroundColor: tokens.color.accent, paddingVertical: tokens.space(3), paddingHorizontal: tokens.space(6), borderRadius: tokens.radius.md },
   emptyBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
 });
