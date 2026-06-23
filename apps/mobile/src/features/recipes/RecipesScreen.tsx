@@ -24,11 +24,12 @@
  * refetch; an ingredient appearing or disappearing (added, fully used up)
  * does — at which point fresh suggestions are exactly what you want.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Dimensions,
   FlatList,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -50,6 +51,7 @@ import {
   PackageCheck,
   Plus,
   RefreshCw,
+  SlidersHorizontal,
   Sparkles,
   Users,
   X,
@@ -193,6 +195,7 @@ export function RecipesScreen() {
   const [healthy, setHealthy] = useState(false);
   const [easy, setEasy] = useState(false);
   const [readyNow, setReadyNow] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [excluded, setExcluded] = useState<string[]>([]); // lowercased names
   const [offset, setOffset] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
@@ -280,6 +283,7 @@ export function RecipesScreen() {
     setOffset(0);
   }
 
+  const activeFilters = (healthy ? 1 : 0) + (easy ? 1 : 0) + (readyNow ? 1 : 0);
   const canReset = excluded.length > 0 || offset > 0;
 
   return (
@@ -297,7 +301,7 @@ export function RecipesScreen() {
             <Heart size={22} color={tokens.color.accent} />
           </Pressable>
         </View>
-        <Text style={styles.eyebrow}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
+        <Text style={styles.subtitle}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
         <View style={styles.chips}>
           {MEALS.map((m) => {
             const selected = m.value === meal;
@@ -327,39 +331,16 @@ export function RecipesScreen() {
             </View>
           </Pressable>
           <Pressable
-            style={[styles.ctrlBtn, healthy && styles.ctrlBtnOn]}
-            onPress={() => setHealthy((v) => !v)}
+            style={[styles.ctrlBtn, activeFilters > 0 && styles.ctrlBtnOn]}
+            onPress={() => setFiltersOpen(true)}
             accessibilityRole="button"
-            accessibilityState={{ selected: healthy }}
-            accessibilityLabel="Healthier picks"
+            accessibilityLabel={activeFilters > 0 ? `Filters, ${activeFilters} active` : 'Filters'}
           >
             <View style={styles.ctrlInner}>
-              <Leaf size={13} color={healthy ? tokens.color.onAccent : tokens.color.accent} />
-              <Text style={[styles.ctrlBtnTxt, healthy && styles.ctrlBtnTxtOn]}>Healthy</Text>
-            </View>
-          </Pressable>
-          <Pressable
-            style={[styles.ctrlBtn, easy && styles.ctrlBtnOn]}
-            onPress={() => setEasy((v) => !v)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: easy }}
-            accessibilityLabel="Beginner-friendly recipes"
-          >
-            <View style={styles.ctrlInner}>
-              <Sparkles size={13} color={easy ? tokens.color.onAccent : tokens.color.accent} />
-              <Text style={[styles.ctrlBtnTxt, easy && styles.ctrlBtnTxtOn]}>Easy</Text>
-            </View>
-          </Pressable>
-          <Pressable
-            style={[styles.ctrlBtn, readyNow && styles.ctrlBtnOn]}
-            onPress={() => setReadyNow((v) => !v)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: readyNow }}
-            accessibilityLabel="Recipes you can make with no shopping"
-          >
-            <View style={styles.ctrlInner}>
-              <PackageCheck size={13} color={readyNow ? tokens.color.onAccent : tokens.color.accent} />
-              <Text style={[styles.ctrlBtnTxt, readyNow && styles.ctrlBtnTxtOn]}>Ready now</Text>
+              <SlidersHorizontal size={13} color={activeFilters > 0 ? tokens.color.onAccent : tokens.color.accent} />
+              <Text style={[styles.ctrlBtnTxt, activeFilters > 0 && styles.ctrlBtnTxtOn]}>
+                {activeFilters > 0 ? `Filters · ${activeFilters}` : 'Filters'}
+              </Text>
             </View>
           </Pressable>
           {canReset && (
@@ -371,7 +352,7 @@ export function RecipesScreen() {
 
         {showIngredients && items.length > 0 && (
           <View style={styles.ingWrap}>
-            <Text style={styles.ingHint}>Tap an ingredient to leave it out of suggestions.</Text>
+            <Text style={styles.ingHint}>Tap to leave one out.</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.ingRow}>
               {items.map((i) => {
                 const out = excluded.includes(i.name.toLowerCase());
@@ -437,7 +418,83 @@ export function RecipesScreen() {
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
         />
       )}
+
+      <Modal visible={filtersOpen} transparent animationType="fade" onRequestClose={() => setFiltersOpen(false)}>
+        <Pressable style={styles.sheetBackdrop} onPress={() => setFiltersOpen(false)}>
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            <Text style={styles.sheetTitle}>Filters</Text>
+            <FilterRow
+              icon={<Leaf size={20} color={tokens.color.accent} />}
+              label="Healthy"
+              hint="Higher health score"
+              on={healthy}
+              onToggle={() => setHealthy((v) => !v)}
+            />
+            <FilterRow
+              icon={<Sparkles size={20} color={tokens.color.accent} />}
+              label="Easy"
+              hint="Quick, few steps"
+              on={easy}
+              onToggle={() => setEasy((v) => !v)}
+            />
+            <FilterRow
+              icon={<PackageCheck size={20} color={tokens.color.accent} />}
+              label="Ready now"
+              hint="No shopping needed"
+              on={readyNow}
+              onToggle={() => setReadyNow((v) => !v)}
+            />
+            {activeFilters > 0 && (
+              <Pressable
+                style={styles.sheetClear}
+                onPress={() => {
+                  setHealthy(false);
+                  setEasy(false);
+                  setReadyNow(false);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Clear filters"
+              >
+                <Text style={styles.sheetClearTxt}>Clear filters</Text>
+              </Pressable>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
+  );
+}
+
+function FilterRow({
+  icon,
+  label,
+  hint,
+  on,
+  onToggle,
+}: {
+  icon: ReactNode;
+  label: string;
+  hint: string;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.filterRow, pressed && styles.filterRowPressed]}
+      onPress={onToggle}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on }}
+      accessibilityLabel={label}
+    >
+      <View style={styles.filterIcon}>{icon}</View>
+      <View style={styles.filterText}>
+        <Text style={styles.filterLabel}>{label}</Text>
+        <Text style={styles.filterHint}>{hint}</Text>
+      </View>
+      <View style={[styles.checkCircle, on && styles.checkCircleOn]}>
+        {on && <Check size={14} color={tokens.color.onAccent} />}
+      </View>
+    </Pressable>
   );
 }
 
@@ -603,7 +660,7 @@ function CookThis({
           <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
         </View>
       )}
-      <Text style={styles.swipeHint}>Swipe to browse — like what looks good, skip what doesn't. We learn your taste.</Text>
+      <Text style={styles.swipeHint}>Swipe to browse — we learn your taste.</Text>
 
       {first && (
         <Pressable
@@ -861,12 +918,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     marginBottom: tokens.space(1),
   },
-  eyebrow: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 11,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: tokens.color.accent,
+  subtitle: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
     marginBottom: tokens.space(3),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
@@ -1047,4 +1102,32 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
   },
   resetBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.onAccent },
+  sheetBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: tokens.color.surface,
+    borderTopLeftRadius: tokens.radius.lg,
+    borderTopRightRadius: tokens.radius.lg,
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(5),
+    paddingBottom: tokens.space(10),
+  },
+  sheetTitle: { fontFamily: tokens.font.display.semibold, fontSize: 18, color: tokens.color.ink, marginBottom: tokens.space(2) },
+  filterRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingVertical: tokens.space(3) },
+  filterRowPressed: { opacity: 0.6 },
+  filterIcon: { width: 32, alignItems: 'center' },
+  filterText: { flex: 1 },
+  filterLabel: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
+  filterHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginTop: 1 },
+  checkCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: tokens.color.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkCircleOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
+  sheetClear: { marginTop: tokens.space(3), paddingVertical: tokens.space(2), alignItems: 'center' },
+  sheetClearTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.inkMuted },
 });
