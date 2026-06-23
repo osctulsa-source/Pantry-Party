@@ -10,6 +10,7 @@
     "android": "expo run:android"
   },
   "dependencies": {
+    "@bacons/apple-targets": "^2.0.0",
     "@breadbox/core": "*",
     "@expo-google-fonts/bitter": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",

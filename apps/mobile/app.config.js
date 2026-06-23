@@ -14,6 +14,10 @@
  * (it lives in the store URL forever), so per the framework decision nothing
  * is uploaded to Play until the brand (Larder/Crumb) clears. Display name
  * changes freely at any time; ids do not.
+ *
+ * Widget (lock-screen): the @bacons/apple-targets plugin links targets/widget/
+ * at prebuild. The App Group below is FIXED (no .dev suffix) so the app, the
+ * widget extension entitlement, and the Swift literal all share one suite.
  */
 const VARIANT = process.env.APP_VARIANT ?? 'development';
 const IS_PROD = VARIANT === 'production';
@@ -32,6 +36,11 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
+      // Shared with the widget extension so the app can write the "expiring"
+      // snapshot the widget reads. Fixed id across variants (see header).
+      entitlements: {
+        'com.apple.security.application-groups': ['group.com.osctulsa.pantryparty'],
+      },
     },
     android: {
       package: `com.osctulsa.pantryparty${ID_SUFFIX}`,
@@ -67,6 +76,7 @@ module.exports = {
         },
       ],
       '@sentry/react-native',
+      '@bacons/apple-targets',
     ],
     experiments: {
       typedRoutes: false,
