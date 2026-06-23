@@ -58,14 +58,12 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
-  applyPrefEvent,
+  buildTasteProfile,
   defaultMealForHour,
   getExpiryStatus,
   matchCookedItems,
   mealtimeLabel,
   scoreTitle,
-  type ActivityEvent,
-  type FavoriteRecipe,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -82,7 +80,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useFavorites } from './useFavorites';
-import { useActivity, topCooked } from '../activity/useActivity';
+import { useActivity } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
@@ -140,24 +138,6 @@ function isEasy(r: SpoonacularRecipe): boolean {
 /** No shopping needed — you already have everything. */
 function isReadyNow(r: SpoonacularRecipe): boolean {
   return r.missedIngredientCount === 0;
-}
-
-/**
- * Build a "taste profile" from the household's SAVED + COOKED recipes (both
- * synced, so it survives a reinstall even though the on-device prefs map
- * doesn't). Reuses the same token-weight engine as recipePrefs: each favorite
- * and each cook nudges its title tokens up, so scoreTitle() against this map
- * measures how much a candidate looks like what you actually keep and make.
- */
-function buildTasteProfile(favorites: FavoriteRecipe[], events: ActivityEvent[]): RecipePrefs {
-  let profile: RecipePrefs = {};
-  for (const f of favorites) profile = applyPrefEvent(profile, f.title, 'like');
-  for (const c of topCooked(events, 12)) {
-    // Weight frequently-cooked recipes harder (capped so one dish can't dominate).
-    const reps = Math.min(c.count, 3);
-    for (let i = 0; i < reps; i++) profile = applyPrefEvent(profile, c.title, 'like');
-  }
-  return profile;
 }
 
 /** A compact recipe row (thumb + title + meta), shared by the "Because you
