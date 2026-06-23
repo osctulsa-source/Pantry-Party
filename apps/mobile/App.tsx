@@ -38,6 +38,7 @@ import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
+import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
 import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
 export type RootStackParamList = {
@@ -76,6 +77,11 @@ const linking: LinkingOptions<RootStackParamList> = {
 };
 
 function AppStack() {
+  // Keep the lock-screen / home widget's "expiring soon" snapshot in sync with
+  // the live pantry while the user is in the authenticated tree (iOS-only,
+  // best-effort — see useExpiringWidget).
+  useExpiringWidget();
+
   return (
     <Stack.Navigator
       initialRouteName="MainTabs"
