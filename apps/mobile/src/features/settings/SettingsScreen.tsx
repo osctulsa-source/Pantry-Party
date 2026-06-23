@@ -17,7 +17,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { tokens } from '../../theme/tokens';
-import { Body, Button, Caption, Heading, Input, ListRow, Screen } from '../../components/ui';
+import { Body, Button, Caption, Input, ListRow, Screen } from '../../components/ui';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useDisplayName } from '../household/useDisplayName';
@@ -55,10 +56,9 @@ export function SettingsScreen() {
 
   return (
     <Screen>
+      <ScreenHeader title="Settings" />
       <View style={styles.content}>
         <View style={styles.topGroup}>
-          <Heading size="xl">Settings</Heading>
-
           <View style={styles.section}>
             <Caption>Your name</Caption>
             <Input
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
+    paddingTop: tokens.space(2),
     paddingBottom: tokens.space(6),
   },
   topGroup: {

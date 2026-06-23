@@ -54,6 +54,7 @@ import {
 import { formatExpiryMeta } from './expiryFormat';
 import { CategoryIcon } from './CategoryIcon';
 import { ExpiryPill } from '../../components/ExpiryPill';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -362,39 +363,37 @@ export function PantryScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-      <View style={styles.header}>
-        <View style={styles.headerMain}>
-          <Text style={styles.title}>Pantry</Text>
-          <Text style={styles.count}>
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-          </Text>
-        </View>
-        <View style={styles.headerActions}>
-          {insights.streakDays >= 1 && (
-            <Pressable
-              onPress={() => navigation.navigate('Insights')}
-              style={styles.streakChip}
-              accessibilityRole="button"
-              accessibilityLabel={`${insights.streakDays} day streak — tap for details`}
-            >
-              <Text style={styles.streakFlame}>🔥</Text>
-              <Text style={styles.streakTxt}>{insights.streakDays}</Text>
-            </Pressable>
-          )}
-          {hasAny && (
-            <Pressable
-              onPress={() => setSearchOpen((o) => !o)}
-              hitSlop={8}
-              style={styles.iconBtn}
-              accessibilityRole="button"
-              accessibilityLabel={searchOpen ? 'Close search' : 'Search your pantry'}
-            >
-              <Search size={18} color={searchOpen ? tokens.color.accent : tokens.color.inkMuted} />
-            </Pressable>
-          )}
-          <SyncDot />
-        </View>
-      </View>
+      <ScreenHeader
+        title="Pantry"
+        subtitle={`${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+        right={
+          <>
+            {insights.streakDays >= 1 && (
+              <Pressable
+                onPress={() => navigation.navigate('Insights')}
+                style={styles.streakChip}
+                accessibilityRole="button"
+                accessibilityLabel={`${insights.streakDays} day streak — tap for details`}
+              >
+                <Text style={styles.streakFlame}>🔥</Text>
+                <Text style={styles.streakTxt}>{insights.streakDays}</Text>
+              </Pressable>
+            )}
+            {hasAny && (
+              <Pressable
+                onPress={() => setSearchOpen((o) => !o)}
+                hitSlop={8}
+                style={styles.iconBtn}
+                accessibilityRole="button"
+                accessibilityLabel={searchOpen ? 'Close search' : 'Search your pantry'}
+              >
+                <Search size={18} color={searchOpen ? tokens.color.accent : tokens.color.inkMuted} />
+              </Pressable>
+            )}
+            <SyncDot />
+          </>
+        }
+      />
 
       {/* Exactly one control band: bulk bar (selecting) / search field / Add. */}
       {selecting ? (
@@ -766,18 +765,6 @@ function PantryEmpty({ onAdd }: { onAdd: () => void }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
-    paddingBottom: tokens.space(3),
-  },
-  headerMain: { flex: 1 },
-  title: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
-  count: { marginTop: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingTop: tokens.space(2) },
   streakChip: {
     flexDirection: 'row',
     alignItems: 'center',

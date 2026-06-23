@@ -72,6 +72,7 @@ import {
   type RecipePrefs,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
 import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
@@ -288,20 +289,21 @@ export function RecipesScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-      <View style={styles.headerPad}>
-        <View style={styles.titleRow}>
-          <Text style={styles.screenTitle}>Cook</Text>
+      <ScreenHeader
+        title="Cook"
+        subtitle={`Cook this · ${mealtimeLabel(hour)}`}
+        right={
           <Pressable
             onPress={() => navigation.navigate('Favorites')}
             hitSlop={10}
             accessibilityRole="button"
             accessibilityLabel="Your saved recipes"
-            style={styles.favBtn}
           >
             <Heart size={22} color={tokens.color.accent} />
           </Pressable>
-        </View>
-        <Text style={styles.subtitle}>{`Cook this · ${mealtimeLabel(hour)}`}</Text>
+        }
+      />
+      <View style={styles.headerPad}>
         <View style={styles.chips}>
           {MEALS.map((m) => {
             const selected = m.value === meal;
@@ -908,22 +910,7 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
-  headerPad: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(3) },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  favBtn: { padding: tokens.space(1), marginBottom: tokens.space(1) },
-  screenTitle: {
-    fontFamily: tokens.font.display.bold,
-    fontSize: 28,
-    color: tokens.color.ink,
-    letterSpacing: -0.5,
-    marginBottom: tokens.space(1),
-  },
-  subtitle: {
-    fontFamily: tokens.font.body.regular,
-    fontSize: 13,
-    color: tokens.color.inkMuted,
-    marginBottom: tokens.space(3),
-  },
+  headerPad: { paddingHorizontal: tokens.space(6), paddingTop: 0, paddingBottom: tokens.space(3) },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
   chip: { paddingVertical: tokens.space(2), paddingHorizontal: tokens.space(3), borderRadius: 999, backgroundColor: tokens.color.surfaceAlt },
   chipSelected: { backgroundColor: tokens.color.accent },
