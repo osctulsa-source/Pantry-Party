@@ -300,9 +300,10 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           {hasSteps ? (
             stepList.map((item, idx) => {
               const done = doneSteps.has(item.key);
-              const nextHasGroup =
-                idx < stepList.length - 1 && stepList[idx + 1].groupName !== null;
-              const showLine = idx < stepList.length - 1 && !nextHasGroup;
+              // Indexed access is `T | undefined` under noUncheckedIndexedAccess —
+              // guard before reading the next step's group.
+              const next = stepList[idx + 1];
+              const showLine = next !== undefined && next.groupName === null;
               const hasMeta =
                 item.minutes !== null || item.ingredients.length > 0 || item.equipment.length > 0;
               return (
