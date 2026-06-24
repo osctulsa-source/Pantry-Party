@@ -21,7 +21,7 @@ import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Users } from 'lucide-react-native';
+import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { matchCookedItems } from '@breadbox/core';
@@ -95,6 +95,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const [cookMode, setCookMode] = useState(false);
   const [cookedCount, setCookedCount] = useState<number | null>(null);
   const [missingAdded, setMissingAdded] = useState(false);
+  const [doneSteps, setDoneSteps] = useState<Set<string>>(new Set());
 
   const usedLc = useMemo(
     () => recipe.usedIngredientNames.map((n) => n.toLowerCase()),
@@ -145,6 +146,48 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     // Burst renders at the top of the body — bring it into view.
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   }
+
+  function toggleStep(key: string) {
+    Haptics.selectionAsync().catch(() => {});
+    setDoneSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  // Flatten the grouped instructions into one ordered list with a stable key +
+  // running number, so the timeline draws a continuous rail and the check-off
+  // state survives re-renders. Per-step ingredients/equipment/length ride along
+  // on the payload (empty/null for older cached responses).
+  const stepList = useMemo(() => {
+    const out: Array<{
+      key: string;
+      groupName: string | null;
+      num: number;
+      step: string;
+      ingredients: string[];
+      equipment: string[];
+      minutes: number | null;
+    }> = [];
+    let n = 0;
+    recipe.instructions.forEach((group, gi) => {
+      group.steps.forEach((s, si) => {
+        n += 1;
+        out.push({
+          key: `${gi}-${si}`,
+          groupName: si === 0 && group.name ? group.name : null,
+          num: s.number || n,
+          step: s.step,
+          ingredients: s.ingredients ?? [],
+          equipment: s.equipment ?? [],
+          minutes: s.lengthMinutes ?? null,
+        });
+      });
+    });
+    return out;
+  }, [recipe.instructions]);
 
   const summary = recipe.summary ? shortSummary(recipe.summary) : '';
   const hasSteps = recipe.instructions.some((g) => g.steps.length > 0);
@@ -255,17 +298,62 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 
           <Text style={styles.sectionHead}>Steps</Text>
           {hasSteps ? (
-            recipe.instructions.map((group, gi) => (
-              <View key={`g-${gi}`} style={styles.stepGroup}>
-                {group.name ? <Text style={styles.stepGroupName}>{group.name}</Text> : null}
-                {group.steps.map((s, si) => (
-                  <View key={`s-${gi}-${si}`} style={styles.stepRow}>
-                    <Text style={styles.stepNum}>{s.number || si + 1}</Text>
-                    <Text style={styles.stepTxt}>{s.step}</Text>
-                  </View>
-                ))}
-              </View>
-            ))
+            stepList.map((item, idx) => {
+              const done = doneSteps.has(item.key);
+              // Indexed access is `T | undefined` under noUncheckedIndexedAccess —
+              // guard before reading the next step's group.
+              const next = stepList[idx + 1];
+              const showLine = next !== undefined && next.groupName === null;
+              const hasMeta =
+                item.minutes !== null || item.ingredients.length > 0 || item.equipment.length > 0;
+              return (
+                <View key={item.key}>
+                  {item.groupName ? <Text style={styles.stepGroupLabel}>{item.groupName}</Text> : null}
+                  <Pressable
+                    style={styles.stepRow}
+                    onPress={() => toggleStep(item.key)}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: done }}
+                    accessibilityLabel={`Step ${item.num}${done ? ', done' : ''}: ${item.step}`}
+                  >
+                    <View style={styles.stepRail}>
+                      <View style={[styles.stepNode, done && styles.stepNodeDone]}>
+                        {done ? (
+                          <Check size={14} color={tokens.color.onAccent} />
+                        ) : (
+                          <Text style={styles.stepNodeNum}>{item.num}</Text>
+                        )}
+                      </View>
+                      {showLine && <View style={styles.stepLine} />}
+                    </View>
+                    <View style={styles.stepBody}>
+                      <Text style={[styles.stepTxt, done && styles.stepTxtDone]}>{item.step}</Text>
+                      {hasMeta && (
+                        <View style={styles.chipRow}>
+                          {item.minutes !== null && (
+                            <View style={[styles.chip, styles.chipTime]}>
+                              <Clock size={11} color={tokens.color.accent} />
+                              <Text style={styles.chipTimeTxt}>{item.minutes} min</Text>
+                            </View>
+                          )}
+                          {item.ingredients.map((ing, ci) => (
+                            <View key={`i-${ci}-${ing}`} style={styles.chip}>
+                              <Text style={styles.chipTxt}>{ing}</Text>
+                            </View>
+                          ))}
+                          {item.equipment.map((eq, ci) => (
+                            <View key={`e-${ci}-${eq}`} style={[styles.chip, styles.chipEquip]}>
+                              <Utensils size={10} color={tokens.color.inkMuted} />
+                              <Text style={styles.chipTxt}>{eq}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                </View>
+              );
+            })
           ) : (
             <Text style={styles.muted}>
               Step-by-step instructions aren&apos;t available for this one — tap below to view the original.
@@ -493,16 +581,47 @@ const styles = StyleSheet.create({
   },
   secondaryBtnDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
   secondaryBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
-  stepGroup: { marginBottom: tokens.space(3) },
-  stepGroupName: {
+  stepGroupLabel: {
     fontFamily: tokens.font.body.semibold,
-    fontSize: 14,
-    color: tokens.color.ink,
-    marginBottom: tokens.space(2),
+    fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: tokens.color.accent,
+    marginTop: tokens.space(2),
+    marginBottom: tokens.space(3),
   },
-  stepRow: { flexDirection: 'row', gap: tokens.space(3), marginBottom: tokens.space(3) },
-  stepNum: { fontFamily: tokens.font.display.bold, fontSize: 15, color: tokens.color.accent, width: 22 },
+  stepRow: { flexDirection: 'row', gap: tokens.space(3) },
+  stepRail: { width: 28, alignItems: 'center' },
+  stepNode: {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: tokens.color.accent,
+    backgroundColor: tokens.color.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNodeDone: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
+  stepNodeNum: { fontFamily: tokens.font.display.bold, fontSize: 13, color: tokens.color.accent },
+  stepLine: { flex: 1, width: 2, backgroundColor: tokens.color.line, marginVertical: 2 },
+  stepBody: { flex: 1, paddingBottom: tokens.space(5) },
   stepTxt: { flex: 1, fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.ink, lineHeight: 22 },
+  stepTxtDone: { color: tokens.color.inkMuted, textDecorationLine: 'line-through' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(1), marginTop: tokens.space(2) },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 2,
+    paddingHorizontal: tokens.space(2),
+    borderRadius: 999,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  chipTxt: { fontFamily: tokens.font.body.medium, fontSize: 11, color: tokens.color.inkMuted },
+  chipTime: { backgroundColor: tokens.color.accentSoft },
+  chipTimeTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent },
+  chipEquip: { backgroundColor: 'transparent', borderWidth: 1, borderColor: tokens.color.line },
   cookBtn: {
     marginTop: tokens.space(6),
     paddingVertical: tokens.space(4),
