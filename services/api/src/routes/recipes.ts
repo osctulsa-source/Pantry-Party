@@ -12,6 +12,13 @@
 //    first NestJS change; instead we pass through fields Spoonacular already
 //    returns (addRecipeInformation was already on for healthScore), so the
 //    trigger stays untripped and the detail screen costs zero extra quota.
+//
+//    ADR-008 NOTE 3 (steps-backfill): some sources (e.g. foodista) come back
+//    with NO analyzedInstructions but DO carry a free-text `instructions`
+//    string — which we'd been discarding. We now parse that as a fallback,
+//    still inside this same endpoint and the same upstream response, so no new
+//    endpoint and zero extra quota (honoring NOTE 2). Genuinely step-less
+//    recipes still yield [] and the client keeps its "view original" state.
 
 import { Router } from 'express';
 import { z } from 'zod';
@@ -123,6 +130,12 @@ interface UpstreamResult {
   sourceUrl?: string;
   sourceName?: string;
   summary?: string;
+  /**
+   * Free-text method (often HTML). Spoonacular returns this alongside
+   * analyzedInstructions; many aggregator recipes have ONLY this. Used as the
+   * step fallback when analyzedInstructions is empty (see resolveInstructions).
+   */
+  instructions?: string;
   extendedIngredients?: Array<{ name?: string; original?: string; amount?: number; unit?: string }>;
   analyzedInstructions?: Array<{
     name?: string;
@@ -190,6 +203,92 @@ function trimInstructions(list: UpstreamResult['analyzedInstructions']): RecipeI
         .filter((s) => s.step.length > 0),
     }))
     .filter((g) => g.steps.length > 0);
+}
+
+/**
+ * Decode the handful of HTML entities Spoonacular emits in free-text
+ * instructions and strip tags, turning block-level closes into line breaks.
+ * Deliberately small — a best-effort cleaner, not a full HTML parser.
+ */
+function decodeAndStrip(raw: string): string {
+  return raw
+    .replace(/<\/(p|div|li|ol|ul|h[1-6])>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;|&rsquo;|&lsquo;/gi, "'")
+    .replace(/&deg;/gi, '°')
+    .replace(/&#(\d+);/g, (_m, d: string) => {
+      const n = Number(d);
+      return Number.isFinite(n) ? String.fromCodePoint(n) : '';
+    });
+}
+
+/** Strip a leading step marker like "1.", "2)", "Step 3:", "1 -". */
+function stripLeadingNumber(s: string): string {
+  return s.replace(/^\s*(?:step\s*)?\d{1,3}\s*[.)\-:–]\s*/i, '').trim();
+}
+
+/**
+ * Best-effort fallback when a recipe has no analyzedInstructions but DOES carry
+ * a free-text `instructions` string (common for aggregator sources). Produces a
+ * single unnamed group of bare numbered steps — NO per-step ingredients /
+ * equipment / time, since those only exist in the structured payload, so the
+ * detail screen renders a clean numbered list with no chips. Returns [] when
+ * there's nothing usable, so the client keeps its "view original" empty state.
+ *
+ * Strategy (most-reliable shapes first): explicit <li> items → newline-split
+ * text → a single blob split on numbered markers (≥2) → sentence boundaries.
+ */
+export function parsePlainInstructions(raw: string | undefined): RecipeInstructionGroup[] {
+  if (!raw || !raw.trim()) return [];
+
+  let parts: string[];
+  if (/<li[\s>]/i.test(raw)) {
+    parts = Array.from(raw.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)).map((m) =>
+      decodeAndStrip(m[1] ?? ''),
+    );
+  } else {
+    const text = decodeAndStrip(raw).replace(/[ \t]+/g, ' ');
+    const byLine = text
+      .split(/\n+/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (byLine.length > 1) {
+      parts = byLine;
+    } else {
+      const blob = byLine[0] ?? '';
+      const markerCount = (blob.match(/(?:^|\s)(?:step\s*)?\d{1,3}\s*[.)\-:–]\s/gi) ?? []).length;
+      if (markerCount >= 2) {
+        parts = blob.split(/(?:^|\s)(?:step\s+)?\d{1,3}\s*[.)\-:–]\s+/i);
+      } else {
+        parts = blob.split(/(?<=[.!?])\s+(?=[A-Z0-9])/);
+      }
+    }
+  }
+
+  const steps: RecipeStep[] = parts
+    .map((p) => stripLeadingNumber(p))
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter((p) => p.length > 0)
+    .map((step, i) => ({ number: i + 1, step, ingredients: [], equipment: [], lengthMinutes: null }));
+
+  return steps.length === 0 ? [] : [{ name: '', steps }];
+}
+
+/**
+ * Structured steps when Spoonacular analyzed them; otherwise a best-effort
+ * parse of the free-text `instructions` string. Both come from the SAME
+ * upstream response, so this adds zero quota and no new endpoint (ADR-008
+ * NOTE 2/3).
+ */
+function resolveInstructions(r: UpstreamResult): RecipeInstructionGroup[] {
+  const analyzed = trimInstructions(r.analyzedInstructions);
+  return analyzed.length > 0 ? analyzed : parsePlainInstructions(r.instructions);
 }
 
 export interface RecipesRouterOptions {
@@ -291,7 +390,7 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
         sourceName: r.sourceName ?? '',
         summary: r.summary ?? '',
         ingredients: trimIngredients(r.extendedIngredients),
-        instructions: trimInstructions(r.analyzedInstructions),
+        instructions: resolveInstructions(r),
       }));
       cache.set(cacheKey, results);
       res.json({ ok: true, cached: false, results });

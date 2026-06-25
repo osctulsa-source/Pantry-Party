@@ -23,7 +23,7 @@ vi.mock('jose', () => {
   };
 });
 
-const { buildRecipesRouter } = await import('../routes/recipes.js');
+const { buildRecipesRouter, parsePlainInstructions } = await import('../routes/recipes.js');
 const { FixedWindowRateLimiter } = await import('../lib/rateLimit.js');
 const { TtlCache } = await import('../lib/ttlCache.js');
 const { default: express } = await import('express');
@@ -186,6 +186,54 @@ describe('POST /recipes/search', () => {
     expect(calledUrl).toContain('addRecipeInformation=true');
   });
 
+  it('falls back to free-text instructions when analyzedInstructions is absent (the foodista case)', async () => {
+    const fetchImpl = upstreamOk([
+      {
+        id: 42,
+        title: 'Foodista Soup',
+        image: 'https://img.example/soup.jpg',
+        // No analyzedInstructions at all — only the free-text method.
+        instructions: '<ol><li>Chop the onion.</li><li>Simmer for 20 minutes.</li></ol>',
+      },
+    ]);
+    const res = await request(buildApp({ fetchImpl }))
+      .post('/recipes/search')
+      .set('Authorization', `Bearer test:${USER}`)
+      .send(BODY);
+
+    expect(res.status).toBe(200);
+    expect(res.body.results[0].instructions).toEqual([
+      {
+        name: '',
+        steps: [
+          { number: 1, step: 'Chop the onion.', ingredients: [], equipment: [], lengthMinutes: null },
+          { number: 2, step: 'Simmer for 20 minutes.', ingredients: [], equipment: [], lengthMinutes: null },
+        ],
+      },
+    ]);
+  });
+
+  it('prefers analyzedInstructions over the free-text fallback when both exist', async () => {
+    const fetchImpl = upstreamOk([
+      { ...UPSTREAM_RESULT, instructions: 'IGNORE ME. This free text should never be used.' },
+    ]);
+    const res = await request(buildApp({ fetchImpl }))
+      .post('/recipes/search')
+      .set('Authorization', `Bearer test:${USER}`)
+      .send(BODY);
+
+    expect(res.status).toBe(200);
+    expect(res.body.results[0].instructions).toEqual([
+      {
+        name: '',
+        steps: [
+          { number: 1, step: 'Mash the bananas.', ingredients: ['banana'], equipment: [], lengthMinutes: null },
+          { number: 2, step: 'Cook on a hot griddle.', ingredients: [], equipment: ['griddle'], lengthMinutes: 5 },
+        ],
+      },
+    ]);
+  });
+
   it('serves identical searches from cache — one upstream call, no quota burn', async () => {
     const fetchImpl = upstreamOk([UPSTREAM_RESULT]);
     const app = buildApp({ fetchImpl });
@@ -254,5 +302,74 @@ describe('POST /recipes/search', () => {
     expect(res.status).toBe(502);
     expect(JSON.stringify(res.body)).not.toContain('internal-detail-xyz');
     expect(res.body.error).toMatch(/upstream failed/);
+  });
+});
+
+// Unit coverage for the free-text fallback parser. Mirrors the shapes
+// Spoonacular returns when analyzedInstructions is empty: <ol>/<li> lists,
+// <p> blocks, numbered prose (newline- or inline-separated), bare sentences,
+// and junk that should yield nothing.
+describe('parsePlainInstructions (free-text fallback)', () => {
+  const step = (number: number, s: string) => ({
+    number,
+    step: s,
+    ingredients: [] as string[],
+    equipment: [] as string[],
+    lengthMinutes: null as number | null,
+  });
+  const group = (...steps: ReturnType<typeof step>[]) => [{ name: '', steps }];
+
+  it('parses an <ol>/<li> list into numbered steps', () => {
+    expect(
+      parsePlainInstructions('<ol><li>Mash the bananas.</li><li>Cook on a griddle.</li></ol>'),
+    ).toEqual(group(step(1, 'Mash the bananas.'), step(2, 'Cook on a griddle.')));
+  });
+
+  it('splits <p> blocks into steps', () => {
+    expect(parsePlainInstructions('<p>Whisk the eggs.</p><p>Fold in the flour.</p>')).toEqual(
+      group(step(1, 'Whisk the eggs.'), step(2, 'Fold in the flour.')),
+    );
+  });
+
+  it('splits newline-separated numbered text and decodes entities', () => {
+    const out = parsePlainInstructions('1. Preheat to 350&deg;.\n2. Mix flour &amp; sugar.\n3. Bake.');
+    expect((out[0]?.steps ?? []).map((s) => s.step)).toEqual([
+      'Preheat to 350°.',
+      'Mix flour & sugar.',
+      'Bake.',
+    ]);
+  });
+
+  it('splits a single blob on inline numbered markers', () => {
+    const out = parsePlainInstructions('1) Do this. 2) Do that. 3) Done.');
+    expect((out[0]?.steps ?? []).map((s) => s.step)).toEqual(['Do this.', 'Do that.', 'Done.']);
+  });
+
+  it('strips a step marker that lives inside the list item', () => {
+    expect(parsePlainInstructions('<ol><li>1. Mash bananas</li><li>2. Cook</li></ol>')).toEqual(
+      group(step(1, 'Mash bananas'), step(2, 'Cook')),
+    );
+  });
+
+  it('falls back to sentence splitting when there are no markers', () => {
+    const out = parsePlainInstructions('Preheat the oven. Mix the ingredients. Bake until golden.');
+    expect((out[0]?.steps ?? []).map((s) => s.step)).toEqual([
+      'Preheat the oven.',
+      'Mix the ingredients.',
+      'Bake until golden.',
+    ]);
+  });
+
+  it('keeps a single short instruction as one step with empty metadata', () => {
+    expect(parsePlainInstructions('Grill the salmon for ten minutes.')).toEqual(
+      group(step(1, 'Grill the salmon for ten minutes.')),
+    );
+  });
+
+  it('returns [] for empty, whitespace, undefined, or tags-only input', () => {
+    expect(parsePlainInstructions('')).toEqual([]);
+    expect(parsePlainInstructions('   \n  ')).toEqual([]);
+    expect(parsePlainInstructions(undefined)).toEqual([]);
+    expect(parsePlainInstructions('<p></p><br>')).toEqual([]);
   });
 });
