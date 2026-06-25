@@ -103,7 +103,7 @@ function AppStack() {
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
       <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'Favorites' }} />
+      <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'Your Kitchen' }} />
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />
       <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: 'Delete account' }} />
       <Stack.Screen name="Household" component={HouseholdScreen} options={{ title: 'Household' }} />

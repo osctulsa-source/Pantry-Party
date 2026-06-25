@@ -1,29 +1,42 @@
 /**
- * FavoritesScreen — the household's saved recipes (Favorites feature).
+ * Your Kitchen — the household's taste home (evolved from Favorites, PR 2).
  *
- * Reached from the heart in the Cook tab header. Lists everything saved via the
- * heart on a recipe card or on Recipe Detail — newest first, household-shared,
- * synced. Tapping a row opens the in-app Recipe Detail from the stored payload
- * (no fetch); the heart on a row un-saves it.
- *
- * "You cook these often" (PR 3): an auto section from the synced activity log —
- * the recipes you've confirmed cooking most. Informational (a frequency
- * signal); the cooked events don't carry a full recipe payload, so these rows
- * aren't openable unless the recipe is also saved below.
+ * Reached from the Cook tab header (route key is still 'Favorites'; the visible
+ * title is "Your Kitchen"). Three stacked parts:
+ *   1. Taste — an editable header of your flavor profile, or a dismissible
+ *      "Set your taste" card that opens the quiz (TasteQuizSheet). Device-local
+ *      per household (useTasteProfile); seeds Cook ranking in a later step.
+ *   2. "You cook these often" — top recipes from the synced activity log.
+ *   3. "Saved · N" — everything saved via the heart, household-shared + synced.
+ *      Tapping a row opens Recipe Detail from the stored payload (no fetch).
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Heart } from 'lucide-react-native';
+import { Heart, Sparkles, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {
+  CUISINE_OPTIONS,
+  DIET_OPTIONS,
+  FLAVOR_OPTIONS,
+  isTasteProfileEmpty,
+} from '@breadbox/core';
 
 import { tokens } from '../../theme/tokens';
 import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
 import { useFavorites, favoriteToRecipe } from './useFavorites';
 import { useActivity, topCooked } from '../activity/useActivity';
+import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { useTasteProfile } from './useTasteProfile';
+import { TasteQuizSheet } from './TasteQuizSheet';
 import type { RootStackParamList } from '../../../App';
+
+// slug -> display label, across every catalog the header might show.
+const TASTE_LABELS = new Map<string, string>();
+for (const o of [...CUISINE_OPTIONS, ...FLAVOR_OPTIONS, ...DIET_OPTIONS]) TASTE_LABELS.set(o.slug, o.label);
+const SPEED_LABEL: Record<string, string> = { quick: 'Quick', project: 'Project cook' };
 
 export function FavoritesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -31,24 +44,80 @@ export function FavoritesScreen() {
   const { events } = useActivity();
   const cooked = useMemo(() => topCooked(events, 5), [events]);
 
-  if (favorites.length === 0 && cooked.length === 0) {
-    return (
-      <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
-        <View style={styles.center}>
-          <CookEmptyArt />
-          <Text style={styles.emptyTitle}>No favorites yet</Text>
-          <Text style={styles.emptyBody}>
-            Tap the heart on any recipe — in Cook or on a recipe page — to save it here for the whole
-            household.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const { activeHouseholdId } = useActiveHousehold();
+  const { profile, save, loaded: tasteLoaded } = useTasteProfile(activeHouseholdId);
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [seedDismissed, setSeedDismissed] = useState(false);
+
+  const hasTaste = !isTasteProfileEmpty(profile);
+  const tasteChips = useMemo(() => {
+    const out: string[] = [];
+    for (const s of profile.cuisines) out.push(TASTE_LABELS.get(s) ?? s);
+    for (const s of profile.flavors) out.push(TASTE_LABELS.get(s) ?? s);
+    if (profile.speed) out.push(SPEED_LABEL[profile.speed] ?? profile.speed);
+    for (const s of profile.diets) out.push(TASTE_LABELS.get(s) ?? s);
+    return out;
+  }, [profile]);
+
+  const noLists = favorites.length === 0 && cooked.length === 0;
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {tasteLoaded && hasTaste && (
+          <View style={styles.tasteCard}>
+            <View style={styles.tasteTop}>
+              <Text style={styles.tasteLabel}>Your taste</Text>
+              <Pressable
+                onPress={() => setQuizOpen(true)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Edit your taste"
+              >
+                <Text style={styles.tasteEdit}>Edit</Text>
+              </Pressable>
+            </View>
+            <View style={styles.tasteChips}>
+              {tasteChips.map((c, i) => (
+                <View key={`${c}-${i}`} style={styles.tasteChip}>
+                  <Text style={styles.tasteChipTxt}>{c}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={styles.tasteFoot}>Shapes what rises to the top in Cook.</Text>
+          </View>
+        )}
+
+        {tasteLoaded && !hasTaste && !seedDismissed && (
+          <View style={styles.seedCard}>
+            <View style={styles.seedIcon}>
+              <Sparkles size={18} color={tokens.color.accent} />
+            </View>
+            <View style={styles.seedBodyWrap}>
+              <Text style={styles.seedTitle}>Set your taste</Text>
+              <Text style={styles.seedBody}>
+                Answer a few quick questions and Cook starts leaning toward what you like.
+              </Text>
+              <Pressable
+                onPress={() => setQuizOpen(true)}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="Take the taste quiz"
+              >
+                <Text style={styles.seedCta}>Take the quiz ›</Text>
+              </Pressable>
+            </View>
+            <Pressable
+              onPress={() => setSeedDismissed(true)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss"
+            >
+              <X size={16} color={tokens.color.inkMuted} />
+            </Pressable>
+          </View>
+        )}
+
         {cooked.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionHead}>You cook these often</Text>
@@ -57,9 +126,7 @@ export function FavoritesScreen() {
                 <Text style={styles.cookedName} numberOfLines={1}>
                   {c.title}
                 </Text>
-                <Text style={styles.cookedCount}>
-                  {c.count}× cooked
-                </Text>
+                <Text style={styles.cookedCount}>{c.count}× cooked</Text>
               </View>
             ))}
           </View>
@@ -110,12 +177,28 @@ export function FavoritesScreen() {
               </Pressable>
             ))}
           </View>
+        ) : noLists ? (
+          <View style={styles.emptyBlock}>
+            <CookEmptyArt />
+            <Text style={styles.emptyTitle}>No saved recipes yet</Text>
+            <Text style={styles.emptyBody}>
+              Tap the heart on any recipe — in Cook or on a recipe page — to save it here for the whole
+              household.
+            </Text>
+          </View>
         ) : (
           <Text style={styles.savedHint}>
             Nothing saved yet — tap the heart on a recipe to keep it here.
           </Text>
         )}
       </ScrollView>
+
+      <TasteQuizSheet
+        visible={quizOpen}
+        initial={profile}
+        onClose={() => setQuizOpen(false)}
+        onSave={save}
+      />
     </SafeAreaView>
   );
 }
@@ -123,6 +206,67 @@ export function FavoritesScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   scroll: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(10) },
+
+  tasteCard: {
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: tokens.radius.lg,
+    paddingVertical: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
+    marginBottom: tokens.space(5),
+  },
+  tasteTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: tokens.space(3),
+  },
+  tasteLabel: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    color: tokens.color.accent,
+  },
+  tasteEdit: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  tasteChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginBottom: tokens.space(2) },
+  tasteChip: {
+    paddingVertical: tokens.space(1),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+    backgroundColor: tokens.color.surface,
+  },
+  tasteChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12.5, color: tokens.color.accent },
+  tasteFoot: { fontFamily: tokens.font.body.regular, fontSize: 11.5, color: tokens.color.inkMuted },
+
+  seedCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: tokens.space(3),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: tokens.radius.lg,
+    padding: tokens.space(4),
+    marginBottom: tokens.space(5),
+  },
+  seedIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: tokens.color.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  seedBodyWrap: { flex: 1 },
+  seedTitle: { fontFamily: tokens.font.display.semibold, fontSize: 16, color: tokens.color.ink },
+  seedBody: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+    lineHeight: 19,
+    marginTop: 2,
+    marginBottom: tokens.space(2),
+  },
+  seedCta: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+
   section: { marginBottom: tokens.space(5) },
   sectionHead: {
     fontFamily: tokens.font.body.semibold,
@@ -163,11 +307,12 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     lineHeight: 19,
   },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
+  emptyBlock: { alignItems: 'center', paddingVertical: tokens.space(8), paddingHorizontal: tokens.space(4) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,
     fontSize: 18,
     color: tokens.color.ink,
+    marginTop: tokens.space(4),
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
