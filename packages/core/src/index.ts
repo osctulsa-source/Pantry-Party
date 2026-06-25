@@ -13,4 +13,5 @@ export * from "./shoppingList.ts";
 export * from "./favorites.ts";
 export * from "./activity.ts";
 export * from "./taste.ts";
+export * from "./tasteProfile.ts";
 export * from "./historyFormat.ts";
