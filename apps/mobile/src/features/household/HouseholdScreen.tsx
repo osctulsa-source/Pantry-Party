@@ -19,14 +19,24 @@
  *
  * Email enrichment for non-current members remains a v1 cut (see PR B note):
  * emails live in Supabase auth.users and aren't streamed via PowerSync.
+ *
+ * Delight polish: member rows now lead with a tinted initials avatar (forest
+ * for you, terracotta for others; a neutral glyph when we have no name/email),
+ * role shows as a badge (accent pill for owner), a solo household shows a warm
+ * "invite someone" nudge instead of a bare count, switching households fires a
+ * selection haptic, and cards/buttons have pressed feedback. Also completes the
+ * Phase 3 on-accent sweep (invite button text: color.surface -> color.onAccent).
  */
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@powersync/react-native';
+import { User } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
+import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from './ActiveHouseholdContext';
 import type { RootStackParamList } from '../../../App';
@@ -51,6 +61,7 @@ interface DisplayMember {
   role: string;
   isCurrentUser: boolean;
   label: string;
+  initial: string | null;
 }
 
 export function HouseholdScreen() {
@@ -112,16 +123,19 @@ export function HouseholdScreen() {
   const members: DisplayMember[] = memberRows.map((row) => {
     const isCurrentUser = row.user_id === currentUserId;
     const name = row.display_name?.trim();
+    const hasIdentity = !!name || (isCurrentUser && !!currentUserEmail);
     const label = name
       ? name
       : isCurrentUser
         ? currentUserEmail ?? 'You'
         : `member ${row.user_id.slice(0, 8)}`;
+    const initial = hasIdentity ? label.trim().charAt(0).toUpperCase() : null;
     return {
       userId: row.user_id,
       role: row.role,
       isCurrentUser,
       label,
+      initial,
     };
   });
 
@@ -135,9 +149,16 @@ export function HouseholdScreen() {
             return (
               <Pressable
                 key={h.id}
-                style={[styles.householdCard, isActive && styles.householdCardActive]}
+                style={({ pressed }) => [
+                  styles.householdCard,
+                  isActive && styles.householdCardActive,
+                  pressed && !isActive && styles.pressed,
+                ]}
                 onPress={() => {
-                  if (!isActive) setActiveHouseholdId(h.id);
+                  if (!isActive) {
+                    Haptics.selectionAsync().catch(() => {});
+                    setActiveHouseholdId(h.id);
+                  }
                 }}
               >
                 <View style={styles.householdCardMain}>
@@ -171,9 +192,21 @@ export function HouseholdScreen() {
               renderItem={({ item }) => <MemberRowView member={item} />}
               ItemSeparatorComponent={() => <View style={styles.separator} />}
               ListFooterComponent={
-                <Text style={styles.memberCount}>
-                  {members.length} {members.length === 1 ? 'member' : 'members'}
-                </Text>
+                members.length === 1 ? (
+                  <View style={styles.soloNudge}>
+                    <BrandMark size={36} />
+                    <View style={styles.soloNudgeTextGroup}>
+                      <Text style={styles.soloNudgeTitle}>It's just you in here</Text>
+                      <Text style={styles.soloNudgeBody}>
+                        Invite someone to share the pantry.
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.memberCount}>
+                    {members.length} {members.length === 1 ? 'member' : 'members'}
+                  </Text>
+                )
               }
             />
           )}
@@ -181,7 +214,7 @@ export function HouseholdScreen() {
 
         <View style={styles.actions}>
           <Pressable
-            style={styles.inviteButton}
+            style={({ pressed }) => [styles.inviteButton, pressed && styles.pressed]}
             onPress={() => {
               if (activeHousehold) {
                 navigation.navigate('InviteCodeModal', { householdId: activeHousehold.id });
@@ -192,7 +225,7 @@ export function HouseholdScreen() {
             <Text style={styles.inviteButtonText}>Invite member</Text>
           </Pressable>
           <Pressable
-            style={styles.joinButton}
+            style={({ pressed }) => [styles.joinButton, pressed && styles.pressed]}
             onPress={() => navigation.navigate('JoinHousehold')}
           >
             <Text style={styles.joinButtonText}>Join another household</Text>
@@ -206,6 +239,7 @@ export function HouseholdScreen() {
 function MemberRowView({ member }: { member: DisplayMember }) {
   return (
     <View style={styles.memberRow}>
+      <MemberAvatar initial={member.initial} isCurrentUser={member.isCurrentUser} />
       <View style={styles.memberLabelGroup}>
         <Text style={styles.memberLabel} numberOfLines={1}>
           {member.label}
@@ -216,7 +250,52 @@ function MemberRowView({ member }: { member: DisplayMember }) {
           </View>
         )}
       </View>
-      <Text style={styles.memberRole}>{member.role}</Text>
+      <RoleBadge role={member.role} />
+    </View>
+  );
+}
+
+function MemberAvatar({
+  initial,
+  isCurrentUser,
+}: {
+  initial: string | null;
+  isCurrentUser: boolean;
+}) {
+  return (
+    <View
+      style={[styles.avatar, isCurrentUser ? styles.avatarSelf : styles.avatarOther]}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    >
+      {initial ? (
+        <Text
+          style={[
+            styles.avatarInitial,
+            isCurrentUser ? styles.avatarInitialSelf : styles.avatarInitialOther,
+          ]}
+        >
+          {initial}
+        </Text>
+      ) : (
+        <User size={18} color={tokens.color.inkMuted} strokeWidth={2} />
+      )}
+    </View>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const isOwner = role.toLowerCase() === 'owner';
+  return (
+    <View style={[styles.roleBadge, isOwner && styles.roleBadgeOwner]}>
+      <Text
+        style={[
+          styles.roleBadgeText,
+          isOwner ? styles.roleBadgeTextOwner : styles.roleBadgeTextMember,
+        ]}
+      >
+        {role}
+      </Text>
     </View>
   );
 }
@@ -302,6 +381,29 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space(3),
     gap: tokens.space(3),
   },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarSelf: {
+    backgroundColor: tokens.color.accentSoft,
+  },
+  avatarOther: {
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  avatarInitial: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+  },
+  avatarInitialSelf: {
+    color: tokens.color.accent,
+  },
+  avatarInitialOther: {
+    color: tokens.color.secondary,
+  },
   memberLabelGroup: {
     flex: 1,
     flexDirection: 'row',
@@ -326,11 +428,25 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     textTransform: 'lowercase',
   },
-  memberRole: {
-    fontFamily: tokens.font.body.medium,
-    fontSize: 13,
-    color: tokens.color.inkMuted,
+  roleBadge: {
+    paddingHorizontal: tokens.space(2),
+    paddingVertical: tokens.space(1) / 2,
+    borderRadius: tokens.radius.sm,
+  },
+  roleBadgeOwner: {
+    backgroundColor: tokens.color.accentSoft,
+  },
+  roleBadgeText: {
+    fontSize: 12,
     textTransform: 'lowercase',
+  },
+  roleBadgeTextOwner: {
+    fontFamily: tokens.font.body.semibold,
+    color: tokens.color.accent,
+  },
+  roleBadgeTextMember: {
+    fontFamily: tokens.font.body.medium,
+    color: tokens.color.inkMuted,
   },
   separator: {
     height: 1,
@@ -341,6 +457,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: tokens.color.inkMuted,
     paddingTop: tokens.space(4),
+  },
+  soloNudge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(3),
+    marginTop: tokens.space(4),
+    padding: tokens.space(4),
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: tokens.radius.md,
+  },
+  soloNudgeTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  soloNudgeTitle: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+    color: tokens.color.ink,
+  },
+  soloNudgeBody: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
   },
   actions: {
     gap: tokens.space(3),
@@ -355,7 +494,7 @@ const styles = StyleSheet.create({
   inviteButtonText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: tokens.color.surface,
+    color: tokens.color.onAccent,
   },
   joinButton: {
     paddingVertical: tokens.space(4),
@@ -367,5 +506,8 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
     color: tokens.color.accent,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });
