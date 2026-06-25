@@ -11,8 +11,14 @@
  *
  * Validation via parsePantryItem is intentional: SQLite stores text/int/real,
  * and we want runtime certainty the shape matches what screens expect.
+ *
+ * Category fallback: rows added before auto-categorization (or whose name
+ * matched nothing at insert) have no stored category. We infer it from the name
+ * at read time (categorizeByName) so the Pantry's CategoryIcon lights up for
+ * every item without a write-backfill — which the upload-proxy's PATCH
+ * allowlist wouldn't accept anyway. A stored category always wins.
  */
-import { parsePantryItem, type PantryItem } from '@breadbox/core';
+import { categorizeByName, parsePantryItem, type PantryItem } from '@breadbox/core';
 
 import type { PantryItemRow } from './schema';
 
@@ -22,7 +28,7 @@ export function rowToPantryItem(row: PantryItemRow): PantryItem {
     householdId: row.household_id,
     name: row.name,
     brand: row.brand ?? undefined,
-    category: row.category ?? undefined,
+    category: row.category ?? categorizeByName(row.name) ?? undefined,
     barcode: row.barcode ?? undefined,
     quantity: row.quantity,
     unit: row.unit ?? undefined,
