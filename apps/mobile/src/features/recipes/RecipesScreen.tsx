@@ -66,6 +66,7 @@ import {
   matchCookedItems,
   mealtimeLabel,
   scoreTitle,
+  seedPrefsFromTaste,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -82,6 +83,7 @@ import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
+import { useTasteProfile } from './useTasteProfile';
 import { useFavorites } from './useFavorites';
 import { useActivity } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
@@ -205,6 +207,7 @@ export function RecipesScreen() {
   // cook can trigger: finishing an item changes the pantry name-set, which
   // remounts CookThis and would otherwise drop the success burst.
   const [cooked, setCooked] = useState<{ count: number; key: number } | null>(null);
+  const [savedToast, setSavedToast] = useState<{ title: string; key: number } | null>(null);
 
   const excludedKey = excluded.join('|');
 
@@ -266,6 +269,13 @@ export function RecipesScreen() {
     return () => clearTimeout(t);
   }, [cooked]);
 
+  // Auto-dismiss the "Saved to Your Kitchen" toast.
+  useEffect(() => {
+    if (!savedToast) return;
+    const t = setTimeout(() => setSavedToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [savedToast]);
+
   function changeMeal(m: MealChoice) {
     userPickedMeal.current = true;
     setMeal(m);
@@ -295,11 +305,13 @@ export function RecipesScreen() {
         right={
           <Pressable
             onPress={() => navigation.navigate('Favorites')}
-            hitSlop={10}
+            hitSlop={8}
+            style={styles.kitchenBtn}
             accessibilityRole="button"
-            accessibilityLabel="Your saved recipes"
+            accessibilityLabel="Your Kitchen — saved recipes and your taste"
           >
-            <Heart size={22} color={tokens.color.accent} />
+            <Heart size={14} color={tokens.color.accent} fill={tokens.color.accent} />
+            <Text style={styles.kitchenBtnTxt}>Your Kitchen</Text>
           </Pressable>
         }
       />
@@ -418,6 +430,7 @@ export function RecipesScreen() {
           easy={easy}
           readyNow={readyNow}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
+          onSaved={(title) => setSavedToast({ title, key: Date.now() })}
         />
       )}
 
@@ -463,6 +476,26 @@ export function RecipesScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {savedToast && (
+        <View style={styles.toast} accessibilityRole="alert">
+          <Heart size={15} color={tokens.color.accent} fill={tokens.color.accent} />
+          <Text style={styles.toastTxt} numberOfLines={1}>
+            Saved to Your Kitchen
+          </Text>
+          <Pressable
+            onPress={() => {
+              setSavedToast(null);
+              navigation.navigate('Favorites');
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="View Your Kitchen"
+          >
+            <Text style={styles.toastView}>View ›</Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -511,6 +544,7 @@ function CookThis({
   easy,
   readyNow,
   onCookComplete,
+  onSaved,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -522,6 +556,7 @@ function CookThis({
   easy: boolean;
   readyNow: boolean;
   onCookComplete: (updatedCount: number) => void;
+  onSaved: (title: string) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, isFavorited, toggleFavorite } = useFavorites();
@@ -530,6 +565,10 @@ function CookThis({
   // ranking AND drives the "Because you saved" row, and survives a reinstall
   // (unlike the on-device prefs map).
   const tasteProfile = useMemo(() => buildTasteProfile(favorites, activity), [favorites, activity]);
+  // The flavor-quiz seed (device-local). Cold-start signal so ranking has
+  // something to lean on before there are saves/cooks to learn from.
+  const { profile: tasteQuiz } = useTasteProfile(householdId);
+  const seedPrefs = useMemo(() => seedPrefsFromTaste(tasteQuiz), [tasteQuiz]);
   // Re-anchored whenever the (reactive) pantry changes — a persistent tab can
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
@@ -576,12 +615,13 @@ function CookThis({
     const blend = (r: SpoonacularRecipe) =>
       scoreTitle(prefs, r.title) * 1.5 +
       scoreTitle(tasteProfile, r.title) * 2 +
+      scoreTitle(seedPrefs, r.title) * 1.5 +
       r.usedIngredientCount +
       (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
       (readyNow && isReadyNow(r) ? 3 : 0) +
       (easy && isEasy(r) ? 3 : 0);
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, tasteProfile, healthy, easy, readyNow]);
+  }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow]);
 
   const top = pool.slice(0, 3);
   // "Because you saved" — re-rank the rest of the pool by taste-profile match
@@ -633,7 +673,10 @@ function CookThis({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const result = await toggleFavorite(r);
     // Saving is also the strongest "I like this" signal for ranking.
-    if (result === 'saved') record(r.title, 'like');
+    if (result === 'saved') {
+      record(r.title, 'like');
+      onSaved(r.title);
+    }
   }
   function onSkip(r: SpoonacularRecipe) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -1117,4 +1160,34 @@ const styles = StyleSheet.create({
   checkCircleOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
   sheetClear: { marginTop: tokens.space(3), paddingVertical: tokens.space(2), alignItems: 'center' },
   sheetClearTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.inkMuted },
+  kitchenBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(1),
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+    backgroundColor: tokens.color.accentSoft,
+  },
+  kitchenBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12.5, color: tokens.color.accent },
+  toast: {
+    position: 'absolute',
+    left: tokens.space(6),
+    right: tokens.space(6),
+    bottom: tokens.space(4),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(2),
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.ink,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  toastTxt: { flex: 1, fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.surface },
+  toastView: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accentSoft },
 });
