@@ -13,10 +13,18 @@
  * chevron opens RefineSheet (kind + brand + quantity) pre-filled. A refined
  * add registers the REFINED name in `added` (the base chip stays available:
  * penne tonight doesn't preclude spaghetti).
+ *
+ * Delight polish: the add itself is the most-repeated tap in the app, so it now
+ * carries the Phase 3 haptic vocabulary — a quiet selection tick per quick-add
+ * (light enough to fire on rapid repeat taps), a success notification on a
+ * refined add, and a selection tick on the Customize toggle. A live "N added"
+ * count springs in the title row as you batch-add, and a stale error clears the
+ * moment the next add succeeds.
  */
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { ChevronDown } from 'lucide-react-native';
 
 import { guideFor, suggestExpiryISO, type StorageLocation } from '@breadbox/core';
@@ -72,8 +80,19 @@ export function QuickAddScreen() {
     return out;
   }, [config.custom, bank]);
 
+  // A live tally of this session's adds, with a small spring "pop" each time it
+  // ticks up — quiet feedback that batch-adding is landing.
+  const addedCount = added.length;
+  const countPop = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (addedCount === 0) return;
+    countPop.setValue(0.6);
+    Animated.spring(countPop, { toValue: 1, friction: 5, tension: 170, useNativeDriver: true }).start();
+  }, [addedCount, countPop]);
+
   async function addOne(spec: AddSpec) {
     if (!userId || !activeHouseholdId || added.includes(spec.name)) return;
+    setError(null);
     try {
       await addPantryItem({
         householdId: activeHouseholdId,
@@ -85,6 +104,8 @@ export function QuickAddScreen() {
         source: 'manual',
       });
       setAdded((prev) => [...prev, spec.name]);
+      // Quiet selection tick — light enough to fire on rapid repeat taps.
+      Haptics.selectionAsync().catch(() => {});
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -95,6 +116,7 @@ export function QuickAddScreen() {
    *  so the base chip stays available for a different kind. */
   async function addRefined(base: AddSpec, result: RefineResult) {
     if (!userId || !activeHouseholdId) return;
+    setError(null);
     try {
       await addPantryItem({
         householdId: activeHouseholdId,
@@ -107,6 +129,8 @@ export function QuickAddScreen() {
         source: 'manual',
       });
       setAdded((prev) => (prev.includes(result.name) ? prev : [...prev, result.name]));
+      // A refined add is deliberate — mark it with a success notification.
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setRefining(null);
     } catch (e: unknown) {
       setRefining(null);
@@ -125,8 +149,21 @@ export function QuickAddScreen() {
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Quick add</Text>
-          <Pressable hitSlop={8} onPress={() => setEditing((v) => !v)}>
+          <View style={styles.titleLeft}>
+            <Text style={styles.title}>Quick add</Text>
+            {!editing && addedCount > 0 && (
+              <Animated.View style={[styles.countBadge, { transform: [{ scale: countPop }] }]}>
+                <Text style={styles.countBadgeTxt}>{addedCount} added</Text>
+              </Animated.View>
+            )}
+          </View>
+          <Pressable
+            hitSlop={8}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              setEditing((v) => !v);
+            }}
+          >
             <Text style={styles.customize}>{editing ? 'Done' : 'Customize'}</Text>
           </Pressable>
         </View>
@@ -276,7 +313,15 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   scroll: { padding: tokens.space(6), paddingBottom: tokens.space(10) },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: tokens.space(2) },
+  titleLeft: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
   title: { fontFamily: tokens.font.display.bold, fontSize: 24, color: tokens.color.ink, letterSpacing: -0.4 },
+  countBadge: {
+    paddingHorizontal: tokens.space(3),
+    paddingVertical: tokens.space(1),
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: 999,
+  },
+  countBadgeTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   customize: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
   hint: {
     fontFamily: tokens.font.body.regular,
