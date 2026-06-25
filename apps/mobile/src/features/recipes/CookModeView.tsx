@@ -10,8 +10,7 @@
  *  - a REAL kitchen timer: tagged duration (or one detected in the text) → a
  *    countdown that survives moving to other steps (a pill brings you back),
  *    is computed from a target time (so backgrounding the app doesn't drift),
- *    fires a local notification when it's up (so you can put the phone down),
- *    and plays a chime (expo-audio) for an in-app audible alert.
+ *    fires a local notification when it's up (so you can put the phone down).
  *  - reassurance: a calm, stage-aware line so a nervous cook feels guided.
  *  - check-off: mark each step done; the last one finishes into the "I made
  *    this" pantry decrement.
@@ -23,7 +22,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
-import { useAudioPlayer } from 'expo-audio';
 import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
@@ -106,10 +104,6 @@ export function CookModeView({
 }) {
   // Keep the screen on while cooking — released automatically on unmount.
   useKeepAwake();
-
-  // Timer-done chime (bundled asset, expo-audio). Played on the foreground
-  // zero-cross alongside the haptic; the backgrounded alert is the notification.
-  const chime = useAudioPlayer(require('../../../assets/timer-chime.wav'));
 
   const steps = useMemo<FlatStep[]>(() => {
     const flat: FlatStep[] = [];
@@ -197,10 +191,6 @@ export function CookModeView({
     if (timer?.status !== 'running') return;
     if (timer.endsAt - nowTs <= 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      // Audible chime alongside the haptic; the backgrounded path is covered by
-      // the scheduled notification's own sound.
-      chime.seekTo(0);
-      chime.play();
       cancelTimerNotif();
       setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: 0, totalSec: timer.totalSec });
     }
