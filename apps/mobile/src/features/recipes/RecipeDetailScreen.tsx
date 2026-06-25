@@ -16,7 +16,7 @@
  * Spoonacular's terms require crediting the source; the "View original" link
  * (sourceUrl + sourceName) is always offered when present.
  */
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -96,6 +96,14 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const [cookedCount, setCookedCount] = useState<number | null>(null);
   const [missingAdded, setMissingAdded] = useState(false);
   const [doneSteps, setDoneSteps] = useState<Set<string>>(new Set());
+  const [savedToast, setSavedToast] = useState<{ key: number } | null>(null);
+
+  // Auto-dismiss the "Saved to Your Kitchen" toast.
+  useEffect(() => {
+    if (!savedToast) return;
+    const t = setTimeout(() => setSavedToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [savedToast]);
 
   const usedLc = useMemo(
     () => recipe.usedIngredientNames.map((n) => n.toLowerCase()),
@@ -135,7 +143,10 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     Haptics.selectionAsync().catch(() => {});
     const result = await toggleFavorite(recipe);
     // Saving is a positive preference signal too (mirrors the Cook tab heart).
-    if (result === 'saved') record(recipe.title, 'like');
+    if (result === 'saved') {
+      record(recipe.title, 'like');
+      setSavedToast({ key: Date.now() });
+    }
   }
 
   function onCookDone(updated: number) {
@@ -441,6 +452,26 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           }}
         />
       )}
+
+      {savedToast && (
+        <View style={[styles.toast, { bottom: insets.bottom + tokens.space(4) }]} accessibilityRole="alert">
+          <Heart size={15} color={tokens.color.accent} fill={tokens.color.accent} />
+          <Text style={styles.toastTxt} numberOfLines={1}>
+            Saved to Your Kitchen
+          </Text>
+          <Pressable
+            onPress={() => {
+              setSavedToast(null);
+              navigation.navigate('Favorites');
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="View Your Kitchen"
+          >
+            <Text style={styles.toastView}>View ›</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -647,4 +678,23 @@ const styles = StyleSheet.create({
     marginTop: tokens.space(4),
   },
   sourceLinkTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.accent },
+  toast: {
+    position: 'absolute',
+    left: tokens.space(6),
+    right: tokens.space(6),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(2),
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(4),
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.ink,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  toastTxt: { flex: 1, fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.surface },
+  toastView: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accentSoft },
 });
