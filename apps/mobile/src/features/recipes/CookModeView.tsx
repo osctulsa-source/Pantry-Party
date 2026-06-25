@@ -10,7 +10,8 @@
  *  - a REAL kitchen timer: tagged duration (or one detected in the text) → a
  *    countdown that survives moving to other steps (a pill brings you back),
  *    is computed from a target time (so backgrounding the app doesn't drift),
- *    and fires a local notification when it's up — so you can put the phone down.
+ *    fires a local notification when it's up (so you can put the phone down),
+ *    and speaks a "time's up" alert aloud via expo-speech — hands-free.
  *  - reassurance: a calm, stage-aware line so a nervous cook feels guided.
  *  - check-off: mark each step done; the last one finishes into the "I made
  *    this" pantry decrement.
@@ -22,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
+import * as Speech from 'expo-speech';
 import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
@@ -191,6 +193,10 @@ export function CookModeView({
     if (timer?.status !== 'running') return;
     if (timer.endsAt - nowTs <= 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      // Hands-free audible alert (no audio dep needed — expo-speech is already
+      // installed). Pairs with the haptic; the backgrounded path is covered by
+      // the scheduled notification's own sound.
+      Speech.speak("Time's up");
       cancelTimerNotif();
       setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: 0, totalSec: timer.totalSec });
     }
