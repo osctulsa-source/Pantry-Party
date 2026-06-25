@@ -16,12 +16,18 @@
  * Reactive via useQuery — resolved rows ease out live (rows animate via
  * LayoutAnimation when the urgent count changes; Phase 3 motion pass). Events
  * feed the November motivation arc (savings math, positive-action streak).
+ *
+ * Delight polish: a header now leads with a live urgency count + expired/
+ * expiring-soon breakdown (ticks down as items resolve); the three actions are
+ * tone-tinted with lucide icons (Used = green check, Tossed = red trash,
+ * +2d = clock); and the all-clear state is branded with the Breadbox mark.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, LayoutAnimation, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@powersync/react-native';
 import * as Haptics from 'expo-haptics';
+import { Check, Clock, Trash2 } from 'lucide-react-native';
 
 import { addDaysUTC, getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -29,6 +35,7 @@ import { getPowerSync } from '../../data/powersync/db';
 import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryPill } from '../../components/ExpiryPill';
+import { BrandMark } from '../../components/BrandMark';
 import { formatExpiryMeta } from './expiryFormat';
 import { recordExpiryEvents, type ExpiryEventKind } from './expiryEvents';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -47,6 +54,19 @@ export function ExpiringSoonScreen() {
     () => rows.map(rowToPantryItem).filter((i) => getExpiryStatus(i, now) !== 'fresh'),
     [rows, now],
   );
+
+  // Split the urgent set for the header summary. Anything not 'expired' is
+  // counted as "expiring soon" (whatever the warning status is named), so the
+  // breakdown stays correct without coupling to the exact status vocabulary.
+  const expiredCount = useMemo(
+    () => urgent.filter((i) => getExpiryStatus(i, now) === 'expired').length,
+    [urgent, now],
+  );
+  const soonCount = urgent.length - expiredCount;
+  const breakdownParts: string[] = [];
+  if (expiredCount > 0) breakdownParts.push(`${expiredCount} expired`);
+  if (soonCount > 0) breakdownParts.push(`${soonCount} expiring soon`);
+  const breakdown = breakdownParts.join('  ·  ');
 
   // Resolved/snoozed rows ease out instead of blinking away (Phase 3 motion
   // pass). Keyed on the urgent COUNT; first emission exempt so the initial
@@ -110,14 +130,21 @@ export function ExpiringSoonScreen() {
         contentContainerStyle={urgent.length === 0 ? styles.listEmpty : styles.list}
         ListHeaderComponent={
           urgent.length > 0 ? (
-            <Text style={styles.hint}>
-              One tap per item. Used it? That's a rescue. Tossed it? Honest data helps. Not ready?
-              Snooze it.
-            </Text>
+            <View style={styles.header}>
+              <Text style={styles.headerCount}>
+                {urgent.length} {urgent.length === 1 ? 'item needs attention' : 'items need attention'}
+              </Text>
+              {breakdown ? <Text style={styles.headerBreakdown}>{breakdown}</Text> : null}
+              <Text style={styles.hint}>
+                One tap per item. Used it? That's a rescue. Tossed it? Honest data helps. Not ready?
+                Snooze it.
+              </Text>
+            </View>
           ) : null
         }
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
+            <BrandMark size={64} />
             <Text style={styles.emptyTitle}>Everything's fresh</Text>
             <Text style={styles.emptySub}>Nothing expiring soon — you're on top of it 🎉</Text>
           </View>
@@ -142,7 +169,7 @@ export function ExpiringSoonScreen() {
                 </View>
               </View>
               <View style={styles.actions}>
-                <Action label="✓ Used" tone="good" disabled={busy} onPress={() => resolve(item, 'used')} />
+                <Action label="Used" tone="good" disabled={busy} onPress={() => resolve(item, 'used')} />
                 <Action label="Tossed" tone="bad" disabled={busy} onPress={() => resolve(item, 'tossed')} />
                 <Action label="+2d" tone="neutral" disabled={busy} onPress={() => snooze(item)} />
               </View>
@@ -165,6 +192,14 @@ function Action({
   disabled: boolean;
   onPress: () => void;
 }) {
+  const toneColor =
+    tone === 'good'
+      ? tokens.color.success
+      : tone === 'bad'
+        ? tokens.semantic.expiry.expired
+        : tokens.color.inkMuted;
+  const borderColor = tone === 'neutral' ? tokens.color.line : toneColor;
+  const Icon = tone === 'good' ? Check : tone === 'bad' ? Trash2 : Clock;
   return (
     <Pressable
       onPress={onPress}
@@ -172,17 +207,17 @@ function Action({
       hitSlop={4}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={({ pressed }) => [styles.actBtn, pressed && styles.actBtnPressed, disabled && styles.actBtnDisabled]}
+      style={({ pressed }) => [
+        styles.actBtn,
+        { borderColor },
+        pressed && styles.actBtnPressed,
+        disabled && styles.actBtnDisabled,
+      ]}
     >
-      <Text
-        style={[
-          styles.actTxt,
-          tone === 'good' && { color: tokens.color.success },
-          tone === 'bad' && { color: tokens.semantic.expiry.expired },
-        ]}
-      >
-        {label}
-      </Text>
+      <View style={styles.actInner}>
+        <Icon size={14} color={toneColor} strokeWidth={2.5} />
+        <Text style={[styles.actTxt, { color: toneColor }]}>{label}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -191,14 +226,29 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   list: { paddingBottom: tokens.space(8) },
   listEmpty: { flexGrow: 1 },
+  header: {
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(4),
+    paddingBottom: tokens.space(2),
+  },
+  headerCount: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 22,
+    color: tokens.color.ink,
+    letterSpacing: -0.4,
+  },
+  headerBreakdown: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+    marginTop: 2,
+  },
   hint: {
     fontFamily: tokens.font.body.regular,
     fontSize: 12.5,
     color: tokens.color.inkMuted,
     lineHeight: 17,
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
-    paddingBottom: tokens.space(2),
+    marginTop: tokens.space(3),
   },
   row: {
     paddingHorizontal: tokens.space(6),
@@ -226,6 +276,12 @@ const styles = StyleSheet.create({
     borderColor: tokens.color.line,
     alignItems: 'center',
   },
+  actInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.space(1),
+  },
   actBtnPressed: { backgroundColor: tokens.color.surfaceAlt },
   actBtnDisabled: { opacity: 0.5 },
   actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink },
@@ -234,6 +290,7 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.display.semibold,
     fontSize: 20,
     color: tokens.color.ink,
+    marginTop: tokens.space(4),
     marginBottom: tokens.space(2),
   },
   emptySub: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, textAlign: 'center' },
