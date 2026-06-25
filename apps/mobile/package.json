@@ -27,6 +27,7 @@
     "@sentry/react-native": "~7.11.0",
     "@supabase/supabase-js": "^2.107.0",
     "expo": "^56.0.0",
+    "expo-audio": "~56.0.0",
     "expo-camera": "~56.0.8",
     "expo-clipboard": "~56.0.3",
     "expo-crypto": "~56.0.4",
