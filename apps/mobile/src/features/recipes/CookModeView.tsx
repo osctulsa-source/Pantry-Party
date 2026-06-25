@@ -5,8 +5,12 @@
  * following a recipe:
  *  - mise en place: a "get set up" screen FIRST — the equipment you'll need and
  *    a check-off list of everything to gather, so there's no mid-cook scramble.
- *  - per-step ingredients: the amounts THIS step needs, inline (#110 payload).
- *  - in-step timer: tagged duration (or one detected in the text) → a countdown.
+ *  - per-step ingredients WITH AMOUNTS: the amounts THIS step needs, inline —
+ *    matched from the recipe's full ingredient list ("2 cups flour", not "flour").
+ *  - a REAL kitchen timer: tagged duration (or one detected in the text) → a
+ *    countdown that survives moving to other steps (a pill brings you back),
+ *    is computed from a target time (so backgrounding the app doesn't drift),
+ *    and fires a local notification when it's up — so you can put the phone down.
  *  - reassurance: a calm, stage-aware line so a nervous cook feels guided.
  *  - check-off: mark each step done; the last one finishes into the "I made
  *    this" pantry decrement.
@@ -17,10 +21,12 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Haptics from 'expo-haptics';
+import * as Notifications from 'expo-notifications';
 import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
+import { ensureNotificationPermission } from '../expiry/expoScheduler';
 
 type Phase = 'prep' | 'steps';
 
@@ -29,6 +35,39 @@ interface FlatStep {
   step: string;
   ingredients: string[];
   lengthMinutes: number | null;
+}
+
+/**
+ * A single in-flight timer. Timestamp-based so backgrounding the app never
+ * drifts it: `endsAt` is the wall-clock moment it finishes; remaining is always
+ * recomputed from now. Bound to the step it was started on (stepIdx) so it can
+ * persist while you move around + a pill can bring you back.
+ */
+type CookTimer =
+  | null
+  | { stepIdx: number; status: 'running'; endsAt: number; totalSec: number }
+  | { stepIdx: number; status: 'paused'; remainingSec: number; totalSec: number };
+
+// One cook-along timer at a time → one notification id; scheduling again
+// replaces it, and we cancel on pause / reset / completion / leaving the screen.
+const TIMER_NOTIF_ID = 'cookmode-timer';
+
+async function scheduleTimerNotif(endsAt: number, stepIdx: number): Promise<void> {
+  try {
+    const ok = await ensureNotificationPermission();
+    if (!ok) return;
+    await Notifications.scheduleNotificationAsync({
+      identifier: TIMER_NOTIF_ID,
+      content: { title: 'Timer done', body: `Your step ${stepIdx + 1} timer is up.`, sound: true },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(endsAt) },
+    });
+  } catch {
+    // best-effort — the in-app countdown + haptic still work without it.
+  }
+}
+
+function cancelTimerNotif(): void {
+  Notifications.cancelScheduledNotificationAsync(TIMER_NOTIF_ID).catch(() => {});
 }
 
 /** Pull a usable timer duration out of a step's text when it isn't tagged. */
@@ -99,12 +138,31 @@ export function CookModeView({
     return out;
   }, [recipe.instructions]);
 
+  // Per-step ingredient names carry no amount; match them to the recipe's full
+  // ingredient list so "flour" shows as "2 cups flour" mid-cook. Falls back to
+  // the bare name when there's no match (e.g. parsed-fallback recipes).
+  const amountFor = useMemo(() => {
+    const list = recipe.ingredients;
+    return (stepName: string): string => {
+      const n = stepName.trim().toLowerCase();
+      if (!n) return stepName;
+      const exact = list.find((i) => i.name.trim().toLowerCase() === n);
+      const loose =
+        exact ??
+        list.find((i) => {
+          const c = i.name.trim().toLowerCase();
+          return c.length > 0 && (c.includes(n) || n.includes(c));
+        });
+      return loose?.original || loose?.name || stepName;
+    };
+  }, [recipe.ingredients]);
+
   const [phase, setPhase] = useState<Phase>('prep');
   const [idx, setIdx] = useState(0);
   const [done, setDone] = useState<Set<number>>(new Set());
   const [gathered, setGathered] = useState<Set<number>>(new Set());
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
-  const [running, setRunning] = useState(false);
+  const [timer, setTimer] = useState<CookTimer>(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
 
   const total = steps.length;
   const current = steps[idx];
@@ -112,23 +170,35 @@ export function CookModeView({
   const isDone = done.has(idx);
   const mins = current ? current.lengthMinutes ?? parseMinutes(current.step) : null;
 
-  // Each step gets its own fresh timer.
-  useEffect(() => {
-    setSecondsLeft(null);
-    setRunning(false);
-  }, [idx]);
+  const remaining = timer
+    ? timer.status === 'paused'
+      ? timer.remainingSec
+      : Math.max(0, Math.round((timer.endsAt - nowTs) / 1000))
+    : 0;
+  const timerOnThisStep = timer !== null && timer.stepIdx === idx;
+  const timerElsewhere = timer !== null && timer.stepIdx !== idx;
 
-  // Countdown tick — re-armed each second; fires a haptic at zero.
+  // Tick once a second only while a timer is actually running.
   useEffect(() => {
-    if (!running || secondsLeft === null) return;
-    if (secondsLeft <= 0) {
-      setRunning(false);
+    if (timer?.status !== 'running') return;
+    const id = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [timer?.status]);
+
+  // Zero-cross: when a running timer hits 0, buzz once, drop the OS notification
+  // (we're clearly foregrounded), and freeze it at "Time's up".
+  useEffect(() => {
+    if (timer?.status !== 'running') return;
+    if (timer.endsAt - nowTs <= 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      return;
+      cancelTimerNotif();
+      setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: 0, totalSec: timer.totalSec });
     }
-    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? null : s - 1)), 1000);
-    return () => clearTimeout(t);
-  }, [running, secondsLeft]);
+  }, [timer, nowTs]);
+
+  // Leaving cook mode ends the cook-along — don't let a stray timer notification
+  // fire with no context.
+  useEffect(() => () => cancelTimerNotif(), []);
 
   function startCooking() {
     Haptics.selectionAsync().catch(() => {});
@@ -161,18 +231,32 @@ export function CookModeView({
       setIdx((i) => Math.min(i + 1, total - 1));
     }
   }
+
   function startTimer() {
     if (mins === null) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setSecondsLeft(mins * 60);
-    setRunning(true);
+    const totalSec = mins * 60;
+    const endsAt = Date.now() + totalSec * 1000;
+    setNowTs(Date.now());
+    setTimer({ stepIdx: idx, status: 'running', endsAt, totalSec });
+    void scheduleTimerNotif(endsAt, idx);
   }
   function toggleTimer() {
-    setRunning((r) => !r);
+    if (!timer) return;
+    if (timer.status === 'running') {
+      const rem = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
+      cancelTimerNotif();
+      setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: rem, totalSec: timer.totalSec });
+    } else {
+      const endsAt = Date.now() + timer.remainingSec * 1000;
+      setNowTs(Date.now());
+      setTimer({ stepIdx: timer.stepIdx, status: 'running', endsAt, totalSec: timer.totalSec });
+      void scheduleTimerNotif(endsAt, timer.stepIdx);
+    }
   }
   function resetTimer() {
-    setSecondsLeft(null);
-    setRunning(false);
+    cancelTimerNotif();
+    setTimer(null);
   }
 
   const metaLine = [
@@ -201,6 +285,21 @@ export function CookModeView({
               <View style={[styles.fill, { width: `${total > 0 ? ((idx + 1) / total) * 100 : 0}%` }]} />
             </View>
             <Text style={styles.encourage}>{encouragement(idx, total)}</Text>
+            {timerElsewhere && timer && (
+              <Pressable
+                style={styles.timerPill}
+                onPress={() => setIdx(timer.stepIdx)}
+                accessibilityRole="button"
+                accessibilityLabel={`Return to the timer on step ${timer.stepIdx + 1}`}
+              >
+                <Timer size={14} color={tokens.color.accent} />
+                <Text style={styles.timerPillTxt}>
+                  {remaining === 0
+                    ? `Time's up · Step ${timer.stepIdx + 1}`
+                    : `${formatClock(remaining)} · Step ${timer.stepIdx + 1}`}
+                </Text>
+              </Pressable>
+            )}
           </>
         )}
 
@@ -262,32 +361,22 @@ export function CookModeView({
             </View>
             <Text style={styles.stepText}>{current.step}</Text>
 
-            {mins !== null && (
+            {(timerOnThisStep || mins !== null) && (
               <View style={styles.timer}>
-                {secondsLeft === null ? (
-                  <Pressable
-                    style={styles.timerStart}
-                    onPress={startTimer}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Start a ${mins} minute timer`}
-                  >
-                    <Timer size={16} color={tokens.color.accent} />
-                    <Text style={styles.timerStartTxt}>Start {mins}-min timer</Text>
-                  </Pressable>
-                ) : (
+                {timerOnThisStep ? (
                   <View style={styles.timerRunning}>
-                    <Text style={[styles.timerClock, secondsLeft === 0 && styles.timerClockDone]}>
-                      {secondsLeft === 0 ? "Time's up!" : formatClock(secondsLeft)}
+                    <Text style={[styles.timerClock, remaining === 0 && styles.timerClockDone]}>
+                      {remaining === 0 ? "Time's up!" : formatClock(remaining)}
                     </Text>
                     <View style={styles.timerCtrls}>
-                      {secondsLeft > 0 && (
+                      {remaining > 0 && (
                         <Pressable
                           style={styles.timerCtrl}
                           onPress={toggleTimer}
                           accessibilityRole="button"
-                          accessibilityLabel={running ? 'Pause timer' : 'Resume timer'}
+                          accessibilityLabel={timer?.status === 'running' ? 'Pause timer' : 'Resume timer'}
                         >
-                          {running ? (
+                          {timer?.status === 'running' ? (
                             <Pause size={16} color={tokens.color.accent} />
                           ) : (
                             <Play size={16} color={tokens.color.accent} />
@@ -304,6 +393,16 @@ export function CookModeView({
                       </Pressable>
                     </View>
                   </View>
+                ) : (
+                  <Pressable
+                    style={styles.timerStart}
+                    onPress={startTimer}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Start a ${mins} minute timer`}
+                  >
+                    <Timer size={16} color={tokens.color.accent} />
+                    <Text style={styles.timerStartTxt}>Start {mins}-min timer</Text>
+                  </Pressable>
                 )}
               </View>
             )}
@@ -312,9 +411,9 @@ export function CookModeView({
               <View style={styles.ingBlock}>
                 <Text style={styles.ingLabel}>For this step</Text>
                 <View style={styles.ingChips}>
-                  {current.ingredients.map((name, i) => (
-                    <View key={`${name}-${i}`} style={styles.ingChip}>
-                      <Text style={styles.ingChipTxt}>{name}</Text>
+                  {current.ingredients.map((nm, i) => (
+                    <View key={`${nm}-${i}`} style={styles.ingChip}>
+                      <Text style={styles.ingChipTxt}>{amountFor(nm)}</Text>
                     </View>
                   ))}
                 </View>
@@ -397,6 +496,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(5),
     marginTop: tokens.space(2),
   },
+  timerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: tokens.space(2),
+    marginHorizontal: tokens.space(5),
+    marginTop: tokens.space(2),
+    paddingVertical: tokens.space(1),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+    backgroundColor: tokens.color.accentSoft,
+  },
+  timerPillTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12.5, color: tokens.color.accent, fontVariant: ['tabular-nums'] },
   // --- prep / mise en place ---
   prepScroll: { flexGrow: 1, paddingHorizontal: tokens.space(7), paddingTop: tokens.space(5), paddingBottom: tokens.space(8) },
   prepTitle: {
