@@ -5,9 +5,15 @@
  *
  * Centralized so the INSERT shape (column order, sync bookkeeping) lives in one
  * place — both callers stay in lockstep.
+ *
+ * Category is inferred from the name at insert time (categorizeByName) so the
+ * Pantry row shows a real CategoryIcon instead of the fallback basket. It's
+ * persisted (the upload-proxy's pantry_items INSERT allowlist includes
+ * `category`, so it syncs); null when nothing matches. Legacy rows with no
+ * category get the same inference at read time (see rowToPantryItem).
  */
 import * as Crypto from 'expo-crypto';
-import type { CaptureSource, StorageLocation } from '@breadbox/core';
+import { categorizeByName, type CaptureSource, type StorageLocation } from '@breadbox/core';
 
 import { getPowerSync } from '../../data/powersync/db';
 
@@ -29,12 +35,13 @@ export async function addPantryItem(input: NewPantryItem): Promise<void> {
   const db = getPowerSync();
   await db.execute(
     `INSERT INTO pantry_items
-       (id, household_id, name, brand, quantity, unit, location, expires_at, added_at, source, added_by, updated_at, deleted)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, household_id, name, category, brand, quantity, unit, location, expires_at, added_at, source, added_by, updated_at, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       Crypto.randomUUID(),
       input.householdId,
       input.name,
+      categorizeByName(input.name) ?? null,
       input.brand ?? null,
       input.quantity,
       input.unit ?? null,
