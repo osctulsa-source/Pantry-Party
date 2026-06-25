@@ -20,8 +20,12 @@
  * unselected — saving writes the picked unit or null). Brand is optional free
  * text (matches Add Item; brand is PATCH-allowed on the upload-proxy).
  *
- * The rest of the form is intentionally duplicated from AddItemScreen rather
- * than extracted — revisit when a third consumer appears (project doc).
+ * Layout mirrors AddItemScreen's declutter pass: name hero, quantity + unit on
+ * one row, brand collapsed behind "+ Add brand" (auto-expanded when the item
+ * already has one), and a sticky "Save changes". Delete stays in the body —
+ * a destructive action shouldn't ride the always-visible bar. The rest of the
+ * form is intentionally duplicated from AddItemScreen rather than extracted —
+ * revisit when a third consumer appears (project doc).
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -30,6 +34,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -106,6 +111,7 @@ export function EditItemScreen() {
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
+  const [showBrand, setShowBrand] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState<string | null>(null);
   const [fillLevel, setFillLevel] = useState<number | null>(null);
@@ -122,6 +128,7 @@ export function EditItemScreen() {
     hydrated.current = true;
     setName(item.name);
     setBrand(item.brand ?? '');
+    if (item.brand) setShowBrand(true); // already has a brand → keep it visible
     setQuantity(String(item.quantity));
     setUnit(hydrateUnit(item.unit));
     setFillLevel(item.fill_level ?? null);
@@ -242,100 +249,117 @@ export function EditItemScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.center}>
-          <View style={styles.card}>
-            <Text style={styles.label}>Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. Whole milk"
-              placeholderTextColor={tokens.color.inkMuted}
-              value={name}
-              onChangeText={setName}
-              maxLength={MAX_NAME_LENGTH}
-            />
-            {guideMatch && (
-              <View style={styles.suggestWrap}>
-                <Text style={styles.suggestLabel}>Which kind? (optional)</Text>
-                <SuggestChips
-                  options={guideMatch.guide.kinds}
-                  selected={guideMatch.activeKind}
-                  onPick={onPickKind}
-                  accessibilityPrefix="Set kind"
-                />
-              </View>
-            )}
-
-            <Text style={styles.label}>Brand (optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. Horizon"
-              placeholderTextColor={tokens.color.inkMuted}
-              value={brand}
-              onChangeText={setBrand}
-              maxLength={MAX_BRAND_LENGTH}
-              autoCapitalize="words"
-            />
-            {brandOptions.length > 0 && (
-              <View style={styles.suggestWrap}>
-                <SuggestChips
-                  options={brandOptions}
-                  selected={trimmedBrand || null}
-                  onPick={(b) => setBrand(b.toLowerCase() === trimmedBrand.toLowerCase() ? '' : b)}
-                  accessibilityPrefix="Set brand"
-                />
-              </View>
-            )}
-
-            <Text style={styles.label}>Quantity</Text>
-            <QtyStepper value={quantity} onChange={setQuantity} />
-
-            <Text style={styles.label}>Unit (optional)</Text>
-            <View style={styles.unitWrap}>
-              <UnitPicker value={unit} onChange={setUnit} />
-            </View>
-
-            <Text style={styles.label}>How full? (optional)</Text>
-            <View style={styles.unitWrap}>
+        <ScrollView style={styles.flex} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <TextInput
+            style={styles.hero}
+            placeholder="e.g. Whole milk"
+            placeholderTextColor={tokens.color.inkMuted}
+            value={name}
+            onChangeText={setName}
+            maxLength={MAX_NAME_LENGTH}
+          />
+          {guideMatch && (
+            <View style={styles.suggestWrap}>
+              <Text style={styles.miniLabel}>Which kind?</Text>
               <SuggestChips
-                options={FILL_STEPS.map((s) => s.label)}
-                selected={FILL_STEPS.find((s) => s.value === fillLevel)?.label ?? null}
-                onPick={(label) => {
-                  const step = FILL_STEPS.find((s) => s.label === label);
-                  if (!step) return;
-                  setFillLevel(step.value === fillLevel ? null : step.value);
-                }}
-                accessibilityPrefix="Set fill level"
+                options={guideMatch.guide.kinds}
+                selected={guideMatch.activeKind}
+                onPick={onPickKind}
+                accessibilityPrefix="Set kind"
               />
             </View>
+          )}
 
-            <Text style={styles.label}>Location</Text>
-            <View style={styles.locationWrap}>
-              <LocationPicker value={location} onChange={setLocation} householdId={item.household_id} />
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Quantity</Text>
+              <QtyStepper value={quantity} onChange={setQuantity} />
             </View>
-
-            <Text style={styles.label}>Best before</Text>
-            <View style={styles.expiryWrap}>
-              <ExpiryField valueDays={expiryDays} onChange={setExpiryDays} />
+            <View style={styles.col}>
+              <Text style={styles.label}>Unit</Text>
+              <View style={styles.unitInline}>
+                <UnitPicker value={unit} onChange={setUnit} />
+              </View>
             </View>
-
-            {error && <Text style={styles.error}>{error}</Text>}
-
-            <Pressable
-              style={[styles.submit, (!formValid || submitting) && styles.submitDisabled]}
-              onPress={onSave}
-              disabled={!formValid || submitting}
-            >
-              {submitting ? (
-                <ActivityIndicator color={tokens.color.onAccent} />
-              ) : (
-                <Text style={styles.submitText}>Save changes</Text>
-              )}
-            </Pressable>
-
-            <Pressable style={styles.delete} onPress={onDeletePress} disabled={submitting}>
-              <Text style={styles.deleteText}>Delete item</Text>
-            </Pressable>
           </View>
+
+          <Text style={styles.label}>How full?</Text>
+          <View style={styles.block}>
+            <SuggestChips
+              options={FILL_STEPS.map((s) => s.label)}
+              selected={FILL_STEPS.find((s) => s.value === fillLevel)?.label ?? null}
+              onPick={(label) => {
+                const step = FILL_STEPS.find((s) => s.label === label);
+                if (!step) return;
+                setFillLevel(step.value === fillLevel ? null : step.value);
+              }}
+              accessibilityPrefix="Set fill level"
+            />
+          </View>
+
+          <Text style={styles.label}>Location</Text>
+          <View style={styles.block}>
+            <LocationPicker value={location} onChange={setLocation} householdId={item.household_id} />
+          </View>
+
+          <Text style={styles.label}>Best before</Text>
+          <View style={styles.block}>
+            <ExpiryField valueDays={expiryDays} onChange={setExpiryDays} />
+          </View>
+
+          {showBrand ? (
+            <>
+              <Text style={styles.label}>Brand</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Horizon"
+                placeholderTextColor={tokens.color.inkMuted}
+                value={brand}
+                onChangeText={setBrand}
+                maxLength={MAX_BRAND_LENGTH}
+                autoCapitalize="words"
+              />
+              {brandOptions.length > 0 && (
+                <View style={styles.suggestWrap}>
+                  <SuggestChips
+                    options={brandOptions}
+                    selected={trimmedBrand || null}
+                    onPick={(b) => setBrand(b.toLowerCase() === trimmedBrand.toLowerCase() ? '' : b)}
+                    accessibilityPrefix="Set brand"
+                  />
+                </View>
+              )}
+            </>
+          ) : (
+            <Pressable
+              style={styles.addBrand}
+              onPress={() => setShowBrand(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Add a brand"
+            >
+              <Text style={styles.addBrandTxt}>＋ Add brand</Text>
+            </Pressable>
+          )}
+
+          {error && <Text style={styles.error}>{error}</Text>}
+
+          <Pressable style={styles.delete} onPress={onDeletePress} disabled={submitting}>
+            <Text style={styles.deleteText}>Delete item</Text>
+          </Pressable>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <Pressable
+            style={[styles.submit, (!formValid || submitting) && styles.submitDisabled]}
+            onPress={onSave}
+            disabled={!formValid || submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color={tokens.color.onAccent} />
+            ) : (
+              <Text style={styles.submitText}>Save changes</Text>
+            )}
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -343,30 +367,43 @@ export function EditItemScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
+  root: { flex: 1, backgroundColor: tokens.color.surface },
+  flex: { flex: 1 },
+  center: { flex: 1, justifyContent: 'center', paddingHorizontal: tokens.space(6) },
+  scroll: { padding: tokens.space(6), paddingBottom: tokens.space(8) },
+  hero: {
+    marginBottom: tokens.space(3),
+    paddingVertical: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
     backgroundColor: tokens.color.surface,
-  },
-  flex: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: tokens.space(6),
-  },
-  card: {
-    backgroundColor: tokens.color.surface,
+    borderWidth: 1.5,
+    borderColor: tokens.color.accent,
     borderRadius: tokens.radius.lg,
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 22,
+    color: tokens.color.ink,
   },
+  miniLabel: {
+    marginBottom: tokens.space(2),
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: tokens.color.inkMuted,
+  },
+  suggestWrap: { marginBottom: tokens.space(4) },
+  row: { flexDirection: 'row', gap: tokens.space(3), marginBottom: tokens.space(2) },
+  col: { flex: 1 },
+  unitInline: { justifyContent: 'center' },
   label: {
     marginBottom: tokens.space(2),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.color.inkMuted,
   },
+  block: { marginBottom: tokens.space(4) },
   input: {
-    marginBottom: tokens.space(4),
+    marginBottom: tokens.space(2),
     paddingVertical: tokens.space(3),
     paddingHorizontal: tokens.space(4),
     backgroundColor: tokens.color.surfaceAlt,
@@ -375,65 +412,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: tokens.color.ink,
   },
-  // Suggestion rows tuck under their field (inputs carry marginBottom 4).
-  suggestWrap: { marginTop: -tokens.space(2), marginBottom: tokens.space(4) },
-  suggestLabel: {
-    marginBottom: tokens.space(2),
-    fontFamily: tokens.font.body.medium,
-    fontSize: 12,
-    color: tokens.color.inkMuted,
-  },
-  unitWrap: {
-    marginBottom: tokens.space(4),
-  },
-  locationWrap: {
-    marginBottom: tokens.space(4),
-  },
-  expiryWrap: {
-    marginBottom: tokens.space(4),
-  },
+  addBrand: { paddingVertical: tokens.space(3), alignItems: 'flex-start' },
+  addBrandTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
   error: {
-    marginBottom: tokens.space(3),
+    marginTop: tokens.space(2),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.semantic.expiry.expired,
   },
-  // Save matches Add Item's primary (accent + onAccent) — the two sibling
-  // forms previously used two different greens (success vs accent).
-  submit: {
-    marginTop: tokens.space(1),
-    paddingVertical: tokens.space(4),
-    backgroundColor: tokens.color.accent,
-    borderRadius: tokens.radius.md,
-    alignItems: 'center',
-  },
-  submitDisabled: {
-    opacity: 0.6,
-  },
-  submitText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.color.onAccent,
-  },
   // Destructive action reads destructive: semantic red outline, not brand
-  // accent (a leftover from the oxblood era, when accent WAS red).
+  // accent. Lives in the scroll body, not the sticky bar.
   delete: {
-    marginTop: tokens.space(4),
+    marginTop: tokens.space(5),
     paddingVertical: tokens.space(4),
     borderRadius: tokens.radius.md,
     borderWidth: 1,
     borderColor: tokens.semantic.expiry.expired,
     alignItems: 'center',
   },
-  deleteText: {
-    fontFamily: tokens.font.body.semibold,
-    fontSize: 16,
-    color: tokens.semantic.expiry.expired,
+  deleteText: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.semantic.expiry.expired },
+  missing: { fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.inkMuted, textAlign: 'center' },
+  footer: {
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(3),
+    paddingBottom: tokens.space(4),
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tokens.color.line,
+    backgroundColor: tokens.color.surface,
   },
-  missing: {
-    fontFamily: tokens.font.body.regular,
-    fontSize: 15,
-    color: tokens.color.inkMuted,
-    textAlign: 'center',
+  submit: {
+    paddingVertical: tokens.space(4),
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
   },
+  submitDisabled: { opacity: 0.6 },
+  submitText: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.onAccent },
 });

@@ -8,6 +8,12 @@
  * shared UnitPicker (counts need no unit). Brand is optional free text (qualifies
  * the name; also feeds search + the safe-merge dedup key). Writes go through
  * addPantryItem() → PowerSync local SQLite → upload-proxy → Postgres.
+ *
+ * Layout (declutter pass): the name is the hero field; quantity + unit share a
+ * row; brand is collapsed behind "+ Add brand" (most adds skip it); and the
+ * primary "Add to pantry" action is pinned to the bottom so it's always in
+ * reach. Smart behavior is unchanged — kind chips, brand suggestions, and the
+ * name-inferred best-before all work exactly as before.
  */
 import { useMemo, useState } from 'react';
 import {
@@ -56,6 +62,7 @@ export function AddItemScreen() {
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
+  const [showBrand, setShowBrand] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const [unit, setUnit] = useState<string | null>(null);
   const [location, setLocation] = useState<StorageLocation>('pantry');
@@ -141,16 +148,15 @@ export function AddItemScreen() {
     }
   }
 
-  const expiryHint = !expiryTouched && suggestedDays !== null ? ' · suggested, adjust anytime' : '';
+  const expiryHint = !expiryTouched && suggestedDays !== null ? ' · suggested' : '';
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>Name</Text>
+        <ScrollView style={styles.flex} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <TextInput
-            style={styles.input}
-            placeholder="e.g. Whole milk"
+            style={styles.hero}
+            placeholder="What did you add?"
             placeholderTextColor={tokens.color.inkMuted}
             value={name}
             onChangeText={setName}
@@ -159,7 +165,7 @@ export function AddItemScreen() {
           />
           {guideMatch && (
             <View style={styles.suggestWrap}>
-              <Text style={styles.suggestLabel}>Which kind? (optional)</Text>
+              <Text style={styles.miniLabel}>Which kind?</Text>
               <SuggestChips
                 options={guideMatch.guide.kinds}
                 selected={guideMatch.activeKind}
@@ -169,47 +175,68 @@ export function AddItemScreen() {
             </View>
           )}
 
-          <Text style={styles.label}>Brand (optional)</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. Horizon"
-            placeholderTextColor={tokens.color.inkMuted}
-            value={brand}
-            onChangeText={setBrand}
-            maxLength={MAX_BRAND_LENGTH}
-            autoCapitalize="words"
-          />
-          {brandOptions.length > 0 && (
-            <View style={styles.suggestWrap}>
-              <SuggestChips
-                options={brandOptions}
-                selected={trimmedBrand || null}
-                onPick={(b) => setBrand(b.toLowerCase() === trimmedBrand.toLowerCase() ? '' : b)}
-                accessibilityPrefix="Set brand"
-              />
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Quantity</Text>
+              <QtyStepper value={quantity} onChange={setQuantity} />
             </View>
-          )}
-
-          <Text style={styles.label}>Quantity</Text>
-          <QtyStepper value={quantity} onChange={setQuantity} />
-
-          <Text style={styles.label}>Unit (optional)</Text>
-          <View style={styles.unitWrap}>
-            <UnitPicker value={unit} onChange={setUnit} />
+            <View style={styles.col}>
+              <Text style={styles.label}>Unit</Text>
+              <View style={styles.unitInline}>
+                <UnitPicker value={unit} onChange={setUnit} />
+              </View>
+            </View>
           </View>
 
           <Text style={styles.label}>Location</Text>
-          <View style={styles.locationWrap}>
+          <View style={styles.block}>
             <LocationPicker value={location} onChange={setLocation} householdId={activeHouseholdId} />
           </View>
 
           <Text style={styles.label}>Best before{expiryHint}</Text>
-          <View style={styles.expiryWrap}>
+          <View style={styles.block}>
             <ExpiryField valueDays={effectiveDays} onChange={onChangeExpiry} />
           </View>
 
-          {error && <Text style={styles.error}>{error}</Text>}
+          {showBrand ? (
+            <>
+              <Text style={styles.label}>Brand</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Horizon"
+                placeholderTextColor={tokens.color.inkMuted}
+                value={brand}
+                onChangeText={setBrand}
+                maxLength={MAX_BRAND_LENGTH}
+                autoCapitalize="words"
+                autoFocus
+              />
+              {brandOptions.length > 0 && (
+                <View style={styles.suggestWrap}>
+                  <SuggestChips
+                    options={brandOptions}
+                    selected={trimmedBrand || null}
+                    onPick={(b) => setBrand(b.toLowerCase() === trimmedBrand.toLowerCase() ? '' : b)}
+                    accessibilityPrefix="Set brand"
+                  />
+                </View>
+              )}
+            </>
+          ) : (
+            <Pressable
+              style={styles.addBrand}
+              onPress={() => setShowBrand(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Add a brand"
+            >
+              <Text style={styles.addBrandTxt}>＋ Add brand</Text>
+            </Pressable>
+          )}
 
+          {error && <Text style={styles.error}>{error}</Text>}
+        </ScrollView>
+
+        <View style={styles.footer}>
           <Pressable
             style={[styles.submit, (!formValid || submitting) && styles.submitDisabled]}
             onPress={onSubmit}
@@ -221,7 +248,7 @@ export function AddItemScreen() {
               <Text style={styles.submitText}>Add to pantry</Text>
             )}
           </Pressable>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -230,15 +257,40 @@ export function AddItemScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   flex: { flex: 1 },
-  scroll: { padding: tokens.space(6), paddingBottom: tokens.space(10) },
+  scroll: { padding: tokens.space(6), paddingBottom: tokens.space(8) },
+  hero: {
+    marginBottom: tokens.space(3),
+    paddingVertical: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
+    backgroundColor: tokens.color.surface,
+    borderWidth: 1.5,
+    borderColor: tokens.color.accent,
+    borderRadius: tokens.radius.lg,
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 22,
+    color: tokens.color.ink,
+  },
+  miniLabel: {
+    marginBottom: tokens.space(2),
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: tokens.color.inkMuted,
+  },
+  suggestWrap: { marginBottom: tokens.space(4) },
+  row: { flexDirection: 'row', gap: tokens.space(3), marginBottom: tokens.space(2) },
+  col: { flex: 1 },
+  unitInline: { justifyContent: 'center' },
   label: {
     marginBottom: tokens.space(2),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.color.inkMuted,
   },
+  block: { marginBottom: tokens.space(4) },
   input: {
-    marginBottom: tokens.space(4),
+    marginBottom: tokens.space(2),
     paddingVertical: tokens.space(3),
     paddingHorizontal: tokens.space(4),
     backgroundColor: tokens.color.surfaceAlt,
@@ -247,25 +299,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: tokens.color.ink,
   },
-  // Suggestion rows tuck under their field (inputs carry marginBottom 4).
-  suggestWrap: { marginTop: -tokens.space(2), marginBottom: tokens.space(4) },
-  suggestLabel: {
-    marginBottom: tokens.space(2),
-    fontFamily: tokens.font.body.medium,
-    fontSize: 12,
-    color: tokens.color.inkMuted,
-  },
-  unitWrap: { marginBottom: tokens.space(4) },
-  locationWrap: { marginBottom: tokens.space(4) },
-  expiryWrap: { marginBottom: tokens.space(4) },
+  addBrand: { paddingVertical: tokens.space(3), alignItems: 'flex-start' },
+  addBrandTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
   error: {
     marginTop: tokens.space(2),
     fontFamily: tokens.font.body.medium,
     fontSize: 13,
     color: tokens.semantic.expiry.expired,
   },
+  footer: {
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(3),
+    paddingBottom: tokens.space(4),
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tokens.color.line,
+    backgroundColor: tokens.color.surface,
+  },
   submit: {
-    marginTop: tokens.space(3),
     paddingVertical: tokens.space(4),
     backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.md,
