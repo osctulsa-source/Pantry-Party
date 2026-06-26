@@ -1,0 +1,4 @@
+# Forward migrations (0007_*.sql and up) live here.
+# The runner applies every *.sql in this directory in lexical order, after the baseline,
+# recording each in the schema_migrations ledger. Make each migration idempotent
+# (CREATE TABLE IF NOT EXISTS, ADD COLUMN IF NOT EXISTS, guarded ALTER PUBLICATION, etc.).
