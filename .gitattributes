@@ -1,0 +1,5 @@
+# Shell scripts and the migration runner run inside Linux containers — they MUST
+# keep LF endings or the shebang breaks when the build context is uploaded from
+# a Windows checkout (CRLF turns `#!/usr/bin/env sh\r` into an invalid interpreter).
+*.sh            text eol=lf
+infra/azure/migrations/Dockerfile text eol=lf
