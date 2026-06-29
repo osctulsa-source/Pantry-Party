@@ -96,8 +96,18 @@ resource vnet 'Microsoft.Network/virtualNetworks@2023-11-01' = {
       }
       {
         // Container Apps environment infrastructure subnet (joined in platform.bicep).
+        // MUST be delegated to Microsoft.App/environments, or the managed
+        // environment create fails with ManagedEnvironmentSubnetDelegationError.
         name: acaSubnetName
-        properties: { addressPrefix: '10.30.2.0/23' }
+        properties: {
+          addressPrefix: '10.30.2.0/23'
+          delegations: [
+            {
+              name: 'acadelegation'
+              properties: { serviceName: 'Microsoft.App/environments' }
+            }
+          ]
+        }
       }
     ]
   }
