@@ -32,18 +32,27 @@ done
 ## Step 2 — Variables + generated passwords
 
 ```bash
-RG=rg-pantryparty-prod-eastus2
-LOC=eastus2
+RG=rg-pantryparty-prod-westus3
+LOC=westus3
 ALERT_EMAIL=you@company.com
-export PG_ADMIN_PW=$(openssl rand -hex 24)
-export PS_REPL_PW=$(openssl rand -hex 24)
+# Alphanumeric (URL-safe) AND mixed-case+digits so it satisfies Azure's password
+# complexity rule (3 of 4 char classes). Do NOT use `openssl rand -hex` here —
+# hex is lowercase+digits only (2 classes) and Azure rejects it.
+export PG_ADMIN_PW=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 24)
+export PS_REPL_PW=$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 24)
 OBJ=$(az ad signed-in-user show --query id -o tsv)
 ```
 
-Keep this shell open through the whole flow. Hex passwords are deliberate — they
-are alphanumeric, so they survive URL-embedding in the `postgresql://user:pass@host`
+Keep this shell open through the whole flow. Alphanumeric passwords are
+deliberate — they survive URL-embedding in the `postgresql://user:pass@host`
 connection strings stored in Key Vault. You don't need to memorize them; they
 live in Key Vault afterward.
+
+> **Region note:** `eastus`/`eastus2` are commonly **offer-restricted** on
+> trial/sponsored subscriptions (`LocationIsOfferRestricted`), and `what-if`
+> does **not** catch this — it only surfaces on the real deploy. `westus3` works
+> for this subscription. If a region is restricted, probe for an allowed one
+> (see the region-probe loop) before re-running.
 
 ## Step 3 — Resource group
 
