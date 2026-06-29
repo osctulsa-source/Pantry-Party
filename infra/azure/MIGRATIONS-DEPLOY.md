@@ -22,15 +22,41 @@ az deployment group create -g "$RG" -n platform -f infra/azure/platform.bicep \
 containers resolve the private Postgres FQDN, and grants the managed identity
 **AcrPull** + **Key Vault Secrets User**. Phase 2 reuses this same environment.
 
-## Step 8 — Build the runner image (cloud build, no local Docker)
+## Step 8 — Build the runner image
 
 ```bash
 ACR=$(az deployment group show -g "$RG" -n platform --query properties.outputs.acrName.value -o tsv)
+ACRSERVER=$(az deployment group show -g "$RG" -n platform --query properties.outputs.acrLoginServer.value -o tsv)
 az acr build -r "$ACR" -t pantryparty-migrate:latest -f infra/azure/migrations/Dockerfile .
 ```
 
-Run from the **repo root** — the trailing `.` is the build context, and the
-Dockerfile copies the baseline init-scripts from
+> **Two gotchas hit on this subscription/OS — fall back to a local build if either bites:**
+>
+> 1. **ACR Tasks may be blocked** (`TasksOperationsNotAllowed`) on trial/sponsored
+>    subscriptions — then `az acr build` (server-side) can't run at all.
+> 2. On **Windows**, `az acr build .` from the repo root tries to tar the whole
+>    tree first and dies on deep `node_modules` paths (>260 chars) — before
+>    `.dockerignore` is even applied.
+>
+> **Local build + push (works around both):** build from a clean staging dir that
+> contains only what the Dockerfile copies, so there's no `node_modules` to walk:
+>
+> ```bash
+> az acr login -n "$ACR"
+> # stage just the build inputs (bash)
+> S=$(mktemp -d)
+> mkdir -p "$S/infra/local-dev/docker/modules/database-postgres/init-scripts" "$S/infra/azure/migrations"
+> cp infra/local-dev/docker/modules/database-postgres/init-scripts/*.sql "$S/infra/local-dev/docker/modules/database-postgres/init-scripts/"
+> cp infra/azure/migrations/run.sh infra/azure/migrations/Dockerfile "$S/infra/azure/migrations/"
+> docker build -t "$ACRSERVER/pantryparty-migrate:latest" -f "$S/infra/azure/migrations/Dockerfile" "$S"
+> docker push "$ACRSERVER/pantryparty-migrate:latest"
+> ```
+>
+> When you change `run.sh`, push a **new tag** (e.g. `:v2`) and deploy the Job with
+> that `imageTag` — Container Apps Jobs can serve a cached `:latest`, so a fresh
+> tag guarantees the new image runs.
+
+The Dockerfile copies the baseline init-scripts from
 `infra/local-dev/docker/modules/database-postgres/init-scripts/` plus the runner.
 
 ## Step 9 — Deploy the Job

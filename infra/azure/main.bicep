@@ -230,8 +230,10 @@ resource kvAdminRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-// Private FQDN of the server (VNet-resolved).
-var pgFqdn = '${pgServerName}.private.postgres.database.azure.com'
+// The server's real FQDN (e.g. <name>.postgres.database.azure.com). Inside the
+// VNet this CNAMEs into the linked private DNS zone and resolves to the private
+// IP. Do NOT construct the '.private.<zone>' apex name — that has no A record.
+var pgFqdn = pg.properties.fullyQualifiedDomainName
 
 resource secretAdminPw 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: kv

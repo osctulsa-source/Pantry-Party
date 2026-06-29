@@ -56,22 +56,21 @@ done
 echo "==> provisioning powersync_repl role"
 psql "${ADMIN_URI}" -v ON_ERROR_STOP=1 --no-psqlrc --quiet \
   -v repl_pw="$REPL_PASSWORD" <<'SQL'
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'powersync_repl') THEN
-    CREATE ROLE powersync_repl WITH LOGIN REPLICATION PASSWORD :'repl_pw';
-  ELSE
-    ALTER ROLE powersync_repl WITH LOGIN REPLICATION PASSWORD :'repl_pw';
-  END IF;
-END
-$$;
+-- Postgres has no CREATE ROLE IF NOT EXISTS, and psql's :'repl_pw' substitution
+-- does NOT fire inside a DO $$...$$ block — so build each statement as a string
+-- (format %L quotes the password as a literal) and run it via \gexec, where the
+-- :'repl_pw' lives in normal SQL context and gets interpolated correctly.
+SELECT format('CREATE ROLE powersync_repl LOGIN REPLICATION PASSWORD %L', :'repl_pw')
+WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'powersync_repl')
+\gexec
 
--- GRANT CONNECT needs a literal db name; current_database() resolves it dynamically.
-DO $$
-BEGIN
-  EXECUTE format('GRANT CONNECT ON DATABASE %I TO powersync_repl', current_database());
-END
-$$;
+-- Always (re)assert attributes + password so re-runs converge.
+SELECT format('ALTER ROLE powersync_repl WITH LOGIN REPLICATION PASSWORD %L', :'repl_pw')
+\gexec
+
+-- GRANT CONNECT needs a literal db name; resolve current_database() via \gexec.
+SELECT format('GRANT CONNECT ON DATABASE %I TO powersync_repl', current_database())
+\gexec
 
 GRANT USAGE ON SCHEMA public TO powersync_repl;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO powersync_repl;
