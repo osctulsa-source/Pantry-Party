@@ -8,6 +8,14 @@ clients, reading from the private Postgres foundation.
 This is a plan, not yet executed — it needs external secrets (below) and one
 topology change.
 
+> **▶ Resuming after a break?** Phase 1 is fully deployed & verified (see PR #142).
+> To continue: (1) make sure the Postgres server is running — if it was stopped to
+> save credit, `az postgres flexible-server start -g rg-pantryparty-prod-westus3 -n
+> pantryparty-prod-pg`; if the whole RG was deleted, re-run `DEPLOY.md` +
+> `MIGRATIONS-DEPLOY.md` first (~15 min, proven). (2) Add the 5 secrets below to
+> Key Vault `pantrypartyprodkv`. (3) Work the Steps section. Nothing in Phase 1
+> needs redoing.
+
 ## What Phase 1 already gives us
 
 - Private Postgres (`pantryparty-prod-pg`, westus3), `wal_level=logical`,
