@@ -1,0 +1,6 @@
+# The only image we build from this repo is the migration runner
+# (infra/azure/migrations/Dockerfile), which COPYs solely from infra/.
+# Exclude everything, then re-include infra/, so `az acr build` uploads a tiny
+# context and never trips on deep node_modules / android build paths on Windows.
+*
+!infra
