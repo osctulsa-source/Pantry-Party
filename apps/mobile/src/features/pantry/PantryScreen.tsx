@@ -55,6 +55,7 @@ import { formatExpiryMeta } from './expiryFormat';
 import { CategoryIcon } from './CategoryIcon';
 import { ExpiryPill } from '../../components/ExpiryPill';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { UndoSnackbar } from '../../components/UndoSnackbar';
 import { recordExpiryEvents } from './expiryEvents';
 import { useExpiryNotifications } from '../expiry/useExpiryNotifications';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -152,6 +153,18 @@ function SyncDot() {
   );
 }
 
+/** The last resolve, held so it can be reversed from the Undo snackbar. For a
+ *  "used" batch we also stash the shared occurred-at stamp + names so undo can
+ *  retract the rescue events it logged (keyed on that stamp). */
+interface UndoState {
+  message: string;
+  ids: string[];
+  kind: 'used' | 'remove';
+  at: string | null;
+  names: string[];
+  nonce: number;
+}
+
 export function PantryScreen() {
   const navigation = useNavigation<PantryNav>();
   const { activeHouseholdId, isLoading: activeLoading } = useActiveHousehold();
@@ -160,6 +173,8 @@ export function PantryScreen() {
   const { insights } = useInsights(activeHouseholdId);
   // Rows whose running-low "+ List" was tapped this session (feedback state).
   const [listed, setListed] = useState<Set<string>>(new Set());
+  // The most recent swipe/bulk resolve, surfaced as an Undo snackbar.
+  const [undo, setUndo] = useState<UndoState | null>(null);
 
   const { data: rows, isLoading, error } = useQuery<PantryItemRow>(PANTRY_QUERY, [activeHouseholdId ?? '']);
 
@@ -236,8 +251,9 @@ export function PantryScreen() {
           await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [now, t.id]);
         }
       });
-      if (kind === 'used') {
-        const at = new Date().toISOString();
+      // Stamp "used" batches once so undo can match (and retract) their events.
+      const at = kind === 'used' ? new Date().toISOString() : null;
+      if (kind === 'used' && at) {
         await recordExpiryEvents(
           activeHouseholdId,
           targets.map((t) => ({ kind: 'used' as const, itemName: t.name, at })),
@@ -249,10 +265,58 @@ export function PantryScreen() {
         return next;
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      const firstName = targets[0]?.name ?? 'item';
+      const n = targets.length;
+      setUndo({
+        message:
+          kind === 'used'
+            ? n === 1
+              ? `${firstName} marked used`
+              : `${n} items marked used`
+            : n === 1
+              ? `Removed ${firstName}`
+              : `Removed ${n} items`,
+        ids: targets.map((t) => t.id),
+        kind,
+        at,
+        names: targets.map((t) => t.name),
+        nonce: Date.now(),
+      });
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     } finally {
       setBusy(false);
+    }
+  }
+
+  /**
+   * Reverse the last resolve: un-tombstone the items, and for a "used" batch
+   * also retract the rescue events it logged (matched by the shared occurred-at
+   * stamp) so an accidental swipe doesn't quietly inflate the streak/savings.
+   */
+  async function undoResolve() {
+    if (!undo) return;
+    const payload = undo;
+    setUndo(null);
+    try {
+      const db = getPowerSync();
+      const now = Date.now();
+      await db.writeTransaction(async (tx) => {
+        for (const id of payload.ids) {
+          await tx.execute('UPDATE pantry_items SET deleted = 0, updated_at = ? WHERE id = ?', [now, id]);
+        }
+        if (payload.kind === 'used' && payload.at && activeHouseholdId && payload.names.length > 0) {
+          const placeholders = payload.names.map(() => '?').join(', ');
+          await tx.execute(
+            `UPDATE activity_events SET deleted = 1, updated_at = ? ` +
+              `WHERE household_id = ? AND kind = 'used' AND occurred_at = ? AND label IN (${placeholders}) AND deleted = 0`,
+            [now, activeHouseholdId, payload.at, ...payload.names],
+          );
+        }
+      });
+      Haptics.selectionAsync().catch(() => {});
+    } catch (e: unknown) {
+      Alert.alert('Could not undo', e instanceof Error ? e.message : 'Try again.');
     }
   }
 
@@ -527,6 +591,13 @@ export function PantryScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      <UndoSnackbar
+        message={undo?.message ?? null}
+        nonce={undo?.nonce ?? 0}
+        onUndo={() => void undoResolve()}
+        onDismiss={() => setUndo(null)}
+      />
     </SafeAreaView>
   );
 }
