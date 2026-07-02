@@ -145,6 +145,11 @@ function isReadyNow(r: SpoonacularRecipe): boolean {
   return r.missedIngredientCount === 0;
 }
 
+/** Whether we can show step-by-step instructions for this recipe in-app. */
+function hasInstructions(r: SpoonacularRecipe): boolean {
+  return stepCount(r) > 0;
+}
+
 /** A compact recipe row (thumb + title + meta), shared by the "Because you
  *  saved" suggestions and the "More from your pantry" alternates. */
 function RecipeRow({
@@ -612,6 +617,13 @@ function CookThis({
       const fit = candidates.filter(isEasy);
       if (fit.length > 0) candidates = fit;
     }
+    // Always prefer recipes we can actually show steps for in-app, so the hero
+    // + alternates never dead-end on a "view original" card. Same keep-all
+    // fallback as the toggles: if a whole page somehow lacks steps we keep them
+    // all (the detail screen still backfills by id / falls back gracefully).
+    // Post-#143 nearly every result qualifies, so this rarely changes anything.
+    const withSteps = candidates.filter(hasInstructions);
+    if (withSteps.length > 0) candidates = withSteps;
     const blend = (r: SpoonacularRecipe) =>
       scoreTitle(prefs, r.title) * 1.5 +
       scoreTitle(tasteProfile, r.title) * 2 +
