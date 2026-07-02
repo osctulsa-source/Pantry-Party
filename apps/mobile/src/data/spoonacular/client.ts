@@ -170,3 +170,36 @@ export async function searchByMeal(
   const data = await proxySearch(body);
   return (data.results ?? []).map(mapResult);
 }
+
+/**
+ * Fetch step-by-step instructions for a single recipe by id — the lazy detail
+ * backfill (services/api GET /recipes/:id/instructions). The Cook search payload
+ * already carries steps for essentially every recipe (instructionsRequired,
+ * PR #143), so the detail screen only calls this when its recipe object arrived
+ * with NONE — an old favorite saved before the passthrough existed, or a rare
+ * straggler. Best-effort: returns [] on any failure so the screen simply keeps
+ * its "view original" fallback rather than surfacing an error.
+ */
+export async function fetchRecipeInstructions(id: number): Promise<RecipeInstructionGroup[]> {
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (!apiUrl) {
+    return [];
+  }
+  try {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      return [];
+    }
+    const res = await fetch(`${apiUrl}/recipes/${id}/instructions`, {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      return [];
+    }
+    const body = (await res.json()) as { instructions?: RecipeInstructionGroup[] };
+    return body.instructions ?? [];
+  } catch {
+    return [];
+  }
+}

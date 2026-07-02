@@ -112,7 +112,7 @@ export interface TrimmedRecipe {
   instructions: RecipeInstructionGroup[];
 }
 
-interface UpstreamResult {
+export interface UpstreamResult {
   id?: number;
   title?: string;
   image?: string;
@@ -286,7 +286,7 @@ export function parsePlainInstructions(raw: string | undefined): RecipeInstructi
  * upstream response, so this adds zero quota and no new endpoint (ADR-008
  * NOTE 2/3).
  */
-function resolveInstructions(r: UpstreamResult): RecipeInstructionGroup[] {
+export function resolveInstructions(r: UpstreamResult): RecipeInstructionGroup[] {
   const analyzed = trimInstructions(r.analyzedInstructions);
   return analyzed.length > 0 ? analyzed : parsePlainInstructions(r.instructions);
 }
