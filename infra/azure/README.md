@@ -1,5 +1,13 @@
 # Azure database foundation (Phase 1)
 
+> **⚠ PARKED (2026-07-02).** Production moved to the managed stack — Supabase +
+> PowerSync Cloud + Railway; see [`infra/managed/README.md`](../managed/README.md)
+> and ADR-007. The Azure subscription was offer-constrained (region-restricted
+> Postgres, ACR Tasks blocked, Container Apps capacity walls) and the
+> `rg-pantryparty-prod-westus3` resource group has been deleted. This IaC and
+> the PR #142 branch remain as a revivable reference; do not treat them as the
+> active deploy path.
+
 The private data tier for Pantry Party: a VNet-isolated PostgreSQL Flexible
 Server that PowerSync replicates from, provisioned as infrastructure-as-code and
 seeded by a Container Apps migration Job (no laptop-to-DB connection — the server
