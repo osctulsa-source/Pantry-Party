@@ -136,8 +136,24 @@ single sprint.
 
 ---
 
-## ADR-007 · Production Postgres host: DEFERRED
-**Status:** Deferred · **Date:** Phase 0 closure / Phase 1 prep
+## ADR-007 · Production Postgres host: RESOLVED — Supabase managed (+ PowerSync Cloud + Railway)
+**Status:** Resolved · **Date:** Phase 0 closure / Phase 1 prep · **Resolved:** 2026-07-02
+
+> **Resolution (2026-07-02).** Production runs on the fully managed path:
+> **Supabase** (Postgres + Auth — the same project that already backed app auth,
+> with the IPv4 add-on so PowerSync can use the direct replication connection),
+> **PowerSync Cloud** (managed sync service; sync rules from
+> `infra/local-dev/sync-config.yaml`, client auth = Supabase JWTs via JWKS), and
+> **Railway** (hosts `services/api`, reaching Supabase through the session-mode
+> Supavisor pooler). See `infra/managed/README.md` for the runbook.
+>
+> An Azure attempt (VNet-isolated Postgres Flexible Server + Container Apps,
+> `infra/azure/`, PR #142) shipped its Phase 1 platform but is **parked**: the
+> subscription was offer-constrained (region-restricted Postgres provisioning,
+> ACR Tasks blocked, Container Apps capacity walls). The IaC stays in the repo
+> and the PR #142 branch stays as a revivable reference — do not merge it as an
+> active path. **Auth stays on Supabase** — Entra was considered for the Azure
+> path and dropped with it.
 
 **Context.** Phase 1 development runs against the local PowerSync + Postgres Docker stack
 at `infra/local-dev/`. That stack costs nothing to operate and exercises the same
