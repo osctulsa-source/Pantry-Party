@@ -355,23 +355,45 @@ export function buildRecipesRouter(opts: RecipesRouterOptions = {}): ReturnType<
       // cached response) AND the detail-screen fields (ingredients, steps,
       // time, servings, source) — all already in this payload, zero extra cost.
       addRecipeInformation: 'true',
+      // Only surface recipes that HAVE instructions. The whole promise of the
+      // Cook feed is that any recipe you open shows step-by-step steps in-app,
+      // so the (few) recipes Spoonacular has no instructions for at all are
+      // filtered out upstream — we never lead a user to a "view original" dead
+      // end. Combined with resolveInstructions' analyzed→free-text fallback
+      // (ADR-008 NOTE 3), essentially every card now carries steps.
+      instructionsRequired: 'true',
       number: String(number),
       apiKey: key,
     });
     if (type) params.set('type', type);
     if (offset) params.set('offset', String(offset));
 
-    try {
-      const upstream = await fetchImpl(`${SPOONACULAR_BASE}/complexSearch?${params.toString()}`);
+    // One upstream complexSearch → its raw results, or throw for a clean 502.
+    const runSearch = async (p: URLSearchParams): Promise<UpstreamResult[]> => {
+      const upstream = await fetchImpl(`${SPOONACULAR_BASE}/complexSearch?${p.toString()}`);
       if (!upstream.ok) {
         // Log details server-side; clients get a generic message (the old
         // client surfaced raw upstream bodies — review §2.5 flagged it).
         console.error('[api] spoonacular upstream failed:', upstream.status, upstream.statusText);
-        res.status(502).json({ ok: false, error: 'recipe search upstream failed' });
-        return;
+        throw new Error('recipe search upstream not ok');
       }
       const data = (await upstream.json()) as UpstreamResponse;
-      const results: TrimmedRecipe[] = (data.results ?? []).map((r) => ({
+      return data.results ?? [];
+    };
+
+    try {
+      let upstreamResults = await runSearch(params);
+      // instructionsRequired can, for a very sparse pantry, over-filter the
+      // search to nothing. Never show an empty Cook feed purely because of the
+      // filter: retry once without it. This extra upstream call happens ONLY
+      // when the strict search found nothing, so normal searches still cost
+      // exactly one call (and the relaxed result is cached under the same key).
+      if (upstreamResults.length === 0) {
+        const relaxed = new URLSearchParams(params);
+        relaxed.delete('instructionsRequired');
+        upstreamResults = await runSearch(relaxed);
+      }
+      const results: TrimmedRecipe[] = upstreamResults.map((r) => ({
         id: r.id ?? 0,
         title: r.title ?? '',
         image: r.image ?? '',

@@ -184,6 +184,9 @@ describe('POST /recipes/search', () => {
     expect(calledUrl).toContain('offset=8');
     expect(calledUrl).toContain('fillIngredients=true');
     expect(calledUrl).toContain('addRecipeInformation=true');
+    // Every card must be able to show steps in-app, so the search only asks
+    // for recipes that have instructions.
+    expect(calledUrl).toContain('instructionsRequired=true');
   });
 
   it('falls back to free-text instructions when analyzedInstructions is absent (the foodista case)', async () => {
@@ -232,6 +235,31 @@ describe('POST /recipes/search', () => {
         ],
       },
     ]);
+  });
+
+  it('retries without instructionsRequired when the strict search returns nothing', async () => {
+    // First pass (with instructionsRequired) is empty; the relaxed retry finds one.
+    const fetchImpl = vi.fn(async (url: string) => ({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({
+        results: /instructionsRequired=true/.test(url) ? [] : [UPSTREAM_RESULT],
+      }),
+    })) as unknown as FetchImpl;
+
+    const res = await request(buildApp({ fetchImpl }))
+      .post('/recipes/search')
+      .set('Authorization', `Bearer test:${USER}`)
+      .send(BODY);
+
+    expect(res.status).toBe(200);
+    expect(res.body.results).toHaveLength(1);
+    expect(res.body.results[0].id).toBe(7);
+    // Exactly two upstream calls: the strict search, then the relaxed retry.
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const secondUrl = (fetchImpl as ReturnType<typeof vi.fn>).mock.calls[1]?.[0] as string;
+    expect(secondUrl).not.toContain('instructionsRequired=true');
   });
 
   it('serves identical searches from cache — one upstream call, no quota burn', async () => {
