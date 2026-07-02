@@ -17,7 +17,7 @@
  * (sourceUrl + sourceName) is always offered when present.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,6 +35,8 @@ import { useFavorites } from './useFavorites';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookModeView } from './CookModeView';
+import { fetchRecipeInstructions } from '../../data/spoonacular/client';
+import type { RecipeInstructionGroup } from '../../data/spoonacular/types';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -97,6 +99,8 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const [missingAdded, setMissingAdded] = useState(false);
   const [doneSteps, setDoneSteps] = useState<Set<string>>(new Set());
   const [savedToast, setSavedToast] = useState<{ key: number } | null>(null);
+  const [fetchedSteps, setFetchedSteps] = useState<RecipeInstructionGroup[] | null>(null);
+  const [loadingSteps, setLoadingSteps] = useState(false);
 
   // Auto-dismiss the "Saved to Your Kitchen" toast.
   useEffect(() => {
@@ -104,6 +108,24 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     const t = setTimeout(() => setSavedToast(null), 3000);
     return () => clearTimeout(t);
   }, [savedToast]);
+
+  // Lazy step backfill: a few recipes arrive with empty instructions (an old
+  // favorite saved before the proxy passthrough, or a rare straggler). Fetch
+  // them by id so the steps list AND Cook Mode still work. Best-effort — the
+  // client returns [] on failure, leaving the "view original" fallback.
+  useEffect(() => {
+    if (recipe.instructions.length > 0) return;
+    let cancelled = false;
+    setLoadingSteps(true);
+    fetchRecipeInstructions(recipe.id).then((groups) => {
+      if (cancelled) return;
+      setFetchedSteps(groups);
+      setLoadingSteps(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [recipe.id, recipe.instructions.length]);
 
   const usedLc = useMemo(
     () => recipe.usedIngredientNames.map((n) => n.toLowerCase()),
@@ -168,6 +190,21 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     });
   }
 
+  // A few recipes arrive with empty instructions (see the backfill effect
+  // above); once fetched by id, render from that copy instead of the payload.
+  const effectiveInstructions = useMemo(
+    () => (recipe.instructions.length > 0 ? recipe.instructions : (fetchedSteps ?? [])),
+    [recipe.instructions, fetchedSteps],
+  );
+  // Cook Mode reads recipe.instructions directly, so hand it the backfilled copy.
+  const effectiveRecipe = useMemo(
+    () =>
+      recipe.instructions.length === 0 && fetchedSteps
+        ? { ...recipe, instructions: fetchedSteps }
+        : recipe,
+    [recipe, fetchedSteps],
+  );
+
   // Flatten the grouped instructions into one ordered list with a stable key +
   // running number, so the timeline draws a continuous rail and the check-off
   // state survives re-renders. Per-step ingredients/equipment/length ride along
@@ -183,7 +220,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
       minutes: number | null;
     }> = [];
     let n = 0;
-    recipe.instructions.forEach((group, gi) => {
+    effectiveInstructions.forEach((group, gi) => {
       group.steps.forEach((s, si) => {
         n += 1;
         out.push({
@@ -198,10 +235,10 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
       });
     });
     return out;
-  }, [recipe.instructions]);
+  }, [effectiveInstructions]);
 
   const summary = recipe.summary ? shortSummary(recipe.summary) : '';
-  const hasSteps = recipe.instructions.some((g) => g.steps.length > 0);
+  const hasSteps = effectiveInstructions.some((g) => g.steps.length > 0);
   const showHealth = recipe.healthScore !== null && recipe.healthScore >= 55;
 
   return (
@@ -365,6 +402,11 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
                 </View>
               );
             })
+          ) : loadingSteps ? (
+            <View style={styles.stepsLoading}>
+              <ActivityIndicator color={tokens.color.accent} />
+              <Text style={styles.muted}>Finding the steps…</Text>
+            </View>
           ) : (
             <Text style={styles.muted}>
               Step-by-step instructions aren&apos;t available for this one — tap below to view the original.
@@ -444,7 +486,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 
       {cookMode && (
         <CookModeView
-          recipe={recipe}
+          recipe={effectiveRecipe}
           onClose={() => setCookMode(false)}
           onFinish={() => {
             setCookMode(false);
@@ -599,6 +641,7 @@ const styles = StyleSheet.create({
   ingDotNeed: { borderWidth: 1.5, borderColor: tokens.color.line, backgroundColor: 'transparent' },
   ingTxt: { flex: 1, fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
   muted: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, lineHeight: 20 },
+  stepsLoading: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), paddingVertical: tokens.space(2) },
   secondaryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
