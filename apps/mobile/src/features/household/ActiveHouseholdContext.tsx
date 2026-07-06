@@ -1,42 +1,43 @@
 /**
  * ActiveHouseholdContext — per-device "which household is current?" state.
  *
- * Why per-device (not synced):
- *   v1 active-household preference is a UI-local concept; syncing it across
- *   devices was a deliberate non-goal for PR C. Each install picks its own
- *   active household. Promoting this to a synced preference later is purely
- *   additive — replace the AsyncStorage write with a CRUD insert into a
- *   user_preferences table.
+ * Resolution (reactive): activeHouseholdId =
+ *   1. an explicit in-session switch (setActiveHouseholdId), else
+ *   2. the stored per-device preference (AsyncStorage) — trusted even if it
+ *      isn't in the local membership list yet, so returning users don't flash,
+ *      else
+ *   3. the most-recently-created membership from a LIVE query of user_households.
  *
- * Bootstrap order on (re)mount, per Auth user_id:
- *   1. Read AsyncStorage[STORAGE_KEY]
- *   2. If a stored id exists → use it. (We trust the stored value even if the
- *      user no longer belongs to that household — sync rules will simply yield
- *      no rows and the user can switch via HouseholdScreen.)
- *   3. Otherwise → query user_households via the PowerSync db (one-shot,
- *      NOT reactive) for the most-recently-created membership and use that
- *      as the default. Persist it so subsequent launches skip the query.
- *   4. If the user has zero memberships (shouldn't happen post-
- *      ensureDefaultHousehold) → leave activeHouseholdId null, isLoading false.
+ * Why reactive (bug fix, 2026-07): the previous version ran a ONE-SHOT fallback
+ * query the moment auth flipped to authenticated. On a cold first launch that
+ * query executes BEFORE PowerSync's first sync completes and before
+ * ensureDefaultHousehold creates the row (both fire-and-forget in AuthContext),
+ * so it found zero memberships, set activeHouseholdId = null, and never
+ * re-queried — leaving the whole app without a household until the user killed
+ * and relaunched. Because usePantryItems, onboarding, and the Cook tab all key
+ * off this id, that single stale read broke onboarding's quick-add (silent
+ * no-op) AND left the main screen stuck loading. A live useQuery self-heals: the
+ * instant the household is written locally (ensureDefaultHousehold) or arrives
+ * via sync, activeHouseholdId populates and every consumer re-renders — no
+ * relaunch needed.
  *
- * Writes (setActiveHouseholdId): update state immediately, then persist
- * fire-and-forget. Storage failures are warned but don't block the UI — losing
- * a single preference write is cheap; blocking a household-switch tap on disk
- * I/O is not.
+ * Per-device (not synced): v1 active-household preference is UI-local; promoting
+ * it to a synced user_preferences row later is purely additive.
  */
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useQuery } from '@powersync/react-native';
 
 import { useAuth } from '../auth/AuthContext';
-import { getPowerSync } from '../../data/powersync/db';
 
 const STORAGE_KEY = 'breadbox.activeHouseholdId';
 
@@ -52,74 +53,65 @@ export function ActiveHouseholdProvider({ children }: { children: ReactNode }) {
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
 
-  const [activeHouseholdId, setActiveHouseholdIdState] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Stored per-device preference. `undefined` = not read yet; `null` = read, none.
+  const [storedPref, setStoredPref] = useState<string | null | undefined>(undefined);
+  // A household the user explicitly switched to this session (takes precedence).
+  const [override, setOverride] = useState<string | null>(null);
+  const readTokenRef = useRef(0);
 
-  // Guards against late-arriving bootstrap writes after the user signed out /
-  // switched accounts — only the latest bootstrap run is allowed to set state.
-  const bootstrapTokenRef = useRef(0);
-
+  // (Re)read the stored preference whenever the signed-in user changes.
   useEffect(() => {
-    if (authState.status === 'loading') {
-      // Defer — AuthContext is still resolving the initial session.
-      setIsLoading(true);
-      return;
-    }
+    setOverride(null);
     if (!userId) {
-      // Signed out. Clear any in-memory active id; leave AsyncStorage alone so
-      // the same user signing back in on the same device gets their pick back.
-      setActiveHouseholdIdState(null);
-      setIsLoading(false);
+      setStoredPref(null);
       return;
     }
+    const token = ++readTokenRef.current;
+    setStoredPref(undefined);
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((v) => {
+        if (token === readTokenRef.current) setStoredPref(v);
+      })
+      .catch(() => {
+        if (token === readTokenRef.current) setStoredPref(null);
+      });
+  }, [userId]);
 
-    const token = ++bootstrapTokenRef.current;
-    setIsLoading(true);
+  // Live membership list — updates as ensureDefaultHousehold creates the row and
+  // as sync delivers memberships. This is the fix for the first-launch race.
+  // Empty-string sentinel matches no user when signed out.
+  const { data: memberships } = useQuery<{ household_id: string }>(
+    'SELECT household_id FROM user_households WHERE user_id = ? ORDER BY created_at DESC',
+    [userId ?? ''],
+  );
+  const membershipIds = useMemo(
+    () => (memberships ?? []).map((m) => m.household_id),
+    [memberships],
+  );
 
-    void (async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (token !== bootstrapTokenRef.current) return;
+  const activeHouseholdId = useMemo(() => {
+    if (!userId) return null;
+    if (override) return override;
+    if (storedPref) return storedPref;
+    return membershipIds[0] ?? null;
+  }, [userId, override, storedPref, membershipIds]);
 
-        if (stored) {
-          setActiveHouseholdIdState(stored);
-          setIsLoading(false);
-          return;
-        }
+  // Loading only until the stored preference is read; after that the live query
+  // fills activeHouseholdId in as the household appears — we never block the UI
+  // waiting on first sync, and never hang.
+  const isLoading = authState.status === 'loading' || (userId !== null && storedPref === undefined);
 
-        // No stored preference — fall back to the most-recently-created
-        // membership. One-shot getAll (not useQuery): bootstrap doesn't need
-        // reactive resubscription, and we don't want a stale fallback racing
-        // a user-initiated setActiveHouseholdId().
-        const rows = await getPowerSync().getAll<{ household_id: string }>(
-          `SELECT household_id FROM user_households
-           WHERE user_id = ?
-           ORDER BY created_at DESC
-           LIMIT 1`,
-          [userId],
-        );
-        if (token !== bootstrapTokenRef.current) return;
-
-        const fallback = rows[0]?.household_id ?? null;
-        setActiveHouseholdIdState(fallback);
-        setIsLoading(false);
-
-        if (fallback) {
-          AsyncStorage.setItem(STORAGE_KEY, fallback).catch((e: unknown) => {
-            console.warn('[ActiveHouseholdContext] failed to persist bootstrap fallback:', e);
-          });
-        }
-      } catch (e: unknown) {
-        if (token !== bootstrapTokenRef.current) return;
-        console.warn('[ActiveHouseholdContext] bootstrap failed:', e);
-        setActiveHouseholdIdState(null);
-        setIsLoading(false);
-      }
-    })();
-  }, [authState.status, userId]);
+  // Persist whatever we settle on so later launches take the fast path.
+  useEffect(() => {
+    if (activeHouseholdId) {
+      AsyncStorage.setItem(STORAGE_KEY, activeHouseholdId).catch((e: unknown) => {
+        console.warn('[ActiveHouseholdContext] failed to persist active household:', e);
+      });
+    }
+  }, [activeHouseholdId]);
 
   const setActiveHouseholdId = useCallback((id: string) => {
-    setActiveHouseholdIdState(id);
+    setOverride(id);
     AsyncStorage.setItem(STORAGE_KEY, id).catch((e: unknown) => {
       console.warn('[ActiveHouseholdContext] failed to persist active household:', e);
     });
