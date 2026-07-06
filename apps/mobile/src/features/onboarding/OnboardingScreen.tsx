@@ -5,6 +5,13 @@
  * navigator. Reuses QuickAddStaples so tapping a staple inserts it with smart
  * category / location / expiry defaults. "Continue" (or "Skip for now") calls
  * onDone(), which persists the onboarded flag and swaps in the main app.
+ *
+ * Note: adding a staple needs an active household. On a brand-new sign-up the
+ * household is created asynchronously (ensureDefaultHousehold, after first sync),
+ * so activeHouseholdId can be null for the first moment on this screen — we show
+ * a brief "getting your pantry ready" hint until it resolves so an early tap
+ * isn't silently ignored. (The reactive ActiveHouseholdContext fills it in
+ * without a relaunch.)
  */
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -27,6 +34,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const [finishing, setFinishing] = useState(false);
 
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
+  const householdReady = userId !== null && activeHouseholdId !== null;
 
   async function onAdd(staple: Staple) {
     if (!userId || !activeHouseholdId || added.includes(staple.name)) return;
@@ -62,6 +70,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
           Tap the staples you usually keep on hand — we'll add them with smart expiry dates. You can skip this and add
           things anytime.
         </Text>
+        {!householdReady && <Text style={styles.settingUp}>Getting your pantry ready…</Text>}
         <View style={styles.list}>
           <QuickAddStaples added={added} onAdd={onAdd} />
         </View>
@@ -107,6 +116,12 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     lineHeight: 20,
     marginBottom: tokens.space(5),
+  },
+  settingUp: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+    marginBottom: tokens.space(3),
   },
   list: { marginTop: tokens.space(1) },
   footer: {
