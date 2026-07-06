@@ -14,5 +14,7 @@
     },
     "composite": false
   },
-  "include": ["App.tsx", "src/**/*.ts", "src/**/*.tsx"]
+  "include": ["App.tsx", "src/**/*.ts", "src/**/*.tsx"],
+  "//": "Test files are run by jest (Babel transform), not typechecked here — keeps the tsc job independent of jest/RNTL types. Add a tsconfig.test.json later if you want them typechecked.",
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
