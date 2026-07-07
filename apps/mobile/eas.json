@@ -27,6 +27,7 @@
       "android": { "buildType": "apk" }
     },
     "production": {
+      "channel": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production",

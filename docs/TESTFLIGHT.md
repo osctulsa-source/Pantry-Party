@@ -10,6 +10,14 @@ build landed on device on **2026-07-06** (App Store Connect app
 > `eas.json`. A TestFlight build therefore talks to the **live** managed stack —
 > make sure the production profile points at prod, not localhost.
 
+## Which path do I need? (decide first)
+
+| You changed… | Ship it via |
+|---|---|
+| **JS/TS only** (screens, hooks, logic, styles, images imported from JS) | **EAS Update (OTA)** — ~1 minute, no build. See [OTA updates](#ota-updates-eas-update--js-only-changes-in-1-minute). |
+| `app.config.js`, plugins, native deps (`package.json` deps with native code), `targets/widget/`, splash/icons | **Full build** — the recipe below, then submit. |
+| Not sure | Full build — always safe, just slower. |
+
 ## Prerequisites (one-time)
 
 - Apple Developer Program membership + access to the App Store Connect record
@@ -57,6 +65,38 @@ The build processes for a few minutes, then appears under the **TestFlight** tab
 > **public App Store release** and is **not** required for TestFlight. Ignore it
 > until you're doing a public launch.
 
+## OTA updates (EAS Update) — JS-only changes in ~1 minute
+
+`expo-updates` is wired with `runtimeVersion: { policy: 'fingerprint' }` and the
+production build profile is on the **`production` channel** (`eas.json`). That
+means installed TestFlight builds check for published JS updates and apply them —
+no new build, no upload, no processing wait.
+
+**Ship a JS-only change** (from `apps/mobile/`, on the same `main` state the
+current TestFlight build was made from):
+
+```sh
+eas update --channel production --message "fix: whatever changed"
+```
+
+- **When testers get it:** the app downloads the update in the background on
+  launch and applies it on the **next** launch. To see it deterministically:
+  kill the app, open it (downloads), kill it again, open it (runs the update).
+- **Safety (why fingerprint):** the update carries a hash of the native runtime
+  it was built against. Builds whose native side doesn't match simply don't
+  receive it — so an OTA update can never crash an older binary by referencing
+  a native module it doesn't have. If you've changed anything native since the
+  last build, `eas update` will target a fingerprint no installed build has:
+  that's your signal to ship a **full build** instead.
+- **What can ship OTA:** JS/TS, styles, JS-imported assets. **What cannot:**
+  anything in the full-build row of the table above.
+- (Sentry note: `SENTRY_DISABLE_AUTO_UPLOAD=true` means OTA bundles don't upload
+  sourcemaps — stack traces from updated installs may be unsymbolicated.)
+
+**One-time activation:** OTA only works in builds that CONTAIN the expo-updates
+runtime — i.e. builds made after this config landed. The first build after
+adding `expo-updates` must be a full build (recipe above).
+
 ## Gotchas resolved on the first build (all fixed / committed)
 
 Recognize these if they recur:
@@ -87,4 +127,5 @@ Recognize these if they recur:
 
 Re-run the build recipe → `eas submit`. `autoIncrement` handles the build number;
 the new build appears in TestFlight and existing internal testers get it
-automatically.
+automatically. For JS-only changes, prefer an [OTA update](#ota-updates-eas-update--js-only-changes-in-1-minute)
+instead.
