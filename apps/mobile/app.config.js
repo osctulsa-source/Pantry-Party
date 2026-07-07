@@ -33,6 +33,19 @@ module.exports = {
     userInterfaceStyle: 'automatic',
     scheme: 'pantryparty',
     icon: './assets/icon.png',
+    // OTA updates (EAS Update): JS/asset changes ship to existing TestFlight
+    // installs via `eas update --channel production` — no new build. The
+    // `fingerprint` runtime policy hashes the NATIVE runtime, so an update is
+    // only delivered to builds whose native side matches; adding/removing a
+    // native module changes the fingerprint and automatically fences old
+    // builds off (no manual version discipline — important because `version`
+    // stays put while eas.json autoIncrement bumps build numbers).
+    updates: {
+      url: 'https://u.expo.dev/b307f8c4-9c6f-46eb-9288-39a9b9a7c844',
+    },
+    runtimeVersion: {
+      policy: 'fingerprint',
+    },
     ios: {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
