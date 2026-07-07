@@ -1,0 +1,28 @@
+# EAS Build reads this from the monorepo root. Replicates .gitignore, but
+# un-ignores apps/mobile/ios so EAS skips its buggy remote widget prebuild.
+node_modules/
+.pnp.*
+dist/
+build/
+*.tsbuildinfo
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+android/
+ios/
+.env
+.env.*
+!.env.example
+spikes/**/results/*.json
+.powersync/
+.DS_Store
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+!apps/mobile/ios/
+!apps/mobile/ios/**

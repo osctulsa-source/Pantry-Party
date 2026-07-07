@@ -30,6 +30,8 @@
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production",
+        "APPLE_TEAM_ID": "X7E3964XPW",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
         "EXPO_PUBLIC_POWERSYNC_URL": "https://6a19dc178d064eb85eea1728.powersync.journeyapps.com",
         "EXPO_PUBLIC_API_URL": "https://api-production-f3c5.up.railway.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://yclvepnvoisgprqcenvj.supabase.co",
@@ -39,6 +41,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "6788079875"
+      }
+    }
   }
 }

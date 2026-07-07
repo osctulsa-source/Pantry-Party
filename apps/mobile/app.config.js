@@ -36,6 +36,10 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
+      appleTeamId: 'X7E3964XPW',
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
       // Shared with the widget extension so the app can write the "expiring"
       // snapshot the widget reads. Fixed id across variants (see header).
       entitlements: {
@@ -80,6 +84,11 @@ module.exports = {
     ],
     experiments: {
       typedRoutes: false,
+    },
+    extra: {
+      eas: {
+        projectId: 'b307f8c4-9c6f-46eb-9288-39a9b9a7c844',
+      },
     },
   },
 };
