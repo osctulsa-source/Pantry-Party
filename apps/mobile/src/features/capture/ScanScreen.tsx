@@ -49,6 +49,11 @@ const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e'] as const;
 const DEBOUNCE_MS = 2500;
 const SCAN_MODE_KEY = 'scanMode';
 const MAX_BASKET = 50;
+// No barcode for this long while scanning → the camera is probably struggling
+// (glare, distance, low light). Swap the hint to troubleshooting guidance.
+const STRUGGLE_MS = 7000;
+// "Looking that up..." for this long → it's the network, not their aim.
+const LOOKUP_SLOW_MS = 2500;
 
 type ScanMode = 'basket' | 'confirm';
 
@@ -80,6 +85,10 @@ export function ScanScreen() {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
 
+  // Feedback states: nothing scanned for a while / lookup dragging on.
+  const [struggling, setStruggling] = useState(false);
+  const [lookupSlow, setLookupSlow] = useState(false);
+
   const lastScan = useRef<{ code: string; at: number }>({ code: '', at: 0 });
 
   // D2: confirm card spring entrance — slides up from below with overshoot.
@@ -108,6 +117,27 @@ export function ScanScreen() {
       ]).start();
     }
   }, [phase.kind, cardSlide, cardOpacity, thumbScale]);
+
+  // Struggle timer: arms whenever we're live-scanning, clears on any barcode
+  // (phase leaves 'scanning') or when the review sheet pauses the camera.
+  useEffect(() => {
+    if (phase.kind !== 'scanning' || reviewOpen) {
+      setStruggling(false);
+      return;
+    }
+    const t = setTimeout(() => setStruggling(true), STRUGGLE_MS);
+    return () => clearTimeout(t);
+  }, [phase.kind, reviewOpen]);
+
+  // Slow-lookup timer: same shape, for the 'looking' phase.
+  useEffect(() => {
+    if (phase.kind !== 'looking') {
+      setLookupSlow(false);
+      return;
+    }
+    const t = setTimeout(() => setLookupSlow(true), LOOKUP_SLOW_MS);
+    return () => clearTimeout(t);
+  }, [phase.kind]);
 
   function selectMode(next: ScanMode) {
     setMode(next);
@@ -153,8 +183,14 @@ export function ScanScreen() {
         },
       ];
     });
-    setLastAdded(product?.name || 'Unknown item');
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    // A miss still lands in the basket, but feel + copy should say "you'll need
+    // to name this one" rather than pretending it worked.
+    setLastAdded(product?.name || 'Unknown item — needs a name');
+    Haptics.notificationAsync(
+      product?.name != null
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Warning,
+    ).catch(() => {});
     setPhase({ kind: 'scanning' });
   }
 
@@ -254,6 +290,9 @@ export function ScanScreen() {
   }
 
   const confirming = phase.kind === 'confirm';
+  // Lookup misses sit in the basket unnamed; Add is gated on names, so the
+  // basket bar has to say "tap Review" instead of quietly counting them.
+  const unnamedCount = basket.filter((b) => b.name.trim().length === 0).length;
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
@@ -267,7 +306,12 @@ export function ScanScreen() {
             phase.kind === 'scanning' && !reviewOpen ? (r) => void onBarcode(r) : undefined
           }
         />
-        <View style={styles.viewfinder} pointerEvents="none" />
+        <View style={[styles.viewfinder, struggling && styles.viewfinderStruggling]} pointerEvents="none" />
+        {struggling && phase.kind === 'scanning' && (
+          <View style={styles.struggleChip} pointerEvents="none">
+            <Text style={styles.struggleChipTxt}>Fill the frame — close and steady</Text>
+          </View>
+        )}
         <Pressable
           style={styles.torchBtn}
           onPress={() => setTorch((t) => !t)}
@@ -311,7 +355,7 @@ export function ScanScreen() {
           </View>
         )}
 
-        {phase.kind === 'scanning' && (
+        {phase.kind === 'scanning' && !struggling && (
           <>
             <Text style={styles.hint}>
               {mode === 'basket' ? 'Point at barcodes — they stack up below' : 'Point at any barcode'}
@@ -324,10 +368,40 @@ export function ScanScreen() {
           </>
         )}
 
+        {phase.kind === 'scanning' && struggling && (
+          <>
+            <Text style={[styles.hint, styles.hintStruggling]}>
+              Not reading? Get closer so the barcode fills the frame.
+            </Text>
+            <View style={styles.struggleActions}>
+              {!torch && (
+                <Pressable
+                  onPress={() => setTorch(true)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Turn on the light"
+                >
+                  <Text style={styles.bulkLink}>Turn on the light</Text>
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => navigation.navigate('BulkPaste')}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Type or paste a list instead"
+              >
+                <Text style={styles.bulkLink}>Type it instead</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
+
         {phase.kind === 'looking' && (
           <View style={styles.lookupRow}>
             <ActivityIndicator color={tokens.color.accent} />
-            <Text style={styles.hint}>Looking that up...</Text>
+            <Text style={styles.hint}>
+              {lookupSlow ? 'Still looking — slow connection…' : 'Looking that up...'}
+            </Text>
           </View>
         )}
 
@@ -403,10 +477,16 @@ export function ScanScreen() {
               <Text style={styles.basketCount}>
                 {basket.length} {basket.length === 1 ? 'item' : 'items'}
               </Text>
-              {lastAdded && (
-                <Text style={styles.basketSub} numberOfLines={1}>
-                  Last: {lastAdded}
+              {unnamedCount > 0 ? (
+                <Text style={[styles.basketSub, styles.basketSubWarn]} numberOfLines={1}>
+                  {unnamedCount} {unnamedCount === 1 ? 'needs' : 'need'} a name — tap Review
                 </Text>
+              ) : (
+                lastAdded && (
+                  <Text style={styles.basketSub} numberOfLines={1}>
+                    Last: {lastAdded}
+                  </Text>
+                )
               )}
             </View>
             <Text style={styles.basketBtn}>Review ›</Text>
@@ -455,6 +535,19 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
     opacity: 0.85,
   },
+  // Amber = "we're not getting a read" (paired with the struggle chip + hint).
+  viewfinderStruggling: { borderColor: tokens.color.warning, opacity: 1 },
+  struggleChip: {
+    position: 'absolute',
+    top: '28%',
+    alignSelf: 'center',
+    marginTop: 148,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(4),
+    borderRadius: 999,
+  },
+  struggleChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: '#FFFFFF' },
   torchBtn: {
     position: 'absolute',
     top: tokens.space(4),
@@ -489,6 +582,8 @@ const styles = StyleSheet.create({
   segTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted },
   segTxtOn: { color: tokens.color.onAccent },
   hint: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted },
+  hintStruggling: { color: tokens.color.warning, fontFamily: tokens.font.body.semibold },
+  struggleActions: { flexDirection: 'row', gap: tokens.space(5) },
   bulkLink: { marginTop: tokens.space(2), fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
   lookupRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3) },
   confirmHead: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), marginBottom: tokens.space(3) },
@@ -537,5 +632,6 @@ const styles = StyleSheet.create({
   basketMeta: { flex: 1 },
   basketCount: { fontFamily: tokens.font.display.bold, fontSize: 16, color: tokens.color.ink },
   basketSub: { fontFamily: tokens.font.body.regular, fontSize: 11.5, color: tokens.color.inkMuted, marginTop: 1 },
+  basketSubWarn: { color: tokens.color.warning, fontFamily: tokens.font.body.semibold },
   basketBtn: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
 });
