@@ -1,0 +1,12 @@
+appId: com.osctulsa.pantryparty.dev
+---
+- launchApp:
+    appId: com.osctulsa.pantryparty.dev
+- tapOn: "Pantry Party"
+- extendedWaitUntil:
+    visible:
+      - "Development servers"
+      - "Recently opened"
+      - "Pantry"
+      - "Sign in"
+    timeout: 60000

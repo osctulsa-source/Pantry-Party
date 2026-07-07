@@ -16,6 +16,9 @@ build/
 *.mobileprovision
 ios/
 android/
+# @bacons/apple-targets regenerates this from expo-target.config.js on every
+# prebuild — the Info.plist beside it is hand-authored and stays tracked.
+apps/mobile/targets/*/generated.entitlements
 
 # Env & secrets — NEVER commit
 .env
