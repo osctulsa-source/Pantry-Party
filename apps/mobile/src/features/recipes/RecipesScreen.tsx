@@ -42,6 +42,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import {
   ArrowRight,
   Check,
+  ChefHat,
   ChevronDown,
   ChevronRight,
   ChevronUp,
@@ -90,10 +91,13 @@ import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
+import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
 import type { RootStackParamList } from '../../../App';
 
 const CARD_W = Dimensions.get('window').width;
 const PAGE = 8;
+// Bundled house recipes injected per page alongside the server results.
+const CURATED_PAGE = 6;
 
 type MealChoice = MealType | 'any';
 
@@ -161,7 +165,13 @@ function RecipeRow({
 }) {
   return (
     <Pressable style={styles.altRow} onPress={() => onOpen(recipe)}>
-      <Image source={{ uri: recipe.image }} style={styles.altThumb} />
+      {recipe.image ? (
+        <Image source={{ uri: recipe.image }} style={styles.altThumb} />
+      ) : (
+        <View style={[styles.altThumb, styles.altThumbPlaceholder]}>
+          <ChefHat size={22} color={tokens.color.accent} strokeWidth={1.5} />
+        </View>
+      )}
       <View style={styles.altText}>
         <Text style={styles.altName} numberOfLines={1}>
           {recipe.title}
@@ -170,6 +180,7 @@ function RecipeRow({
           {recipe.readyInMinutes !== null ? `${recipe.readyInMinutes} min · ` : ''}
           {matchLine(recipe)}
           {recipe.healthScore !== null && recipe.healthScore >= 70 ? ' · very healthy' : ''}
+          {recipe.sourceName === CURATED_SOURCE_NAME ? ' · house recipe' : ''}
         </Text>
       </View>
       <ChevronRight size={18} color={tokens.color.inkMuted} />
@@ -248,6 +259,15 @@ export function RecipesScreen() {
       return;
     }
     setRecipeState({ kind: 'loading' });
+    // Bundled house recipes: matched locally against the pantry (zero quota,
+    // works offline). Same exclusions + meal filter + paging as the server
+    // search; merged below, then re-ranked by the existing blend.
+    const curated = searchCurated(
+      items
+        .filter((i) => !excluded.includes(i.name.toLowerCase()))
+        .map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
+      { type: meal === 'any' ? undefined : meal, number: CURATED_PAGE, offset },
+    );
     (async () => {
       try {
         const recipes = await searchByMeal(names, {
@@ -256,9 +276,14 @@ export function RecipesScreen() {
           offset,
         });
         if (cancelled) return;
-        setRecipeState(recipes.length === 0 ? { kind: 'empty', reason: 'no-match' } : { kind: 'ok', recipes });
+        const merged = [...recipes, ...curated];
+        setRecipeState(merged.length === 0 ? { kind: 'empty', reason: 'no-match' } : { kind: 'ok', recipes: merged });
       } catch (e) {
-        if (!cancelled) setRecipeState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
+        if (cancelled) return;
+        // Server down / offline: the bundled recipes still work — degrade the
+        // Cook tab to offline mode instead of showing an error.
+        if (curated.length > 0) setRecipeState({ kind: 'ok', recipes: curated });
+        else setRecipeState({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
       }
     })();
     return () => {
@@ -820,7 +845,13 @@ function HeroCard({
     <View style={styles.cardPage}>
       <Pressable style={[styles.hero, skipped && styles.heroDim]} onPress={() => onOpen(recipe)}>
         <View style={styles.heroImgWrap}>
-          <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+          {recipe.image ? (
+            <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+          ) : (
+            <View style={[styles.heroImg, styles.heroImgPlaceholder]}>
+              <ChefHat size={44} color={tokens.color.accent} strokeWidth={1.5} />
+            </View>
+          )}
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.82)'] as const}
             start={{ x: 0, y: 0 }}
@@ -869,6 +900,12 @@ function HeroCard({
                   <Text style={[styles.metaTxt, styles.metaTxtHealth]}>
                     {recipe.healthScore >= 70 ? 'Very healthy' : 'Healthy'} · {recipe.healthScore}
                   </Text>
+                </View>
+              )}
+              {recipe.sourceName === CURATED_SOURCE_NAME && (
+                <View style={[styles.metaChip, styles.houseChip]}>
+                  <ChefHat size={12} color={tokens.color.accent} />
+                  <Text style={[styles.metaTxt, styles.metaTxtEasy]}>House recipe</Text>
                 </View>
               )}
             </View>
@@ -996,6 +1033,9 @@ const styles = StyleSheet.create({
   metaTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
   metaTxtHealth: { color: tokens.color.success },
   metaTxtEasy: { color: tokens.color.accent },
+  houseChip: { backgroundColor: tokens.color.accentSoft },
+  heroImgPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
+  altThumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
   resetTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted },
   ingWrap: { marginTop: tokens.space(3) },
   ingHint: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
