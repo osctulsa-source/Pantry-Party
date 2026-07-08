@@ -44,7 +44,7 @@ for (const file of process.argv.slice(2)) {
       else seenTitles.add(t);
     }
 
-    if (r.image !== '') where('image must be ""');
+    if (!(r.image === '' || /^https:\/\//.test(r.image))) where('image must be "" or an https URL');
     if (!DIFF.has(r.difficulty)) where(`difficulty must be easy|medium (got ${r.difficulty})`);
     if (!MEALS.has(r.mealType)) where(`mealType invalid (got ${r.mealType})`);
     if (!Array.isArray(r.cuisines) || r.cuisines.some((c) => typeof c !== 'string')) where('cuisines must be string[]');

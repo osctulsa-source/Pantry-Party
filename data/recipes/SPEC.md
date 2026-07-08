@@ -7,7 +7,8 @@ Output: a JSON array of recipe objects, written to your assigned batch file.
 - Dish CHOICES are researched from popularity data (facts, fine). Every word of
   the summary and every instruction step must be YOUR OWN original writing.
   Never reproduce text from any recipe website. No brand names in text.
-- `image` is always `""` (photos come later from a clean source).
+- `image` is always `""` at AUTHORING time (the image pass fills in hosted
+  URLs later; the validator accepts "" or an https URL).
 
 ## Schema (per recipe — every field required unless noted)
 

@@ -2,7 +2,7 @@
   {
     "id": 9000001,
     "title": "Fluffy Pancakes",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000001.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [
@@ -157,7 +157,7 @@
   {
     "id": 9000002,
     "title": "Classic French Toast",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000002.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [
@@ -299,7 +299,7 @@
   {
     "id": 9000003,
     "title": "Banana Bread",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000003.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [
@@ -568,7 +568,7 @@
   {
     "id": 9000005,
     "title": "Veggie Omelette",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000005.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [
@@ -714,7 +714,7 @@
   {
     "id": 9000006,
     "title": "Overnight Oats",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000006.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [],
@@ -830,7 +830,7 @@
   {
     "id": 9000007,
     "title": "Blueberry Muffins",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000007.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [
@@ -1135,7 +1135,7 @@
   {
     "id": 9000009,
     "title": "Avocado Toast with Fried Egg",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000009.jpg",
     "difficulty": "easy",
     "mealType": "breakfast",
     "cuisines": [],
@@ -1264,7 +1264,7 @@
   {
     "id": 9000010,
     "title": "Shakshuka",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000010.jpg",
     "difficulty": "medium",
     "mealType": "breakfast",
     "cuisines": [
@@ -3525,7 +3525,7 @@
   {
     "id": 9000026,
     "title": "Marry Me Chicken",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000026.jpg",
     "difficulty": "medium",
     "mealType": "main course",
     "cuisines": [
@@ -3846,7 +3846,7 @@
   {
     "id": 9000028,
     "title": "Butter Chicken",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000028.jpg",
     "difficulty": "medium",
     "mealType": "main course",
     "cuisines": [
@@ -4024,7 +4024,7 @@
   {
     "id": 9000029,
     "title": "Chicken Stir-Fry",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000029.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -4184,7 +4184,7 @@
   {
     "id": 9000030,
     "title": "Chicken Fajitas",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000030.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -4643,7 +4643,7 @@
   {
     "id": 9000033,
     "title": "Chicken Noodle Soup",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000033.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -5129,7 +5129,7 @@
   {
     "id": 9000036,
     "title": "Chicken Alfredo",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000036.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -5429,7 +5429,7 @@
   {
     "id": 9000038,
     "title": "Honey Garlic Chicken",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000038.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -5571,7 +5571,7 @@
   {
     "id": 9000039,
     "title": "Chicken Fried Rice",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000039.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -5914,7 +5914,7 @@
   {
     "id": 9000041,
     "title": "BBQ Chicken Thighs",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000041.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -6609,7 +6609,7 @@
   {
     "id": 9000046,
     "title": "Baked Mac and Cheese",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000046.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -6758,7 +6758,7 @@
   {
     "id": 9000047,
     "title": "Spaghetti Carbonara",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000047.jpg",
     "difficulty": "medium",
     "mealType": "main course",
     "cuisines": [
@@ -6907,7 +6907,7 @@
   {
     "id": 9000048,
     "title": "Penne Arrabbiata",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000048.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -7173,7 +7173,7 @@
   {
     "id": 9000050,
     "title": "Baked Ziti",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000050.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -7330,7 +7330,7 @@
   {
     "id": 9000051,
     "title": "Spaghetti Bolognese",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000051.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -7507,7 +7507,7 @@
   {
     "id": 9000052,
     "title": "Chili con Carne",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000052.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -7653,7 +7653,7 @@
   {
     "id": 9000053,
     "title": "Classic Meatloaf",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000053.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -7803,7 +7803,7 @@
   {
     "id": 9000054,
     "title": "Beef Tacos",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000054.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -7942,7 +7942,7 @@
   {
     "id": 9000055,
     "title": "Classic Cheeseburgers",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000055.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -8075,7 +8075,7 @@
   {
     "id": 9000056,
     "title": "Beef Stew",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000056.jpg",
     "difficulty": "medium",
     "mealType": "main course",
     "cuisines": [],
@@ -8246,7 +8246,7 @@
   {
     "id": 9000057,
     "title": "Beef Stroganoff",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000057.jpg",
     "difficulty": "medium",
     "mealType": "main course",
     "cuisines": [
@@ -8803,7 +8803,7 @@
   {
     "id": 9000060,
     "title": "Beef and Broccoli Stir-Fry",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000060.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -8966,7 +8966,7 @@
   {
     "id": 9000061,
     "title": "Sloppy Joes",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000061.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -11182,7 +11182,7 @@
   {
     "id": 9000076,
     "title": "Baked Salmon with Lemon",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000076.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [],
@@ -11440,7 +11440,7 @@
   {
     "id": 9000078,
     "title": "Shrimp Scampi",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000078.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -11618,7 +11618,7 @@
   {
     "id": 9000079,
     "title": "Fish Tacos",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000079.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -13487,7 +13487,7 @@
   {
     "id": 9000091,
     "title": "Margherita Flatbread Pizza",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000091.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -13785,7 +13785,7 @@
   {
     "id": 9000093,
     "title": "Vegetable Stir-Fry",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000093.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -13939,7 +13939,7 @@
   {
     "id": 9000094,
     "title": "Hearty Veggie Chili",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000094.jpg",
     "difficulty": "easy",
     "mealType": "main course",
     "cuisines": [
@@ -15039,7 +15039,7 @@
   {
     "id": 9000101,
     "title": "Chocolate Chip Cookies",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000101.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -15211,7 +15211,7 @@
   {
     "id": 9000102,
     "title": "Fudgy Brownies",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000102.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -15727,7 +15727,7 @@
   {
     "id": 9000105,
     "title": "Banana Pudding",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000105.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -16299,7 +16299,7 @@
   {
     "id": 9000109,
     "title": "Chocolate Cake",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000109.jpg",
     "difficulty": "medium",
     "mealType": "dessert",
     "cuisines": [
@@ -16502,7 +16502,7 @@
   {
     "id": 9000110,
     "title": "Vanilla Cupcakes",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000110.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -16667,7 +16667,7 @@
   {
     "id": 9000111,
     "title": "Lemon Bars",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000111.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -16980,7 +16980,7 @@
   {
     "id": 9000113,
     "title": "Apple Crisp",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000113.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -18485,7 +18485,7 @@
   {
     "id": 9000123,
     "title": "Strawberry Shortcake",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000123.jpg",
     "difficulty": "easy",
     "mealType": "dessert",
     "cuisines": [
@@ -20647,7 +20647,7 @@
   {
     "id": 9000136,
     "title": "Crispy Baked Chicken Wings",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000136.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
@@ -20796,7 +20796,7 @@
   {
     "id": 9000137,
     "title": "Classic Guacamole",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000137.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
@@ -20930,7 +20930,7 @@
   {
     "id": 9000138,
     "title": "Creamy Hummus",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000138.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
@@ -21193,7 +21193,7 @@
   {
     "id": 9000140,
     "title": "Deviled Eggs",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000140.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
@@ -21326,7 +21326,7 @@
   {
     "id": 9000141,
     "title": "Tomato Basil Bruschetta",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000141.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
@@ -21454,7 +21454,7 @@
   {
     "id": 9000142,
     "title": "Loaded Nachos",
-    "image": "",
+    "image": "https://yclvepnvoisgprqcenvj.supabase.co/storage/v1/object/public/recipe-images/9000142.jpg",
     "difficulty": "easy",
     "mealType": "snack",
     "cuisines": [
