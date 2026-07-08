@@ -26,3 +26,11 @@ spikes/**/results/*.json
 
 !apps/mobile/ios/
 !apps/mobile/ios/**
+
+# Stale local CocoaPods/Xcode artifacts — exclude from EAS upload so remote
+# workers regenerate Pods with correct paths (docs/TESTFLIGHT.md). Prevents
+# ~400MB uploads and hardcoded-path failures when prebuild installs Pods locally.
+apps/mobile/ios/Pods/
+apps/mobile/ios/Podfile.lock
+apps/mobile/ios/build/
+apps/mobile/ios/*.xcworkspace/
