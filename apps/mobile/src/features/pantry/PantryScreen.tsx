@@ -165,6 +165,60 @@ function SyncDot() {
   );
 }
 
+function PantryZoneBar({
+  zone,
+  zoneCounts,
+  onSelect,
+}: {
+  zone: PantryZoneFilter;
+  zoneCounts: Record<PantryZoneFilter, number>;
+  onSelect: (next: PantryZoneFilter) => void;
+}) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.zoneChips}
+      style={styles.zoneScroll}
+    >
+      {PANTRY_ZONE_FILTERS.map((z) => {
+        const selected = z.value === zone;
+        const count = zoneCounts[z.value];
+        const chipTheme = pantryZoneTheme(z.value);
+        return (
+          <Pressable
+            key={z.value}
+            onPress={() => onSelect(z.value)}
+            style={[
+              styles.zoneChip,
+              { backgroundColor: chipTheme.soft },
+              selected && { backgroundColor: chipTheme.accent },
+            ]}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            accessibilityLabel={`${z.label}, ${count} items`}
+          >
+            <Text style={[styles.zoneChipTxt, { color: chipTheme.accent }, selected && { color: chipTheme.onAccent }]}>
+              {z.label}
+            </Text>
+            {count > 0 && (
+              <Text
+                style={[
+                  styles.zoneChipCount,
+                  { color: chipTheme.accent },
+                  selected && { color: chipTheme.onAccent, opacity: 0.85 },
+                ]}
+              >
+                {count}
+              </Text>
+            )}
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
 /** The last resolve, held so it can be reversed from the Undo snackbar. For a
  *  "used" batch we also stash the shared occurred-at stamp + names so undo can
  *  retract the rescue events it logged (keyed on that stamp). */
@@ -552,65 +606,40 @@ export function PantryScreen() {
 
       {!hasAny ? (
         <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
-      ) : noMatches ? (
-        <View style={styles.emptyWrap}>
-          <PantrySearchEmptyArt />
-          <Text style={styles.emptyTitle}>{zoneEmpty ? `No ${PANTRY_ZONE_LABELS[zone].toLowerCase()} yet` : 'No matches'}</Text>
-          <Text style={styles.emptySub}>
-            {zoneEmpty
-              ? `Nothing in ${PANTRY_ZONE_LABELS[zone]} — try another zone or add something.`
-              : `No match for “${query.trim()}” — try a shorter name or check another zone.`}
-          </Text>
-        </View>
       ) : (
         <>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.zoneChips}
-            style={styles.zoneScroll}
-          >
-            {PANTRY_ZONE_FILTERS.map((z) => {
-              const selected = z.value === zone;
-              const count = zoneCounts[z.value];
-              const chipTheme = pantryZoneTheme(z.value);
-              return (
-                <Pressable
-                  key={z.value}
-                  onPress={() => setZone(z.value)}
-                  style={[
-                    styles.zoneChip,
-                    { backgroundColor: chipTheme.soft },
-                    selected && { backgroundColor: chipTheme.accent },
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={`${z.label}, ${count} items`}
-                >
-                  <Text style={[styles.zoneChipTxt, { color: chipTheme.accent }, selected && { color: chipTheme.onAccent }]}>
-                    {z.label}
-                  </Text>
-                  {count > 0 && (
-                    <Text
-                      style={[
-                        styles.zoneChipCount,
-                        { color: chipTheme.accent },
-                        selected && { color: chipTheme.onAccent, opacity: 0.85 },
-                      ]}
-                    >
-                      {count}
-                    </Text>
-                  )}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+          <PantryZoneBar zone={zone} zoneCounts={zoneCounts} onSelect={setZone} />
 
-          <ScrollView
-            contentContainerStyle={styles.scroll}
-            showsVerticalScrollIndicator={false}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={zoneTheme.accent} />}
-          >
+          {noMatches ? (
+            <View style={styles.emptyWrap}>
+              <PantrySearchEmptyArt />
+              <Text style={styles.emptyTitle}>
+                {zoneEmpty ? `No ${PANTRY_ZONE_LABELS[zone].toLowerCase()} yet` : 'No matches'}
+              </Text>
+              <Text style={styles.emptySub}>
+                {zoneEmpty
+                  ? `Nothing in ${PANTRY_ZONE_LABELS[zone]} — pick another zone above or view everything.`
+                  : `No match for “${query.trim()}” — try a shorter name or check another zone.`}
+              </Text>
+              {zoneEmpty && (
+                <Pressable
+                  onPress={() => setZone('all')}
+                  style={[styles.emptyZoneBtn, { backgroundColor: zoneTheme.accent }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View all ${items.length} pantry items`}
+                >
+                  <Text style={[styles.emptyZoneBtnTxt, { color: zoneTheme.onAccent }]}>
+                    View all {items.length} items
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <ScrollView
+              contentContainerStyle={styles.scroll}
+              showsVerticalScrollIndicator={false}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={zoneTheme.accent} />}
+            >
           {grouped.expired.count > 0 && (
             <StatusCard status="expired" count={grouped.expired.count} zoneTheme={zoneTheme}>
               {renderRows(grouped.expired.groups)}
@@ -645,7 +674,8 @@ export function PantryScreen() {
               {!freshCollapsed && renderRows(grouped.fresh.groups)}
             </StatusCard>
           )}
-          </ScrollView>
+            </ScrollView>
+          )}
         </>
       )}
 
@@ -1099,6 +1129,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: tokens.space(5),
   },
+  emptyZoneBtn: {
+    paddingVertical: tokens.space(3),
+    paddingHorizontal: tokens.space(6),
+    borderRadius: tokens.radius.md,
+  },
+  emptyZoneBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15 },
   emptyBtn: { backgroundColor: tokens.color.accent, paddingVertical: tokens.space(3), paddingHorizontal: tokens.space(6), borderRadius: tokens.radius.md },
   emptyBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
 });
