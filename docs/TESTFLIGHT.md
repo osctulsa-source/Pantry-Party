@@ -76,8 +76,20 @@ no new build, no upload, no processing wait.
 current TestFlight build was made from):
 
 ```sh
-eas update --channel production --message "fix: whatever changed"
+APP_VARIANT=production eas update --channel production --environment production \
+  --message "fix: whatever changed"
 ```
+
+⚠️ **`APP_VARIANT=production` is mandatory.** `eas.json`'s `env` block only
+applies to *builds* — `eas update` doesn't read it, so without the shell
+variable `app.config.js` resolves the **development** variant (`.dev` bundle
+ids), the fingerprint comes out different, and the update is silently fenced
+off from every installed build (it looks published but no phone ever gets it).
+Verify delivery: the `Runtime version` printed must **equal the fingerprint of
+the installed build** (`eas fingerprint:compare <build-fingerprint>` diagnoses
+a mismatch). A dirty working tree changes the fingerprint the same way — commit
+or stash first (the publish output marks a dirty tree with `*` after the
+commit hash).
 
 - **When testers get it:** the app downloads the update in the background on
   launch and applies it on the **next** launch. To see it deterministically:
