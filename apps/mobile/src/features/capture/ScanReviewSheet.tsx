@@ -44,6 +44,7 @@ export function ScanReviewSheet({
   visible,
   items,
   busy,
+  storeLabel,
   onClose,
   onRename,
   onQty,
@@ -53,6 +54,8 @@ export function ScanReviewSheet({
   visible: boolean;
   items: ScanBasketItem[];
   busy: boolean;
+  /** When OCR detected a favorite store on the receipt. */
+  storeLabel?: string | null;
   onClose: () => void;
   onRename: (key: string, name: string) => void;
   onQty: (key: string, delta: number) => void;
@@ -71,7 +74,9 @@ export function ScanReviewSheet({
                 <Text style={styles.title}>
                   Review · {items.length} {items.length === 1 ? 'item' : 'items'}
                 </Text>
-                <Text style={styles.sub}>Edit anything, then add to your pantry</Text>
+                <Text style={styles.sub}>
+                  {storeLabel ? `From ${storeLabel} · edit anything, then add` : 'Edit anything, then add to your pantry'}
+                </Text>
               </View>
               <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close review">
                 <X size={22} color={tokens.color.inkMuted} />

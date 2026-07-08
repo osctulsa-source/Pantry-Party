@@ -39,6 +39,7 @@ import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
 import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
+import { FavoriteStoresScreen } from './src/features/settings/FavoriteStoresScreen';
 import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
 export type RootStackParamList = {
@@ -57,6 +58,7 @@ export type RootStackParamList = {
   Household: undefined;
   InviteCodeModal: { householdId: string };
   JoinHousehold: { code?: string } | undefined;
+  FavoriteStores: undefined;
 };
 
 export type AuthStackParamList = {
@@ -96,7 +98,7 @@ function AppStack() {
     >
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
-      <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan a barcode' }} />
+      <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan' }} />
       <Stack.Screen name="BulkPaste" component={BulkPasteScreen} options={{ title: 'Paste a list' }} />
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
@@ -116,6 +118,11 @@ function AppStack() {
         name="JoinHousehold"
         component={JoinHouseholdScreen}
         options={{ title: 'Join a household' }}
+      />
+      <Stack.Screen
+        name="FavoriteStores"
+        component={FavoriteStoresScreen}
+        options={{ title: 'Your stores' }}
       />
     </Stack.Navigator>
   );

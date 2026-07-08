@@ -86,6 +86,7 @@ export function SettingsScreen() {
             onPress={() => navigation.navigate('Insights')}
           />
           <ListRow label="History" onPress={() => navigation.navigate('History')} />
+          <ListRow label="Your stores" onPress={() => navigation.navigate('FavoriteStores')} />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 

@@ -82,7 +82,22 @@ module.exports = {
         'expo-camera',
         {
           cameraPermission:
-            'Pantry Party uses the camera to scan product barcodes so items add themselves.',
+            'Pantry Party uses the camera to scan barcodes, QR codes, and read text from receipts.',
+          barcodeScannerEnabled: true,
+        },
+      ],
+      [
+        'expo-mlkit-ocr',
+        {
+          iosEngine: 'auto',
+        },
+      ],
+      [
+        'expo-build-properties',
+        {
+          ios: {
+            deploymentTarget: '16.4',
+          },
         },
       ],
       [

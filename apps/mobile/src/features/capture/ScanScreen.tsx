@@ -1,8 +1,9 @@
 /**
  * ScanScreen — barcode capture (Capture I, C2), with two modes.
  *
- * CameraView (expo-camera) with retail barcode types, a Crumb viewfinder, and a
- * torch toggle. A persisted segmented control picks the capture mode:
+ * CameraView (expo-camera) with retail barcode types, QR codes, and a text
+ * capture path (on-device OCR via expo-mlkit-ocr). A Crumb viewfinder, torch
+ * toggle, and persisted controls pick the capture target and mode:
  *
  *  - "Scan a bunch" (basket, default): each barcode is looked up and dropped
  *    straight into a basket — no per-item confirm — so a fresh haul scans in one
@@ -33,21 +34,26 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
-import { ShoppingBasket, Zap, ZapOff } from 'lucide-react-native';
+import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-react-native';
 
-import { suggestExpiryISO } from '@breadbox/core';
+import { suggestExpiryISO, type CaptureSource } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { addPantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
+import { useFavoriteStores } from '../settings/useFavoriteStores';
 import { lookupBarcode, type OffProduct } from '../../data/openFoodFacts';
 import { recordScan } from './scanLog';
 import { ScanReviewSheet, type ScanBasketItem } from './ScanReviewSheet';
+import { resolveScanPayload } from './resolveScanPayload';
+import { runTextOcr, TextOcrEmptyError, TextOcrUnavailableError } from './runTextOcr';
 import type { RootStackParamList } from '../../../App';
 
-const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e'] as const;
+const RETAIL_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e'] as const;
+const QR_TYPES = ['qr'] as const;
 const DEBOUNCE_MS = 2500;
 const SCAN_MODE_KEY = 'scanMode';
+const SCAN_TARGET_KEY = 'scanTarget';
 const MAX_BASKET = 50;
 // No barcode for this long while scanning → the camera is probably struggling
 // (glare, distance, low light). Swap the hint to troubleshooting guidance.
@@ -56,22 +62,31 @@ const STRUGGLE_MS = 7000;
 const LOOKUP_SLOW_MS = 2500;
 
 type ScanMode = 'basket' | 'confirm';
+type ScanTarget = 'barcode' | 'qr' | 'text';
 
 type Phase =
   | { kind: 'scanning' }
   | { kind: 'looking'; barcode: string }
-  | { kind: 'confirm'; barcode: string; product: OffProduct | null };
+  | { kind: 'confirm'; barcode: string; product: OffProduct | null; scanNote?: string };
 
 export function ScanScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Scan'>>();
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const { stores: favoriteStores } = useFavoriteStores(userId);
 
   const [permission, requestPermission] = useCameraPermissions();
   const [phase, setPhase] = useState<Phase>({ kind: 'scanning' });
   const [torch, setTorch] = useState(false);
   const [mode, setMode] = useState<ScanMode>('basket');
+  const [target, setTarget] = useState<ScanTarget>('barcode');
+  const [cameraReady, setCameraReady] = useState(false);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrError, setOcrError] = useState<string | null>(null);
+  const [detectedStore, setDetectedStore] = useState<string | null>(null);
+
+  const cameraRef = useRef<CameraView>(null);
 
   // confirm-mode state
   const [name, setName] = useState('');
@@ -96,11 +111,16 @@ export function ScanScreen() {
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const thumbScale = useRef(new Animated.Value(0.7)).current;
 
-  // Restore the last-used capture mode (per-device UX preference).
+  // Restore the last-used capture mode + target (per-device UX preference).
   useEffect(() => {
     AsyncStorage.getItem(SCAN_MODE_KEY)
       .then((v) => {
         if (v === 'basket' || v === 'confirm') setMode(v);
+      })
+      .catch(() => {});
+    AsyncStorage.getItem(SCAN_TARGET_KEY)
+      .then((v) => {
+        if (v === 'barcode' || v === 'qr' || v === 'text') setTarget(v);
       })
       .catch(() => {});
   }, []);
@@ -144,14 +164,42 @@ export function ScanScreen() {
     AsyncStorage.setItem(SCAN_MODE_KEY, next).catch(() => {});
   }
 
-  async function onBarcode(result: BarcodeScanningResult) {
-    if (phase.kind !== 'scanning') return;
-    const code = result.data;
-    const now = Date.now();
-    if (!code || (lastScan.current.code === code && now - lastScan.current.at < DEBOUNCE_MS)) return;
-    lastScan.current = { code, at: now };
+  function selectTarget(next: ScanTarget) {
+    setTarget(next);
+    setOcrError(null);
+    setDetectedStore(null);
+    AsyncStorage.setItem(SCAN_TARGET_KEY, next).catch(() => {});
+    if (phase.kind !== 'scanning') resumeScanning();
+  }
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+  function pushNamesToBasket(names: string[], sourceTag: string) {
+    const now = Date.now();
+    setBasket((prev) => {
+      let next = [...prev];
+      for (const name of names) {
+        if (next.length >= MAX_BASKET) break;
+        next = [
+          ...next,
+          {
+            key: `${sourceTag}-${name}-${now}-${next.length}`,
+            barcode: sourceTag,
+            name,
+            brand: null,
+            sizeText: null,
+            imageUrl: null,
+            qty: 1,
+          },
+        ];
+      }
+      return next;
+    });
+    if (names.length > 0) {
+      setLastAdded(names[names.length - 1] ?? null);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+  }
+
+  async function handleRetailBarcode(code: string) {
     setPhase({ kind: 'looking', barcode: code });
     const product = await lookupBarcode(code);
     void recordScan(activeHouseholdId, code, product?.name != null);
@@ -163,7 +211,6 @@ export function ScanScreen() {
       return;
     }
 
-    // basket mode: drop it in and keep scanning — dedupe by barcode (bump qty).
     setBasket((prev) => {
       const existing = prev.find((b) => b.barcode === code);
       if (existing) {
@@ -173,7 +220,7 @@ export function ScanScreen() {
       return [
         ...prev,
         {
-          key: `${code}-${now}`,
+          key: `${code}-${Date.now()}`,
           barcode: code,
           name: product?.name ?? '',
           brand: product?.brand ?? null,
@@ -183,8 +230,6 @@ export function ScanScreen() {
         },
       ];
     });
-    // A miss still lands in the basket, but feel + copy should say "you'll need
-    // to name this one" rather than pretending it worked.
     setLastAdded(product?.name || 'Unknown item — needs a name');
     Haptics.notificationAsync(
       product?.name != null
@@ -192,6 +237,83 @@ export function ScanScreen() {
         : Haptics.NotificationFeedbackType.Warning,
     ).catch(() => {});
     setPhase({ kind: 'scanning' });
+  }
+
+  async function onBarcode(result: BarcodeScanningResult) {
+    if (phase.kind !== 'scanning' || target === 'text') return;
+    const code = result.data;
+    const now = Date.now();
+    if (!code || (lastScan.current.code === code && now - lastScan.current.at < DEBOUNCE_MS)) return;
+    lastScan.current = { code, at: now };
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    const payload = resolveScanPayload(code, result.type);
+
+    if (payload.kind === 'retail_barcode' && payload.lookupCode) {
+      await handleRetailBarcode(payload.lookupCode);
+      return;
+    }
+
+    if (payload.kind === 'qr_item_list' && payload.itemNames) {
+      if (mode === 'basket') {
+        pushNamesToBasket(payload.itemNames, 'QR');
+        setPhase({ kind: 'scanning' });
+      } else {
+        setName(payload.itemNames[0] ?? '');
+        setBrand('');
+        setPhase({
+          kind: 'confirm',
+          barcode: code,
+          product: null,
+          scanNote: `${payload.itemNames.length} items found in QR`,
+        });
+      }
+      return;
+    }
+
+    if (payload.kind === 'qr_url') {
+      setName('');
+      setBrand('');
+      setPhase({ kind: 'confirm', barcode: code, product: null, scanNote: payload.url });
+      return;
+    }
+
+    setName(payload.itemNames?.[0] ?? payload.raw.slice(0, 100));
+    setBrand('');
+    setPhase({ kind: 'confirm', barcode: code, product: null, scanNote: 'QR text' });
+  }
+
+  async function captureText() {
+    if (!cameraRef.current || !cameraReady || ocrBusy || phase.kind !== 'scanning') return;
+    setOcrError(null);
+    setOcrBusy(true);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
+      if (!photo?.uri) throw new TextOcrEmptyError();
+      const ocr = await runTextOcr(photo.uri, {
+        favoriteStores: favoriteStores.map((s) => ({ id: s.id, name: s.name })),
+      });
+      setDetectedStore(ocr.detectedStore?.name ?? null);
+      pushNamesToBasket(ocr.items, 'TEXT');
+      setReviewOpen(true);
+    } catch (e: unknown) {
+      if (e instanceof TextOcrUnavailableError) {
+        setOcrError('Text scan needs a newer app build. Try paste-a-list instead.');
+      } else if (e instanceof TextOcrEmptyError) {
+        setOcrError(e.message);
+      } else {
+        setOcrError('Could not read that — try brighter light and hold steady.');
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+    } finally {
+      setOcrBusy(false);
+    }
+  }
+
+  function basketSource(tag: string): CaptureSource {
+    if (tag === 'TEXT') return 'receipt';
+    if (tag === 'QR') return 'manual';
+    return 'barcode';
   }
 
   async function confirmAdd() {
@@ -208,7 +330,7 @@ export function ScanScreen() {
         quantity: 1,
         location: 'pantry',
         expiresIso: suggestExpiryISO({ name: trimmed }),
-        source: 'barcode',
+        source: target === 'qr' ? 'manual' : 'barcode',
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setAdded((n) => n + 1);
@@ -252,7 +374,7 @@ export function ScanScreen() {
           quantity: b.qty,
           location: 'pantry',
           expiresIso: suggestExpiryISO({ name: nm }),
-          source: 'barcode',
+          source: basketSource(b.barcode),
         });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -290,21 +412,24 @@ export function ScanScreen() {
   }
 
   const confirming = phase.kind === 'confirm';
-  // Lookup misses sit in the basket unnamed; Add is gated on names, so the
-  // basket bar has to say "tap Review" instead of quietly counting them.
   const unnamedCount = basket.filter((b) => b.name.trim().length === 0).length;
+  const barcodeTypes = target === 'qr' ? [...QR_TYPES] : target === 'barcode' ? [...RETAIL_TYPES] : [];
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <View style={styles.cameraWrap}>
         <CameraView
+          ref={cameraRef}
           style={styles.camera}
           facing="back"
           enableTorch={torch}
-          barcodeScannerSettings={{ barcodeTypes: [...BARCODE_TYPES] }}
+          barcodeScannerSettings={barcodeTypes.length > 0 ? { barcodeTypes } : undefined}
           onBarcodeScanned={
-            phase.kind === 'scanning' && !reviewOpen ? (r) => void onBarcode(r) : undefined
+            target !== 'text' && phase.kind === 'scanning' && !reviewOpen
+              ? (r) => void onBarcode(r)
+              : undefined
           }
+          onCameraReady={() => setCameraReady(true)}
         />
         <View style={[styles.viewfinder, struggling && styles.viewfinderStruggling]} pointerEvents="none" />
         {struggling && phase.kind === 'scanning' && (
@@ -335,6 +460,38 @@ export function ScanScreen() {
 
       <View style={styles.panel}>
         {phase.kind === 'scanning' && (
+          <View style={styles.targetRow}>
+            <Pressable
+              style={[styles.targetBtn, target === 'barcode' && styles.targetBtnOn]}
+              onPress={() => selectTarget('barcode')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: target === 'barcode' }}
+            >
+              <ScanLine size={14} color={target === 'barcode' ? tokens.color.onAccent : tokens.color.inkMuted} />
+              <Text style={[styles.targetTxt, target === 'barcode' && styles.targetTxtOn]}>Barcode</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.targetBtn, target === 'qr' && styles.targetBtnOn]}
+              onPress={() => selectTarget('qr')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: target === 'qr' }}
+            >
+              <QrCode size={14} color={target === 'qr' ? tokens.color.onAccent : tokens.color.inkMuted} />
+              <Text style={[styles.targetTxt, target === 'qr' && styles.targetTxtOn]}>QR</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.targetBtn, target === 'text' && styles.targetBtnOn]}
+              onPress={() => selectTarget('text')}
+              accessibilityRole="button"
+              accessibilityState={{ selected: target === 'text' }}
+            >
+              <Type size={14} color={target === 'text' ? tokens.color.onAccent : tokens.color.inkMuted} />
+              <Text style={[styles.targetTxt, target === 'text' && styles.targetTxtOn]}>Text</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {phase.kind === 'scanning' && target !== 'text' && (
           <View style={styles.segment}>
             <Pressable
               style={[styles.segBtn, mode === 'basket' && styles.segBtnOn]}
@@ -355,10 +512,14 @@ export function ScanScreen() {
           </View>
         )}
 
-        {phase.kind === 'scanning' && !struggling && (
+        {phase.kind === 'scanning' && target !== 'text' && !struggling && (
           <>
             <Text style={styles.hint}>
-              {mode === 'basket' ? 'Point at barcodes — they stack up below' : 'Point at any barcode'}
+              {target === 'qr'
+                ? 'Point at a QR code — lists and links work too'
+                : mode === 'basket'
+                  ? 'Point at barcodes — they stack up below'
+                  : 'Point at any barcode'}
             </Text>
             {mode === 'confirm' && (
               <Pressable onPress={() => navigation.navigate('BulkPaste')} hitSlop={8}>
@@ -368,7 +529,47 @@ export function ScanScreen() {
           </>
         )}
 
-        {phase.kind === 'scanning' && struggling && (
+        {phase.kind === 'scanning' && target === 'text' && (
+          <>
+            <Text style={styles.hint}>
+              {favoriteStores.length === 0
+                ? 'Point at a receipt or label, then tap Read text'
+                : 'Point at a receipt — we’ll use your saved stores to read it better'}
+            </Text>
+            <Pressable
+              style={[styles.captureBtn, (!cameraReady || ocrBusy) && styles.captureBtnDisabled]}
+              onPress={() => void captureText()}
+              disabled={!cameraReady || ocrBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Read text from camera"
+            >
+              {ocrBusy ? (
+                <ActivityIndicator color={tokens.color.onAccent} />
+              ) : (
+                <Text style={styles.captureBtnTxt}>Read text</Text>
+              )}
+            </Pressable>
+            {detectedStore && (
+              <Text style={styles.detectedStore}>Read as {detectedStore}</Text>
+            )}
+            {ocrError && <Text style={styles.ocrError}>{ocrError}</Text>}
+            {favoriteStores.length === 0 && (
+              <Pressable
+                onPress={() => navigation.navigate('FavoriteStores')}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Add your stores in settings"
+              >
+                <Text style={styles.bulkLink}>Add your stores for better reads</Text>
+              </Pressable>
+            )}
+            <Pressable onPress={() => navigation.navigate('BulkPaste')} hitSlop={8}>
+              <Text style={styles.bulkLink}>Or type it instead</Text>
+            </Pressable>
+          </>
+        )}
+
+        {phase.kind === 'scanning' && target !== 'text' && struggling && (
           <>
             <Text style={[styles.hint, styles.hintStruggling]}>
               Not reading? Get closer so the barcode fills the frame.
@@ -418,11 +619,16 @@ export function ScanScreen() {
               )}
               <View style={styles.confirmMeta}>
                 <Text style={styles.confirmEyebrow}>
-                  {phase.product?.name ? 'Got it!' : 'New to us — type the name'}
+                  {phase.product?.name
+                    ? 'Got it!'
+                    : phase.scanNote?.startsWith('http')
+                      ? 'QR link — name this item'
+                      : 'New to us — type the name'}
                 </Text>
                 <Text style={styles.confirmCode}>
-                  {phase.barcode}
+                  {phase.scanNote?.startsWith('http') ? phase.scanNote : phase.barcode}
                   {phase.product?.quantityText ? ` · ${phase.product.quantityText}` : ''}
+                  {phase.scanNote && !phase.scanNote.startsWith('http') ? ` · ${phase.scanNote}` : ''}
                 </Text>
               </View>
             </View>
@@ -498,6 +704,7 @@ export function ScanScreen() {
         visible={reviewOpen}
         items={basket}
         busy={addingAll}
+        storeLabel={detectedStore}
         onClose={() => setReviewOpen(false)}
         onRename={renameBasket}
         onQty={qtyBasket}
@@ -570,6 +777,45 @@ const styles = StyleSheet.create({
   },
   addedChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: '#FFFFFF' },
   panel: { paddingHorizontal: tokens.space(6), paddingVertical: tokens.space(4) },
+  targetRow: {
+    flexDirection: 'row',
+    gap: tokens.space(2),
+    marginBottom: tokens.space(3),
+  },
+  targetBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.space(1),
+    paddingVertical: tokens.space(2),
+    borderRadius: 999,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  targetBtnOn: { backgroundColor: tokens.color.accent },
+  targetTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
+  targetTxtOn: { color: tokens.color.onAccent },
+  captureBtn: {
+    marginTop: tokens.space(3),
+    paddingVertical: tokens.space(4),
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+    alignItems: 'center',
+  },
+  captureBtnDisabled: { opacity: 0.5 },
+  captureBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
+  ocrError: {
+    marginTop: tokens.space(2),
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.warning,
+  },
+  detectedStore: {
+    marginTop: tokens.space(2),
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 13,
+    color: tokens.color.accent,
+  },
   segment: {
     flexDirection: 'row',
     backgroundColor: tokens.color.surfaceAlt,
