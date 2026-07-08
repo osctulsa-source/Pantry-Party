@@ -28,6 +28,14 @@ import { BRAND } from './brand';
 
 export type ColorScheme = 'light' | 'dark';
 
+/** Accent + soft fills for a Pantry browse zone (Fresh / Drinks / Shelf-stable / All). */
+export interface PantryZoneThemeColors {
+  accent: string;
+  onAccent: string;
+  soft: string;
+  canvas: string;
+}
+
 export interface ThemeTokens {
   brandName: string;
   /** light/dark hint — drives StatusBar style and any scheme-aware UI. */
@@ -61,6 +69,13 @@ export interface ThemeTokens {
       freshSoft: string;
       warningSoft: string;
       expiredSoft: string;
+    };
+    /** Browse-zone palette — tints the Pantry canvas, chips, and calm-row accents. */
+    pantryZone: {
+      all: PantryZoneThemeColors;
+      fresh: PantryZoneThemeColors;
+      drinks: PantryZoneThemeColors;
+      shelfStable: PantryZoneThemeColors;
     };
   };
   font: {
@@ -124,6 +139,32 @@ export const crumbTokens: ThemeTokens = {
       warningSoft: '#F0E4CB', // soft ochre (matches warnSoft)
       expiredSoft: '#F1DCD6', // soft brick; expiry.expired text stays AA on it
     },
+    pantryZone: {
+      all: {
+        accent: LIGHT_INK_MUTED,
+        onAccent: '#F6F2E9',
+        soft: '#ECE5D4',
+        canvas: '#F6F2E9',
+      },
+      fresh: {
+        accent: '#3F7A50',
+        onAccent: '#F6F2E9',
+        soft: '#DDE7D6',
+        canvas: '#EEF5EA',
+      },
+      drinks: {
+        accent: '#3D6B8C',
+        onAccent: '#F6F2E9',
+        soft: '#D6E3ED',
+        canvas: '#EEF2F6',
+      },
+      shelfStable: {
+        accent: '#9A7342',
+        onAccent: '#F6F2E9',
+        soft: '#EDE4D0',
+        canvas: '#F5F0E6',
+      },
+    },
   },
   font: FONT,
   radius: RADIUS,
@@ -164,6 +205,32 @@ export const crumbDarkTokens: ThemeTokens = {
       freshSoft: '#25372A', // soft dark green (matches accentSoft)
       warningSoft: '#2A2114', // soft dark ochre (matches warnSoft)
       expiredSoft: '#34201C', // soft dark brick
+    },
+    pantryZone: {
+      all: {
+        accent: DARK_INK_MUTED,
+        onAccent: '#18140E',
+        soft: '#241F17',
+        canvas: '#18140E',
+      },
+      fresh: {
+        accent: '#6FBE85',
+        onAccent: '#18140E',
+        soft: '#25372A',
+        canvas: '#1A221C',
+      },
+      drinks: {
+        accent: '#6BA3C4',
+        onAccent: '#18140E',
+        soft: '#1E2A33',
+        canvas: '#141A1F',
+      },
+      shelfStable: {
+        accent: '#C9A05A',
+        onAccent: '#18140E',
+        soft: '#2A2418',
+        canvas: '#1C1810',
+      },
     },
   },
   font: FONT,

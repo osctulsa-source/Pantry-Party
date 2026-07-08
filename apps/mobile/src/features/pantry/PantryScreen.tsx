@@ -3,7 +3,8 @@
  *
  * Declutter redesign: items group into three color-coded status CARDS —
  * Expired (red), Use soon (amber), Fresh (green, collapsible) — instead of by
- * storage location. Location demotes to a per-row sub-label, and each row wears
+ * storage location. A horizontal zone bar (Fresh / Drinks / Shelf-stable) filters
+ * which items appear. Location demotes to a per-row sub-label, and each row wears
  * a category icon (CategoryIcon; neutral fallback). The header folds the streak
  * chip, a search toggle, and the sync dot onto one line; a single "Add items"
  * button opens an add sheet (Scan / Add manually / Quick add) so the three
@@ -41,12 +42,18 @@ import * as Haptics from 'expo-haptics';
 import { ChevronDown, ChevronRight, Plus, ScanLine, Search, SquarePen, X, Zap } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
+import { pantryZoneTheme, type PantryZoneFilter } from '../../theme/pantryZoneTheme';
+import type { PantryZoneThemeColors } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import {
   getExpiryStatus,
+  getPantryZone,
   groupIdenticalItems,
+  itemMatchesPantryZone,
+  PANTRY_ZONE_LABELS,
+  PANTRY_ZONE_ORDER,
   type ExpiryStatus,
   type PantryItem,
   type PantryItemGroup,
@@ -71,6 +78,11 @@ type PantryNav = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList, 'PantryTab'>,
   NativeStackNavigationProp<RootStackParamList>
 >;
+
+const PANTRY_ZONE_FILTERS: Array<{ value: PantryZoneFilter; label: string }> = [
+  { value: 'all', label: 'All' },
+  ...PANTRY_ZONE_ORDER.map((value) => ({ value, label: PANTRY_ZONE_LABELS[value] })),
+];
 
 const PANTRY_QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
@@ -205,6 +217,9 @@ export function PantryScreen() {
 
   // Fresh is the only collapsible card (usually the longest).
   const [freshCollapsed, setFreshCollapsed] = useState(false);
+
+  // Browse zones — filter the list by food type (Fresh / Staples / Drinks / …).
+  const [zone, setZone] = useState<PantryZoneFilter>('fresh');
 
   // Search is on-demand: a header icon reveals the field (no permanent band).
   const [searchOpen, setSearchOpen] = useState(false);
@@ -362,17 +377,33 @@ export function PantryScreen() {
 
   const now = useMemo(() => new Date(), [items]);
 
-  const visibleItems = useMemo(
-    () =>
-      isSearching
-        ? items.filter(
-            (i) =>
-              i.name.toLowerCase().includes(trimmedQuery) ||
-              (i.brand ?? '').toLowerCase().includes(trimmedQuery),
-          )
-        : items,
-    [items, isSearching, trimmedQuery],
-  );
+  const visibleItems = useMemo(() => {
+    let result = items;
+    if (zone !== 'all') {
+      result = result.filter((i) => itemMatchesPantryZone(i, zone));
+    }
+    if (isSearching) {
+      result = result.filter(
+        (i) =>
+          i.name.toLowerCase().includes(trimmedQuery) ||
+          (i.brand ?? '').toLowerCase().includes(trimmedQuery),
+      );
+    }
+    return result;
+  }, [items, zone, isSearching, trimmedQuery]);
+
+  const zoneCounts = useMemo(() => {
+    const counts: Record<PantryZoneFilter, number> = {
+      all: items.length,
+      fresh: 0,
+      drinks: 0,
+      shelfStable: 0,
+    };
+    for (const item of items) {
+      counts[getPantryZone(item)] += 1;
+    }
+    return counts;
+  }, [items]);
 
   // Bucket by expiry status, then merge identical rows for display (except in
   // search, where every match should be individually visible). Items arrive
@@ -390,11 +421,16 @@ export function PantryScreen() {
 
   if (activeLoading || !activeHouseholdId || (isLoading && items.length === 0)) {
     return (
-      <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        style={[styles.root, { backgroundColor: pantryZoneTheme('fresh').canvas }]}
+        edges={['top', 'left', 'right']}
+      >
         <PantryListSkeleton />
       </SafeAreaView>
     );
   }
+
+  const zoneTheme = pantryZoneTheme(zone);
 
   const renderRows = (groups: PantryItemGroup[]) =>
     groups.map((group, index) => {
@@ -405,6 +441,8 @@ export function PantryScreen() {
           key={group.representative.id}
           group={group}
           now={now}
+          zoneAccent={zoneTheme.accent}
+          zoneSoft={zoneTheme.soft}
           selected={groupSelected}
           last={index === groups.length - 1}
           swipeEnabled={!selecting && !busy}
@@ -424,9 +462,10 @@ export function PantryScreen() {
 
   const hasAny = items.length > 0;
   const noMatches = hasAny && visibleItems.length === 0;
+  const zoneEmpty = hasAny && !isSearching && zone !== 'all' && visibleItems.length === 0;
 
   return (
-    <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: zoneTheme.canvas }]} edges={['top', 'left', 'right']}>
       <ScreenHeader
         title="Pantry"
         subtitle={`${items.length} ${items.length === 1 ? 'item' : 'items'}`}
@@ -451,7 +490,7 @@ export function PantryScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={searchOpen ? 'Close search' : 'Search your pantry'}
               >
-                <Search size={18} color={searchOpen ? tokens.color.accent : tokens.color.inkMuted} />
+                <Search size={18} color={searchOpen ? zoneTheme.accent : tokens.color.inkMuted} />
               </Pressable>
             )}
             <SyncDot />
@@ -502,12 +541,12 @@ export function PantryScreen() {
       ) : (
         <Pressable
           onPress={() => setAddMenuOpen(true)}
-          style={styles.addBtn}
+          style={[styles.addBtn, { backgroundColor: zoneTheme.accent }]}
           accessibilityRole="button"
           accessibilityLabel="Add items to your pantry"
         >
-          <Plus size={18} color={tokens.color.onAccent} />
-          <Text style={styles.addBtnTxt}>Add items</Text>
+          <Plus size={18} color={zoneTheme.onAccent} />
+          <Text style={[styles.addBtnTxt, { color: zoneTheme.onAccent }]}>Add items</Text>
         </Pressable>
       )}
 
@@ -516,17 +555,64 @@ export function PantryScreen() {
       ) : noMatches ? (
         <View style={styles.emptyWrap}>
           <PantrySearchEmptyArt />
-          <Text style={styles.emptyTitle}>No matches</Text>
-          <Text style={styles.emptySub}>No match for “{query.trim()}” — try a shorter name or check the other tabs.</Text>
+          <Text style={styles.emptyTitle}>{zoneEmpty ? `No ${PANTRY_ZONE_LABELS[zone].toLowerCase()} yet` : 'No matches'}</Text>
+          <Text style={styles.emptySub}>
+            {zoneEmpty
+              ? `Nothing in ${PANTRY_ZONE_LABELS[zone]} — try another zone or add something.`
+              : `No match for “${query.trim()}” — try a shorter name or check another zone.`}
+          </Text>
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={tokens.color.accent} />}
-        >
+        <>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.zoneChips}
+            style={styles.zoneScroll}
+          >
+            {PANTRY_ZONE_FILTERS.map((z) => {
+              const selected = z.value === zone;
+              const count = zoneCounts[z.value];
+              const chipTheme = pantryZoneTheme(z.value);
+              return (
+                <Pressable
+                  key={z.value}
+                  onPress={() => setZone(z.value)}
+                  style={[
+                    styles.zoneChip,
+                    { backgroundColor: chipTheme.soft },
+                    selected && { backgroundColor: chipTheme.accent },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={`${z.label}, ${count} items`}
+                >
+                  <Text style={[styles.zoneChipTxt, { color: chipTheme.accent }, selected && { color: chipTheme.onAccent }]}>
+                    {z.label}
+                  </Text>
+                  {count > 0 && (
+                    <Text
+                      style={[
+                        styles.zoneChipCount,
+                        { color: chipTheme.accent },
+                        selected && { color: chipTheme.onAccent, opacity: 0.85 },
+                      ]}
+                    >
+                      {count}
+                    </Text>
+                  )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={zoneTheme.accent} />}
+          >
           {grouped.expired.count > 0 && (
-            <StatusCard status="expired" count={grouped.expired.count}>
+            <StatusCard status="expired" count={grouped.expired.count} zoneTheme={zoneTheme}>
               {renderRows(grouped.expired.groups)}
             </StatusCard>
           )}
@@ -534,6 +620,7 @@ export function PantryScreen() {
             <StatusCard
               status="warning"
               count={grouped.warning.count}
+              zoneTheme={zoneTheme}
               onCook={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
                 navigation.navigate('CookTab');
@@ -546,6 +633,7 @@ export function PantryScreen() {
             <StatusCard
               status="fresh"
               count={grouped.fresh.count}
+              zoneTheme={zoneTheme}
               collapsed={freshCollapsed}
               onToggle={() => {
                 LayoutAnimation.configureNext(
@@ -557,7 +645,8 @@ export function PantryScreen() {
               {!freshCollapsed && renderRows(grouped.fresh.groups)}
             </StatusCard>
           )}
-        </ScrollView>
+          </ScrollView>
+        </>
       )}
 
       <Modal visible={addMenuOpen} transparent animationType="fade" onRequestClose={() => setAddMenuOpen(false)}>
@@ -566,7 +655,7 @@ export function PantryScreen() {
             <Text style={styles.sheetTitle}>Add to pantry</Text>
             <AddRow
               icon={<ScanLine size={20} color={tokens.color.accent} />}
-              label="Scan a barcode"
+              label="Scan items"
               onPress={() => {
                 setAddMenuOpen(false);
                 navigation.navigate('Scan');
@@ -605,6 +694,7 @@ export function PantryScreen() {
 function StatusCard({
   status,
   count,
+  zoneTheme,
   collapsed,
   onToggle,
   onCook,
@@ -612,6 +702,7 @@ function StatusCard({
 }: {
   status: ExpiryStatus;
   count: number;
+  zoneTheme: PantryZoneThemeColors;
   collapsed?: boolean;
   onToggle?: () => void;
   onCook?: () => void;
@@ -636,12 +727,12 @@ function StatusCard({
         <View style={styles.cardHeaderRight}>
           {onCook && (
             <Pressable
-              style={styles.cookBtn}
+              style={[styles.cookBtn, { backgroundColor: zoneTheme.accent }]}
               onPress={onCook}
               accessibilityRole="button"
               accessibilityLabel="Find recipes for items expiring soon"
             >
-              <Text style={styles.cookBtnTxt}>Cook these</Text>
+              <Text style={[styles.cookBtnTxt, { color: zoneTheme.onAccent }]}>Cook these</Text>
             </Pressable>
           )}
           {collapsible &&
@@ -681,6 +772,8 @@ function AddRow({ icon, label, onPress }: { icon: ReactNode; label: string; onPr
 function PantryGroupRow({
   group,
   now,
+  zoneAccent,
+  zoneSoft,
   selected,
   last,
   swipeEnabled,
@@ -693,6 +786,8 @@ function PantryGroupRow({
 }: {
   group: PantryItemGroup;
   now: Date;
+  zoneAccent: string;
+  zoneSoft: string;
   selected: boolean;
   last: boolean;
   swipeEnabled: boolean;
@@ -705,7 +800,7 @@ function PantryGroupRow({
 }) {
   const rep = group.representative;
   const status = getExpiryStatus(rep, now);
-  const accent = STATUS_CARD[status].accent;
+  const accent = status === 'fresh' ? zoneAccent : STATUS_CARD[status].accent;
   const expiryText = formatExpiryMeta(rep, now);
   // Summed quantity; trim float noise from fractional sums (e.g. 0.1 + 0.2).
   const qty = Number.isInteger(group.totalQuantity)
@@ -749,10 +844,10 @@ function PantryGroupRow({
           styles.row,
           last && styles.rowLast,
           pressed && styles.rowPressed,
-          selected && styles.rowSelected,
+          selected && { backgroundColor: zoneSoft },
         ]}
       >
-        <View style={styles.iconCircle}>
+        <View style={[styles.iconCircle, { backgroundColor: zoneSoft }]}>
           <CategoryIcon category={rep.category} size={18} color={accent} />
         </View>
         <View style={styles.rowMain}>
@@ -762,8 +857,8 @@ function PantryGroupRow({
               {rep.name}
             </Text>
             {group.count > 1 && (
-              <View style={styles.countChip} accessibilityLabel={`${group.count} entries`}>
-                <Text style={styles.countChipText}>×{group.count}</Text>
+              <View style={[styles.countChip, { backgroundColor: zoneSoft }]} accessibilityLabel={`${group.count} entries`}>
+                <Text style={[styles.countChipText, { color: zoneAccent }]}>×{group.count}</Text>
               </View>
             )}
           </View>
@@ -793,7 +888,7 @@ function PantryGroupRow({
                 <View
                   style={[
                     styles.fillBar,
-                    { width: Math.max(3, Math.round(44 * rep.fillLevel)) },
+                    { width: Math.max(3, Math.round(44 * rep.fillLevel)), backgroundColor: zoneAccent },
                     rep.fillLevel <= 0.25 && styles.fillBarLow,
                   ]}
                 />
@@ -807,9 +902,9 @@ function PantryGroupRow({
                 pointerEvents={swipeEnabled ? 'auto' : 'none'}
                 accessibilityRole="button"
                 accessibilityLabel={isListed ? `${rep.name} is on the shopping list` : `Add ${rep.name} to the shopping list`}
-                style={[styles.listChip, isListed && styles.listChipDone]}
+                style={[styles.listChip, isListed && { borderColor: zoneSoft, backgroundColor: zoneSoft }]}
               >
-                <Text style={[styles.listChipTxt, isListed && styles.listChipTxtDone]}>
+                <Text style={[styles.listChipTxt, { color: zoneAccent }, isListed && styles.listChipTxtDone]}>
                   {isListed ? '✓ Listed' : '+ List'}
                 </Text>
               </Pressable>
@@ -835,7 +930,7 @@ function PantryEmpty({ onAdd }: { onAdd: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: tokens.color.surface },
+  root: { flex: 1 },
   streakChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -859,9 +954,8 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(3),
     paddingVertical: tokens.space(3),
     borderRadius: tokens.radius.md,
-    backgroundColor: tokens.color.accent,
   },
-  addBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
+  addBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15 },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -889,6 +983,27 @@ const styles = StyleSheet.create({
   selectUsed: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.success },
   selectRemove: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.semantic.expiry.expired },
   selectCancel: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.inkMuted },
+  zoneScroll: { flexGrow: 0, marginBottom: tokens.space(2) },
+  zoneChips: {
+    flexDirection: 'row',
+    gap: tokens.space(2),
+    paddingHorizontal: tokens.space(6),
+    paddingVertical: tokens.space(1),
+  },
+  zoneChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(1),
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+    borderRadius: 999,
+  },
+  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13 },
+  zoneChipCount: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    fontVariant: ['tabular-nums'],
+  },
   scroll: { paddingBottom: tokens.space(10) },
   card: {
     marginHorizontal: tokens.space(6),
@@ -910,17 +1025,15 @@ const styles = StyleSheet.create({
   cardTitle: { fontFamily: tokens.font.body.semibold, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase' },
   cardCount: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted, fontVariant: ['tabular-nums'] },
   cookBtn: {
-    backgroundColor: tokens.color.accent,
     paddingVertical: tokens.space(1),
     paddingHorizontal: tokens.space(3),
     borderRadius: tokens.radius.sm,
   },
-  cookBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.onAccent },
+  cookBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12 },
   iconCircle: {
     width: 36,
     height: 36,
     borderRadius: 999,
-    backgroundColor: tokens.color.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: tokens.space(3),
@@ -936,23 +1049,21 @@ const styles = StyleSheet.create({
   },
   rowLast: { borderBottomWidth: 0 },
   rowPressed: { backgroundColor: tokens.color.surfaceAlt },
-  rowSelected: { backgroundColor: tokens.color.accentSoft },
   rowMain: { flex: 1, marginRight: tokens.space(3) },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
   name: { flexShrink: 1, fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
-  countChip: { backgroundColor: tokens.color.accentSoft, borderRadius: tokens.radius.sm, paddingHorizontal: tokens.space(2), paddingVertical: 1 },
-  countChipText: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent, fontVariant: ['tabular-nums'] },
+  countChip: { borderRadius: tokens.radius.sm, paddingHorizontal: tokens.space(2), paddingVertical: 1 },
+  countChipText: { fontFamily: tokens.font.body.semibold, fontSize: 11, fontVariant: ['tabular-nums'] },
   pipsRow: { flexDirection: 'row', gap: 3, marginTop: 4 },
   pip: { width: 5, height: 5, borderRadius: 999, backgroundColor: tokens.color.inkMuted },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), marginTop: 2 },
   meta: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted },
   fillTrack: { width: 44, height: 6, borderRadius: 999, backgroundColor: tokens.color.line, overflow: 'hidden' },
-  fillBar: { height: 6, borderRadius: 999, backgroundColor: tokens.color.accent },
+  fillBar: { height: 6, borderRadius: 999 },
   fillBarLow: { backgroundColor: tokens.semantic.expiry.warning },
   listChip: { paddingVertical: 2, paddingHorizontal: tokens.space(2), borderRadius: 999, borderWidth: 1, borderColor: tokens.color.line },
-  listChipDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
-  listChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.accent },
-  listChipTxtDone: { color: tokens.color.accent },
+  listChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11 },
+  listChipTxtDone: { opacity: 0.85 },
   swipeActions: { flexDirection: 'row' },
   swipeBtn: { justifyContent: 'center', paddingHorizontal: tokens.space(4) },
   swipeUsed: { backgroundColor: tokens.color.success },
