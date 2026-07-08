@@ -21,10 +21,10 @@ import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, T
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Users, Utensils } from 'lucide-react-native';
+import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { matchCookedItems } from '@breadbox/core';
+import { matchCookedItems, suggestSubstitutes } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { usePantryItems } from '../pantry/usePantryItems';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -131,6 +131,19 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     () => recipe.usedIngredientNames.map((n) => n.toLowerCase()),
     [recipe.usedIngredientNames],
   );
+
+  // Curated pantry stand-ins for ingredients the user doesn't have — keyed by
+  // the ingredient's lowercase name so the list rows can annotate in place.
+  const swapsByIngredient = useMemo(() => {
+    const missingNames = recipe.ingredients
+      .filter((ing) => !hasIngredient(usedLc, ing.name))
+      .map((ing) => ing.name);
+    const swaps = suggestSubstitutes(
+      missingNames,
+      items.map((i) => ({ id: i.id, name: i.name })),
+    );
+    return new Map(swaps.map((s) => [s.missingIngredient.toLowerCase(), s]));
+  }, [recipe.ingredients, usedLc, items]);
 
   // Same matching the Cook tab uses: matched pantry items pre-selected; if the
   // API gave us no names, fall back to the whole pantry defaulting to "Kept".
@@ -309,12 +322,21 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
             <View style={styles.ingList}>
               {recipe.ingredients.map((ing, idx) => {
                 const have = hasIngredient(usedLc, ing.name);
+                const swap = have ? undefined : swapsByIngredient.get(ing.name.toLowerCase());
                 return (
                   <View key={`${ing.name}-${idx}`} style={styles.ingRow}>
                     <View style={[styles.ingDot, have ? styles.ingDotHave : styles.ingDotNeed]}>
                       {have ? <Check size={12} color={tokens.color.onAccent} /> : null}
                     </View>
-                    <Text style={styles.ingTxt}>{ing.original || ing.name}</Text>
+                    <View style={styles.ingBody}>
+                      <Text style={styles.ingTxt}>{ing.original || ing.name}</Text>
+                      {swap && (
+                        <View style={styles.swapRow}>
+                          <Repeat size={11} color={tokens.color.accent} />
+                          <Text style={styles.swapTxt}>Swap in your {swap.pantryItemName}</Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
                 );
               })}
@@ -639,7 +661,10 @@ const styles = StyleSheet.create({
   ingDot: { width: 20, height: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   ingDotHave: { backgroundColor: tokens.color.accent },
   ingDotNeed: { borderWidth: 1.5, borderColor: tokens.color.line, backgroundColor: 'transparent' },
-  ingTxt: { flex: 1, fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
+  ingBody: { flex: 1 },
+  ingTxt: { fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
+  swapRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), marginTop: 2 },
+  swapTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   muted: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, lineHeight: 20 },
   stepsLoading: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), paddingVertical: tokens.space(2) },
   secondaryBtn: {

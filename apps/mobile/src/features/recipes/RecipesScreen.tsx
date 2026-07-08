@@ -52,6 +52,7 @@ import {
   PackageCheck,
   Plus,
   RefreshCw,
+  Repeat,
   SlidersHorizontal,
   Sparkles,
   Users,
@@ -68,10 +69,12 @@ import {
   mealtimeLabel,
   scoreTitle,
   seedPrefsFromTaste,
+  suggestSubstitutes,
   type MealType,
   type PantryItem,
   type PrefEvent,
   type RecipePrefs,
+  type SubstituteSuggestion,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -661,6 +664,19 @@ function CookThis({
   }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow]);
 
   const top = pool.slice(0, 3);
+  // Curated pantry stand-ins for each hero card's missing ingredients ("no
+  // sour cream, but your Greek yogurt works"). Hero cards only — the compact
+  // alternate rows don't have room for the extra line.
+  const swapsByRecipe = useMemo(() => {
+    const pantry = items.map((i) => ({ id: i.id, name: i.name }));
+    const map = new Map<number, SubstituteSuggestion[]>();
+    for (const r of pool.slice(0, 3)) {
+      if (r.missedIngredientNames.length === 0) continue;
+      const swaps = suggestSubstitutes(r.missedIngredientNames, pantry);
+      if (swaps.length > 0) map.set(r.id, swaps);
+    }
+    return map;
+  }, [pool, items]);
   // "Because you saved" — re-rank the rest of the pool by taste-profile match
   // (synced favorites + cooks). Drawn from pool.slice(3) so it never duplicates
   // the hero, and carved OUT of the alternates below so each recipe shows once.
@@ -769,6 +785,7 @@ function CookThis({
             favorited={isFavorited(item.id)}
             skipped={skipped.has(item.id)}
             missingAdded={missingAdded.has(item.id)}
+            substitutes={swapsByRecipe.get(item.id) ?? []}
             onToggleFavorite={(r) => void onToggleFavorite(r)}
             onSkip={onSkip}
             onOpen={onOpen}
@@ -825,6 +842,7 @@ function HeroCard({
   favorited,
   skipped,
   missingAdded,
+  substitutes,
   onToggleFavorite,
   onSkip,
   onOpen,
@@ -835,6 +853,7 @@ function HeroCard({
   favorited: boolean;
   skipped: boolean;
   missingAdded: boolean;
+  substitutes: SubstituteSuggestion[];
   onToggleFavorite: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
@@ -971,6 +990,17 @@ function HeroCard({
               : `Add ${recipe.missedIngredientCount} missing to list`}
           </Text>
         </Pressable>
+      )}
+      {substitutes.length > 0 && (
+        <View style={styles.swapHint}>
+          <Repeat size={13} color={tokens.color.accent} />
+          <Text style={styles.swapHintTxt} numberOfLines={2}>
+            {'Swap: '}
+            {substitutes
+              .map((s) => `${s.pantryItemName} for ${s.missingIngredient.toLowerCase()}`)
+              .join(' · ')}
+          </Text>
+        </View>
       )}
       <Pressable
         style={styles.cookedBtn}
@@ -1137,6 +1167,20 @@ const styles = StyleSheet.create({
   },
   missingBtnDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
   missingBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  swapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(1),
+    marginTop: tokens.space(2),
+    paddingHorizontal: tokens.space(1),
+  },
+  swapHintTxt: {
+    flex: 1,
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    color: tokens.color.accent,
+    lineHeight: 16,
+  },
   cookedBtn: {
     marginTop: tokens.space(2),
     paddingVertical: tokens.space(3),
