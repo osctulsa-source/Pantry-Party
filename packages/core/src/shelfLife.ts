@@ -2,10 +2,13 @@
  * Shelf-life suggestions — pure, no I/O. Powers the Add Item expiry auto-fill:
  * suggest a sensible "best before" so users adjust a default instead of typing a date.
  *
- * Two signals, in priority order: an explicit category, else a keyword inferred
- * from the item name. DEFAULT_SHELF_LIFE (schema.ts) maps category → days.
+ * Three tiers, in priority order:
+ *  1. Food tier — USDA FoodKeeper data via matchFood + daysForLocation
+ *  2. Category tier — explicit category or keyword inference from the item name
+ *  3. Null — no confident suggestion, caller leaves expiry blank
  */
 import { DEFAULT_SHELF_LIFE } from './schema';
+import { daysForLocation, matchFood } from './shelfLifeLookup';
 
 // Keyword → category. First match wins. Order matters: more-specific intents
 // (e.g. "juice") are checked before broad ones (e.g. "orange") so "orange juice"
@@ -30,10 +33,19 @@ export function categorizeByName(name: string): string | undefined {
 }
 
 /**
- * Suggested shelf life in days. Explicit category wins; else infer from name;
- * else null (no confident suggestion — the caller leaves expiry blank).
+ * Suggested shelf life in days. Three-tier priority:
+ *  1. Food tier (FoodKeeper) — when a matching record has a safe duration for this location
+ *  2. Category tier — explicit category or keyword inference from the item name
+ *  3. Null — no confident suggestion
  */
-export function suggestShelfLifeDays(opts: { name?: string; category?: string }): number | null {
+export function suggestShelfLifeDays(opts: { name?: string; category?: string; location?: string }): number | null {
+  if (opts.name) {
+    const rec = matchFood(opts.name);
+    if (rec) {
+      const days = daysForLocation(rec, opts.location);
+      if (days !== null) return days;
+    }
+  }
   const cat = opts.category ?? (opts.name ? categorizeByName(opts.name) : undefined);
   if (!cat) return null;
   const days = DEFAULT_SHELF_LIFE[cat];
