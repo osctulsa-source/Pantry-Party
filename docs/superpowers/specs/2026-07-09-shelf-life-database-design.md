@@ -63,9 +63,12 @@ Conversion rules (per food, per location ∈ {pantry, fridge, freezer}):
      ordering provided, now data-driven.)
 2. **Location days** for the matched food: exact match when `location` is one of
    `pantry | fridge | freezer` and that food has a duration there; otherwise
-   fall back through the food's available durations in order
-   **fridge → pantry → freezer** (covers custom locations like "garage shelf"
-   and foods missing the chosen location).
+   fall back only in the conservative direction — **fridge → pantry → null**,
+   **pantry → null**, **freezer → null** — while custom/unknown/missing
+   locations (e.g. "garage shelf") use **fridge → pantry → freezer**. Rationale:
+   never suggest a freezer-scale duration for a fridge/pantry request (the
+   freezer-only milk record must not yield "91 days in the fridge"); null
+   defers to the category tier below.
 3. **No food match** → existing behavior, unchanged: explicit `category` or
    `categorizeByName(name)` → `DEFAULT_SHELF_LIFE` → else `null` (caller leaves
    expiry blank). The regex table and category defaults are kept as the

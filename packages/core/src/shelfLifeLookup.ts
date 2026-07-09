@@ -127,22 +127,33 @@ function better(score: number[], name: string, bestScore: number[], bestName: st
   return false;
 }
 
-const FALLBACK_ORDER: Array<keyof Pick<ShelfLifeRecord, 'f' | 'p' | 'z'>> = ['f', 'p', 'z'];
-const LOCATION_FIELD: Record<string, 'p' | 'f' | 'z'> = {
-  pantry: 'p',
-  fridge: 'f',
-  freezer: 'z',
+type LocationField = 'p' | 'f' | 'z';
+
+/**
+ * Fields to try, in order, per storage mode. Direction-aware: a substitute
+ * duration is only used when it is conservative (a shorter-storage-mode
+ * number), never the reverse — the freezer-only milk record (z: 91) must not
+ * answer a fridge request with "91 days". No entry -> null, which defers to
+ * the caller's category tier for a sane default.
+ */
+const FIELD_ORDER: Record<string, readonly LocationField[]> = {
+  pantry: ['p'],
+  fridge: ['f', 'p'],
+  freezer: ['z'],
 };
+/** Custom/unknown/no location: no declared storage mode to contradict. */
+const DEFAULT_ORDER: readonly LocationField[] = ['f', 'p', 'z'];
 
 /**
  * Days for a record at a storage location. Built-in locations use their own
- * duration when present; otherwise (and for custom locations / no location)
- * fall back fridge -> pantry -> freezer.
+ * duration when present, falling back only in the conservative direction
+ * (fridge may borrow the pantry number; pantry and freezer never borrow) and
+ * returning null otherwise so the category tier can answer instead. Custom or
+ * missing locations fall back fridge -> pantry -> freezer.
  */
 export function daysForLocation(rec: ShelfLifeRecord, location?: string): number | null {
-  const field = location ? LOCATION_FIELD[normalize(location)] : undefined;
-  if (field !== undefined && rec[field] !== undefined) return rec[field]!;
-  for (const f of FALLBACK_ORDER) {
+  const order = (location && FIELD_ORDER[normalize(location)]) || DEFAULT_ORDER;
+  for (const f of order) {
     if (rec[f] !== undefined) return rec[f]!;
   }
   return null;

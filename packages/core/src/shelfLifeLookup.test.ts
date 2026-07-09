@@ -85,13 +85,30 @@ describe('daysForLocation', () => {
     expect(daysForLocation(rec, 'freezer')).toBe(300);
   });
 
-  it('falls back fridge -> pantry -> freezer when the location is missing on the record', () => {
+  it('falls back fridge -> pantry when the substitute is conservative', () => {
     expect(daysForLocation({ n: 'x', k: ['x'], p: 100 }, 'fridge')).toBe(100);
-    expect(daysForLocation({ n: 'x', k: ['x'], z: 300 }, 'pantry')).toBe(300);
   });
 
-  it('treats custom/unknown locations with the same fallback order', () => {
+  it('never leaks a freezer duration into a fridge or pantry request', () => {
+    expect(daysForLocation({ n: 'x', k: ['x'], z: 300 }, 'pantry')).toBeNull();
+    expect(daysForLocation({ n: 'x', k: ['x'], z: 300 }, 'fridge')).toBeNull();
+  });
+
+  it('never answers a freezer request with a shorter-mode duration', () => {
+    expect(daysForLocation({ n: 'x', k: ['x'], f: 5 }, 'freezer')).toBeNull();
+  });
+
+  it('treats custom/unknown locations with the f -> p -> z fallback order', () => {
     expect(daysForLocation(rec, 'garage shelf')).toBe(5);
     expect(daysForLocation(rec, undefined)).toBe(5);
+  });
+
+  it('returns null for the real freezer-only milk record at fridge (defer to category tier)', () => {
+    const milk = matchFood('milk');
+    expect(milk).not.toBeNull();
+    expect(milk!.n).toBe('milk');
+    expect(milk!.f).toBeUndefined();
+    expect(milk!.z).toBeDefined();
+    expect(daysForLocation(milk!, 'fridge')).toBeNull();
   });
 });
