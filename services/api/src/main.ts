@@ -10,8 +10,10 @@
  *
  * This file replaces src/index.ts as the entrypoint.
  */
+// instrument.js MUST be the very first import — OpenTelemetry has to patch
+// http/express/pg before anything else loads them.
+import './instrument.js';
 import 'reflect-metadata';
-import './sentry.js';
 import express from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
@@ -19,7 +21,7 @@ import { AppModule } from './app.module.js';
 import { uploadRouter } from './routes/upload.js';
 import { householdRouter } from './routes/household.js';
 import { recipesRouter } from './routes/recipes.js';
-import { attachSentryErrorHandler } from './sentry.js';
+import { attachSentryErrorHandler } from './instrument.js';
 
 const PORT = Number(process.env.API_PORT ?? '8090');
 
@@ -61,6 +63,9 @@ async function bootstrap(): Promise<void> {
 
   // Sentry error handler sits after ALL routes (legacy + NestJS).
   attachSentryErrorHandler(server);
+
+  // Flush Sentry events (and run other lifecycle hooks) on SIGTERM/SIGINT.
+  app.enableShutdownHooks();
 
   await app.listen(PORT);
   console.log(`[api] listening on :${PORT} (NestJS + legacy Express)`);

@@ -7,12 +7,12 @@
 //    addition; the next endpoint belongs to the promoted backend.
 
 // Sentry first — the SDK must load before express to auto-instrument.
-import './sentry.js';
+import './instrument.js';
 import express from 'express';
 import { householdRouter } from './routes/household.js';
 import { uploadRouter } from './routes/upload.js';
 import { recipesRouter } from './routes/recipes.js';
-import { attachSentryErrorHandler } from './sentry.js';
+import { attachSentryErrorHandler } from './instrument.js';
 
 const PORT = Number(process.env.API_PORT ?? '8090');
 
