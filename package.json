@@ -13,15 +13,19 @@
   },
   "scripts": {
     "typecheck": "tsc -b",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "test": "echo \"Run tests per-workspace; spikes run standalone\" && exit 0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/node": "^20.11.0",
     "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
     "prettier": "^3.2.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.62.1"
   },
   "//": "Spikes under spikes/* are intentionally NOT workspaces — they are throwaway."
 }
