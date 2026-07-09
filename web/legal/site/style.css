@@ -1,0 +1,23 @@
+
+:root { --ink:#2b2320; --paper:#faf7f0; --accent:#C76B43; --green:#2E5D3A; --muted:#7a6f66; }
+@media (prefers-color-scheme: dark) {
+  :root { --ink:#ece5da; --paper:#191512; --accent:#d98a63; --green:#7fb08a; --muted:#9c9188; }
+}
+* { box-sizing: border-box; }
+body { margin:0; font:17px/1.65 Georgia, 'Times New Roman', serif; color:var(--ink); background:var(--paper); }
+header, footer { font-family: -apple-system, 'Segoe UI', sans-serif; }
+header { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+.brand { font-weight:700; color:var(--accent); text-decoration:none; font-size:1.05rem; letter-spacing:.01em; }
+nav a { color:var(--muted); text-decoration:none; margin-left:1.1rem; font-size:.95rem; }
+nav a:hover { color:var(--accent); }
+main { max-width: 44rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+h1 { font-size:1.9rem; line-height:1.25; color:var(--green); }
+h2 { font-size:1.25rem; margin-top:2.2rem; color:var(--green); }
+a { color:var(--accent); }
+table { border-collapse:collapse; width:100%; font-size:.92rem; display:block; overflow-x:auto; }
+th, td { border:1px solid color-mix(in srgb, var(--ink) 18%, transparent); padding:.5rem .6rem; text-align:left; vertical-align:top; }
+blockquote { margin:1rem 0; padding:.6rem 1rem; border-left:3px solid var(--accent); background:color-mix(in srgb, var(--accent) 7%, transparent); }
+footer { max-width:44rem; margin:0 auto; padding:1.5rem 1.25rem 3rem; color:var(--muted); font-size:.9rem; border-top:1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+footer a { color:var(--muted); }
+strong { color:var(--ink); }
+hr { border:none; border-top:1px solid color-mix(in srgb, var(--ink) 14%, transparent); margin:2rem 0; }
