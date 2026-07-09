@@ -78,7 +78,7 @@ export function AddItemScreen() {
   const nameValid = trimmedName.length > 0 && trimmedName.length <= MAX_NAME_LENGTH;
   const formValid = nameValid && qtyValid && activeHouseholdId !== null;
 
-  const suggestedDays = useMemo(() => suggestShelfLifeDays({ name: trimmedName }), [trimmedName]);
+  const suggestedDays = useMemo(() => suggestShelfLifeDays({ name: trimmedName, location }), [trimmedName, location]);
   const effectiveDays = expiryTouched ? expiryDays : suggestedDays;
 
   // Guided specificity: a generic food name ("pasta") surfaces its common
