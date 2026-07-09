@@ -53,6 +53,30 @@ paths — this is what avoids the hardcoded-path failure.
 **Build numbers:** the production profile's `autoIncrement` in `eas.json` bumps
 the build number automatically — no manual edit needed.
 
+## Building from Windows — containerized recipe (validated: build 20)
+
+`expo prebuild` cannot generate the iOS project on Windows, and submitting from
+Windows fails the **fingerprint runtime-version check** (the local hash never
+matches what EAS's Linux/macOS workers compute — build 19 died this way). Run
+the whole flow inside a Linux container instead; the fingerprint is computed on
+exactly the tree that gets uploaded, and it matches the workers:
+
+```sh
+docker run --rm -e EXPO_TOKEN=<token> -v "<repo-root>:/src:ro" node:20 bash -lc "
+  git clone -q --depth 1 file:///src /work && cd /work &&
+  npm ci --no-audit --no-fund --ignore-scripts &&
+  cd apps/mobile &&
+  APP_VARIANT=production npx expo prebuild --platform ios --no-install &&
+  npx eas-cli build --platform ios --profile production --non-interactive --no-wait"
+```
+
+Notes:
+- The clone uses **committed state** — commit (or merge to main) before building.
+- `APP_VARIANT=production` at prebuild is REQUIRED (bakes the store bundle id).
+- `eas submit` from Windows can also fail silently — run it via the same
+  container, mounting the ASC `.p8` key and setting `EXPO_ASC_API_KEY_PATH`,
+  `EXPO_ASC_KEY_ID`, and `EXPO_ASC_ISSUER_ID`.
+
 ## Submit to App Store Connect
 
 ```sh

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Pantry Party</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="/">Pantry&nbsp;Party</a>
+  <nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav>
+</header>
+<main>
+<h1>Privacy Policy</h1>
+<p><strong>Effective date:</strong> July 9, 2026
+<strong>Last updated:</strong> July 9, 2026</p>
+<p>Pantry Party ("<strong>Pantry Party</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is operated by
+the Pantry Party team. This Privacy Policy
+explains what we collect, why, who we share it with, and the choices you have.
+If you don't agree with it, please don't use the App.</p>
+<hr />
+<h2>The short version</h2>
+<ul>
+<li><strong>We built this to help you waste less food — not to harvest your data.</strong></li>
+<li><strong>We do not sell or rent your personal information. Ever.</strong></li>
+<li><strong>We do not show third-party ads, and we do not share your data with
+  advertisers or data brokers.</strong></li>
+<li><strong>Sync and reliability are core features, not something we hold hostage.</strong></li>
+<li><strong>You can delete your account and its data from inside the App at any time.</strong></li>
+</ul>
+<p>The sections below are the complete, specific version.</p>
+<hr />
+<h2>1. Who this policy covers</h2>
+<p>This policy applies to the Pantry Party mobile application on iOS and Android and
+the backend services that support it. It does not cover third‑party services we
+integrate with, each of which has its own privacy policy (see
+<a href="#5-service-providers-subprocessors">Section 5</a>).</p>
+<h2>2. Information we collect</h2>
+<p>We collect only what the App needs to function. We do <strong>not</strong> buy personal
+information about you from third parties.</p>
+<p><strong>a. Account information.</strong> When you create an account we process your <strong>email
+address</strong> and authentication credentials through our authentication provider
+(Supabase Auth). Your password is handled and stored by that provider; we never
+see it in plain text.</p>
+<p><strong>b. Content you add ("your pantry data").</strong> The information you put into the
+App so it can do its job, including:
+- pantry items (name, optional brand, quantity, unit, storage location,
+  category, best‑before / expiry date, and "how full" level);
+- shopping‑list items;
+- households you create or join, the household name, membership, and the
+  <strong>display name</strong> you choose;
+- recipes you save ("favorites") and your cooking activity (items you mark
+  cooked, used, tossed, or restocked, with timestamps);
+- on‑device taste/recipe preferences derived from what you save and cook.</p>
+<p><strong>c. Barcodes you scan.</strong> When you use the barcode scanner, your device's camera
+decodes the barcode <strong>on your device</strong>. We send only the resulting <strong>barcode
+number</strong> to a product database (Open Food Facts) to look up the product name and
+brand. Camera images are <strong>not</strong> stored by us and are <strong>not</strong> transmitted off
+your device.</p>
+<p><strong>d. Recipe search terms.</strong> To suggest recipes, we send <strong>ingredient names
+derived from your pantry</strong> (and an optional meal type) to our server, which
+queries a recipe provider (Spoonacular). We do <strong>not</strong> attach your name, email,
+or account identifier to those upstream recipe queries.</p>
+<p><strong>e. Device permissions.</strong>
+- <strong>Camera</strong> — used only to scan barcodes, as described above.
+- <strong>Notifications</strong> — used to schedule <strong>local</strong> reminders on your device
+  (expiry reminders, cook‑mode timers). These are scheduled on the device; we do
+  not operate a push‑advertising server. You can disable them in your OS
+  settings at any time.</p>
+<p><strong>f. Diagnostics (optional).</strong> If enabled, we use an error‑reporting tool
+(Sentry) to capture crash and error information so we can fix bugs. It is
+configured to <strong>not</strong> attach personally identifying information by default. If
+diagnostics are disabled, no crash data is sent.</p>
+<p>We do <strong>not</strong> intentionally collect precise location, contacts, health data, or
+advertising identifiers.</p>
+<h2>3. How we use your information</h2>
+<ul>
+<li>To provide the App's core features: storing your pantry, syncing it across
+  your devices and household members, tracking expiry, suggesting recipes, and
+  building your shopping list.</li>
+<li>To keep your data available and consistent across devices (offline‑first sync).</li>
+<li>To send the on‑device reminders you enable.</li>
+<li>To operate, secure, debug, and improve the App.</li>
+<li>To respond to your support requests.</li>
+</ul>
+<p>We do <strong>not</strong> use your pantry data, activity, or account information for
+advertising or to build profiles for sale.</p>
+<h2>4. How your information is stored and shared</h2>
+<p>Your pantry data is stored in our managed database and synchronized to your
+devices. Within a <strong>household</strong>, the members you invite can see the shared
+household's items, lists, and activity — that's the point of a shared pantry —
+and can see the <strong>display name</strong> attributed to actions. Don't put anything in a
+shared household you don't want other members to see.</p>
+<p>We share information with third parties only in these cases:
+- <strong>Service providers</strong> who process data on our behalf under contract, listed in
+  <a href="#5-service-providers-subprocessors">Section 5</a>.
+- <strong>Legal requirements</strong> — if required by law, valid legal process, or to
+  protect the rights, safety, or property of our users or us.
+- <strong>Business transfer</strong> — if we're involved in a merger, acquisition, or asset
+  sale, data may transfer as part of it, subject to this policy.</p>
+<p>We do <strong>not</strong> sell your personal information, and we do <strong>not</strong> share it with
+advertisers or data brokers.</p>
+<h2>5. Service providers (subprocessors)</h2>
+<p>The App relies on the following providers. Each processes only what's needed for
+its function, and each has its own privacy policy.</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Purpose</th>
+<th>What it processes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supabase</strong> (database + authentication; hosted in the United States, AWS <code>us-west-2</code>)</td>
+<td>Stores your account and pantry data; handles sign‑in</td>
+<td>Email, authentication data, all pantry/household/shopping/favorites/activity data</td>
+</tr>
+<tr>
+<td><strong>PowerSync (JourneyApps)</strong></td>
+<td>Real‑time sync between your device and the database</td>
+<td>Your household's pantry data, in transit and in sync checkpoints</td>
+</tr>
+<tr>
+<td><strong>Railway</strong></td>
+<td>Hosts our backend API (writes, recipe proxy, account deletion)</td>
+<td>Your data in transit while requests are processed</td>
+</tr>
+<tr>
+<td><strong>Spoonacular</strong></td>
+<td>Recipe search</td>
+<td>Ingredient names + meal type derived from your pantry (no account identity)</td>
+</tr>
+<tr>
+<td><strong>Open Food Facts</strong></td>
+<td>Barcode → product lookup</td>
+<td>The scanned barcode number</td>
+</tr>
+<tr>
+<td><strong>Sentry</strong> (optional; only if diagnostics enabled)</td>
+<td>Crash/error reporting</td>
+<td>Diagnostic data; no PII attached by default</td>
+</tr>
+<tr>
+<td><strong>Expo / EAS</strong></td>
+<td>App builds and updates</td>
+<td>Basic app/build and device information</td>
+</tr>
+<tr>
+<td><strong>Apple / Google</strong></td>
+<td>App distribution (and, in future, payments)</td>
+<td>Governed by their own policies</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Data location and retention</h2>
+<p>Your data is processed and stored in the <strong>United States</strong> . We retain your pantry data for as long as your
+account is active. When you delete your account (see
+<a href="#7-your-rights-and-choices">Section 7</a>) we remove or irreversibly disassociate
+the personal data you added, subject to limited retention required for legal,
+security, or backup purposes (backups are rotated on a 30-day
+cycle).</p>
+<h2>7. Your rights and choices</h2>
+<ul>
+<li><strong>Access and edit.</strong> You can view and edit all of your pantry data directly in
+  the App.</li>
+<li><strong>Delete your account.</strong> Settings → <strong>Delete my account</strong> permanently deletes
+  your account and removes the data you added. Items you contributed to shared
+  households are removed; sole‑member households are handled per the App's
+  documented deletion behavior.</li>
+<li><strong>Notifications.</strong> Turn reminders off in your device's OS settings.</li>
+<li><strong>Camera.</strong> Revoke camera access in your device settings (barcode scanning
+  will stop working).</li>
+<li><strong>Diagnostics.</strong> </li>
+</ul>
+<p>Depending on where you live, you may have additional rights (for example, under
+the EU/UK GDPR or the California CCPA/CPRA) to access, correct, delete, port, or
+restrict processing of your personal information, and to object to certain
+processing. To exercise these, contact us at jcsenka013@gmail.com. We will
+not discriminate against you for exercising them. </p>
+<h2>8. Children's privacy</h2>
+<p>The App is <strong>not directed to children under 13</strong>, and we do
+not knowingly collect personal information from them. If you believe a child has
+provided us personal information, contact us and we will delete it.</p>
+<h2>9. Security</h2>
+<p>We use industry‑standard measures to protect your data, including encryption in
+transit (TLS), authentication on every write, and tenancy checks that keep one
+household's data from being read or written by another. No method of transmission
+or storage is 100% secure, but we work to protect your information and to respond
+promptly to any incident.</p>
+<h2>10. Changes to this policy</h2>
+<p>We may update this policy as the App evolves. We'll change the "Last updated"
+date above and, for material changes, provide a more prominent notice in the App.
+Continued use after an update means you accept the revised policy.</p>
+<h2>11. Contact us</h2>
+<p>Questions or requests about your privacy:</p>
+<p>the Pantry Party team
+jcsenka013@gmail.com</p>
+</main>
+<footer>
+  <p>Pantry Party · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
+</footer>
+</body>
+</html>
