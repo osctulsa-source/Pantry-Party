@@ -66,6 +66,20 @@ describe('matchFood', () => {
     expect(matchFood('orange juice')?.n).toBe('orange juice');
   });
 
+  it('matches bare "eggs" to the in-shell record, not raw yolks', () => {
+    const m = matchFood('eggs');
+    expect(m).not.toBeNull();
+    expect(m!.k).toContain('in shell');
+    expect(m!.f).toBe(28);
+  });
+
+  it('matches singular "egg" to the same in-shell record (plural fold)', () => {
+    const m = matchFood('egg');
+    expect(m).not.toBeNull();
+    expect(m!.k).toContain('in shell');
+    expect(m!.f).toBe(28);
+  });
+
   it('returns null for gibberish', () => {
     expect(matchFood('zzqx flurbo')).toBeNull();
   });

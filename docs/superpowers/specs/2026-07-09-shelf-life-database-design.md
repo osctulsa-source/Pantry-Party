@@ -117,3 +117,10 @@ Add Item (name, location) ──▶ suggestShelfLifeDays ──▶ suggested exp
 Freeze-it nudges, storage-tip UI copy, after-opening durations, any backend or
 schema change, per-household custom shelf-life overrides, custom-location
 intelligence.
+
+### Known data gaps (v1)
+
+FoodKeeper data-tier gaps deliberately not patched in v1: "mayo" only aliases
+to aioli (the mayonnaise row lacks the alias); there are no frozen-vegetables
+records (e.g. "frozen peas" resolves to dried split peas for fridge/pantry
+requests); and fresh-squeezed juice rows stand in for packaged juice.

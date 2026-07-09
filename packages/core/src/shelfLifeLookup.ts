@@ -13,8 +13,13 @@
  *   3. matchedTokens — size of the record's matched-token union
  *   4. lastPos — later input-token position in the union; the head noun of an
  *      English food name comes last ("orange juice" is a juice)
- *   5. deterministic ties — record name ascending, then more location fields
- *      defined (p/f/z), then dataset order
+ *   5. record name ascending (deterministic across same-score records with
+ *      different names, e.g. "citrus fruit" beats "orange juice" for bare
+ *      "orange")
+ *   6. earlier dataset order wins — FoodKeeper's editorial order lists the
+ *      canonical variant of a food first (bare "eggs" is the in-shell row,
+ *      not raw whites/yolks), and the committed CSV + deterministic generator
+ *      make the order stable across runs
  */
 import { SHELF_LIFE_DATA, type ShelfLifeRecord } from './shelfLifeData.generated.ts';
 
@@ -35,7 +40,6 @@ interface IndexEntry {
   normName: string;
   nameTokens: string[];
   aliases: Array<{ alias: string; tokens: string[] }>;
-  locationFields: number;
 }
 
 let INDEX: IndexEntry[] | null = null;
@@ -56,10 +60,6 @@ function index(): IndexEntry[] {
         normName,
         nameTokens: normName ? normName.split(' ') : [],
         aliases,
-        locationFields:
-          (rec.p !== undefined ? 1 : 0) +
-          (rec.f !== undefined ? 1 : 0) +
-          (rec.z !== undefined ? 1 : 0),
       });
     }
   }
@@ -74,13 +74,36 @@ function findToken(nameTokens: string[], token: string): number {
   return -1;
 }
 
+interface Score {
+  exact: number;
+  nameCovered: number;
+  matchedTokens: number;
+  lastPos: number;
+  /** Normalized record name; ascending tie-break. */
+  name: string;
+}
+
+/**
+ * True when `a` strictly beats `b` per the documented precedence. Equal scores
+ * return false, so the earlier dataset entry (the incumbent during the scan)
+ * wins the final tie — FoodKeeper lists the canonical variant first.
+ */
+function beats(a: Score, b: Score): boolean {
+  if (a.exact !== b.exact) return a.exact > b.exact;
+  if (a.nameCovered !== b.nameCovered) return a.nameCovered > b.nameCovered;
+  if (a.matchedTokens !== b.matchedTokens) return a.matchedTokens > b.matchedTokens;
+  if (a.lastPos !== b.lastPos) return a.lastPos > b.lastPos;
+  if (a.name !== b.name) return a.name < b.name;
+  return false;
+}
+
 /** Best matching food record for a free-text item name, or null. */
 export function matchFood(name: string): ShelfLifeRecord | null {
   const norm = normalize(name);
   if (!norm) return null;
   const nameTokens = norm.split(' ');
 
-  let best: { score: number[]; tieName: string; entry: IndexEntry } | null = null;
+  let best: { score: Score; entry: IndexEntry } | null = null;
   for (const entry of index()) {
     // Union of matched input-token positions across all fully-matching aliases.
     const matched = new Set<number>();
@@ -101,30 +124,20 @@ export function matchFood(name: string): ShelfLifeRecord | null {
     }
     if (matched.size === 0) continue;
 
-    const nameCovered = entry.nameTokens.every((t) =>
-      nameTokens.some((nt) => tokensEqual(nt, t)),
-    )
-      ? 1
-      : 0;
-    const lastPos = Math.max(...matched);
-    const score = [exact, nameCovered, matched.size, lastPos, 0, entry.locationFields];
-    if (!best || better(score, entry.normName, best.score, best.tieName)) {
-      best = { score, tieName: entry.normName, entry };
+    const score: Score = {
+      exact,
+      nameCovered: entry.nameTokens.every((t) => nameTokens.some((nt) => tokensEqual(nt, t)))
+        ? 1
+        : 0,
+      matchedTokens: matched.size,
+      lastPos: Math.max(...matched),
+      name: entry.normName,
+    };
+    if (!best || beats(score, best.score)) {
+      best = { score, entry };
     }
   }
   return best?.entry.rec ?? null;
-}
-
-/** Lexicographic score comparison with the name tie-break (ascending) at slot 4. */
-function better(score: number[], name: string, bestScore: number[], bestName: string): boolean {
-  for (let i = 0; i < score.length; i++) {
-    if (i === 4) {
-      if (name !== bestName) return name < bestName;
-      continue;
-    }
-    if (score[i]! !== bestScore[i]!) return score[i]! > bestScore[i]!;
-  }
-  return false;
 }
 
 type LocationField = 'p' | 'f' | 'z';
