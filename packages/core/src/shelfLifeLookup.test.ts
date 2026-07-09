@@ -37,6 +37,35 @@ describe('matchFood', () => {
     expect(m!.k.some((k) => k.includes('milk'))).toBe(true);
   });
 
+  it('matches "cheddar cheese" to a cheddar row, not cottage cheese', () => {
+    const m = matchFood('cheddar cheese');
+    expect(m).not.toBeNull();
+    expect(m!.k).toContain('cheddar');
+  });
+
+  it('matches "chicken breast" to a chicken row, not lamb breast', () => {
+    const m = matchFood('chicken breast');
+    expect(m).not.toBeNull();
+    expect(m!.n).toContain('chicken');
+    expect(m!.n).not.toContain('lamb');
+  });
+
+  it('matches "whole milk" to milk, not kefir', () => {
+    expect(matchFood('whole milk')?.n).toBe('milk');
+  });
+
+  it('matches "sourdough bread" to bread, not breaded fish', () => {
+    expect(matchFood('sourdough bread')?.n).toBe('bread');
+  });
+
+  it('matches bare "orange" to the citrus record, not juice', () => {
+    expect(matchFood('orange')?.n).toBe('citrus fruit');
+  });
+
+  it('still matches "orange juice" to a juice record', () => {
+    expect(matchFood('orange juice')?.n).toBe('orange juice');
+  });
+
   it('returns null for gibberish', () => {
     expect(matchFood('zzqx flurbo')).toBeNull();
   });
