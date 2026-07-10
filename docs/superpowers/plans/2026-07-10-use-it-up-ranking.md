@@ -20,7 +20,7 @@
 - Modify: `packages/core/src/shoppingList.ts` (append at end)
 - Test: `packages/core/src/shoppingList.test.ts` (new file)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `packages/core/src/shoppingList.test.ts`:
 
@@ -58,12 +58,12 @@ describe("titleCaseIngredient", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run (from repo root): `cd packages/core && npx vitest run src/shoppingList.test.ts`
 Expected: FAIL — `titleCaseIngredient` is not exported.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Append to `packages/core/src/shoppingList.ts`:
 
@@ -106,12 +106,12 @@ export function titleCaseIngredient(name: string): string {
 }
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `cd packages/core && npx vitest run src/shoppingList.test.ts`
 Expected: PASS (5 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/core/src/shoppingList.ts packages/core/src/shoppingList.test.ts
@@ -127,7 +127,7 @@ git commit -m "feat(core): titleCaseIngredient — display cleanup for recipe-fe
 - Modify: `packages/core/src/index.ts` (add export line)
 - Test: `packages/core/src/useItUp.test.ts` (new file)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `packages/core/src/useItUp.test.ts`:
 
@@ -258,12 +258,12 @@ describe("formatUseItUpBadge", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `cd packages/core && npx vitest run src/useItUp.test.ts`
 Expected: FAIL — module `./useItUp.ts` not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `packages/core/src/useItUp.ts`:
 
@@ -378,12 +378,12 @@ Add to `packages/core/src/index.ts` after the `./substitutions.ts` line:
 export * from "./useItUp.ts";
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `cd packages/core && npx vitest run src/useItUp.test.ts`
 Expected: PASS (all tests). Then run the whole core suite to check nothing broke: `npx vitest run` → all green.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/core/src/useItUp.ts packages/core/src/useItUp.test.ts packages/core/src/index.ts
@@ -399,7 +399,7 @@ git commit -m "feat(core): use-it-up urgency scoring — expiring pantry items b
 
 No new unit tests here (badge is a pure-text render of the tested core functions); the existing jest-expo suite must stay green.
 
-- [ ] **Step 1: Import the new core functions**
+- [x] **Step 1: Import the new core functions**
 
 In the `@breadbox/core` import block (lines 64–78), add `formatUseItUpBadge` and `scoreUseItUp` (alphabetical order within the block):
 
@@ -423,7 +423,7 @@ import {
 } from '@breadbox/core';
 ```
 
-- [ ] **Step 2: Compute per-recipe urgency in CookThis**
+- [x] **Step 2: Compute per-recipe urgency in CookThis**
 
 In the `CookThis` component, directly BELOW the `const [missingAdded, setMissingAdded] = ...` line (line ~617) and ABOVE `onAddMissing`, add:
 
@@ -448,7 +448,7 @@ In the `CookThis` component, directly BELOW the `const [missingAdded, setMissing
   }, [recipes, items, now]);
 ```
 
-- [ ] **Step 3: Fold the score into the blend**
+- [x] **Step 3: Fold the score into the blend**
 
 In the `pool` memo, change the `blend` function (line ~655) to add the urgency term, and add `useItUpByRecipe` to the memo's dependency array:
 
@@ -466,7 +466,7 @@ In the `pool` memo, change the `blend` function (line ~655) to add the urgency t
   }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow, useItUpByRecipe]);
 ```
 
-- [ ] **Step 4: Pass the badge into HeroCard and RecipeRow**
+- [x] **Step 4: Pass the badge into HeroCard and RecipeRow**
 
 HeroCard render site (line ~782): add a `useItUp` prop:
 
@@ -494,7 +494,7 @@ Both RecipeRow call sites (suggestions ~line 812, alternates ~line 821) gain the
             <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
 ```
 
-- [ ] **Step 5: Render the badge in HeroCard**
+- [x] **Step 5: Render the badge in HeroCard**
 
 Add the prop to `HeroCard`'s signature:
 
@@ -546,7 +546,7 @@ Inside `styles.heroPad`, directly after the `<Text style={styles.match}>{matchLi
           )}
 ```
 
-- [ ] **Step 6: Render the badge in RecipeRow**
+- [x] **Step 6: Render the badge in RecipeRow**
 
 Update `RecipeRow` (line ~162):
 
@@ -601,7 +601,7 @@ function RecipeRow({
 }
 ```
 
-- [ ] **Step 7: Add the style**
+- [x] **Step 7: Add the style**
 
 In the `StyleSheet.create` block, next to the other text styles (after `metaTxtEasy` is fine):
 
@@ -609,12 +609,12 @@ In the `StyleSheet.create` block, next to the other text styles (after `metaTxtE
   useItUp: { fontFamily: tokens.font.body.semibold, fontSize: 12, marginTop: tokens.space(1) },
 ```
 
-- [ ] **Step 8: Typecheck + run the mobile suite**
+- [x] **Step 8: Typecheck + run the mobile suite**
 
 Run: `npm run typecheck` (repo root) → no errors.
 Run: `cd apps/mobile && npm test` → all existing tests PASS.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add apps/mobile/src/features/recipes/RecipesScreen.tsx
@@ -631,7 +631,7 @@ git commit -m "feat(cook): use-it-up ranking boost + badge — expiring items su
 
 The fix lives at the recipe call sites, NOT inside `addToShoppingList` — manual adds must keep the user's own casing. Dedupe is already case-insensitive (`LOWER(name) = LOWER(?)`), so re-cased adds still dedupe against existing rows.
 
-- [ ] **Step 1: RecipesScreen**
+- [x] **Step 1: RecipesScreen**
 
 Add `titleCaseIngredient` to the `@breadbox/core` import block (alphabetical: after `suggestSubstitutes`). Then in `onAddMissing`:
 
@@ -641,7 +641,7 @@ Add `titleCaseIngredient` to the `@breadbox/core` import block (alphabetical: af
     }
 ```
 
-- [ ] **Step 2: RecipeDetailScreen**
+- [x] **Step 2: RecipeDetailScreen**
 
 Add `titleCaseIngredient` to that file's `@breadbox/core` import block the same way. Then in its `onAddMissing`:
 
@@ -651,11 +651,11 @@ Add `titleCaseIngredient` to that file's `@breadbox/core` import block the same 
     }
 ```
 
-- [ ] **Step 3: Typecheck + mobile tests**
+- [x] **Step 3: Typecheck + mobile tests**
 
 Run: `npm run typecheck` → no errors. Run: `cd apps/mobile && npm test` → PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/mobile/src/features/recipes/RecipesScreen.tsx apps/mobile/src/features/recipes/RecipeDetailScreen.tsx
@@ -666,7 +666,7 @@ git commit -m "fix(shopping): Title-Case ingredient names when recipes feed the 
 
 ### Task 5: Full verification
 
-- [ ] **Step 1: Run everything**
+- [x] **Step 1: Run everything**
 
 ```bash
 cd packages/core && npx vitest run        # all core tests
@@ -676,7 +676,7 @@ cd ../.. && npm run typecheck && npm run lint
 
 Expected: all green. Lint may flag pre-existing issues in untouched files — only new warnings in touched files matter.
 
-- [ ] **Step 2: Mark plan checkboxes done and commit any stragglers**
+- [x] **Step 2: Mark plan checkboxes done and commit any stragglers**
 
 ```bash
 git status   # should be clean apart from this plan file's checked boxes
