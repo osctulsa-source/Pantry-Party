@@ -50,6 +50,27 @@ Deleting `ios/Pods`, `ios/Podfile.lock`, `ios/*.xcworkspace`, and `ios/build`
 forces EAS's remote workers to regenerate CocoaPods with the correct **remote**
 paths — this is what avoids the hardcoded-path failure.
 
+> ⚠️ **On Windows, step 1 is destructive.** `expo prebuild --platform ios
+> --clean` deletes `ios/` and then CANNOT regenerate it ("Run npx expo prebuild
+> again from macOS or Linux"). The local `ios/` directory is **load-bearing**:
+> `.easignore` deliberately un-ignores it so the upload carries the native
+> project and EAS skips its buggy remote widget prebuild — without it, every
+> remote build fails in "Configure Xcode project" AND the fingerprint changes
+> (so OTA updates stop matching installed builds). If `ios/` is missing or
+> stale on a Windows machine, regenerate it in a Linux container instead
+> (from the repo root; env mirrors the production build profile):
+>
+> ```sh
+> MSYS_NO_PATHCONV=1 docker run --rm -v "C:/Users/JCS/Pantry-Party:/work" \
+>   -w /work/apps/mobile -e APP_VARIANT=production -e APPLE_TEAM_ID=X7E3964XPW \
+>   -e SENTRY_DISABLE_AUTO_UPLOAD=true -e CI=1 \
+>   node:20 npx expo prebuild --platform ios --no-install
+> ```
+>
+> Verify afterwards: `PRODUCT_BUNDLE_IDENTIFIER = com.osctulsa.pantryparty`
+> (no `.dev`) and the `.widget` target in
+> `ios/PantryParty.xcodeproj/project.pbxproj`.
+
 **Build numbers:** the production profile's `autoIncrement` in `eas.json` bumps
 the build number automatically — no manual edit needed.
 
