@@ -69,6 +69,7 @@ export type RootStackParamList = {
   InviteCodeModal: { householdId: string };
   JoinHousehold: { code?: string } | undefined;
   FavoriteStores: undefined;
+  Tips: undefined;
 };
 
 export type AuthStackParamList = {
@@ -144,6 +145,11 @@ function AppStack() {
         name="FavoriteStores"
         component={FavoriteStoresScreen}
         options={{ title: 'Your stores' }}
+      />
+      <Stack.Screen
+        name="Tips"
+        component={TipsScreen}
+        options={{ title: 'Kitchen tips' }}
       />
     </Stack.Navigator>
   );

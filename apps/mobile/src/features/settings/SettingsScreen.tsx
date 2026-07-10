@@ -177,6 +177,7 @@ export function SettingsScreen() {
             onPress={() => navigation.navigate('ReviewDates')}
           />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
+          <ListRow label="Kitchen tips" onPress={() => navigation.navigate('Tips')} />
         </View>
 
         <View style={styles.bottomGroup}>
