@@ -1,0 +1,66 @@
+-- announcements + announcement_reactions + push_tokens (Household Announcements).
+-- Mirrors @breadbox/core Announcement / AnnouncementReaction. Enum-ish columns
+-- (kind, status, reaction, platform) are plain TEXT with NO CHECK — a DB CHECK
+-- the client can violate is the silent-sync-jam class migration 0002 fixed.
+-- Core zod owns the allowed sets.
+--
+-- LOCKSTEP: created for existing volumes by migrations/0007_announcements.sql.
+-- Runs BEFORE the publication script (renumbered 08-).
+
+CREATE TABLE IF NOT EXISTS announcements (
+  id                       UUID         PRIMARY KEY,
+  household_id             UUID         NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+  kind                     TEXT         NOT NULL,
+  created_by               TEXT         NOT NULL,
+  created_at               TIMESTAMPTZ  NOT NULL,
+  status                   TEXT         NOT NULL DEFAULT 'active',
+  departs_at               TIMESTAMPTZ,
+  store_hint               TEXT,
+  recipe_id                TEXT,
+  recipe_title             TEXT,
+  image                    TEXT,
+  runner_summary_sent_at   TIMESTAMPTZ,
+  updated_at               BIGINT       NOT NULL,
+  deleted                  BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_announcements_household_active
+  ON announcements (household_id, created_at DESC)
+  WHERE deleted = FALSE;
+
+CREATE TABLE IF NOT EXISTS announcement_reactions (
+  id               UUID         PRIMARY KEY,
+  announcement_id  UUID         NOT NULL REFERENCES announcements(id) ON DELETE CASCADE,
+  household_id     UUID         NOT NULL REFERENCES households(id) ON DELETE CASCADE,
+  user_id          TEXT         NOT NULL,
+  reaction         TEXT         NOT NULL,
+  created_at       TIMESTAMPTZ  NOT NULL,
+  updated_at       BIGINT       NOT NULL,
+  deleted          BOOLEAN      NOT NULL DEFAULT FALSE
+);
+
+CREATE INDEX IF NOT EXISTS idx_reactions_announcement
+  ON announcement_reactions (announcement_id)
+  WHERE deleted = FALSE;
+
+-- push_tokens is USER-scoped, not household-scoped: a token is a device secret
+-- and must never stream to co-members (see sync-config user_push_tokens rule).
+CREATE TABLE IF NOT EXISTS push_tokens (
+  id                     UUID     PRIMARY KEY,
+  user_id                TEXT     NOT NULL,
+  token                  TEXT     NOT NULL,
+  platform               TEXT     NOT NULL,
+  announcements_enabled  BOOLEAN  NOT NULL DEFAULT TRUE,
+  updated_at             BIGINT   NOT NULL,
+  deleted                BOOLEAN  NOT NULL DEFAULT FALSE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_push_tokens_token
+  ON push_tokens (token);
+CREATE INDEX IF NOT EXISTS idx_push_tokens_user
+  ON push_tokens (user_id)
+  WHERE deleted = FALSE AND announcements_enabled = TRUE;
+
+-- run_id links a shopping-list item to the active run it was requested for, so
+-- the runner's screen groups "requested this run" and the batch ping counts it.
+ALTER TABLE shopping_list_items ADD COLUMN IF NOT EXISTS run_id UUID;
