@@ -7,6 +7,9 @@
  * Anything" (devices: []) — both rank identically, but only the former shows
  * the prompt card. A persistent tab can sit mounted across midnight, so the
  * screen calls refreshDay() on focus; a date roll resets to unanswered.
+ *
+ * `loaded` guards the prompt card against a flash while today's stored
+ * answer is still being read.
  */
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,25 +27,35 @@ const storageKey = (householdId: string, day: string) => `cookingWith:${househol
 export function useTonightDevices(householdId: string | null) {
   const [devices, setDevicesState] = useState<CookingDevice[]>([]);
   const [answered, setAnswered] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [day, setDay] = useState(localDay);
 
   useEffect(() => {
     let cancelled = false;
     setDevicesState([]);
     setAnswered(false);
-    if (!householdId) return;
+    setLoaded(false);
+    if (!householdId) {
+      setLoaded(true);
+      return;
+    }
     AsyncStorage.getItem(storageKey(householdId, day))
       .then((raw) => {
-        if (cancelled || !raw) return;
-        try {
-          const parsed = JSON.parse(raw) as Stored;
-          setDevicesState(Array.isArray(parsed.devices) ? parsed.devices : []);
-          setAnswered(parsed.answered === true);
-        } catch {
-          // Corrupt value — treat as unanswered; next answer overwrites it.
+        if (cancelled) return;
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as Stored;
+            setDevicesState(Array.isArray(parsed.devices) ? parsed.devices : []);
+            setAnswered(parsed.answered === true);
+          } catch {
+            // Corrupt value — treat as unanswered; next answer overwrites it.
+          }
         }
+        setLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setLoaded(true);
+      });
     // Best-effort tidy-up of yesterday's key.
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -73,5 +86,5 @@ export function useTonightDevices(householdId: string | null) {
   /** Call on tab focus: rolls `day` past midnight, which resets + reloads. */
   const refreshDay = useCallback(() => setDay(localDay()), []);
 
-  return { devices, answered, setDevices, dismiss, refreshDay };
+  return { devices, answered, loaded, setDevices, dismiss, refreshDay };
 }

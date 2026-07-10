@@ -64,6 +64,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   buildTasteProfile,
+  COOKING_DEVICES,
   defaultMealForHour,
   detectDevices,
   formatDeviceBadge,
@@ -95,6 +96,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useTasteProfile } from './useTasteProfile';
+import { useTonightDevices } from './useTonightDevices';
 import { useFavorites } from './useFavorites';
 import { useActivity } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
@@ -239,6 +241,9 @@ export function RecipesScreen() {
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
+  const tonight = useTonightDevices(activeHouseholdId);
+  // Prompt-card selection buffer — committed on "Show me recipes".
+  const [pendingDevices, setPendingDevices] = useState<CookingDevice[]>([]);
 
   const { items, isLoading: pantryLoading, error: pantryError } = usePantryItems();
 
@@ -254,7 +259,8 @@ export function RecipesScreen() {
       const h = new Date().getHours();
       setHour(h);
       if (!userPickedMeal.current) setMeal(defaultMealForHour(h));
-    }, []),
+      tonight.refreshDay();
+    }, [tonight.refreshDay]),
   );
   const [healthy, setHealthy] = useState(false);
   const [easy, setEasy] = useState(false);
@@ -356,6 +362,12 @@ export function RecipesScreen() {
     setMeal(m);
     setOffset(0);
   }
+  function toggleTonightDevice(id: CookingDevice) {
+    const next = tonight.devices.includes(id)
+      ? tonight.devices.filter((d) => d !== id)
+      : [...tonight.devices, id];
+    tonight.setDevices(next);
+  }
   function toggleExclude(name: string) {
     const k = name.toLowerCase();
     setExcluded((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
@@ -401,6 +413,36 @@ export function RecipesScreen() {
             );
           })}
         </View>
+
+        {tonight.answered && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.deviceRow}
+          >
+            <Text style={styles.deviceRowLabel}>Cooking with</Text>
+            <Pressable
+              onPress={() => tonight.setDevices([])}
+              style={[styles.chip, tonight.devices.length === 0 && styles.chipSelected]}
+            >
+              <Text style={[styles.chipText, tonight.devices.length === 0 && styles.chipTextSelected]}>
+                Any
+              </Text>
+            </Pressable>
+            {COOKING_DEVICES.map((d) => {
+              const on = tonight.devices.includes(d.id);
+              return (
+                <Pressable
+                  key={d.id}
+                  onPress={() => toggleTonightDevice(d.id)}
+                  style={[styles.chip, on && styles.chipSelected]}
+                >
+                  <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
 
         <View style={styles.controls}>
           <Pressable style={styles.ctrlBtn} onPress={refresh}>
@@ -493,6 +535,55 @@ export function RecipesScreen() {
         </View>
       )}
 
+      {recipeState.kind === 'ok' && tonight.loaded && !tonight.answered && (
+        <View style={styles.deviceCard}>
+          <View style={styles.deviceCardHead}>
+            <Text style={styles.deviceCardTitle}>
+              What are you cooking with {mealtimeLabel(hour)}?
+            </Text>
+            <Pressable
+              hitSlop={8}
+              onPress={tonight.dismiss}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss — show everything"
+            >
+              <X size={16} color={tokens.color.inkMuted} />
+            </Pressable>
+          </View>
+          <View style={styles.deviceCardChips}>
+            {COOKING_DEVICES.map((d) => {
+              const on = pendingDevices.includes(d.id);
+              return (
+                <Pressable
+                  key={d.id}
+                  onPress={() =>
+                    setPendingDevices((prev) =>
+                      prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id],
+                    )
+                  }
+                  style={[styles.chip, on && styles.chipSelected]}
+                >
+                  <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={styles.deviceCardActions}>
+            <Pressable onPress={tonight.dismiss} hitSlop={6}>
+              <Text style={styles.deviceCardSkip}>Anything goes</Text>
+            </Pressable>
+            {pendingDevices.length > 0 && (
+              <Pressable
+                style={styles.deviceCardGo}
+                onPress={() => tonight.setDevices(pendingDevices)}
+              >
+                <Text style={styles.deviceCardGoTxt}>Show me recipes</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
+
       {recipeState.kind === 'ok' && (
         <CookThis
           recipes={recipeState.recipes}
@@ -509,7 +600,7 @@ export function RecipesScreen() {
           onConsumeFocus={onConsumeFocus}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
           onSaved={(title) => setSavedToast({ title, key: Date.now() })}
-          tonightDevices={[]}
+          tonightDevices={tonight.devices}
         />
       )}
 
@@ -1198,6 +1289,40 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: tokens.color.accent },
   chipText: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
   chipTextSelected: { color: tokens.color.onAccent },
+  deviceRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), paddingTop: tokens.space(2) },
+  deviceRowLabel: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
+  deviceCard: {
+    marginHorizontal: tokens.space(4),
+    marginBottom: tokens.space(2),
+    padding: tokens.space(4),
+    borderRadius: tokens.radius.lg,
+    backgroundColor: tokens.color.surfaceAlt,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  deviceCardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  deviceCardTitle: {
+    flex: 1,
+    fontFamily: tokens.font.display.semibold,
+    fontSize: 16,
+    color: tokens.color.ink,
+    paddingRight: tokens.space(2),
+  },
+  deviceCardChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  deviceCardActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: tokens.space(3),
+  },
+  deviceCardSkip: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted },
+  deviceCardGo: {
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+  },
+  deviceCardGoTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
   controls: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), marginTop: tokens.space(3) },
   ctrlBtn: {
     paddingVertical: tokens.space(2),
