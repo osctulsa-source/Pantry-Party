@@ -20,3 +20,4 @@ export * from "./receiptLines.ts";
 export * from "./receiptStoreHints.ts";
 export * from "./pantryZones.ts";
 export * from "./substitutions.ts";
+export * from "./useItUp.ts";
