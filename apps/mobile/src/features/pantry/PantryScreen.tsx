@@ -539,7 +539,7 @@ export function PantryScreen() {
             {hasAny && (
               <Pressable
                 onPress={() => setSearchOpen((o) => !o)}
-                hitSlop={8}
+                hitSlop={12}
                 style={styles.iconBtn}
                 accessibilityRole="button"
                 accessibilityLabel={searchOpen ? 'Close search' : 'Search your pantry'}
@@ -585,11 +585,12 @@ export function PantryScreen() {
               setQuery('');
               setSearchOpen(false);
             }}
-            hitSlop={8}
+            style={styles.searchClose}
+            hitSlop={10}
             accessibilityRole="button"
             accessibilityLabel="Close search"
           >
-            <X size={15} color={tokens.color.inkMuted} />
+            <X size={18} color={tokens.color.inkMuted} />
           </Pressable>
         </View>
       ) : (
@@ -998,6 +999,9 @@ const styles = StyleSheet.create({
     borderRadius: tokens.radius.md,
   },
   searchInput: { flex: 1, paddingVertical: tokens.space(1), fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.ink },
+  // The close X needs a real tap target (44pt with hitSlop) — a bare 15px icon
+  // at the top of the screen missed most taps.
+  searchClose: { padding: tokens.space(1.5), margin: -tokens.space(1.5) },
   selectBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1028,10 +1032,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(3),
     borderRadius: 999,
   },
-  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13 },
+  // Explicit lineHeight: Nunito Sans clips vertically on iOS without it —
+  // invisible on the soft chip fill, obvious once a selected chip goes accent.
+  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 18 },
   zoneChipCount: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
+    lineHeight: 16,
     fontVariant: ['tabular-nums'],
   },
   scroll: { paddingBottom: tokens.space(10) },
