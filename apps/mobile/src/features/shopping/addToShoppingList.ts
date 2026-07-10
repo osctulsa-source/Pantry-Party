@@ -19,6 +19,7 @@ export async function addToShoppingList(opts: {
   source: ShoppingSource;
   quantity?: number;
   unit?: string | null;
+  runId?: string | null;
 }): Promise<'added' | 'already'> {
   const db = getPowerSync();
   const existing = await db.getAll<{ id: string }>(
@@ -28,8 +29,8 @@ export async function addToShoppingList(opts: {
   if (existing.length > 0) return 'already';
   await db.execute(
     `INSERT INTO shopping_list_items
-       (id, household_id, name, quantity, unit, checked, source, added_by, added_at, updated_at, deleted)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, household_id, name, quantity, unit, checked, source, added_by, added_at, run_id, updated_at, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       Crypto.randomUUID(),
       opts.householdId,
@@ -40,6 +41,7 @@ export async function addToShoppingList(opts: {
       opts.source,
       opts.userId,
       new Date().toISOString(),
+      opts.runId ?? null,
       Date.now(),
       0,
     ],

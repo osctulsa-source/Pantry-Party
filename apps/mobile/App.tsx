@@ -44,6 +44,9 @@ import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
 import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
 import { FavoriteStoresScreen } from './src/features/settings/FavoriteStoresScreen';
+import { TipsScreen } from './src/features/tips/TipsScreen';
+import { registerPushToken } from './src/features/announcements/registerPushToken';
+import { attachAnnouncementResponder } from './src/features/announcements/pushResponder';
 import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
 export type RootStackParamList = {
@@ -159,6 +162,13 @@ function AppRoot() {
   const { state } = useAuth();
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const { needsOnboarding, loading: onboardingLoading, complete } = useOnboarding(userId);
+
+  useEffect(() => {
+    if (!userId) return;
+    void registerPushToken(userId);
+    const sub = attachAnnouncementResponder();
+    return () => sub.remove();
+  }, [userId]);
 
   if (state.status === 'loading') {
     return (
