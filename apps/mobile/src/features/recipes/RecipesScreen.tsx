@@ -72,6 +72,7 @@ import {
   scoreUseItUp,
   seedPrefsFromTaste,
   suggestSubstitutes,
+  titleCaseIngredient,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -659,7 +660,7 @@ function CookThis({
     if (!householdId || !userId || r.missedIngredientNames.length === 0) return;
     Haptics.selectionAsync().catch(() => {});
     for (const name of r.missedIngredientNames) {
-      await addToShoppingList({ householdId, userId, name, source: 'recipe' });
+      await addToShoppingList({ householdId, userId, name: titleCaseIngredient(name), source: 'recipe' });
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setMissingAdded((prev) => new Set(prev).add(r.id));
