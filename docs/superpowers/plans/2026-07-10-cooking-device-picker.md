@@ -24,7 +24,7 @@
 - Create: `packages/core/src/cookingDevice.test.ts`
 - Modify: `packages/core/src/index.ts` (add export)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `packages/core/src/cookingDevice.test.ts`:
 
@@ -128,13 +128,13 @@ describe("formatDeviceBadge", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npm test --workspace @breadbox/core -- cookingDevice`
 (The workspace script is `vitest run`; the extra arg filters to this test file.)
 Expected: FAIL — cannot resolve `./cookingDevice.ts` (module doesn't exist yet).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Create `packages/core/src/cookingDevice.ts`:
 
@@ -265,7 +265,7 @@ export function formatDeviceBadge(
 }
 ```
 
-- [ ] **Step 4: Export from the core index**
+- [x] **Step 4: Export from the core index**
 
 In `packages/core/src/index.ts`, add after the `useItUp.ts` line:
 
@@ -273,7 +273,7 @@ In `packages/core/src/index.ts`, add after the `useItUp.ts` line:
 export * from "./cookingDevice.ts";
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `npm test --workspace @breadbox/core -- cookingDevice`
 Expected: PASS (all tests green).
@@ -282,12 +282,12 @@ Then run the whole core suite to catch export collisions:
 Run: `npm test --workspace @breadbox/core`
 Expected: PASS.
 
-- [ ] **Step 6: Typecheck**
+- [x] **Step 6: Typecheck**
 
 Run: `npm run typecheck` (repo root)
 Expected: exit 0.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add packages/core/src/cookingDevice.ts packages/core/src/cookingDevice.test.ts packages/core/src/index.ts
@@ -303,7 +303,7 @@ git commit -m "feat(core): cookingDevice — tonight's-device detection, flat ra
 
 No unit test — jest-expo isn't set up for hook tests in this repo; hooks like `useRecipePrefs` are verified through app runs. The logic worth testing lives in core (Task 1).
 
-- [ ] **Step 1: Write the hook**
+- [x] **Step 1: Write the hook**
 
 Create `apps/mobile/src/features/recipes/useTonightDevices.ts`:
 
@@ -387,12 +387,12 @@ export function useTonightDevices(householdId: string | null) {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run: `npm run typecheck` (repo root)
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/mobile/src/features/recipes/useTonightDevices.ts
@@ -408,7 +408,7 @@ git commit -m "feat(cook): useTonightDevices — per-day cooking-device choice, 
 
 This task wires the score in and threads the badge to cards. UI for picking devices comes in Task 4 — until then `tonightDevices` is passed as `[]`, which makes every change a no-op (safe intermediate commit).
 
-- [ ] **Step 1: Extend the core import**
+- [x] **Step 1: Extend the core import**
 
 In the `@breadbox/core` import block (~line 64), add:
 
@@ -421,7 +421,7 @@ In the `@breadbox/core` import block (~line 64), add:
 
 (alphabetical placement within the existing braces).
 
-- [ ] **Step 2: Thread `tonightDevices` into `CookThis`**
+- [x] **Step 2: Thread `tonightDevices` into `CookThis`**
 
 `CookThis` props (both the destructuring and the type, ~line 600):
 
@@ -431,7 +431,7 @@ In the `@breadbox/core` import block (~line 64), add:
 
 At the `<CookThis …>` call site (~line 475), pass `tonightDevices={[]}` for now (Task 4 replaces it with the real state).
 
-- [ ] **Step 3: Add the detection memo inside `CookThis`**
+- [x] **Step 3: Add the detection memo inside `CookThis`**
 
 Directly below the `useItUpByRecipe` memo (~line 656):
 
@@ -454,7 +454,7 @@ Directly below the `useItUpByRecipe` memo (~line 656):
   }, [recipes, tonightDevices]);
 ```
 
-- [ ] **Step 4: Add the blend term**
+- [x] **Step 4: Add the blend term**
 
 In the `pool` memo's `blend` (~line 694), after the `useItUpByRecipe` line:
 
@@ -464,7 +464,7 @@ In the `pool` memo's `blend` (~line 694), after the `useItUpByRecipe` line:
 
 and add `deviceByRecipe` to the `pool` memo's dependency array.
 
-- [ ] **Step 5: Thread the badge to `RecipeRow` and `HeroCard`**
+- [x] **Step 5: Thread the badge to `RecipeRow` and `HeroCard`**
 
 `RecipeRow`: add prop `deviceBadge: string | null` (both destructuring and type). Render after the `useItUp` badge block (~line 207):
 
@@ -482,7 +482,7 @@ Update every call site:
 - `HeroCard` render (~line 823): `deviceBadge={deviceByRecipe.get(item.id)?.badge ?? null}`
 - Both `RecipeRow` usages — suggestions (~line 853) and alternates (~line 862): `deviceBadge={deviceByRecipe.get(r.id)?.badge ?? null}`
 
-- [ ] **Step 6: Add the badge style**
+- [x] **Step 6: Add the badge style**
 
 In the `StyleSheet.create` block, next to the existing `useItUp` style (~line 1124):
 
@@ -495,12 +495,12 @@ In the `StyleSheet.create` block, next to the existing `useItUp` style (~line 11
   },
 ```
 
-- [ ] **Step 7: Verify**
+- [x] **Step 7: Verify**
 
 Run: `npm run typecheck` — expected exit 0.
 Run: `npm test --workspace @breadbox/mobile` — expected PASS (no behavior change yet; selection is `[]`).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/mobile/src/features/recipes/RecipesScreen.tsx
@@ -514,7 +514,7 @@ git commit -m "feat(cook): device boost joins the ranking blend + card badge plu
 **Files:**
 - Modify: `apps/mobile/src/features/recipes/RecipesScreen.tsx`
 
-- [ ] **Step 1: Import the hook and device list**
+- [x] **Step 1: Import the hook and device list**
 
 Add `COOKING_DEVICES` to the `@breadbox/core` import block, and below the other feature imports:
 
@@ -522,7 +522,7 @@ Add `COOKING_DEVICES` to the `@breadbox/core` import block, and below the other 
 import { useTonightDevices } from './useTonightDevices';
 ```
 
-- [ ] **Step 2: Wire the hook into `RecipesScreen`**
+- [x] **Step 2: Wire the hook into `RecipesScreen`**
 
 Inside `RecipesScreen` (~line 219, next to `useRecipePrefs`):
 
@@ -556,7 +556,7 @@ Add the toggle helper next to `changeMeal` (~line 332):
   }
 ```
 
-- [ ] **Step 3: Render the collapsed chip row (answered state)**
+- [x] **Step 3: Render the collapsed chip row (answered state)**
 
 In the `headerPad` view, immediately after the meal-chips `<View style={styles.chips}>…</View>` block (~line 381):
 
@@ -592,7 +592,7 @@ In the `headerPad` view, immediately after the meal-chips `<View style={styles.c
         )}
 ```
 
-- [ ] **Step 4: Render the prompt card (unanswered state)**
+- [x] **Step 4: Render the prompt card (unanswered state)**
 
 Immediately before the `{recipeState.kind === 'ok' && (<CookThis …/>)}` block (~line 474):
 
@@ -649,7 +649,7 @@ Immediately before the `{recipeState.kind === 'ok' && (<CookThis …/>)}` block 
 
 Note: `mealtimeLabel(hour)` yields "tonight" / "this morning" / "for lunch" / "this afternoon" / "right now" — all read naturally in the sentence.
 
-- [ ] **Step 5: Pass the real selection to `CookThis`**
+- [x] **Step 5: Pass the real selection to `CookThis`**
 
 Replace the Task 3 placeholder `tonightDevices={[]}` with:
 
@@ -657,7 +657,7 @@ Replace the Task 3 placeholder `tonightDevices={[]}` with:
           tonightDevices={tonight.devices}
 ```
 
-- [ ] **Step 6: Add the styles**
+- [x] **Step 6: Add the styles**
 
 In `StyleSheet.create`, near the existing `chips` styles:
 
@@ -700,13 +700,13 @@ In `StyleSheet.create`, near the existing `chips` styles:
 
 (Reuses the existing `chip` / `chipSelected` / `chipText` / `chipTextSelected` styles for all device chips.)
 
-- [ ] **Step 7: Verify**
+- [x] **Step 7: Verify**
 
 Run: `npm run typecheck` — expected exit 0.
 Run: `npm test --workspace @breadbox/mobile` — expected PASS.
 Run: `npm run lint` — expected exit 0 (no new warnings in changed files).
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/mobile/src/features/recipes/RecipesScreen.tsx
@@ -719,7 +719,7 @@ git commit -m "feat(cook): 'what are you cooking with tonight?' prompt card + ch
 
 **Files:** none (verification only)
 
-- [ ] **Step 1: Run the full test matrix**
+- [x] **Step 1: Run the full test matrix**
 
 ```bash
 npm test --workspace @breadbox/core
@@ -729,7 +729,7 @@ npm run typecheck
 
 Expected: all PASS / exit 0.
 
-- [ ] **Step 2: Drive the feature in the app**
+- [ ] **Step 2: Drive the feature in the app** — PENDING manual QA: not runnable from the Windows dev box (Expo dev-client with native modules; builds come from EAS/TestFlight). Run this checklist on the next dev build.
 
 Launch the mobile app (use the project's `/run` skill or `npx expo start` in `apps/mobile`) and verify on the Cook tab:
 
@@ -740,7 +740,7 @@ Launch the mobile app (use the project's `/run` skill or `npx expo start` in `ap
 5. Kill + relaunch the app same day → no prompt (choice remembered); chip row shows the saved selection.
 6. Dismiss path: clear app storage or wait for the next day, dismiss the card via X → no re-prompt that day, ranking unchanged.
 
-- [ ] **Step 3: Update plan checkboxes and commit any doc changes**
+- [x] **Step 3: Update plan checkboxes and commit any doc changes**
 
 ```bash
 git add docs/superpowers/plans/2026-07-10-cooking-device-picker.md
