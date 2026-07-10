@@ -244,6 +244,9 @@ export function RecipesScreen() {
   const tonight = useTonightDevices(activeHouseholdId);
   // Prompt-card selection buffer — committed on "Show me recipes".
   const [pendingDevices, setPendingDevices] = useState<CookingDevice[]>([]);
+  // Reset the prompt buffer whenever the prompt's gating flips (day roll,
+  // household switch, answer committed) — never leak a stale selection.
+  useEffect(() => setPendingDevices([]), [activeHouseholdId, tonight.answered]);
 
   const { items, isLoading: pantryLoading, error: pantryError } = usePantryItems();
 
@@ -424,6 +427,8 @@ export function RecipesScreen() {
             <Pressable
               onPress={() => tonight.setDevices([])}
               style={[styles.chip, tonight.devices.length === 0 && styles.chipSelected]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: tonight.devices.length === 0 }}
             >
               <Text style={[styles.chipText, tonight.devices.length === 0 && styles.chipTextSelected]}>
                 Any
@@ -436,6 +441,8 @@ export function RecipesScreen() {
                   key={d.id}
                   onPress={() => toggleTonightDevice(d.id)}
                   style={[styles.chip, on && styles.chipSelected]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
                 >
                   <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
                 </Pressable>
@@ -562,6 +569,8 @@ export function RecipesScreen() {
                     )
                   }
                   style={[styles.chip, on && styles.chipSelected]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
                 >
                   <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
                 </Pressable>
