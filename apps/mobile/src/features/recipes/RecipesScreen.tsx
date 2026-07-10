@@ -578,13 +578,14 @@ export function RecipesScreen() {
             })}
           </View>
           <View style={styles.deviceCardActions}>
-            <Pressable onPress={tonight.dismiss} hitSlop={6}>
+            <Pressable onPress={tonight.dismiss} hitSlop={6} accessibilityRole="button">
               <Text style={styles.deviceCardSkip}>Anything goes</Text>
             </Pressable>
             {pendingDevices.length > 0 && (
               <Pressable
                 style={styles.deviceCardGo}
                 onPress={() => tonight.setDevices(pendingDevices)}
+                accessibilityRole="button"
               >
                 <Text style={styles.deviceCardGoTxt}>Show me recipes</Text>
               </Pressable>
