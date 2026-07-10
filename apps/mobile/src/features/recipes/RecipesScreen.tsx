@@ -65,14 +65,18 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   buildTasteProfile,
   defaultMealForHour,
+  detectDevices,
+  formatDeviceBadge,
   formatUseItUpBadge,
   getExpiryStatus,
   mealtimeLabel,
+  scoreDeviceBoost,
   scoreTitle,
   scoreUseItUp,
   seedPrefsFromTaste,
   suggestSubstitutes,
   titleCaseIngredient,
+  type CookingDevice,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -168,10 +172,12 @@ function hasInstructions(r: SpoonacularRecipe): boolean {
 function RecipeRow({
   recipe,
   useItUp,
+  deviceBadge,
   onOpen,
 }: {
   recipe: SpoonacularRecipe;
   useItUp: { badge: string | null; expired: boolean } | null;
+  deviceBadge: string | null;
   onOpen: (r: SpoonacularRecipe) => void;
 }) {
   const imageSource = resolveRecipeImageSource(recipe);
@@ -207,6 +213,11 @@ function RecipeRow({
             numberOfLines={1}
           >
             {useItUp.badge}
+          </Text>
+        )}
+        {deviceBadge && (
+          <Text style={styles.deviceBadge} numberOfLines={1}>
+            {deviceBadge}
           </Text>
         )}
       </View>
@@ -498,6 +509,7 @@ export function RecipesScreen() {
           onConsumeFocus={onConsumeFocus}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
           onSaved={(title) => setSavedToast({ title, key: Date.now() })}
+          tonightDevices={[]}
         />
       )}
 
@@ -615,6 +627,7 @@ function CookThis({
   onConsumeFocus,
   onCookComplete,
   onSaved,
+  tonightDevices,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -630,6 +643,7 @@ function CookThis({
   onConsumeFocus: () => void;
   onCookComplete: (updatedCount: number) => void;
   onSaved: (title: string) => void;
+  tonightDevices: CookingDevice[];
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, isFavorited, toggleFavorite } = useFavorites();
@@ -695,6 +709,23 @@ function CookThis({
     return map;
   }, [recipes, items, now]);
 
+  // "Cooking with": tonight's-device boost + badge. Keyword detection over
+  // title + per-step equipment, memoized per fetched page. Empty selection
+  // (or "Anything") short-circuits to an empty map — ranking unchanged.
+  const deviceByRecipe = useMemo(() => {
+    const map = new Map<number, { boost: number; badge: string | null }>();
+    if (tonightDevices.length === 0) return map;
+    for (const r of recipes) {
+      const detected = detectDevices(
+        r.title,
+        r.instructions.flatMap((g) => g.steps.flatMap((s) => s.equipment)),
+      );
+      const boost = scoreDeviceBoost(tonightDevices, detected);
+      if (boost > 0) map.set(r.id, { boost, badge: formatDeviceBadge(tonightDevices, detected) });
+    }
+    return map;
+  }, [recipes, tonightDevices]);
+
   /** What's-missing → shopping list, dedupe-aware, source 'recipe'. */
   async function onAddMissing(r: SpoonacularRecipe) {
     if (!householdId || !userId || r.missedIngredientNames.length === 0) return;
@@ -744,6 +775,7 @@ function CookThis({
         r.usedIngredientCount +
         useItUp +
         ingredientBoost(r) +
+        (deviceByRecipe.get(r.id)?.boost ?? 0) +
         (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
         (readyNow && isReadyNow(r) ? 3 : 0) +
         (easy && isEasy(r) ? 3 : 0);
@@ -761,6 +793,7 @@ function CookThis({
     easy,
     readyNow,
     useItUpByRecipe,
+    deviceByRecipe,
     latchedFocus.useItUp,
     focusIngredientLc,
   ]);
@@ -875,6 +908,7 @@ function CookThis({
             missingAdded={missingAdded.has(item.id)}
             substitutes={swapsByRecipe.get(item.id) ?? []}
             useItUp={useItUpByRecipe.get(item.id) ?? null}
+            deviceBadge={deviceByRecipe.get(item.id)?.badge ?? null}
             onToggleFavorite={(r) => void onToggleFavorite(r)}
             onSkip={onSkip}
             onOpen={onOpen}
@@ -898,7 +932,13 @@ function CookThis({
             {tasteLabel}
           </Text>
           {suggestions.map((r) => (
-            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              useItUp={useItUpByRecipe.get(r.id) ?? null}
+              deviceBadge={deviceByRecipe.get(r.id)?.badge ?? null}
+              onOpen={onOpen}
+            />
           ))}
         </View>
       )}
@@ -907,7 +947,13 @@ function CookThis({
         <View style={styles.altsPad}>
           <Text style={styles.altHead}>More from your pantry</Text>
           {alternates.map((r) => (
-            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              useItUp={useItUpByRecipe.get(r.id) ?? null}
+              deviceBadge={deviceByRecipe.get(r.id)?.badge ?? null}
+              onOpen={onOpen}
+            />
           ))}
         </View>
       )}
@@ -933,6 +979,7 @@ function HeroCard({
   missingAdded,
   substitutes,
   useItUp,
+  deviceBadge,
   onToggleFavorite,
   onSkip,
   onOpen,
@@ -945,6 +992,7 @@ function HeroCard({
   missingAdded: boolean;
   substitutes: SubstituteSuggestion[];
   useItUp: { badge: string | null; expired: boolean } | null;
+  deviceBadge: string | null;
   onToggleFavorite: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
@@ -1035,6 +1083,11 @@ function HeroCard({
               numberOfLines={1}
             >
               {useItUp.badge}
+            </Text>
+          )}
+          {deviceBadge && (
+            <Text style={styles.deviceBadge} numberOfLines={1}>
+              {deviceBadge}
             </Text>
           )}
         </View>
@@ -1171,6 +1224,12 @@ const styles = StyleSheet.create({
   metaTxtHealth: { color: tokens.color.success },
   metaTxtEasy: { color: tokens.color.accent },
   useItUp: { fontFamily: tokens.font.body.semibold, fontSize: 12, marginTop: tokens.space(1) },
+  deviceBadge: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    marginTop: tokens.space(1),
+    color: tokens.color.accent,
+  },
   houseChip: { backgroundColor: tokens.color.accentSoft },
   heroImgPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
   altThumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
