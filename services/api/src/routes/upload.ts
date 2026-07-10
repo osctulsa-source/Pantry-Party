@@ -7,6 +7,8 @@ import { z } from 'zod';
 import type { PoolClient } from 'pg';
 import { pool } from '../db.js';
 import { requireUser, type AuthedRequest } from '../middleware/auth.js';
+import { fanOutAnnouncement } from '../push/fanOut.js';
+import { getPushSender } from '../push/sender.js';
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -35,6 +37,9 @@ const KNOWN_TABLES = new Set([
   'shopping_list_items',
   'favorite_recipes',
   'activity_events',
+  'announcements',
+  'announcement_reactions',
+  'push_tokens',
 ]);
 
 // For each table, the columns we'll accept and forward to Postgres. Anything
@@ -77,6 +82,7 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'source',
     'added_by',
     'added_at',
+    'run_id',
     'updated_at',
     'deleted',
   ],
@@ -109,6 +115,42 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'updated_at',
     'deleted',
   ],
+  announcements: [
+    'id',
+    'household_id',
+    'kind',
+    'created_by',
+    'created_at',
+    'status',
+    'departs_at',
+    'store_hint',
+    'recipe_id',
+    'recipe_title',
+    'image',
+    'updated_at',
+    'deleted',
+    // NOTE: runner_summary_sent_at is server-only — deliberately NOT accepted
+    // from the client, so a device can't suppress the batched runner ping.
+  ],
+  announcement_reactions: [
+    'id',
+    'announcement_id',
+    'household_id',
+    'user_id',
+    'reaction',
+    'created_at',
+    'updated_at',
+    'deleted',
+  ],
+  push_tokens: [
+    'id',
+    'user_id',
+    'token',
+    'platform',
+    'announcements_enabled',
+    'updated_at',
+    'deleted',
+  ],
 };
 
 // Columns whose value MUST equal req.userId (the verified JWT `sub`). This is
@@ -120,6 +162,9 @@ const USER_ID_COLUMNS: Record<string, readonly string[]> = {
   shopping_list_items: ['added_by'],
   favorite_recipes: ['added_by'],
   activity_events: ['added_by'],
+  announcements: ['created_by'],
+  announcement_reactions: ['user_id'],
+  push_tokens: ['user_id'],
 };
 
 // Editable columns for a PATCH, per table. Everything else is immutable
@@ -153,6 +198,7 @@ const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
     'unit',
     'note',
     'checked',
+    'run_id',
     'deleted',
     'updated_at',
   ]),
@@ -163,6 +209,9 @@ const PATCH_ALLOWED_BY_TABLE: Record<string, ReadonlySet<string>> = {
   // row) is enforced in handlePatchPantryItem — household membership alone is
   // NOT enough, or you could rename a co-member.
   user_households: new Set(['display_name']),
+  announcements: new Set(['status', 'deleted', 'updated_at']),
+  announcement_reactions: new Set(['reaction', 'deleted', 'updated_at']),
+  push_tokens: new Set(['announcements_enabled', 'token', 'deleted', 'updated_at']),
 };
 
 // Carries an HTTP status alongside the message so the route can translate a
@@ -240,6 +289,16 @@ export async function handlePatchPantryItem(
         403,
         `tenancy: user_households row "${entry.id}" is not the caller's own membership`,
       );
+    }
+  } else if (table === 'push_tokens') {
+    // push_tokens has no household_id — tenancy is the row's user_id. Only
+    // the token's owner can edit it (toggle enabled, refresh token, tombstone).
+    const own = await client.query('SELECT user_id FROM push_tokens WHERE id = $1', [entry.id]);
+    if ((own.rowCount ?? 0) === 0) {
+      throw new UploadError(404, `${table} row "${entry.id}" not found`);
+    }
+    if (own.rows[0]?.user_id !== userId) {
+      throw new UploadError(403, `tenancy: push_tokens row "${entry.id}" is not the caller's`);
     }
   } else {
     const found = await client.query(`SELECT household_id FROM ${table} WHERE id = $1`, [
@@ -371,6 +430,7 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     | { op: 'PUT'; table: string; columns: string[]; values: unknown[] }
     | { op: 'PATCH'; entry: CrudEntry };
   const plan: PlannedOp[] = [];
+  const announcementPuts: Record<string, unknown>[] = [];
   for (const entry of entries) {
     if (entry.op === 'PUT') {
       const result = validateCrudEntry(entry, userId);
@@ -383,6 +443,11 @@ router.post('/sync/upload', requireUser, async (req, res) => {
         return;
       }
       plan.push({ op: 'PUT', table: result.table, columns: result.columns, values: result.values });
+      if (result.table === 'announcements') {
+        const rowObj: Record<string, unknown> = {};
+        result.columns.forEach((c, i) => (rowObj[c] = result.values[i]));
+        announcementPuts.push(rowObj);
+      }
     } else if (entry.op === 'PATCH') {
       plan.push({ op: 'PATCH', entry });
     } else {
@@ -410,6 +475,15 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     }
 
     await client.query('COMMIT');
+
+    // Fan-out is best-effort and MUST NOT block or fail the upload — the synced
+    // row is the source of truth, the push is a convenience. Fire-and-forget.
+    for (const rowObj of announcementPuts) {
+      void fanOutAnnouncement(rowObj as any, { pg: pool, sender: getPushSender() }).catch((err) =>
+        console.error('[api] announcement fan-out failed:', err),
+      );
+    }
+
     res.json({ ok: true, applied: entries.length });
   } catch (err) {
     if (client) await client.query('ROLLBACK').catch(() => undefined);
