@@ -44,3 +44,40 @@ export type ShoppingListItem = z.infer<typeof ShoppingListItem>;
 export function parseShoppingListItem(input: unknown): ShoppingListItem {
   return ShoppingListItem.parse(input);
 }
+
+/**
+ * Words kept lowercase mid-name when title-casing ("Cream of Tartar").
+ * Small connectives only — food words never belong here.
+ */
+const TITLE_SMALL_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "for",
+  "in",
+  "of",
+  "or",
+  "the",
+  "to",
+  "with",
+]);
+
+/**
+ * Title-case an ingredient name for shopping-list display ("olive oil" →
+ * "Olive Oil"). Recipe sources hand us lowercase names; this is the display
+ * cleanup at the recipe→list boundary. Words already containing an uppercase
+ * letter ("BBQ", "Parmesan") pass through untouched, so it is safe on
+ * already-cased input.
+ */
+export function titleCaseIngredient(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0)
+    .map((w, i) => {
+      if (/[A-Z]/.test(w)) return w;
+      if (i > 0 && TITLE_SMALL_WORDS.has(w)) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(" ");
+}
