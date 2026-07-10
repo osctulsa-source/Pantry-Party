@@ -74,6 +74,18 @@ streams:
           SELECT household_id FROM user_households
           WHERE user_id = auth.user_id()
         )
+      - |
+        SELECT * FROM announcements
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
+      - |
+        SELECT * FROM announcement_reactions
+        WHERE household_id IN (
+          SELECT household_id FROM user_households
+          WHERE user_id = auth.user_id()
+        )
 
   # Per-user outstanding invites: streams ONLY invites the signed-in user
   # personally created (PR A of Shared Household). Invites created by other
@@ -86,3 +98,13 @@ streams:
       - |
         SELECT * FROM household_invites
         WHERE created_by = auth.user_id()
+
+  # Per-user push tokens: a device push token is a secret and must NEVER stream
+  # to co-members. Scoped strictly to the signed-in user's own rows, like
+  # user_invites. The upload-proxy is the only writer besides the owning device.
+  user_push_tokens:
+    auto_subscribe: true
+    queries:
+      - |
+        SELECT * FROM push_tokens
+        WHERE user_id = auth.user_id()
