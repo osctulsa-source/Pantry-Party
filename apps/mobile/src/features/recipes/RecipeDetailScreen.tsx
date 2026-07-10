@@ -24,7 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { matchCookedItems, suggestSubstitutes } from '@breadbox/core';
+import { matchCookedItems, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { usePantryItems } from '../pantry/usePantryItems';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -168,7 +168,12 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     if (!activeHouseholdId || !userId || recipe.missedIngredientNames.length === 0) return;
     Haptics.selectionAsync().catch(() => {});
     for (const name of recipe.missedIngredientNames) {
-      await addToShoppingList({ householdId: activeHouseholdId, userId, name, source: 'recipe' });
+      await addToShoppingList({
+        householdId: activeHouseholdId,
+        userId,
+        name: titleCaseIngredient(name),
+        source: 'recipe',
+      });
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setMissingAdded(true);

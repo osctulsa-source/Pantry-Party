@@ -64,12 +64,15 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   buildTasteProfile,
   defaultMealForHour,
+  formatUseItUpBadge,
   getExpiryStatus,
   matchCookedItems,
   mealtimeLabel,
   scoreTitle,
+  scoreUseItUp,
   seedPrefsFromTaste,
   suggestSubstitutes,
+  titleCaseIngredient,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -161,9 +164,11 @@ function hasInstructions(r: SpoonacularRecipe): boolean {
  *  saved" suggestions and the "More from your pantry" alternates. */
 function RecipeRow({
   recipe,
+  useItUp,
   onOpen,
 }: {
   recipe: SpoonacularRecipe;
+  useItUp: { badge: string | null; expired: boolean } | null;
   onOpen: (r: SpoonacularRecipe) => void;
 }) {
   return (
@@ -185,6 +190,21 @@ function RecipeRow({
           {recipe.healthScore !== null && recipe.healthScore >= 70 ? ' · very healthy' : ''}
           {recipe.sourceName === CURATED_SOURCE_NAME ? ' · house recipe' : ''}
         </Text>
+        {useItUp?.badge && (
+          <Text
+            style={[
+              styles.useItUp,
+              {
+                color: useItUp.expired
+                  ? tokens.semantic.expiry.expired
+                  : tokens.semantic.expiry.warning,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {useItUp.badge}
+          </Text>
+        )}
       </View>
       <ChevronRight size={18} color={tokens.color.inkMuted} />
     </Pressable>
@@ -616,12 +636,31 @@ function CookThis({
   // Recipes whose missing ingredients were added to the shopping list (feedback).
   const [missingAdded, setMissingAdded] = useState<Set<number>>(new Set());
 
+  // "Use it up": per-recipe expiry urgency. Score joins the ranking blend
+  // below; badge explains the boost on the card. Recomputed only when the
+  // fetched page or the (reactive) pantry changes.
+  const useItUpByRecipe = useMemo(() => {
+    const pantry = items.map((i) => ({ name: i.name, expiresAt: i.expiresAt }));
+    const map = new Map<number, { score: number; badge: string | null; expired: boolean }>();
+    for (const r of recipes) {
+      if (r.usedIngredientNames.length === 0) continue;
+      const { score, urgentMatches } = scoreUseItUp(r.usedIngredientNames, pantry, now);
+      if (score === 0) continue;
+      map.set(r.id, {
+        score,
+        badge: formatUseItUpBadge(urgentMatches),
+        expired: urgentMatches[0]?.status === 'expired',
+      });
+    }
+    return map;
+  }, [recipes, items, now]);
+
   /** What's-missing → shopping list, dedupe-aware, source 'recipe'. */
   async function onAddMissing(r: SpoonacularRecipe) {
     if (!householdId || !userId || r.missedIngredientNames.length === 0) return;
     Haptics.selectionAsync().catch(() => {});
     for (const name of r.missedIngredientNames) {
-      await addToShoppingList({ householdId, userId, name, source: 'recipe' });
+      await addToShoppingList({ householdId, userId, name: titleCaseIngredient(name), source: 'recipe' });
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setMissingAdded((prev) => new Set(prev).add(r.id));
@@ -657,11 +696,12 @@ function CookThis({
       scoreTitle(tasteProfile, r.title) * 2 +
       scoreTitle(seedPrefs, r.title) * 1.5 +
       r.usedIngredientCount +
+      (useItUpByRecipe.get(r.id)?.score ?? 0) +
       (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
       (readyNow && isReadyNow(r) ? 3 : 0) +
       (easy && isEasy(r) ? 3 : 0);
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow]);
+  }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow, useItUpByRecipe]);
 
   const top = pool.slice(0, 3);
   // Curated pantry stand-ins for each hero card's missing ingredients ("no
@@ -786,6 +826,7 @@ function CookThis({
             skipped={skipped.has(item.id)}
             missingAdded={missingAdded.has(item.id)}
             substitutes={swapsByRecipe.get(item.id) ?? []}
+            useItUp={useItUpByRecipe.get(item.id) ?? null}
             onToggleFavorite={(r) => void onToggleFavorite(r)}
             onSkip={onSkip}
             onOpen={onOpen}
@@ -809,7 +850,7 @@ function CookThis({
             {tasteLabel}
           </Text>
           {suggestions.map((r) => (
-            <RecipeRow key={r.id} recipe={r} onOpen={onOpen} />
+            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
           ))}
         </View>
       )}
@@ -818,7 +859,7 @@ function CookThis({
         <View style={styles.altsPad}>
           <Text style={styles.altHead}>More from your pantry</Text>
           {alternates.map((r) => (
-            <RecipeRow key={r.id} recipe={r} onOpen={onOpen} />
+            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
           ))}
         </View>
       )}
@@ -843,6 +884,7 @@ function HeroCard({
   skipped,
   missingAdded,
   substitutes,
+  useItUp,
   onToggleFavorite,
   onSkip,
   onOpen,
@@ -854,6 +896,7 @@ function HeroCard({
   skipped: boolean;
   missingAdded: boolean;
   substitutes: SubstituteSuggestion[];
+  useItUp: { badge: string | null; expired: boolean } | null;
   onToggleFavorite: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
@@ -930,6 +973,21 @@ function HeroCard({
             </View>
           )}
           <Text style={styles.match}>{matchLine(recipe)}</Text>
+          {useItUp?.badge && (
+            <Text
+              style={[
+                styles.useItUp,
+                {
+                  color: useItUp.expired
+                    ? tokens.semantic.expiry.expired
+                    : tokens.semantic.expiry.warning,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {useItUp.badge}
+            </Text>
+          )}
         </View>
       </Pressable>
       <View style={styles.actions}>
@@ -1063,6 +1121,7 @@ const styles = StyleSheet.create({
   metaTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
   metaTxtHealth: { color: tokens.color.success },
   metaTxtEasy: { color: tokens.color.accent },
+  useItUp: { fontFamily: tokens.font.body.semibold, fontSize: 12, marginTop: tokens.space(1) },
   houseChip: { backgroundColor: tokens.color.accentSoft },
   heroImgPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
   altThumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
