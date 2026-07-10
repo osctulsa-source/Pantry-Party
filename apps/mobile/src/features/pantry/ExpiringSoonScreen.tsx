@@ -26,8 +26,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, FlatList, LayoutAnimation, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@powersync/react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
-import { Check, Clock, Trash2 } from 'lucide-react-native';
+import { Check, ChefHat, Clock, Trash2 } from 'lucide-react-native';
 
 import { addDaysUTC, getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -39,12 +41,14 @@ import { BrandMark } from '../../components/BrandMark';
 import { formatExpiryMeta } from './expiryFormat';
 import { recordExpiryEvents, type ExpiryEventKind } from './expiryEvents';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import type { RootStackParamList } from '../../../App';
 
 const QUERY =
   'SELECT * FROM pantry_items WHERE deleted = 0 AND household_id = ? ' +
   'ORDER BY (expires_at IS NULL), expires_at ASC, name ASC';
 
 export function ExpiringSoonScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { activeHouseholdId } = useActiveHousehold();
   const { data: rows } = useQuery<PantryItemRow>(QUERY, [activeHouseholdId ?? '']);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -169,6 +173,19 @@ export function ExpiringSoonScreen() {
                 </View>
               </View>
               <View style={styles.actions}>
+                <Action
+                  label="Recipes"
+                  tone="cook"
+                  disabled={busy}
+                  accessibilityLabel={`Find recipes using ${item.name}`}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    navigation.navigate('MainTabs', {
+                      screen: 'CookTab',
+                      params: { focus: 'useItUp', ingredient: item.name },
+                    });
+                  }}
+                />
                 <Action label="Used" tone="good" disabled={busy} onPress={() => resolve(item, 'used')} />
                 <Action label="Tossed" tone="bad" disabled={busy} onPress={() => resolve(item, 'tossed')} />
                 <Action label="+2d" tone="neutral" disabled={busy} onPress={() => snooze(item)} />
@@ -186,27 +203,32 @@ function Action({
   tone,
   disabled,
   onPress,
+  accessibilityLabel,
 }: {
   label: string;
-  tone: 'good' | 'bad' | 'neutral';
+  tone: 'good' | 'bad' | 'neutral' | 'cook';
   disabled: boolean;
   onPress: () => void;
+  accessibilityLabel?: string;
 }) {
   const toneColor =
     tone === 'good'
       ? tokens.color.success
       : tone === 'bad'
         ? tokens.semantic.expiry.expired
-        : tokens.color.inkMuted;
+        : tone === 'cook'
+          ? tokens.color.accent
+          : tokens.color.inkMuted;
   const borderColor = tone === 'neutral' ? tokens.color.line : toneColor;
-  const Icon = tone === 'good' ? Check : tone === 'bad' ? Trash2 : Clock;
+  const Icon =
+    tone === 'good' ? Check : tone === 'bad' ? Trash2 : tone === 'cook' ? ChefHat : Clock;
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       hitSlop={4}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel ?? label}
       style={({ pressed }) => [
         styles.actBtn,
         { borderColor },
@@ -215,7 +237,7 @@ function Action({
       ]}
     >
       <View style={styles.actInner}>
-        <Icon size={14} color={toneColor} strokeWidth={2.5} />
+        <Icon size={12} color={toneColor} strokeWidth={2.5} />
         <Text style={[styles.actTxt, { color: toneColor }]}>{label}</Text>
       </View>
     </Pressable>
@@ -284,7 +306,7 @@ const styles = StyleSheet.create({
   },
   actBtnPressed: { backgroundColor: tokens.color.surfaceAlt },
   actBtnDisabled: { opacity: 0.5 },
-  actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink },
+  actTxt: { fontFamily: tokens.font.body.semibold, fontSize: 11, color: tokens.color.ink },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   emptyTitle: {
     fontFamily: tokens.font.display.semibold,

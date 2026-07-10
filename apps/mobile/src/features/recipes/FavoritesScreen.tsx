@@ -26,11 +26,14 @@ import {
 
 import { tokens } from '../../theme/tokens';
 import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
+import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { useFavorites, favoriteToRecipe } from './useFavorites';
 import { useActivity, topCooked } from '../activity/useActivity';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useTasteProfile } from './useTasteProfile';
 import { TasteQuizSheet } from './TasteQuizSheet';
+import { useDisplayName } from '../household/useDisplayName';
+import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
 
 // slug -> display label, across every catalog the header might show.
@@ -43,9 +46,16 @@ export function FavoritesScreen() {
   const { favorites, toggleFavorite } = useFavorites();
   const { events } = useActivity();
   const cooked = useMemo(() => topCooked(events, 5), [events]);
+  const favoritesByRecipeId = useMemo(() => {
+    const m = new Map(favorites.map((f) => [f.recipeId, f]));
+    return m;
+  }, [favorites]);
 
   const { activeHouseholdId } = useActiveHousehold();
   const { profile, save, loaded: tasteLoaded } = useTasteProfile(activeHouseholdId);
+  const { names } = useDisplayName();
+  const { state: authState } = useAuth();
+  const currentUserId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const [quizOpen, setQuizOpen] = useState(false);
   const [seedDismissed, setSeedDismissed] = useState(false);
 
@@ -121,21 +131,46 @@ export function FavoritesScreen() {
         {cooked.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionHead}>You cook these often</Text>
-            {cooked.map((c) => (
-              <View key={c.recipeId} style={styles.cookedRow}>
-                <Text style={styles.cookedName} numberOfLines={1}>
-                  {c.title}
-                </Text>
-                <Text style={styles.cookedCount}>{c.count}× cooked</Text>
-              </View>
-            ))}
+            {cooked.map((c) => {
+              const fav = favoritesByRecipeId.get(c.recipeId);
+              const open = () => {
+                if (!fav) return;
+                navigation.navigate('RecipeDetail', { recipe: favoriteToRecipe(fav) });
+              };
+              return (
+                <Pressable
+                  key={c.recipeId}
+                  style={styles.cookedRow}
+                  onPress={open}
+                  disabled={!fav}
+                  accessibilityRole={fav ? 'button' : undefined}
+                  accessibilityLabel={fav ? `Open ${c.title}` : undefined}
+                >
+                  <Text style={styles.cookedName} numberOfLines={1}>
+                    {c.title}
+                  </Text>
+                  <Text style={styles.cookedCount}>{c.count}× cooked</Text>
+                </Pressable>
+              );
+            })}
           </View>
         )}
 
         {favorites.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionHead}>Saved · {favorites.length}</Text>
-            {favorites.map((fav) => (
+            {favorites.map((fav) => {
+              const imageSource = resolveRecipeImageSource({
+                id: fav.recipeId,
+                image: fav.image,
+              });
+              const savedBy =
+                fav.addedBy && fav.addedBy !== currentUserId ? names.get(fav.addedBy) : undefined;
+              const metaParts: string[] = [];
+              if (fav.readyMinutes != null) metaParts.push(`${fav.readyMinutes} min`);
+              if (fav.healthScore != null && fav.healthScore >= 70) metaParts.push('very healthy');
+              if (savedBy) metaParts.push(`saved by ${savedBy}`);
+              return (
               <Pressable
                 key={fav.id}
                 style={styles.row}
@@ -143,8 +178,8 @@ export function FavoritesScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${fav.title}`}
               >
-                {fav.image ? (
-                  <Image source={{ uri: fav.image }} style={styles.thumb} />
+                {imageSource ? (
+                  <Image source={imageSource} style={styles.thumb} />
                 ) : (
                   <View style={[styles.thumb, styles.thumbFallback]} />
                 )}
@@ -152,13 +187,9 @@ export function FavoritesScreen() {
                   <Text style={styles.rowName} numberOfLines={2}>
                     {fav.title}
                   </Text>
-                  {(fav.readyMinutes != null || (fav.healthScore != null && fav.healthScore >= 70)) && (
+                  {metaParts.length > 0 && (
                     <Text style={styles.rowMeta} numberOfLines={1}>
-                      {fav.readyMinutes != null ? `${fav.readyMinutes} min` : ''}
-                      {fav.readyMinutes != null && fav.healthScore != null && fav.healthScore >= 70
-                        ? ' · '
-                        : ''}
-                      {fav.healthScore != null && fav.healthScore >= 70 ? 'very healthy' : ''}
+                      {metaParts.join(' · ')}
                     </Text>
                   )}
                 </View>
@@ -175,7 +206,8 @@ export function FavoritesScreen() {
                   <Heart size={20} color={tokens.color.accent} fill={tokens.color.accent} />
                 </Pressable>
               </Pressable>
-            ))}
+              );
+            })}
           </View>
         ) : noLists ? (
           <View style={styles.emptyBlock}>

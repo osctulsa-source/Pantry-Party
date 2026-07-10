@@ -60,7 +60,10 @@ export function addDaysUTC(from: Date, days: number): Date {
 }
 
 /** Suggested expiry as an ISO timestamp (UTC midnight, `days` out), or null when no signal. */
-export function suggestExpiryISO(opts: { name?: string; category?: string }, now: Date = new Date()): string | null {
+export function suggestExpiryISO(
+  opts: { name?: string; category?: string; location?: string },
+  now: Date = new Date(),
+): string | null {
   const days = suggestShelfLifeDays(opts);
   if (days === null) return null;
   return addDaysUTC(now, days).toISOString();

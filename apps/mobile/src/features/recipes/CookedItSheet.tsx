@@ -82,32 +82,32 @@ export function CookedItSheet({
     const updates = items
       .map((item) => ({ item, action: actionFor(item.itemId) }))
       .filter((u) => u.action !== 'keep');
-    if (updates.length === 0) {
-      onClose();
-      return;
-    }
     setError(null);
     setSubmitting(true);
     try {
-      const db = getPowerSync();
-      const now = Date.now();
-      await db.writeTransaction(async (tx) => {
-        for (const u of updates) {
-          if (u.action === 'use-up') {
-            // Tombstone — identical to a manual delete from Edit Item.
-            await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-              now,
-              u.item.itemId,
-            ]);
-          } else {
-            await tx.execute('UPDATE pantry_items SET quantity = ?, updated_at = ? WHERE id = ?', [
-              decrementedQuantity(u.item.quantity),
-              now,
-              u.item.itemId,
-            ]);
+      if (updates.length > 0) {
+        const db = getPowerSync();
+        const now = Date.now();
+        await db.writeTransaction(async (tx) => {
+          for (const u of updates) {
+            if (u.action === 'use-up') {
+              // Tombstone — identical to a manual delete from Edit Item.
+              await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
+                now,
+                u.item.itemId,
+              ]);
+            } else {
+              await tx.execute('UPDATE pantry_items SET quantity = ?, updated_at = ? WHERE id = ?', [
+                decrementedQuantity(u.item.quantity),
+                now,
+                u.item.itemId,
+              ]);
+            }
           }
-        }
-      });
+        });
+      }
+      // Always log the cook — even when nothing was decremented — so streaks /
+      // taste / History still see the household cooked this recipe.
       await recordCookEvent(householdId, {
         recipeId,
         recipeTitle,
@@ -134,7 +134,9 @@ export function CookedItSheet({
           <Text style={styles.hint}>
             {items.some((i) => i.matched)
               ? 'Mark what the recipe used — we matched these from your pantry.'
-              : "We couldn't match ingredients automatically — mark anything you used."}
+              : items.length > 0
+                ? "We couldn't match ingredients automatically — here are items expiring soon you may have used."
+                : "We couldn't match ingredients automatically — nothing urgent in your pantry to update."}
           </Text>
 
           {items.length === 0 ? (

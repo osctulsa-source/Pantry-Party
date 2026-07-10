@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
+import { navigationRef } from './src/navigation/navigationRef';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { ScanScreen } from './src/features/capture/ScanScreen';
 import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
@@ -74,6 +75,14 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     screens: {
       JoinHousehold: 'invite/:code',
+      MainTabs: {
+        screens: {
+          PantryTab: 'pantry',
+          CookTab: 'cook',
+          ShoppingTab: 'shopping',
+          SettingsTab: 'settings',
+        },
+      },
     },
   },
 };
@@ -216,7 +225,8 @@ export default function App() {
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
           <ActiveHouseholdProvider>
-            <NavigationContainer linking={linking}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped navigationRef avoids circular import with RootStackParamList */}
+            <NavigationContainer ref={navigationRef as any} linking={linking}>
               <AppRoot />
             </NavigationContainer>
           </ActiveHouseholdProvider>

@@ -11,6 +11,8 @@
  * ExpiringSoonScreen's semantics). The pantry's reactive query picks up the
  * change and the reconciler reschedules around it.
  *
+ * Body tap (DEFAULT_ACTION) opens Cook with use-it-up focus via navigationRef.
+ *
  * Killed-app caveat (accepted): with opensAppToForeground: false the system
  * delivers the action without opening the app; if the JS process isn't
  * running, expo-notifications surfaces the response on next launch via
@@ -24,6 +26,7 @@ import { addDaysUTC } from '@breadbox/core';
 
 import { getPowerSync } from '../../data/powersync/db';
 import { recordExpiryEvents } from '../pantry/expiryEvents';
+import { navigateToCookUseItUp } from '../../navigation/navigationRef';
 
 export const EXPIRY_CATEGORY = 'expiry';
 const ACTION_USED = 'used';
@@ -50,7 +53,16 @@ export async function handleExpiryActionResponse(
   response: Notifications.NotificationResponse,
 ): Promise<void> {
   const action = response.actionIdentifier;
-  // Default tap (open the app) isn't ours to handle.
+
+  // Body tap (not Used / Snooze) → open Cook ranked for use-it-up.
+  if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+    const dupKey = `${response.notification.request.identifier}:open`;
+    if (handledResponses.has(dupKey)) return;
+    handledResponses.add(dupKey);
+    navigateToCookUseItUp();
+    return;
+  }
+
   if (action !== ACTION_USED && action !== ACTION_SNOOZE) return;
 
   const data = response.notification.request.content.data as { itemId?: string } | null;

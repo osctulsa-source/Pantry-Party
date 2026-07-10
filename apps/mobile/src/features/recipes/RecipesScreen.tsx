@@ -58,7 +58,8 @@ import {
   Users,
   X,
 } from 'lucide-react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -66,7 +67,6 @@ import {
   defaultMealForHour,
   formatUseItUpBadge,
   getExpiryStatus,
-  matchCookedItems,
   mealtimeLabel,
   scoreTitle,
   scoreUseItUp,
@@ -95,9 +95,12 @@ import { useFavorites } from './useFavorites';
 import { useActivity } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
+import { buildCookedSheetItems } from './buildCookedSheetItems';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
+import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
+import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
 const CARD_W = Dimensions.get('window').width;
@@ -171,10 +174,11 @@ function RecipeRow({
   useItUp: { badge: string | null; expired: boolean } | null;
   onOpen: (r: SpoonacularRecipe) => void;
 }) {
+  const imageSource = resolveRecipeImageSource(recipe);
   return (
     <Pressable style={styles.altRow} onPress={() => onOpen(recipe)}>
-      {recipe.image ? (
-        <Image source={{ uri: recipe.image }} style={styles.altThumb} />
+      {imageSource ? (
+        <Image source={imageSource} style={styles.altThumb} />
       ) : (
         <View style={[styles.altThumb, styles.altThumbPlaceholder]}>
           <ChefHat size={22} color={tokens.color.accent} strokeWidth={1.5} />
@@ -213,6 +217,13 @@ function RecipeRow({
 
 export function RecipesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tabNavigation = useNavigation<BottomTabNavigationProp<TabParamList, 'CookTab'>>();
+  const route = useRoute<RouteProp<TabParamList, 'CookTab'>>();
+  const focusUseItUp = route.params?.focus === 'useItUp';
+  const focusIngredient = route.params?.ingredient?.trim() || undefined;
+  const onConsumeFocus = useCallback(() => {
+    tabNavigation.setParams({ focus: undefined, ingredient: undefined });
+  }, [tabNavigation]);
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
@@ -482,6 +493,9 @@ export function RecipesScreen() {
           healthy={healthy}
           easy={easy}
           readyNow={readyNow}
+          focusUseItUp={focusUseItUp}
+          focusIngredient={focusIngredient}
+          onConsumeFocus={onConsumeFocus}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
           onSaved={(title) => setSavedToast({ title, key: Date.now() })}
         />
@@ -596,6 +610,9 @@ function CookThis({
   healthy,
   easy,
   readyNow,
+  focusUseItUp,
+  focusIngredient,
+  onConsumeFocus,
   onCookComplete,
   onSaved,
 }: {
@@ -608,6 +625,9 @@ function CookThis({
   healthy: boolean;
   easy: boolean;
   readyNow: boolean;
+  focusUseItUp: boolean;
+  focusIngredient?: string;
+  onConsumeFocus: () => void;
   onCookComplete: (updatedCount: number) => void;
   onSaved: (title: string) => void;
 }) {
@@ -626,7 +646,27 @@ function CookThis({
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
   const urgent = pickUrgent(items, now);
-  const reason = urgent ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}` : null;
+
+  // Latch one-shot CookTab params so clearing the route doesn't undo ranking.
+  const [latchedFocus, setLatchedFocus] = useState<{
+    useItUp: boolean;
+    ingredient?: string;
+  }>({ useItUp: false });
+  useEffect(() => {
+    if (focusUseItUp || focusIngredient) {
+      setLatchedFocus({ useItUp: focusUseItUp, ingredient: focusIngredient });
+      onConsumeFocus();
+    }
+  }, [focusUseItUp, focusIngredient, onConsumeFocus]);
+
+  const focusIngredientLc = latchedFocus.ingredient?.toLowerCase();
+  const reason = latchedFocus.ingredient
+    ? `Recipes that use your ${latchedFocus.ingredient.toLowerCase()}`
+    : latchedFocus.useItUp && urgent
+      ? `Using up what expires soon — starting with ${urgent.name.toLowerCase()}`
+      : urgent
+        ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}`
+        : null;
   const reasonColor =
     urgent && getExpiryStatus(urgent, now) === 'expired' ? tokens.semantic.expiry.expired : tokens.semantic.expiry.warning;
 
@@ -691,17 +731,39 @@ function CookThis({
     // Post-#143 nearly every result qualifies, so this rarely changes anything.
     const withSteps = candidates.filter(hasInstructions);
     if (withSteps.length > 0) candidates = withSteps;
-    const blend = (r: SpoonacularRecipe) =>
-      scoreTitle(prefs, r.title) * 1.5 +
-      scoreTitle(tasteProfile, r.title) * 2 +
-      scoreTitle(seedPrefs, r.title) * 1.5 +
-      r.usedIngredientCount +
-      (useItUpByRecipe.get(r.id)?.score ?? 0) +
-      (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
-      (readyNow && isReadyNow(r) ? 3 : 0) +
-      (easy && isEasy(r) ? 3 : 0);
+    const ingredientBoost = (r: SpoonacularRecipe) => {
+      if (!focusIngredientLc) return 0;
+      return r.usedIngredientNames.some((n) => n.toLowerCase().includes(focusIngredientLc)) ? 40 : 0;
+    };
+    const blend = (r: SpoonacularRecipe) => {
+      const useItUp = useItUpByRecipe.get(r.id)?.score ?? 0;
+      const base =
+        scoreTitle(prefs, r.title) * 1.5 +
+        scoreTitle(tasteProfile, r.title) * 2 +
+        scoreTitle(seedPrefs, r.title) * 1.5 +
+        r.usedIngredientCount +
+        useItUp +
+        ingredientBoost(r) +
+        (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
+        (readyNow && isReadyNow(r) ? 3 : 0) +
+        (easy && isEasy(r) ? 3 : 0);
+      // When arriving from Pantry / notifications, use-it-up is the primary key.
+      if (latchedFocus.useItUp) return useItUp * 100 + base;
+      return base;
+    };
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow, useItUpByRecipe]);
+  }, [
+    recipes,
+    prefs,
+    tasteProfile,
+    seedPrefs,
+    healthy,
+    easy,
+    readyNow,
+    useItUpByRecipe,
+    latchedFocus.useItUp,
+    focusIngredientLc,
+  ]);
 
   const top = pool.slice(0, 3);
   // Curated pantry stand-ins for each hero card's missing ingredients ("no
@@ -741,26 +803,12 @@ function CookThis({
     : 'Because you cook these';
   const first = top[0]; // the pick-one-for-me target (guarded before use)
 
-  // Rows for the cooked-it sheet: matched pantry items (pre-selected) when the
-  // API gave us ingredient names, otherwise the full active pantry defaulting
-  // to "Kept" so the user can mark things manually.
+  // Rows for the cooked-it sheet: matched pantry items when possible; never
+  // dump the whole pantry (urgent fallback capped in buildCookedSheetItems).
   const sheetItems = useMemo<CookedSheetItem[]>(() => {
     if (!cooking) return [];
-    const matches = matchCookedItems(
-      cooking.usedIngredientNames,
-      items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
-    );
-    if (matches.length > 0) {
-      return matches.map((m) => ({
-        itemId: m.itemId,
-        itemName: m.itemName,
-        quantity: m.quantity,
-        matched: true,
-        matchedIngredient: m.matchedIngredient,
-      }));
-    }
-    return items.map((i) => ({ itemId: i.id, itemName: i.name, quantity: i.quantity, matched: false }));
-  }, [cooking, items]);
+    return buildCookedSheetItems(cooking.usedIngredientNames, items, now);
+  }, [cooking, items, now]);
 
   async function onToggleFavorite(r: SpoonacularRecipe) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -903,12 +951,13 @@ function HeroCard({
   onCooked: (r: SpoonacularRecipe) => void;
   onAddMissing: (r: SpoonacularRecipe) => void;
 }) {
+  const imageSource = resolveRecipeImageSource(recipe);
   return (
     <View style={styles.cardPage}>
       <Pressable style={[styles.hero, skipped && styles.heroDim]} onPress={() => onOpen(recipe)}>
         <View style={styles.heroImgWrap}>
-          {recipe.image ? (
-            <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+          {imageSource ? (
+            <Image source={imageSource} style={styles.heroImg} />
           ) : (
             <View style={[styles.heroImg, styles.heroImgPlaceholder]}>
               <ChefHat size={44} color={tokens.color.accent} strokeWidth={1.5} />

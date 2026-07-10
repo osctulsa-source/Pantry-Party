@@ -27,9 +27,16 @@ import { RecipesScreen } from '../features/recipes/RecipesScreen';
 import { ShoppingScreen } from '../features/shopping/ShoppingScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 
+export type CookTabParams = {
+  /** Rank Cook results by use-it-up urgency (from Pantry / notifications). */
+  focus?: 'useItUp';
+  /** Soft-boost recipes that use this pantry ingredient name. */
+  ingredient?: string;
+};
+
 export type TabParamList = {
   PantryTab: undefined;
-  CookTab: undefined;
+  CookTab: CookTabParams | undefined;
   ShoppingTab: undefined;
   SettingsTab: undefined;
 };

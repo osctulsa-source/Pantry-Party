@@ -20,9 +20,10 @@ project — no external recipe API required to serve them.
 - **Every word is original.** Summaries and instructions were authored for this
   project in the Pantry Party voice (`sourceName: "Pantry Party Kitchen"`).
   Nothing is scraped or paraphrased from any recipe site; no brand names appear.
-- **`image` is deliberately `""`** — no photos were copied. An image pass
-  (generated food photography or CC-licensed sources with attribution) is a
-  separate future task.
+- **Images** are original generated food photography (batch 1 on Supabase
+  Storage `recipe-images/{id}.jpg`; batch 2 also bundled under
+  `apps/mobile/assets/recipe-images/` for offline). Upload remaining CDN
+  objects with `SUPABASE_SERVICE_ROLE_KEY=… node data/recipes/upload-images.mjs`.
 
 ## Schema
 
@@ -33,8 +34,9 @@ Cook Mode render these with zero client rework**. Three additive fields the
 client can use for filtering: `difficulty`, `mealType`, `cuisines`.
 
 Authoring rules + a worked example live in [`SPEC.md`](./SPEC.md).
-Fields intentionally fixed in v1: `image: ""`, `healthScore: null`,
-`sourceUrl: ""` (ours), `sourceName: "Pantry Party Kitchen"`.
+Fields intentionally fixed in v1: `healthScore: null`, `sourceUrl: ""` (ours),
+`sourceName: "Pantry Party Kitchen"`. `image` is an https URL (or `""` while
+authoring; the image pass fills hosted URLs).
 
 **Id space:** `9000001+` — far above Spoonacular's id range, so anything keyed
 on `recipe.id` (favorites, prefs, cook history) can never collide. New batches
