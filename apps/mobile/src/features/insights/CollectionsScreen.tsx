@@ -18,8 +18,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import {
-  AccessibilityInfo,
-  ActivityIndicator,
   Animated,
   FlatList,
   Modal,
@@ -42,27 +40,14 @@ import { tokens } from '../../theme/tokens';
 import { useCollections } from './useCollections';
 import { CollectionGlyph } from './collectionIcons';
 import { RECIPE_CATALOG } from './useRecipeCollections';
+import { useReduceMotion } from '../../components/useReduceMotion';
+import { BrandLoader, BrandOrnament } from '../../components/BrandDecor';
 
 /** Medal for a set's mastery tier (gold shows as 🏆 next to the title instead). */
 function tierMedal(tier: MasteryTier): string | null {
   if (tier === 'bronze') return '🥉';
   if (tier === 'silver') return '🥈';
   return null;
-}
-
-/** Reduce-Motion state, read once and kept live (respects the OS setting). */
-function useReduceMotion(): boolean {
-  const [reduce, setReduce] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => alive && setReduce(v));
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce);
-    return () => {
-      alive = false;
-      sub.remove();
-    };
-  }, []);
-  return reduce;
 }
 
 /** Gentle looping bob for a collected glyph — offloaded to the UI thread. */
@@ -94,7 +79,7 @@ export function CollectionsScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader tone="plum" />
         </View>
       </SafeAreaView>
     );
@@ -111,6 +96,9 @@ export function CollectionsScreen() {
         contentContainerStyle={styles.scroll}
         ListHeaderComponent={
           <>
+            <View style={styles.ornament}>
+              <BrandOrnament size={26} opacity={0.5} />
+            </View>
             <View style={styles.heroCard}>
               <Text style={styles.heroNumber}>
                 {varietiesCollected}
@@ -416,6 +404,7 @@ function MysteryTile({ discovery, reduce }: { discovery: Discovery; reduce: bool
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  ornament: { marginBottom: tokens.space(4) },
   scroll: {
     paddingHorizontal: tokens.space(6),
     paddingTop: tokens.space(4),

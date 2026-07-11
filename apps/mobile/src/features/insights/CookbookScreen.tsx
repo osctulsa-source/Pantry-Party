@@ -7,13 +7,14 @@
  * never opening or grinding. Data via useRecipeCollections (@breadbox/core).
  * Crumb-styled to sit beside CollectionsScreen; dark-mode safe.
  */
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { RecipeAxis } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useRecipeCollections } from './useRecipeCollections';
+import { BrandLoader, BrandOrnament } from '../../components/BrandDecor';
 
 export function CookbookScreen() {
   const { activeHouseholdId } = useActiveHousehold();
@@ -23,7 +24,7 @@ export function CookbookScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader tone="spruce" />
         </View>
       </SafeAreaView>
     );
@@ -34,6 +35,9 @@ export function CookbookScreen() {
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.ornament}>
+          <BrandOrnament foods={['bread', 'cheese', 'egg', 'fish', 'pepper', 'croissant']} size={26} opacity={0.5} />
+        </View>
         {/* Hero: recipes cooked */}
         <View style={styles.heroCard}>
           <Text style={styles.heroNumber}>
@@ -106,6 +110,7 @@ function Passport({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  ornament: { marginBottom: tokens.space(4) },
   scroll: {
     paddingHorizontal: tokens.space(6),
     paddingTop: tokens.space(4),
