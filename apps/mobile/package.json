@@ -6,7 +6,7 @@
   "description": "Expo app — production foundation skeleton (Phase 1)",
   "scripts": {
     "start": "expo start",
-    "ios": "expo run:ios",
+    "ios": "EXPO_USE_PRECOMPILED_MODULES=0 expo run:ios",
     "android": "expo run:android",
     "test": "jest"
   },
