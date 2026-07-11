@@ -24,6 +24,7 @@ import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
 import { InsightsScreen } from './src/features/insights/InsightsScreen';
+import { CollectionsScreen } from './src/features/insights/CollectionsScreen';
 import { RecipeDetailScreen } from './src/features/recipes/RecipeDetailScreen';
 import { FavoritesScreen } from './src/features/recipes/FavoritesScreen';
 import { HistoryScreen } from './src/features/activity/HistoryScreen';
@@ -51,6 +52,7 @@ export type RootStackParamList = {
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
   Insights: undefined;
+  Collections: undefined;
   RecipeDetail: { recipe: SpoonacularRecipe };
   Favorites: undefined;
   History: undefined;
@@ -104,6 +106,7 @@ function AppStack() {
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
+      <Stack.Screen name="Collections" component={CollectionsScreen} options={{ title: 'Your collection' }} />
       <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'Your Kitchen' }} />
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />

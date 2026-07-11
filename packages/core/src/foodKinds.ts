@@ -144,6 +144,28 @@ export const FOOD_GUIDES: FoodGuide[] = [
     kinds: ['Mild', 'Medium', 'Hot', 'Verde'],
     brands: ['Pace', 'Herdez', 'Tostitos'],
   },
+  // Produce guides carry no seed brands (fresh produce isn't branded) — the UI
+  // simply shows fewer/zero brand chips, which is correct. Their real value is
+  // the variety row: a distinct set to log ("Fuji apples", "Concord grapes"),
+  // which sharpens recipe matching AND powers the variety collection.
+  {
+    food: 'grapes',
+    order: 'kind-first',
+    kinds: ['Red', 'Green', 'Black', 'Concord', 'Cotton Candy', 'Champagne'],
+    brands: [],
+  },
+  {
+    food: 'apples',
+    order: 'kind-first',
+    kinds: ['Fuji', 'Gala', 'Honeycrisp', 'Granny Smith', 'Red Delicious', 'Braeburn'],
+    brands: [],
+  },
+  {
+    food: 'peppers',
+    order: 'kind-first',
+    kinds: ['Bell', 'Jalapeno', 'Serrano', 'Poblano', 'Habanero', 'Banana'],
+    brands: [],
+  },
 ];
 
 /** Lowercase, trim, collapse whitespace, singularize each token — applied
