@@ -55,6 +55,7 @@ import {
   type StorageLocation,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { getPowerSync } from '../../data/powersync/db';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryField } from './ExpiryField';
@@ -228,7 +229,7 @@ export function EditItemScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader tone="olive" />
         </View>
       </SafeAreaView>
     );

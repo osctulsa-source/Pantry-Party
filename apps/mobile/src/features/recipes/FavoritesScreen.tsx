@@ -25,7 +25,7 @@ import {
 } from '@breadbox/core';
 
 import { tokens } from '../../theme/tokens';
-import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
+import { BrandEmptyArt } from '../../components/BrandDecor';
 import { useFavorites, favoriteToRecipe } from './useFavorites';
 import { useActivity, topCooked } from '../activity/useActivity';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -179,7 +179,7 @@ export function FavoritesScreen() {
           </View>
         ) : noLists ? (
           <View style={styles.emptyBlock}>
-            <CookEmptyArt />
+            <BrandEmptyArt foods={['cherry', 'croissant', 'grapes']} />
             <Text style={styles.emptyTitle}>No saved recipes yet</Text>
             <Text style={styles.emptyBody}>
               Tap the heart on any recipe — in Cook or on a recipe page — to save it here for the whole

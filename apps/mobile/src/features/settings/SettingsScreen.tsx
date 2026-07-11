@@ -85,6 +85,8 @@ export function SettingsScreen() {
             value={insights.streakDays > 0 ? `🔥 ${insights.streakDays}d` : undefined}
             onPress={() => navigation.navigate('Insights')}
           />
+          <ListRow label="Collections" onPress={() => navigation.navigate('Collections')} />
+          <ListRow label="Cookbook" onPress={() => navigation.navigate('Cookbook')} />
           <ListRow label="History" onPress={() => navigation.navigate('History')} />
           <ListRow label="Your stores" onPress={() => navigation.navigate('FavoriteStores')} />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
