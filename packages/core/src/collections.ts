@@ -31,6 +31,16 @@
 
 import { FOOD_GUIDES, guideFor, plainName } from './foodKinds.ts';
 
+/** Mastery of a set, by how much of it you've collected. Un-grindable: it
+ *  moves on DISTINCT varieties, so it can't be farmed by repeat-buying. */
+export type MasteryTier = 'empty' | 'bronze' | 'silver' | 'gold';
+
+export function masteryTier(count: number, total: number): MasteryTier {
+  if (count <= 0 || total <= 0) return 'empty';
+  if (count >= total) return 'gold';
+  return count / total >= 0.5 ? 'silver' : 'bronze';
+}
+
 export interface CollectionSet {
   /** The guide's canonical food key, lowercase ("cheese"). */
   food: string;
@@ -46,6 +56,8 @@ export interface CollectionSet {
   total: number;
   /** True once every kind has been logged (the set is a trophy). */
   complete: boolean;
+  /** empty → bronze → silver → gold, by fraction collected. */
+  tier: MasteryTier;
 }
 
 export interface CollectionsSummary {
@@ -105,6 +117,7 @@ export function computeCollections(loggedNames: string[]): CollectionsSummary {
       count: collected.length,
       total: guide.kinds.length,
       complete: remaining.length === 0,
+      tier: masteryTier(collected.length, guide.kinds.length),
     };
   });
 

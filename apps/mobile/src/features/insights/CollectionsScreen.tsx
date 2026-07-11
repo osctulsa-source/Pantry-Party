@@ -22,17 +22,33 @@ import {
   ActivityIndicator,
   Animated,
   FlatList,
+  Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { CollectionSet } from '@breadbox/core';
+import {
+  isInSeason,
+  peakSeason,
+  recipesUsingFood,
+  type CollectionSet,
+  type MasteryTier,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useCollections } from './useCollections';
 import { CollectionGlyph } from './collectionIcons';
+import { RECIPE_CATALOG } from './useRecipeCollections';
+
+/** Medal for a set's mastery tier (gold shows as 🏆 next to the title instead). */
+function tierMedal(tier: MasteryTier): string | null {
+  if (tier === 'bronze') return '🥉';
+  if (tier === 'silver') return '🥈';
+  return null;
+}
 
 /** Reduce-Motion state, read once and kept live (respects the OS setting). */
 function useReduceMotion(): boolean {
@@ -72,6 +88,7 @@ function Bob({ enabled, delay = 0, children }: { enabled: boolean; delay?: numbe
 export function CollectionsScreen() {
   const { collections, isLoading } = useCollections();
   const reduce = useReduceMotion();
+  const [detail, setDetail] = useState<CollectionSet | null>(null);
 
   if (isLoading) {
     return (
@@ -122,23 +139,44 @@ export function CollectionsScreen() {
             <Text style={styles.sectionTitle}>Collections</Text>
           </>
         }
-        renderItem={({ item, index }) => <SetCard set={item} index={index} reduce={reduce} />}
+        renderItem={({ item, index }) => (
+          <SetCard set={item} index={index} reduce={reduce} onOpen={setDetail} />
+        )}
         ListFooterComponent={<UndiscoveredSection reduce={reduce} />}
       />
+      <CardBackModal set={detail} onClose={() => setDetail(null)} />
     </SafeAreaView>
   );
 }
 
-function SetCard({ set, index, reduce }: { set: CollectionSet; index: number; reduce: boolean }) {
+function SetCard({
+  set,
+  index,
+  reduce,
+  onOpen,
+}: {
+  set: CollectionSet;
+  index: number;
+  reduce: boolean;
+  onOpen: (s: CollectionSet) => void;
+}) {
   const pct = set.total > 0 ? set.count / set.total : 0;
   const started = set.count > 0;
+  const medal = tierMedal(set.tier);
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={styles.card}
+      onPress={() => onOpen(set)}
+      accessibilityRole="button"
+      accessibilityLabel={`${set.title} collection, ${set.count} of ${set.total}`}
+      accessibilityHint="Opens details — what's in season and recipes that use it"
+    >
       <View style={styles.cardRow}>
         <View style={[styles.emblem, started && styles.emblemOn]}>
           <Bob enabled={started && !reduce} delay={(index % 5) * 200}>
             <CollectionGlyph name={set.food} collected={started} size={40} />
           </Bob>
+          {medal && <Text style={styles.emblemMedal}>{medal}</Text>}
         </View>
 
         <View style={styles.cardBody}>
@@ -169,7 +207,78 @@ function SetCard({ set, index, reduce }: { set: CollectionSet; index: number; re
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
+  );
+}
+
+/* --------------------------- Card back --------------------------- */
+
+function CardBackModal({ set, onClose }: { set: CollectionSet | null; onClose: () => void }) {
+  const season = set ? isInSeason(set.food) : null;
+  const peak = set ? peakSeason(set.food) : null;
+  // Recipes that use any variety of this food — the food→recipe link.
+  const recipes = set ? recipesUsingFood(set.food, RECIPE_CATALOG).slice(0, 6) : [];
+
+  return (
+    <Modal visible={set !== null} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.backdrop} onPress={onClose}>
+        <Pressable style={styles.sheet} onPress={() => {}}>
+          {set && (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.sheetHead}>
+                <View style={[styles.emblem, set.count > 0 && styles.emblemOn]}>
+                  <CollectionGlyph name={set.food} collected={set.count > 0} size={40} />
+                </View>
+                <View style={styles.sheetTitleWrap}>
+                  <Text style={styles.sheetTitle}>{set.title}</Text>
+                  <Text style={styles.sheetSub}>
+                    {set.count}/{set.total} collected · {set.tier}
+                  </Text>
+                </View>
+              </View>
+
+              {season !== null && (
+                <View style={[styles.pill, season ? styles.pillOn : styles.pillOff]}>
+                  <Text style={season ? styles.pillTextOn : styles.pillTextOff}>
+                    {season ? '● In season now' : '○ Out of season'}
+                    {peak ? ` · peak in ${peak}` : ''}
+                  </Text>
+                </View>
+              )}
+
+              <Text style={styles.sheetLabel}>Varieties</Text>
+              <View style={styles.chips}>
+                {set.collected.map((k) => (
+                  <View key={k} style={[styles.chip, styles.chipOn]}>
+                    <Text style={[styles.chipText, styles.chipTextOn]}>✓ {k}</Text>
+                  </View>
+                ))}
+                {set.remaining.map((k) => (
+                  <View key={k} style={[styles.chip, styles.chipOff]}>
+                    <Text style={[styles.chipText, styles.chipTextOff]}>{k}</Text>
+                  </View>
+                ))}
+              </View>
+
+              {recipes.length > 0 && (
+                <>
+                  <Text style={styles.sheetLabel}>Cook with it</Text>
+                  {recipes.map((r) => (
+                    <Text key={r.id} style={styles.recipeRow}>
+                      🍳 {r.title}
+                    </Text>
+                  ))}
+                </>
+              )}
+
+              <Pressable style={styles.closeBtn} onPress={onClose} accessibilityRole="button">
+                <Text style={styles.closeBtnText}>Close</Text>
+              </Pressable>
+            </ScrollView>
+          )}
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -457,4 +566,53 @@ const styles = StyleSheet.create({
   mName: { fontFamily: tokens.font.display.semibold, fontSize: 14, color: tokens.color.ink },
   mKinds: { fontFamily: tokens.font.body.regular, fontSize: 11, color: tokens.color.inkMuted },
   mTease: { fontStyle: 'italic' },
+
+  // Mastery medal on the emblem
+  emblemMedal: { position: 'absolute', top: -6, right: -6, fontSize: 15 },
+
+  // Card back (modal)
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  sheet: {
+    backgroundColor: tokens.color.surface,
+    borderTopLeftRadius: tokens.radius.lg,
+    borderTopRightRadius: tokens.radius.lg,
+    padding: tokens.space(6),
+    maxHeight: '82%',
+  },
+  sheetHead: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), marginBottom: tokens.space(4) },
+  sheetTitleWrap: { flex: 1 },
+  sheetTitle: { fontFamily: tokens.font.display.bold, fontSize: 22, color: tokens.color.ink },
+  sheetSub: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.inkMuted, marginTop: 2, textTransform: 'capitalize' },
+
+  pill: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: tokens.space(3), paddingVertical: tokens.space(1), marginBottom: tokens.space(5) },
+  pillOn: { backgroundColor: tokens.color.accentSoft },
+  pillOff: { backgroundColor: tokens.color.surfaceAlt },
+  pillTextOn: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
+  pillTextOff: { fontFamily: tokens.font.body.medium, fontSize: 12, color: tokens.color.inkMuted },
+
+  sheetLabel: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: tokens.color.inkMuted,
+    marginTop: tokens.space(4),
+    marginBottom: tokens.space(2),
+  },
+  recipeRow: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 14,
+    color: tokens.color.ink,
+    paddingVertical: tokens.space(2),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tokens.color.line,
+  },
+  closeBtn: {
+    marginTop: tokens.space(6),
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space(4),
+    alignItems: 'center',
+  },
+  closeBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
 });

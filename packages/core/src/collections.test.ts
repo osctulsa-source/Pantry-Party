@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { computeCollections } from './collections.ts';
+import { computeCollections, masteryTier } from './collections.ts';
 import { FOOD_GUIDES } from './foodKinds.ts';
 
 /** Pull a set out of the summary by its food key. */
@@ -107,5 +107,29 @@ describe('computeCollections', () => {
   it('ignores names that match no guide', () => {
     const result = computeCollections(['Sriracha', 'Paper towels', 'Toothpaste']);
     expect(result.varietiesCollected).toBe(0);
+  });
+
+  it('assigns a mastery tier per set', () => {
+    // grapes total 6: 3 collected → silver (0.5)
+    const grapes = set(computeCollections(['Red grapes', 'Concord grapes', 'Champagne grapes']), 'grapes');
+    expect(grapes.tier).toBe('silver');
+    // 1 of 6 → bronze; untouched → empty
+    const one = computeCollections(['Red grapes']);
+    expect(set(one, 'grapes').tier).toBe('bronze');
+    expect(set(one, 'cheese').tier).toBe('empty');
+    // butter fully collected (3/3) → gold
+    const butter = set(computeCollections(['Salted butter', 'Unsalted butter', 'Plant-based butter']), 'butter');
+    expect(butter.tier).toBe('gold');
+  });
+});
+
+describe('masteryTier', () => {
+  it('maps fraction collected to a tier, un-grindably (distinct only)', () => {
+    expect(masteryTier(0, 6)).toBe('empty');
+    expect(masteryTier(1, 6)).toBe('bronze');
+    expect(masteryTier(3, 6)).toBe('silver'); // exactly 0.5
+    expect(masteryTier(5, 6)).toBe('silver');
+    expect(masteryTier(6, 6)).toBe('gold');
+    expect(masteryTier(0, 0)).toBe('empty'); // guard against divide-by-zero
   });
 });
