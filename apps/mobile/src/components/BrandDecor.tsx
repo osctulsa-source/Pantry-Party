@@ -95,6 +95,40 @@ export function BrandLoader({
   );
 }
 
+/** A small still-life cluster of brand icons — an empty-state illustration. */
+export function BrandEmptyArt({
+  foods = ['bread', 'tomato', 'herb'],
+  size = 88,
+}: {
+  foods?: BrandFoodName[];
+  size?: number;
+}) {
+  const [a, b, c] = foods;
+  return (
+    <View
+      style={styles.cluster}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      pointerEvents="none"
+    >
+      {a ? (
+        <View style={styles.clusterLeft}>
+          <BrandIcon name={a} variant="onLight" size={size * 0.66} />
+        </View>
+      ) : null}
+      {b ? <BrandIcon name={b} variant="onLight" size={size} /> : null}
+      {c ? (
+        <View style={styles.clusterRight}>
+          <BrandIcon name={c} variant="onLight" size={size * 0.6} />
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 16, alignItems: 'center', justifyContent: 'center' },
+  cluster: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 16 },
+  clusterLeft: { marginRight: -10, marginBottom: 6, transform: [{ rotate: '-6deg' }] },
+  clusterRight: { marginLeft: -10, marginBottom: 10, transform: [{ rotate: '6deg' }] },
 });

@@ -41,7 +41,7 @@ import { X } from 'lucide-react-native';
 import { suggestExpiryISO, type ShoppingListItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { ShoppingEmptyArt } from '../../components/illustrations/ShoppingEmptyArt';
+import { BrandEmptyArt } from '../../components/BrandDecor';
 import { getPowerSync } from '../../data/powersync/db';
 import { rowToShoppingListItem } from '../../data/powersync/mapShoppingRow';
 import type { ShoppingListItemRow } from '../../data/powersync/schema';
@@ -251,6 +251,8 @@ export function ShoppingScreen() {
       <ScreenHeader
         title="Shopping"
         subtitle={`${open.length} to pick up`}
+        watermark="jar"
+        watermarkTone="blue"
         right={
           done.length > 0 ? (
             <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
@@ -290,7 +292,7 @@ export function ShoppingScreen() {
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <ShoppingEmptyArt />
+            <BrandEmptyArt foods={['jar', 'bread', 'carrot']} />
             <Text style={styles.emptyTitle}>All stocked up</Text>
             <Text style={styles.emptySub}>
               Items you run low on — and recipe extras — show up here automatically.

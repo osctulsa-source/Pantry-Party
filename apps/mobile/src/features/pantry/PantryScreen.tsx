@@ -523,6 +523,8 @@ export function PantryScreen() {
       <ScreenHeader
         title="Pantry"
         subtitle={`${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+        watermark="herb"
+        watermarkTone="fern"
         right={
           <>
             {insights.streakDays >= 1 && (
