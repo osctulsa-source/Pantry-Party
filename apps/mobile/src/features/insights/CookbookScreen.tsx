@@ -24,7 +24,7 @@ export function CookbookScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <BrandLoader tone="spruce" />
+          <BrandLoader variant="carousel-dots" />
         </View>
       </SafeAreaView>
     );

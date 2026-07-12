@@ -101,7 +101,7 @@ export function HouseholdScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
-          <BrandLoader tone="terracotta" />
+          <BrandLoader variant="dots" />
         </View>
       </SafeAreaView>
     );
@@ -114,7 +114,7 @@ export function HouseholdScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
-          <BrandLoader tone="terracotta" />
+          <BrandLoader variant="dots" />
           <Text style={styles.caption}>Setting up your household...</Text>
         </View>
       </SafeAreaView>
