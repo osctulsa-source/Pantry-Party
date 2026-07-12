@@ -1,48 +1,49 @@
 /**
  * useExpiryNotifications — reconciles local notifications with the current pantry list.
  *
- * Idempotency comes from the cancelAll() + schedule-all pattern in core's reconciler:
- * each call computes the same intents from the same items + now, and the OS notification
- * store is wiped before re-population, so re-running yields the same scheduled set.
+ * Digest model (July 2026 redesign): instead of one notification per expiring
+ * item, core groups items by the morning they'd fire and emits ONE playful
+ * digest per day ("3 things are getting close — spinach leads"). Copy comes
+ * from the phrase bank in core (deterministic, seeded off the trigger day) so
+ * the reconcile stays idempotent.
+ *
+ * Idempotency comes from the cancelAll() + schedule-all pattern: each call
+ * computes the same digests from the same items + now, and the OS notification
+ * store is wiped before re-population, so re-running yields the same set — same
+ * wording included.
  *
  * Reconcile triggers:
  *   - items array changes (add/remove/edit pantry item)
  *   - app foregrounded (so a long-backgrounded app picks up newly-due warnings)
  *
  * Notification actions ("✓ Used" / "Snooze 2 days") are registered once at
- * mount and handled in notificationActions.ts — resolving from the lock
- * screen rides the same write paths as the in-app buttons, and the resulting
- * items change re-triggers this reconciler automatically.
+ * mount and handled in notificationActions.ts. They ride on SINGLE-item digests
+ * (a bundle can't act on one item) — resolving from the lock screen uses the
+ * same write paths as the in-app buttons, and the resulting items change
+ * re-triggers this reconciler automatically.
  *
- * Streak-saver (PR 3 of the streak arc): when the streak is ≥3 and a
- * warning-zone item exists, an extra notification carries a personalised
- * nudge ("Your 7-day streak is on the line — use or freeze your Chicken
- * before tomorrow"). Occupies one slot in the 64-intent budget.
+ * Streak: when the streak is ≥3 and the digest is urgent (today/tomorrow), the
+ * copy folds the streak in ("save 2 things, save your 7-day streak") — no extra
+ * notification, keeping the one-nudge-a-morning promise.
  */
 import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import {
-  computeScheduleIntents,
-  computeStreakSaverIntent,
-  streakSaverBody,
+  computeDigestIntents,
+  digestNotification,
+  computeInsights,
   type PantryItem,
 } from '@breadbox/core';
 
 import { expoScheduler, ensureNotificationPermission } from './expoScheduler';
-import { handleExpiryActionResponse, registerExpiryCategory } from './notificationActions';
+import {
+  EXPIRY_CATEGORY,
+  handleExpiryActionResponse,
+  registerExpiryCategory,
+} from './notificationActions';
 import { readExpiryEvents } from '../pantry/expiryEvents';
 import { readCookEvents } from '../recipes/cookLog';
-import { computeInsights } from '@breadbox/core';
-
-const NOTIFICATION_TITLE = 'Pantry';
-const STREAK_TITLE = 'Streak alert';
-
-function bodyFor(itemName: string, days: number): string {
-  if (days >= 2) return `${itemName} expires in ${days} days`;
-  if (days === 1) return `${itemName} expires tomorrow`;
-  return `${itemName} expires today`;
-}
 
 /**
  * Android 8+ requires a notification channel; without one, notifications
@@ -66,41 +67,38 @@ async function reconcile(
   if (!granted) return;
   const now = new Date();
 
-  // Regular expiry intents (budget: 63 slots — reserve 1 for streak-saver).
-  const intents = computeScheduleIntents(items, now);
-  await expoScheduler.cancelAll();
-  for (const intent of intents) {
-    await expoScheduler.schedule({
-      id: intent.itemId,
-      title: NOTIFICATION_TITLE,
-      body: bodyFor(intent.itemName, intent.daysUntilExpiry),
-      triggerDate: intent.triggerDate,
-    });
-  }
-
-  // Streak-saver: one extra notification when the streak ≥3 and a
-  // warning-zone item exists. Reads the on-device event logs (fast,
-  // AsyncStorage) to compute the current streak inline — the reconciler
-  // already runs on every items-change and foreground, so it's always fresh.
+  // Current streak (best-effort) — folds into the digest copy on urgent tiers.
+  // Reads the on-device event logs (fast, AsyncStorage); the reconciler already
+  // runs on every items-change and foreground, so it stays fresh.
+  let streakDays = 0;
   if (householdId) {
     try {
       const [expiryEvents, cookEvents] = await Promise.all([
         readExpiryEvents(householdId),
         readCookEvents(householdId),
       ]);
-      const { streakDays } = computeInsights(expiryEvents, cookEvents, now);
-      const saver = computeStreakSaverIntent(streakDays, items, now);
-      if (saver) {
-        await expoScheduler.schedule({
-          id: saver.id,
-          title: STREAK_TITLE,
-          body: streakSaverBody(saver),
-          triggerDate: saver.triggerDate,
-        });
-      }
+      streakDays = computeInsights(expiryEvents, cookEvents, now).streakDays;
     } catch {
-      // Streak-saver is best-effort — never break the regular notification flow.
+      // Streak is optional flavour — never break the digest flow.
     }
+  }
+
+  const digests = computeDigestIntents(items, now);
+  await expoScheduler.cancelAll();
+  for (const digest of digests) {
+    const { title, body } = digestNotification(digest, streakDays);
+    const leadItem = digest.items[0];
+    const single = digest.items.length === 1 && leadItem !== undefined;
+    await expoScheduler.schedule({
+      id: digest.id,
+      title,
+      body,
+      triggerDate: digest.triggerDate,
+      // One-item digests carry the ✓ Used / Snooze actions (they resolve the
+      // single item); bundles carry none and just open the app on tap.
+      categoryId: single ? EXPIRY_CATEGORY : undefined,
+      data: single && leadItem ? { itemId: leadItem.id } : { screen: 'expiring' },
+    });
   }
 }
 
