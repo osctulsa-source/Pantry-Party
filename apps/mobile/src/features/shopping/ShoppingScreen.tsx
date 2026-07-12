@@ -38,7 +38,7 @@ import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { X } from 'lucide-react-native';
 
-import { suggestExpiryISO, type ShoppingListItem } from '@breadbox/core';
+import { suggestExpiryISO, suggestStorageLocation, type ShoppingListItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { BrandEmptyArt } from '../../components/BrandDecor';
@@ -150,14 +150,17 @@ export function ShoppingScreen() {
     setBusy(true);
     animate();
     try {
+      // Location-consistent estimate (see ScanScreen): infer where the food
+      // lives, then estimate expiry AT that location.
+      const location = suggestStorageLocation(item.name) ?? 'pantry';
       await addPantryItem({
         householdId: activeHouseholdId,
         userId,
         name: item.name,
         quantity: item.quantity,
         unit: item.unit ?? null,
-        location: 'pantry',
-        expiresIso: suggestExpiryISO({ name: item.name }),
+        location,
+        expiresIso: suggestExpiryISO({ name: item.name, location }),
         source: 'restock',
       });
       // Log the restock to the household activity history (best-effort,

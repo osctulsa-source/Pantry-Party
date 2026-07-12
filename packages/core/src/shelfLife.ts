@@ -14,6 +14,10 @@ import { daysForLocation, matchFood } from './shelfLifeLookup';
 // (e.g. "juice") are checked before broad ones (e.g. "orange") so "orange juice"
 // resolves to beverage, not produce.
 const NAME_CATEGORY_RULES: Array<[RegExp, string]> = [
+  // Preservation words outrank the food word: "canned tomatoes" is a pantry
+  // good, not produce — without this, the produce rule's 'tomatoes' hit gave
+  // scanned canned goods a days-long fresh-produce expiry.
+  [/\b(canned|tinned|jarred|pickled|dried|dehydrated)\b/, 'pantry'],
   [/\b(milk|cream|yogurt|yoghurt|cheese|butter|kefir)\b/, 'dairy'],
   [/\b(chicken|beef|pork|turkey|fish|salmon|shrimp|bacon|sausage|steak|mince|meat)\b/, 'meat'],
   [/\b(bread|bagel|tortilla|bun|roll|muffin|croissant|pastry|cake)\b/, 'bakery'],
@@ -52,6 +56,36 @@ export function suggestShelfLifeDays(opts: { name?: string; category?: string; l
   return typeof days === 'number' ? days : null;
 }
 
+/**
+ * Where a food naturally lives, inferred from its FoodKeeper record: a food
+ * with a fridge duration is a fridge food (fresh durations are the reason the
+ * record exists), else pantry, else freezer-only. Category keywords answer
+ * when no record matches. Null when there's no signal at all.
+ *
+ * This is the capture-flow default (scan/paste/restock add items without
+ * asking where they go). Storing "milk" as pantry and then estimating its
+ * expiry with a pantry lookup was how scanned items got wildly wrong dates —
+ * the location stored and the location estimated must be the SAME sensible
+ * guess, and the user can always correct it per item.
+ */
+export function suggestStorageLocation(name: string, category?: string): 'fridge' | 'pantry' | 'freezer' | null {
+  const rec = matchFood(name);
+  if (rec && (rec.p !== undefined || rec.f !== undefined)) {
+    // A food's natural home is where it keeps LONGEST: butter (2d counter /
+    // 46d fridge) is a fridge food; canned tomatoes (~18mo pantry / days once
+    // opened+refrigerated) are a pantry food. Freezer durations are ignored —
+    // they mean "can be frozen", not "lives in the freezer" (FoodKeeper's
+    // plain-milk record is freezer-only; milk is still a fridge food).
+    if (rec.p !== undefined && rec.f !== undefined) return rec.p >= rec.f ? 'pantry' : 'fridge';
+    return rec.p !== undefined ? 'pantry' : 'fridge';
+  }
+  const cat = category ?? categorizeByName(name);
+  if (!cat) return null;
+  if (cat === 'dairy' || cat === 'meat' || cat === 'produce') return 'fridge';
+  if (cat === 'frozen') return 'freezer';
+  return 'pantry';
+}
+
 /** A Date at UTC midnight, `days` from `from`. Shared by the suggestion + the date-stepper UI. */
 export function addDaysUTC(from: Date, days: number): Date {
   const d = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
@@ -60,7 +94,10 @@ export function addDaysUTC(from: Date, days: number): Date {
 }
 
 /** Suggested expiry as an ISO timestamp (UTC midnight, `days` out), or null when no signal. */
-export function suggestExpiryISO(opts: { name?: string; category?: string }, now: Date = new Date()): string | null {
+export function suggestExpiryISO(
+  opts: { name?: string; category?: string; location?: string },
+  now: Date = new Date(),
+): string | null {
   const days = suggestShelfLifeDays(opts);
   if (days === null) return null;
   return addDaysUTC(now, days).toISOString();

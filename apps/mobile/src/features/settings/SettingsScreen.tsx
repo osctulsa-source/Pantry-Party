@@ -11,7 +11,7 @@
  * navigation from this screen.
  */
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -57,7 +57,14 @@ export function SettingsScreen() {
   return (
     <Screen>
       <ScreenHeader title="Settings" />
-      <View style={styles.content}>
+      {/* Scrolls when the row list outgrows the screen (it does on smaller
+          phones since Collections/Cookbook landed); on tall screens flexGrow
+          keeps sign-out pinned to the bottom exactly as before. */}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.topGroup}>
           <View style={styles.section}>
             <Caption>Your name</Caption>
@@ -104,14 +111,16 @@ export function SettingsScreen() {
             <Text style={styles.deleteText}>Delete my account</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  // contentContainerStyle: flexGrow (not flex) so short content still fills
+  // the screen (sign-out pinned to the bottom) while long content scrolls.
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'space-between',
     paddingHorizontal: tokens.space(6),
     paddingTop: tokens.space(2),
@@ -125,6 +134,8 @@ const styles = StyleSheet.create({
   },
   bottomGroup: {
     gap: tokens.space(4),
+    // Breathing room when the list is long enough to sit directly above it.
+    paddingTop: tokens.space(6),
   },
   deleteRow: {
     alignItems: 'center',

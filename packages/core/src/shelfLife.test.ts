@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
-import { addDaysUTC, categorizeByName, suggestExpiryISO, suggestShelfLifeDays } from './shelfLife';
+import {
+  addDaysUTC,
+  categorizeByName,
+  suggestExpiryISO,
+  suggestShelfLifeDays,
+  suggestStorageLocation,
+} from './shelfLife';
 
 describe('categorizeByName', () => {
   it('maps common foods to categories', () => {
@@ -102,5 +108,47 @@ describe('suggestShelfLifeDays — food tier (FoodKeeper data)', () => {
     expect(fridge).not.toBeNull();
     expect(freezer).not.toBeNull();
     expect(new Date(freezer!).getTime()).toBeGreaterThan(new Date(fridge!).getTime());
+  });
+});
+
+describe('suggestStorageLocation', () => {
+  it('puts fresh foods in the fridge', () => {
+    expect(suggestStorageLocation('chicken')).toBe('fridge');
+    expect(suggestStorageLocation('spinach')).toBe('fridge');
+    expect(suggestStorageLocation('eggs')).toBe('fridge');
+  });
+
+  it('puts shelf-stable foods in the pantry (the scan-flow regression case)', () => {
+    // Canned tomatoes keep ~18 months in the pantry but only days once opened
+    // in the fridge — the longer duration marks the natural home. This is the
+    // record whose fridge-first estimate made scanned pantries look expired.
+    expect(suggestStorageLocation('canned tomatoes')).toBe('pantry');
+    expect(suggestStorageLocation('rice')).toBe('pantry');
+    expect(suggestStorageLocation('flour')).toBe('pantry');
+  });
+
+  it('treats fridge-longer records as fridge foods (butter: 2d counter / ~46d fridge)', () => {
+    expect(suggestStorageLocation('butter')).toBe('fridge');
+  });
+
+  it('ignores freezer-only records and answers from the category (milk → dairy → fridge)', () => {
+    expect(suggestStorageLocation('milk')).toBe('fridge');
+  });
+
+  it('falls back to the category tier for foods the dataset lacks', () => {
+    expect(suggestStorageLocation('kombucha')).toBe('pantry'); // beverage
+  });
+
+  it('returns null with no signal at all', () => {
+    expect(suggestStorageLocation('zzqx flurbo')).toBeNull();
+  });
+
+  it('the suggested location and its expiry estimate are consistent', () => {
+    // The actual scan-flow contract: estimate expiry AT the suggested location.
+    const loc = suggestStorageLocation('canned tomatoes');
+    expect(loc).toBe('pantry');
+    const days = suggestShelfLifeDays({ name: 'canned tomatoes', location: loc! });
+    expect(days).not.toBeNull();
+    expect(days!).toBeGreaterThan(100); // shelf-stable, not "5 days in the fridge"
   });
 });
