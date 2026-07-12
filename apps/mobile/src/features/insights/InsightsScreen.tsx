@@ -121,7 +121,7 @@ export function InsightsScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <BrandLoader tone="ochre" />
+          <BrandLoader variant="carousel" />
         </View>
       </SafeAreaView>
     );

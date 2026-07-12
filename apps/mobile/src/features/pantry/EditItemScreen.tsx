@@ -229,7 +229,7 @@ export function EditItemScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <BrandLoader tone="olive" />
+          <BrandLoader variant="dots" />
         </View>
       </SafeAreaView>
     );
