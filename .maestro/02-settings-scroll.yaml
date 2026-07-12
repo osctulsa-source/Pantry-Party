@@ -1,0 +1,20 @@
+# Smoke: the Settings screen's full content is reachable by scrolling.
+# Catches: the "settings don't fit on screen" class of bug — the bottom-most
+# row (Delete my account) must be reachable on ANY device size.
+appId: com.osctulsa.pantryparty.dev
+---
+- launchApp:
+    appId: com.osctulsa.pantryparty.dev
+- extendedWaitUntil:
+    visible: 'Pantry'
+    timeout: 30000
+- tapOn: 'Settings'
+- extendedWaitUntil:
+    visible: 'Your name'
+    timeout: 15000
+- scrollUntilVisible:
+    element: 'Delete my account'
+    direction: DOWN
+    timeout: 20000
+- assertVisible: 'Delete my account'
+- assertVisible: 'Sign out'

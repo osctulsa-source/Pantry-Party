@@ -2,7 +2,7 @@
   "name": "breadbox",
   "version": "0.0.0",
   "private": true,
-  "description": "Pantry tracker — technical kickoff scaffold (codename Breadbox)",
+  "description": "Pantry tracker \u2014 technical kickoff scaffold (codename Breadbox)",
   "workspaces": [
     "apps/*",
     "packages/*",
@@ -15,7 +15,8 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "echo \"Run tests per-workspace; spikes run standalone\" && exit 0"
+    "test": "echo \"Run tests per-workspace; spikes run standalone\" && exit 0",
+    "smoke": "maestro test .maestro"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -27,5 +28,5 @@
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.62.1"
   },
-  "//": "Spikes under spikes/* are intentionally NOT workspaces — they are throwaway."
+  "//": "Spikes under spikes/* are intentionally NOT workspaces \u2014 they are throwaway."
 }

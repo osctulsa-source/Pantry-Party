@@ -32,8 +32,19 @@ jobs:
       - name: Typecheck services/api
         run: npm run typecheck -w services/api
 
+      # Errors fail the build; the handful of deliberate exhaustive-deps
+      # warnings (the `now`-refresh useMemo pattern) stay warnings.
+      - name: Lint
+        run: npm run lint
+
       - name: Test packages/core
         run: npm test -w packages/core
+
+      - name: Test apps/mobile
+        # Run from the app dir (not `-w`): the jest-expo preset resolves its
+        # react-native plumbing relative to the working directory.
+        run: npm test
+        working-directory: apps/mobile
 
       - name: Test services/api
         # API_JWKS_URI is required at import-time by the auth middleware. The

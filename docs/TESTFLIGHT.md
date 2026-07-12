@@ -117,6 +117,11 @@ production build profile is on the **`production` channel** (`eas.json`). That
 means installed TestFlight builds check for published JS updates and apply them —
 no new build, no upload, no processing wait.
 
+> **Pre-publish gate:** run the Maestro smoke flows first (`npm run smoke`
+> against a booted sim — see [`.maestro/README.md`](../.maestro/README.md)).
+> They pin the bug classes that previously shipped to TestFlight unnoticed
+> (dead buttons, unreachable content, clipped labels).
+
 **Ship a JS-only change** (from `apps/mobile/`, on the same `main` state the
 current TestFlight build was made from):
 
