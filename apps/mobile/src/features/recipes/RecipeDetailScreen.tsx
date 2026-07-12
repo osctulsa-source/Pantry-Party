@@ -17,15 +17,27 @@
  * (sourceUrl + sourceName) is always offered when present.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Image,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { matchCookedItems, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
+import { categorizeByName, matchCookedItems, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { CategoryIcon } from '../pantry/CategoryIcon';
+import { useReduceMotion } from '../../components/useReduceMotion';
 import { usePantryItems } from '../pantry/usePantryItems';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
@@ -71,6 +83,40 @@ function hasIngredient(usedLc: string[], ingredientName: string): boolean {
   const n = ingredientName.toLowerCase();
   if (n.length === 0) return false;
   return usedLc.some((u) => u.length > 0 && (n.includes(u) || u.includes(n)));
+}
+
+/**
+ * A friendly amount chip — "1½ cups", "2 tbsp", "¾" — so the food name can
+ * lead the row and the fractions stay glanceable off to the side. Decimal
+ * fractions map to the familiar unicode glyphs; null when there's no amount.
+ */
+const FRACTIONS: Array<[number, string]> = [
+  [0.25, '¼'],
+  [0.33, '⅓'],
+  [0.5, '½'],
+  [0.67, '⅔'],
+  [0.75, '¾'],
+];
+function formatAmount(amount: number | null, unit: string): string | null {
+  if (amount === null || amount <= 0) return unit.trim() || null;
+  const whole = Math.floor(amount);
+  const frac = amount - whole;
+  let fracGlyph = '';
+  for (const [v, glyph] of FRACTIONS) {
+    if (Math.abs(frac - v) < 0.05) {
+      fracGlyph = glyph;
+      break;
+    }
+  }
+  const num = fracGlyph
+    ? whole > 0
+      ? `${whole}${fracGlyph}`
+      : fracGlyph
+    : Number.isInteger(amount)
+      ? `${amount}`
+      : `${Math.round(amount * 100) / 100}`;
+  const u = unit.trim();
+  return u ? `${num} ${u}` : num;
 }
 
 function Tag({ label }: { label: string }) {
@@ -131,6 +177,23 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     () => recipe.usedIngredientNames.map((n) => n.toLowerCase()),
     [recipe.usedIngredientNames],
   );
+
+  // "You have X of Y" — the calm way into a long ingredient list. The bar
+  // eases up to the level on mount (skipped under OS Reduce Motion).
+  const reduceMotion = useReduceMotion();
+  const haveCount = useMemo(
+    () => recipe.ingredients.filter((ing) => hasIngredient(usedLc, ing.name)).length,
+    [recipe.ingredients, usedLc],
+  );
+  const haveLevel = recipe.ingredients.length > 0 ? haveCount / recipe.ingredients.length : 0;
+  const haveAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(haveAnim, {
+      toValue: haveLevel,
+      duration: reduceMotion ? 0 : 700,
+      useNativeDriver: false, // animates width — layout property
+    }).start();
+  }, [haveLevel, reduceMotion, haveAnim]);
 
   // Curated pantry stand-ins for ingredients the user doesn't have — keyed by
   // the ingredient's lowercase name so the list rows can annotate in place.
@@ -324,28 +387,69 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 
           <Text style={styles.sectionHead}>Ingredients</Text>
           {recipe.ingredients.length > 0 ? (
-            <View style={styles.ingList}>
-              {recipe.ingredients.map((ing, idx) => {
-                const have = hasIngredient(usedLc, ing.name);
-                const swap = have ? undefined : swapsByIngredient.get(ing.name.toLowerCase());
-                return (
-                  <View key={`${ing.name}-${idx}`} style={styles.ingRow}>
-                    <View style={[styles.ingDot, have ? styles.ingDotHave : styles.ingDotNeed]}>
-                      {have ? <Check size={12} color={tokens.color.onAccent} /> : null}
-                    </View>
-                    <View style={styles.ingBody}>
-                      <Text style={styles.ingTxt}>{ing.original || ing.name}</Text>
-                      {swap && (
-                        <View style={styles.swapRow}>
-                          <Repeat size={11} color={tokens.color.accent} />
-                          <Text style={styles.swapTxt}>Swap in your {swap.pantryItemName}</Text>
+            <>
+              {/* At-a-glance: how much of this you can already make. */}
+              <View style={styles.ingSummary}>
+                <Text style={styles.ingSummaryTxt}>
+                  You have <Text style={styles.ingSummaryStrong}>{haveCount}</Text> of{' '}
+                  <Text style={styles.ingSummaryStrong}>{recipe.ingredients.length}</Text>
+                </Text>
+                <View style={styles.ingBarTrack}>
+                  <Animated.View
+                    style={[
+                      styles.ingBarFill,
+                      {
+                        width: haveAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0%', '100%'],
+                        }),
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+              <View style={styles.ingList}>
+                {recipe.ingredients.map((ing, idx) => {
+                  const have = hasIngredient(usedLc, ing.name);
+                  const swap = have ? undefined : swapsByIngredient.get(ing.name.toLowerCase());
+                  const amount = formatAmount(ing.amount, ing.unit);
+                  return (
+                    <View key={`${ing.name}-${idx}`} style={styles.ingRow}>
+                      {/* Food icon: a visual anchor so the row reads as a FOOD
+                          first, not a fraction. Filled when you have it. */}
+                      <View style={[styles.ingIcon, have ? styles.ingIconHave : styles.ingIconNeed]}>
+                        <CategoryIcon
+                          category={categorizeByName(ing.name)}
+                          size={16}
+                          color={have ? tokens.color.accent : tokens.color.inkMuted}
+                        />
+                      </View>
+                      <View style={styles.ingBody}>
+                        <View style={styles.ingNameRow}>
+                          <Text style={styles.ingName} numberOfLines={1}>
+                            {titleCaseIngredient(ing.name)}
+                          </Text>
+                          {have && <Check size={13} color={tokens.color.accent} />}
+                        </View>
+                        {/* The full original line stays — it's the crucial detail. */}
+                        <Text style={styles.ingDetail}>{ing.original || ing.name}</Text>
+                        {swap && (
+                          <View style={styles.swapRow}>
+                            <Repeat size={11} color={tokens.color.accent} />
+                            <Text style={styles.swapTxt}>Swap in your {swap.pantryItemName}</Text>
+                          </View>
+                        )}
+                      </View>
+                      {amount && (
+                        <View style={styles.ingAmount}>
+                          <Text style={styles.ingAmountTxt}>{amount}</Text>
                         </View>
                       )}
                     </View>
-                  </View>
-                );
-              })}
-            </View>
+                  );
+                })}
+              </View>
+            </>
           ) : (
             <Text style={styles.muted}>Ingredient details aren&apos;t available for this recipe.</Text>
           )}
@@ -661,13 +765,32 @@ const styles = StyleSheet.create({
     marginTop: tokens.space(2),
     marginBottom: tokens.space(3),
   },
+  ingSummary: { marginBottom: tokens.space(3) },
+  ingSummaryTxt: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted, marginBottom: tokens.space(2) },
+  ingSummaryStrong: { fontFamily: tokens.font.body.semibold, color: tokens.color.accent },
+  ingBarTrack: { height: 6, borderRadius: 999, backgroundColor: tokens.color.surfaceAlt, overflow: 'hidden' },
+  ingBarFill: { height: 6, borderRadius: 999, backgroundColor: tokens.color.accent },
   ingList: { gap: tokens.space(1) },
   ingRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingVertical: tokens.space(2) },
-  ingDot: { width: 20, height: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  ingDotHave: { backgroundColor: tokens.color.accent },
-  ingDotNeed: { borderWidth: 1.5, borderColor: tokens.color.line, backgroundColor: 'transparent' },
+  ingIcon: { width: 32, height: 32, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  ingIconHave: { backgroundColor: tokens.color.accentSoft },
+  ingIconNeed: { borderWidth: 1.5, borderColor: tokens.color.line, backgroundColor: 'transparent' },
   ingBody: { flex: 1 },
-  ingTxt: { fontFamily: tokens.font.body.regular, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
+  ingNameRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1) },
+  ingName: { flexShrink: 1, fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.ink, lineHeight: 20 },
+  ingDetail: { fontFamily: tokens.font.body.regular, fontSize: 12, color: tokens.color.inkMuted, lineHeight: 17, marginTop: 1 },
+  ingAmount: {
+    paddingVertical: 2,
+    paddingHorizontal: tokens.space(2),
+    borderRadius: tokens.radius.sm,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  ingAmountTxt: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    color: tokens.color.inkMuted,
+    fontVariant: ['tabular-nums'],
+  },
   swapRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(1), marginTop: 2 },
   swapTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent },
   muted: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, lineHeight: 20 },

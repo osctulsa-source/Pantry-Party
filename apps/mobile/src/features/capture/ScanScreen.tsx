@@ -36,7 +36,7 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'ex
 import * as Haptics from 'expo-haptics';
 import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-react-native';
 
-import { suggestExpiryISO, type CaptureSource } from '@breadbox/core';
+import { suggestExpiryISO, suggestStorageLocation, type CaptureSource } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { addPantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
@@ -322,14 +322,18 @@ export function ScanScreen() {
     if (!trimmed || !userId || !activeHouseholdId || busy) return;
     setBusy(true);
     try {
+      // Infer where the food naturally lives, then estimate expiry AT that
+      // location — storing milk as "pantry" while estimating with a fridge
+      // duration is how scanned items used to get wildly wrong dates.
+      const location = suggestStorageLocation(trimmed) ?? 'pantry';
       await addPantryItem({
         householdId: activeHouseholdId,
         userId,
         name: trimmed,
         brand: brand.trim() || null,
         quantity: 1,
-        location: 'pantry',
-        expiresIso: suggestExpiryISO({ name: trimmed }),
+        location,
+        expiresIso: suggestExpiryISO({ name: trimmed, location }),
         source: target === 'qr' ? 'manual' : 'barcode',
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -366,14 +370,16 @@ export function ScanScreen() {
     try {
       for (const b of addable) {
         const nm = b.name.trim();
+        // Same location-consistent estimate as the single-item confirm path.
+        const location = suggestStorageLocation(nm) ?? 'pantry';
         await addPantryItem({
           householdId: activeHouseholdId,
           userId,
           name: nm,
           brand: b.brand?.trim() || null,
           quantity: b.qty,
-          location: 'pantry',
-          expiresIso: suggestExpiryISO({ name: nm }),
+          location,
+          expiresIso: suggestExpiryISO({ name: nm, location }),
           source: basketSource(b.barcode),
         });
       }

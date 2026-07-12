@@ -45,7 +45,9 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
         name: staple.name,
         quantity: 1,
         location: staple.location,
-        expiresIso: staple.noExpiry ? null : suggestExpiryISO({ category: staple.category }),
+        expiresIso: staple.noExpiry
+          ? null
+          : suggestExpiryISO({ name: staple.name, category: staple.category, location: staple.location }),
         source: 'manual',
       });
       setAdded((prev) => [...prev, staple.name]);

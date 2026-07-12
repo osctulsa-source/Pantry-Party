@@ -267,11 +267,20 @@ export function CookModeView({
     .join('  ·  ');
 
   return (
-    <Modal visible animationType="slide" onRequestClose={onClose}>
+    // `transparent` matches the app's other (working) modals — the opaque
+    // fullScreen presentation was the one variant whose header taps died on
+    // device. The root view carries the solid surface background instead.
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.root} edges={['top', 'bottom', 'left', 'right']}>
         <View style={styles.header}>
-          <Pressable onPress={onClose} hitSlop={10} accessibilityRole="button" accessibilityLabel="Close cook mode">
-            <X size={24} color={tokens.color.ink} />
+          <Pressable
+            onPress={onClose}
+            style={styles.closeBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Close cook mode"
+          >
+            <X size={22} color={tokens.color.ink} />
           </Pressable>
           <Text style={styles.counter} numberOfLines={1}>
             {phase === 'prep' ? 'Get set up' : total > 0 ? `Step ${idx + 1} of ${total}` : 'Cook'}
@@ -480,7 +489,16 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space(3),
   },
   counter: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted, letterSpacing: 0.5 },
-  headerSpacer: { width: 24 },
+  // A real 40pt target (was a bare 24px icon) — mirrors RecipeDetail's backBtn.
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  headerSpacer: { width: 40 },
   track: {
     height: 4,
     marginHorizontal: tokens.space(5),

@@ -100,7 +100,11 @@ export function QuickAddScreen() {
         name: spec.name,
         quantity: 1,
         location: spec.location,
-        expiresIso: spec.noExpiry ? null : suggestExpiryISO({ name: spec.name, category: spec.category }),
+        // The staple's curated location feeds the estimate too, so a fridge
+        // staple gets a fridge duration (not the location-less default).
+        expiresIso: spec.noExpiry
+          ? null
+          : suggestExpiryISO({ name: spec.name, category: spec.category, location: spec.location }),
         source: 'manual',
       });
       setAdded((prev) => [...prev, spec.name]);
@@ -125,7 +129,9 @@ export function QuickAddScreen() {
         brand: result.brand,
         quantity: result.quantity,
         location: base.location,
-        expiresIso: base.noExpiry ? null : suggestExpiryISO({ name: result.name, category: base.category }),
+        expiresIso: base.noExpiry
+          ? null
+          : suggestExpiryISO({ name: result.name, category: base.category, location: base.location }),
         source: 'manual',
       });
       setAdded((prev) => (prev.includes(result.name) ? prev : [...prev, result.name]));
