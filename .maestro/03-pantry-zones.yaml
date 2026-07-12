@@ -1,0 +1,25 @@
+# Smoke: the pantry zone chips work and the screen survives each filter.
+# Catches: clipped/unreadable chip labels (tapOn matches rendered text — a
+# clipped/garbled label fails the tap), broken zone filtering, status-card
+# rendering regressions.
+appId: com.osctulsa.pantryparty.dev
+---
+- launchApp:
+    appId: com.osctulsa.pantryparty.dev
+- extendedWaitUntil:
+    visible: 'Pantry'
+    timeout: 30000
+- assertVisible: 'Add items'
+# Each chip carries an accessibility label "<Zone>, N items".
+- tapOn:
+    text: 'Drinks.*'
+- assertVisible: 'Add items'
+- tapOn:
+    text: 'Shelf-stable.*'
+- assertVisible: 'Add items'
+- tapOn:
+    text: 'Fresh.*'
+- assertVisible: 'Add items'
+- tapOn:
+    text: 'All.*'
+- assertVisible: 'Add items'

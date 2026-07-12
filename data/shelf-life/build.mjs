@@ -56,7 +56,7 @@ function toDays(min, max, metric) {
   return Math.max(1, Math.round(((a + b) / 2) * factor));
 }
 
-const raw = readFileSync(SRC, 'utf8').replace(/^﻿/, '');
+const raw = readFileSync(SRC, 'utf8').replace(/^\uFEFF/, '');
 const [header, ...dataRows] = parseCsv(raw).filter((r) => r.length > 1);
 const col = Object.fromEntries(header.map((h, i) => [h, i]));
 

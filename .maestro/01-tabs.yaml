@@ -1,0 +1,25 @@
+# Smoke: every tab renders its signature element.
+# Catches: dead tabs, crash-on-mount, broken navigation registration.
+# Precondition (all flows): dev build on a booted sim, signed in, some pantry data.
+appId: com.osctulsa.pantryparty.dev
+---
+- launchApp:
+    appId: com.osctulsa.pantryparty.dev
+- extendedWaitUntil:
+    visible: 'Pantry'
+    timeout: 30000
+- assertVisible: 'Add items'
+- tapOn: 'Cook'
+- extendedWaitUntil:
+    visible: 'Cook'
+    timeout: 15000
+- tapOn: 'Shopping'
+- extendedWaitUntil:
+    visible: 'Shopping'
+    timeout: 15000
+- tapOn: 'Settings'
+- extendedWaitUntil:
+    visible: 'Settings'
+    timeout: 15000
+- tapOn: 'Pantry'
+- assertVisible: 'Add items'

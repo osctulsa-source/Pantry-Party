@@ -1,0 +1,34 @@
+# Smoke: cook mode can always be entered AND exited.
+# Catches: the "dead X, no way back" class of bug. Data-dependent (needs a
+# recipe with steps to load on the Cook tab) — treat a failure here as a
+# yellow flag and verify by hand before shipping.
+appId: com.osctulsa.pantryparty.dev
+---
+- launchApp:
+    appId: com.osctulsa.pantryparty.dev
+- extendedWaitUntil:
+    visible: 'Pantry'
+    timeout: 30000
+- tapOn: 'Cook'
+# Recipe cards need the network — give them time, then open the first one via
+# the always-present "pick for me" affordance (stable label, unlike card text).
+- extendedWaitUntil:
+    visible: 'Not sure? Pick one for me'
+    timeout: 45000
+- tapOn: 'Not sure? Pick one for me'
+- extendedWaitUntil:
+    visible: 'Ingredients'
+    timeout: 20000
+- scrollUntilVisible:
+    element: 'Start cooking'
+    direction: DOWN
+    timeout: 20000
+- tapOn: 'Start cooking'
+- extendedWaitUntil:
+    visible: 'Get set up'
+    timeout: 15000
+# THE regression test: the close button must actually close cook mode.
+- tapOn: 'Close cook mode'
+- extendedWaitUntil:
+    visible: 'Ingredients'
+    timeout: 15000
