@@ -1034,13 +1034,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(3),
     borderRadius: 999,
   },
-  // Explicit lineHeight: Nunito Sans clips vertically on iOS without it —
-  // invisible on the soft chip fill, obvious once a selected chip goes accent.
-  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 18 },
+  // Nunito Sans sits high in its line box on iOS: a tight lineHeight clips the
+  // ascenders/digits (the glyph is drawn above the frame and cropped). A prior
+  // pass set lineHeight 18 — still too tight (obvious once a chip goes accent).
+  // Give it generous headroom + a little vertical padding so the frame fully
+  // contains the glyph on every device.
+  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 22, paddingVertical: 2 },
   zoneChipCount: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
-    lineHeight: 16,
+    lineHeight: 20,
+    paddingVertical: 2,
     fontVariant: ['tabular-nums'],
   },
   scroll: { paddingBottom: tokens.space(10) },
