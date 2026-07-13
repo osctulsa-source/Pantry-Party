@@ -12,7 +12,8 @@ import type { Paint } from './brandGlyphs.core';
 export type PantryFoodName =
   | 'floursack' | 'sugarbowl' | 'sugarbag' | 'sodabox' | 'powdertin' | 'saltshaker' | 'yeastpacket'
   | 'oliveoilbottle' | 'oiljug' | 'soybottle' | 'ketchupbottle' | 'mustardbottle' | 'mayojar' | 'hotsaucebottle' | 'vinegarflask' | 'honeypot'
-  | 'ricebowl' | 'spaghetti' | 'oatcanister' | 'tomatocan' | 'beancan' | 'stockcarton' | 'peppergrinder';
+  | 'ricebowl' | 'spaghetti' | 'oatcanister' | 'tomatocan' | 'beancan' | 'stockcarton' | 'peppergrinder'
+  | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish';
 
 export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode> = {
   // Rolled-top flour sack, stitch marks.
@@ -225,6 +226,78 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Path d="M20 32 h8" fill="none" stroke={cut} />
     </>
   ),
+  // Tumbler with a wave line.
+  waterglass: ({ body, cut }) => (
+    <>
+      <Path d="M17 13 h14 l-2 25 q0 2 -2 2 h-6 q-2 0 -2 -2 Z" fill={body} />
+      <Path d="M19 22 q2.5 -2 5 0 t5 0" fill="none" stroke={cut} />
+    </>
+  ),
+  // Tall sparkling bottle with rising bubbles.
+  fizzybottle: ({ body, cut }) => (
+    <>
+      <Path d="M21 10 h6 v6 q4 3 4 8 v13 q0 3 -3 3 h-8 q-3 0 -3 -3 V24 q0 -5 4 -8 Z" fill={body} />
+      <Circle cx={22} cy={33} r={1.3} fill={cut} />
+      <Circle cx={26} cy={29} r={1.3} fill={cut} />
+      <Circle cx={23} cy={25} r={1.1} fill={cut} />
+    </>
+  ),
+  // Juice carton with a fruit-circle label and a straw.
+  juicecarton: ({ body, cut }) => (
+    <>
+      <Path d="M16 20 h16 v18 q0 2 -2 2 H18 q-2 0 -2 -2 Z" fill={body} />
+      <Path d="M16 20 L20 12 h8 l4 8 Z" fill={body} />
+      <Path d="M28 12 l4 -5" fill="none" stroke={body} />
+      <Circle cx={24} cy={29} r={4} fill={cut} />
+    </>
+  ),
+  // Mug with a handle and steam curls (exterior marks use body).
+  coffeemug: ({ body, cut }) => (
+    <>
+      <Rect x={14} y={20} width={16} height={17} rx={3} fill={body} />
+      <Path d="M30 24 q6 1 4 8 q-1 3 -4 2" fill="none" stroke={body} />
+      <Path d="M19 16 q2 -3 0 -6 M25 16 q2 -3 0 -6" fill="none" stroke={body} />
+      <Path d="M18 27 h8" fill="none" stroke={cut} />
+    </>
+  ),
+  // Teacup on a saucer, tag string over the rim (leaf-green tag: natural).
+  teacup: ({ body, cut, leaf }) => (
+    <>
+      <Path d="M14 22 h18 v5 q0 8 -9 8 q-9 0 -9 -8 Z" fill={body} />
+      <Path d="M32 24 q5 1 3 6 q-1 2 -3 1.5" fill="none" stroke={body} />
+      <Ellipse cx={23} cy={38} rx={11} ry={2} fill={body} />
+      <Path d="M30 22 l4 -7" fill="none" stroke={body} />
+      <Rect x={32.5} y={10} width={5} height={5} rx={1} fill={leaf} />
+      <Path d="M17 26 h8" fill="none" stroke={cut} />
+    </>
+  ),
+  // Slim soda can with a pull tab and a swoosh.
+  sodacan: ({ body, cut }) => (
+    <>
+      <Rect x={17} y={14} width={14} height={26} rx={3} fill={body} />
+      <Path d="M17 17.5 h14" fill="none" stroke={cut} />
+      <Circle cx={22} cy={16} r={1.2} fill={cut} />
+      <Path d="M20 34 q6 -8 8 -12" fill="none" stroke={cut} />
+    </>
+  ),
+  // Rounded milk jug with a cap, side handle, and label band.
+  milkjug: ({ body, cut }) => (
+    <>
+      <Path d="M19 14 h10 v5 l4 7 v10 q0 4 -4 4 H19 q-4 0 -4 -4 V26 l4 -7 Z" fill={body} />
+      <Rect x={20} y={10} width={8} height={4} rx={1} fill={body} />
+      <Path d="M33 25 q4 3 2 8" fill="none" stroke={body} />
+      <Path d="M17 31 h14" fill="none" stroke={cut} />
+    </>
+  ),
+  // Covered butter dish: base, dome, knob, pat line.
+  butterdish: ({ body, cut }) => (
+    <>
+      <Path d="M13 34 h22 l-2 4 H15 Z" fill={body} />
+      <Path d="M16 34 q0 -12 8 -12 q8 0 8 12 Z" fill={body} />
+      <Circle cx={24} cy={19} r={2} fill={body} />
+      <Path d="M19 30 h6" fill="none" stroke={cut} />
+    </>
+  ),
 };
 
 /** Natural ground per pantry glyph — merged into BrandIcon's FOOD_TONE. */
@@ -236,4 +309,6 @@ export const PANTRY_TONE: Record<PantryFoodName, BrandTone> = {
   honeypot: 'ochre',
   ricebowl: 'terracotta', spaghetti: 'ochre', oatcanister: 'cocoa', tomatocan: 'brick',
   beancan: 'cocoa', stockcarton: 'spruce', peppergrinder: 'cocoa',
+  waterglass: 'blue', fizzybottle: 'spruce', juicecarton: 'terracotta', coffeemug: 'cocoa',
+  teacup: 'fern', sodacan: 'plum', milkjug: 'blue', butterdish: 'ochre',
 } as const;
