@@ -43,6 +43,7 @@ import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
 import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
+import { useShoppingWidget } from './src/features/widget/useShoppingWidget';
 import { FavoriteStoresScreen } from './src/features/settings/FavoriteStoresScreen';
 import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
@@ -81,15 +82,23 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     screens: {
       JoinHousehold: 'invite/:code',
+      // Widget tap targets (see features/widget/widgetLinks.ts).
+      ExpiringSoon: 'expiring',
+      MainTabs: {
+        screens: {
+          ShoppingTab: 'shopping',
+        },
+      },
     },
   },
 };
 
 function AppStack() {
-  // Keep the lock-screen / home widget's "expiring soon" snapshot in sync with
-  // the live pantry while the user is in the authenticated tree (iOS-only,
-  // best-effort — see useExpiringWidget).
+  // Keep the home/lock-screen widgets in sync with the live pantry and
+  // shopping list while the user is in the authenticated tree (iOS-only,
+  // best-effort — see useExpiringWidget / useShoppingWidget).
   useExpiringWidget();
+  useShoppingWidget();
 
   return (
     <Stack.Navigator
