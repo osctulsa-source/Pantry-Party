@@ -33,8 +33,11 @@ import {
   isInSeason,
   peakSeason,
   recipesUsingFood,
+  recipesWithinReach,
+  signatureRecipe,
   type CollectionSet,
   type MasteryTier,
+  type PantryItem,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { useCollections } from './useCollections';
@@ -42,6 +45,7 @@ import { CollectionGlyph } from './collectionIcons';
 import { RECIPE_CATALOG } from './useRecipeCollections';
 import { useReduceMotion } from '../../components/useReduceMotion';
 import { BrandLoader, BrandOrnament } from '../../components/BrandDecor';
+import { usePantryItems } from '../pantry/usePantryItems';
 
 /** Medal for a set's mastery tier (gold shows as 🏆 next to the title instead). */
 function tierMedal(tier: MasteryTier): string | null {
@@ -71,11 +75,12 @@ function Bob({ enabled, delay = 0, children }: { enabled: boolean; delay?: numbe
 }
 
 export function CollectionsScreen() {
-  const { collections, isLoading } = useCollections();
+  const { collections, isLoading: collectionsLoading } = useCollections();
+  const { items: pantryItems, isLoading: pantryLoading } = usePantryItems();
   const reduce = useReduceMotion();
   const [detail, setDetail] = useState<CollectionSet | null>(null);
 
-  if (isLoading) {
+  if (collectionsLoading || pantryLoading) {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
@@ -130,10 +135,34 @@ export function CollectionsScreen() {
         renderItem={({ item, index }) => (
           <SetCard set={item} index={index} reduce={reduce} onOpen={setDetail} />
         )}
-        ListFooterComponent={<UndiscoveredSection reduce={reduce} />}
+        ListFooterComponent={<UndiscoveredSection reduce={reduce} pantryItems={pantryItems} />}
       />
       <CardBackModal set={detail} onClose={() => setDetail(null)} />
     </SafeAreaView>
+  );
+}
+
+function SeasonalGlow({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+  const opacity = useRef(new Animated.Value(0.15)).current;
+  useEffect(() => {
+    if (!enabled) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.5, duration: 1200, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.15, duration: 1200, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [enabled, opacity]);
+
+  if (!enabled) return <>{children}</>;
+
+  return (
+    <View style={styles.glowContainer}>
+      <Animated.View style={[styles.glowRing, { opacity }]} />
+      {children}
+    </View>
   );
 }
 
@@ -151,6 +180,8 @@ function SetCard({
   const pct = set.total > 0 ? set.count / set.total : 0;
   const started = set.count > 0;
   const medal = tierMedal(set.tier);
+  const season = isInSeason(set.food);
+
   return (
     <Pressable
       style={styles.card}
@@ -160,12 +191,14 @@ function SetCard({
       accessibilityHint="Opens details — what's in season and recipes that use it"
     >
       <View style={styles.cardRow}>
-        <View style={[styles.emblem, started && styles.emblemOn]}>
-          <Bob enabled={started && !reduce} delay={(index % 5) * 200}>
-            <CollectionGlyph name={set.food} collected={started} size={40} />
-          </Bob>
-          {medal && <Text style={styles.emblemMedal}>{medal}</Text>}
-        </View>
+        <SeasonalGlow enabled={season === true && !reduce}>
+          <View style={[styles.emblem, started && styles.emblemOn, season === true && styles.emblemInSeason]}>
+            <Bob enabled={started && !reduce} delay={(index % 5) * 200}>
+              <CollectionGlyph name={set.food} collected={started} size={40} />
+            </Bob>
+            {medal && <Text style={styles.emblemMedal}>{medal}</Text>}
+          </View>
+        </SeasonalGlow>
 
         <View style={styles.cardBody}>
           <View style={styles.cardHead}>
@@ -206,6 +239,7 @@ function CardBackModal({ set, onClose }: { set: CollectionSet | null; onClose: (
   const peak = set ? peakSeason(set.food) : null;
   // Recipes that use any variety of this food — the food→recipe link.
   const recipes = set ? recipesUsingFood(set.food, RECIPE_CATALOG).slice(0, 6) : [];
+  const sigRecipe = set && set.complete ? signatureRecipe(set.food, RECIPE_CATALOG) : null;
 
   return (
     <Modal visible={set !== null} transparent animationType="fade" onRequestClose={onClose}>
@@ -230,6 +264,16 @@ function CardBackModal({ set, onClose }: { set: CollectionSet | null; onClose: (
                   <Text style={season ? styles.pillTextOn : styles.pillTextOff}>
                     {season ? '● In season now' : '○ Out of season'}
                     {peak ? ` · peak in ${peak}` : ''}
+                  </Text>
+                </View>
+              )}
+
+              {sigRecipe && (
+                <View style={styles.sigCard}>
+                  <Text style={styles.sigTitle}>🏆 Signature Dish Unlocked</Text>
+                  <Text style={styles.sigName}>{sigRecipe.title}</Text>
+                  <Text style={styles.sigDesc}>
+                    You collected every variety of {set?.title}! Try cooking this classic recipe.
                   </Text>
                 </View>
               )}
@@ -286,7 +330,10 @@ const DISCOVERIES: Discovery[] = [
 ];
 const PURE = ['Keep exploring', 'More to come'];
 
-function UndiscoveredSection({ reduce }: { reduce: boolean }) {
+function UndiscoveredSection({ reduce, pantryItems }: { reduce: boolean; pantryItems: PantryItem[] }) {
+  const pantryNames = pantryItems.map((i) => i.name);
+  const withinReach = recipesWithinReach(RECIPE_CATALOG, pantryNames, 2);
+
   return (
     <View style={styles.footer}>
       <View style={styles.divider}>
@@ -305,12 +352,25 @@ function UndiscoveredSection({ reduce }: { reduce: boolean }) {
         <View style={styles.cookBody}>
           <Text style={styles.cookTitle}>Recipes within reach</Text>
           <Text style={styles.cookText}>
-            New dishes quietly unlock as your shelves fill — collect a little more and see what
-            you can cook.
+            {withinReach.length > 0
+              ? 'You are so close to cooking these dishes — just a few ingredients away!'
+              : 'New dishes quietly unlock as your shelves fill — collect a little more and see what you can cook.'}
           </Text>
           <View style={styles.cookChips}>
-            <View style={styles.rchip}><Text style={styles.rchipText}>? · ? · ?</Text></View>
-            <View style={styles.rchip}><Text style={styles.rchipText}>? · ? · ?</Text></View>
+            {withinReach.length > 0 ? (
+              withinReach.slice(0, 2).map((match) => (
+                <View key={match.recipe.id} style={styles.rchip}>
+                  <Text style={styles.rchipText}>
+                    {match.recipe.title} (need {match.missing.length})
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <>
+                <View style={styles.rchip}><Text style={styles.rchipText}>? · ? · ?</Text></View>
+                <View style={styles.rchip}><Text style={styles.rchipText}>? · ? · ?</Text></View>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -604,4 +664,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeBtnText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
+
+  // Seasonal glow
+  glowContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glowRing: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: tokens.radius.md + 4,
+    backgroundColor: '#E0B85A',
+  },
+  emblemInSeason: {
+    borderColor: '#E0B85A',
+    borderWidth: 1.5,
+  },
+
+  // Signature card back
+  sigCard: {
+    backgroundColor: tokens.color.accentSoft,
+    borderWidth: 1.5,
+    borderColor: '#E0B85A',
+    borderRadius: tokens.radius.md,
+    padding: tokens.space(4),
+    marginBottom: tokens.space(5),
+  },
+  sigTitle: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 14,
+    color: tokens.color.accent,
+    marginBottom: tokens.space(1),
+  },
+  sigName: {
+    fontFamily: tokens.font.display.bold,
+    fontSize: 18,
+    color: tokens.color.ink,
+    marginBottom: tokens.space(1),
+  },
+  sigDesc: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+    lineHeight: 18,
+  },
 });

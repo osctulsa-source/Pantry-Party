@@ -11,12 +11,12 @@
     "test": "jest"
   },
   "dependencies": {
-    "@bacons/apple-targets": "^4.0.7",
     "@breadbox/core": "*",
     "@expo-google-fonts/bitter": "^0.4.1",
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/nunito-sans": "^0.4.2",
     "@expo-google-fonts/source-serif-4": "^0.4.1",
+    "@expo/ui": "~56.0.21",
     "@op-engineering/op-sqlite": "^16.2.0",
     "@powersync/common": "^1.53.2",
     "@powersync/op-sqlite": "^0.9.9",
@@ -42,6 +42,7 @@
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "expo-updates": "~56.0.21",
+    "expo-widgets": "~56.0.22",
     "lucide-react-native": "latest",
     "react": "19.2.3",
     "react-native": "0.85.3",
