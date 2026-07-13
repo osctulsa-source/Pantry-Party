@@ -81,6 +81,14 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     screens: {
       JoinHousehold: 'invite/:code',
+      MainTabs: {
+        screens: {
+          PantryTab: 'pantry',
+          CookTab: 'cook',
+          ShoppingTab: 'shopping',
+          SettingsTab: 'settings',
+        },
+      },
     },
   },
 };

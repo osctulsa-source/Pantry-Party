@@ -653,7 +653,16 @@ export function PantryScreen() {
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={zoneTheme.accent} />}
             >
           {grouped.expired.count > 0 && (
-            <StatusCard status="expired" count={grouped.expired.count} zoneTheme={zoneTheme}>
+            <StatusCard
+              status="expired"
+              count={grouped.expired.count}
+              zoneTheme={zoneTheme}
+              onHeaderPress={() => navigation.navigate('ExpiringSoon')}
+              onCook={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                navigation.navigate('CookTab', { focus: 'useItUp' });
+              }}
+            >
               {renderRows(grouped.expired.groups)}
             </StatusCard>
           )}
@@ -662,9 +671,10 @@ export function PantryScreen() {
               status="warning"
               count={grouped.warning.count}
               zoneTheme={zoneTheme}
+              onHeaderPress={() => navigation.navigate('ExpiringSoon')}
               onCook={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                navigation.navigate('CookTab');
+                navigation.navigate('CookTab', { focus: 'useItUp' });
               }}
             >
               {renderRows(grouped.warning.groups)}
@@ -740,6 +750,7 @@ function StatusCard({
   collapsed,
   onToggle,
   onCook,
+  onHeaderPress,
   children,
 }: {
   status: ExpiryStatus;
@@ -748,6 +759,8 @@ function StatusCard({
   collapsed?: boolean;
   onToggle?: () => void;
   onCook?: () => void;
+  /** Tap the title row (e.g. open ExpiringSoon). Ignored when onToggle is set. */
+  onHeaderPress?: () => void;
   children: ReactNode;
 }) {
   const meta = STATUS_CARD[status];
@@ -757,14 +770,21 @@ function StatusCard({
   const accent = status === 'fresh' ? zoneTheme.accent : meta.accent;
   const tint = status === 'fresh' ? zoneTheme.soft : meta.tint;
   const collapsible = onToggle !== undefined;
+  const headerPress = onToggle ?? onHeaderPress;
   return (
     <View style={[styles.card, { backgroundColor: tint }]}>
       <Pressable
         style={styles.cardHeader}
-        onPress={onToggle}
-        disabled={!collapsible}
-        accessibilityRole={collapsible ? 'button' : undefined}
-        accessibilityLabel={collapsible ? `${meta.title}, ${count} items, ${collapsed ? 'collapsed' : 'expanded'}` : undefined}
+        onPress={headerPress}
+        disabled={!headerPress}
+        accessibilityRole={headerPress ? 'button' : undefined}
+        accessibilityLabel={
+          collapsible
+            ? `${meta.title}, ${count} items, ${collapsed ? 'collapsed' : 'expanded'}`
+            : onHeaderPress
+              ? `${meta.title}, ${count} items — view all`
+              : undefined
+        }
       >
         <View style={styles.cardHeaderLeft}>
           <View style={[styles.statusDot, { backgroundColor: accent }]} />

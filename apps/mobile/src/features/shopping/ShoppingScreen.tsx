@@ -216,13 +216,73 @@ export function ShoppingScreen() {
 
   async function clearChecked() {
     if (done.length === 0 || busy) return;
+    Alert.alert(
+      'Clear checked items?',
+      `Remove ${done.length} checked ${done.length === 1 ? 'item' : 'items'} from the list without adding them to the pantry.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              setBusy(true);
+              animate();
+              try {
+                const db = getPowerSync();
+                const now = Date.now();
+                await db.writeTransaction(async (tx) => {
+                  for (const item of done) {
+                    await tx.execute(
+                      'UPDATE shopping_list_items SET deleted = 1, updated_at = ? WHERE id = ?',
+                      [now, item.id],
+                    );
+                  }
+                });
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+              } catch (e: unknown) {
+                Alert.alert('Could not clear', e instanceof Error ? e.message : 'Try again.');
+              } finally {
+                setBusy(false);
+              }
+            })();
+          },
+        },
+      ],
+    );
+  }
+
+  /** Bulk unload: every checked row → pantry, then off the list. */
+  async function stockAllChecked() {
+    if (done.length === 0 || busy || !userId || !activeHouseholdId) return;
     setBusy(true);
     animate();
     try {
+      const snapshot = [...done];
+      for (const item of snapshot) {
+        await addPantryItem({
+          householdId: activeHouseholdId,
+          userId,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit ?? null,
+          location: 'pantry',
+          expiresIso: suggestExpiryISO({ name: item.name, location: 'pantry' }),
+          source: 'restock',
+        });
+        void recordActivity({
+          householdId: activeHouseholdId,
+          userId,
+          kind: 'restocked',
+          label: item.name,
+          quantity: item.quantity,
+          unit: item.unit ?? null,
+        }).catch(() => {});
+      }
       const db = getPowerSync();
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
-        for (const item of done) {
+        for (const item of snapshot) {
           await tx.execute('UPDATE shopping_list_items SET deleted = 1, updated_at = ? WHERE id = ?', [
             now,
             item.id,
@@ -231,7 +291,7 @@ export function ShoppingScreen() {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e: unknown) {
-      Alert.alert('Could not clear', e instanceof Error ? e.message : 'Try again.');
+      Alert.alert('Could not stock all', e instanceof Error ? e.message : 'Try again.');
     } finally {
       setBusy(false);
     }
@@ -258,9 +318,14 @@ export function ShoppingScreen() {
         watermarkTone="blue"
         right={
           done.length > 0 ? (
-            <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
-              <Text style={styles.clear}>Clear done</Text>
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable onPress={() => void stockAllChecked()} hitSlop={8} disabled={busy}>
+                <Text style={styles.clear}>Stock all</Text>
+              </Pressable>
+              <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
+                <Text style={styles.clearMuted}>Clear done</Text>
+              </Pressable>
+            </View>
           ) : undefined
         }
       />
@@ -291,7 +356,14 @@ export function ShoppingScreen() {
         sections={sections}
         keyExtractor={(i) => i.id}
         stickySectionHeadersEnabled={false}
-        renderSectionHeader={({ section }) => <Text style={styles.sectionTitle}>{section.title}</Text>}
+        renderSectionHeader={({ section }) => (
+          <View style={styles.sectionHead}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            {section.title === 'In the cart' ? (
+              <Text style={styles.sectionHint}>Tap Stocked ✓ to add to pantry</Text>
+            ) : null}
+          </View>
+        )}
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
@@ -363,7 +435,9 @@ export function ShoppingScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
-  clear: { paddingTop: tokens.space(2), fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingTop: tokens.space(2) },
+  clear: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  clearMuted: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted },
   addRow: { flexDirection: 'row', gap: tokens.space(2), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   input: {
     flex: 1,
@@ -385,15 +459,23 @@ const styles = StyleSheet.create({
   addBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.onAccent },
   list: { paddingBottom: tokens.space(8) },
   listEmpty: { flexGrow: 1 },
+  sectionHead: {
+    paddingHorizontal: tokens.space(6),
+    paddingTop: tokens.space(4),
+    paddingBottom: tokens.space(2),
+  },
   sectionTitle: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
     color: tokens.color.inkMuted,
-    paddingHorizontal: tokens.space(6),
-    paddingTop: tokens.space(4),
-    paddingBottom: tokens.space(2),
+  },
+  sectionHint: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 12,
+    color: tokens.color.inkMuted,
+    marginTop: 2,
   },
   row: {
     flexDirection: 'row',

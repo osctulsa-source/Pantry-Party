@@ -17,6 +17,8 @@
  * addPantryItem with the smart-expiry suggester. OFF misses never dead-end:
  * confirm mode shows the card with an empty name; basket mode keeps the row as
  * "name this" in review. Every scan records hit/miss to the on-device scanLog.
+ * Household barcode memory: corrected names are stored with the UPC on the
+ * pantry row and preferred over Open Food Facts on the next scan of that code.
  */
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -43,6 +45,10 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useFavoriteStores } from '../settings/useFavoriteStores';
 import { lookupBarcode, type OffProduct } from '../../data/openFoodFacts';
+import {
+  isRetailBarcode,
+  lookupHouseholdBarcode,
+} from '../../data/lookupHouseholdBarcode';
 import { recordScan } from './scanLog';
 import { ScanReviewSheet, type ScanBasketItem } from './ScanReviewSheet';
 import { resolveScanPayload } from './resolveScanPayload';
@@ -201,7 +207,19 @@ export function ScanScreen() {
 
   async function handleRetailBarcode(code: string) {
     setPhase({ kind: 'looking', barcode: code });
-    const product = await lookupBarcode(code);
+    // Household memory wins over OFF so a prior correction sticks on re-scan.
+    const [household, off] = await Promise.all([
+      activeHouseholdId ? lookupHouseholdBarcode(activeHouseholdId, code) : Promise.resolve(null),
+      lookupBarcode(code),
+    ]);
+    const product: OffProduct | null = household
+      ? {
+          name: household.name,
+          brand: household.brand,
+          quantityText: off?.quantityText ?? null,
+          imageUrl: off?.imageUrl ?? null,
+        }
+      : off;
     void recordScan(activeHouseholdId, code, product?.name != null);
 
     if (mode === 'confirm') {
@@ -230,7 +248,11 @@ export function ScanScreen() {
         },
       ];
     });
-    setLastAdded(product?.name || 'Unknown item — needs a name');
+    setLastAdded(
+      household
+        ? product?.name ?? 'Unknown item — needs a name'
+        : product?.name || 'Unknown item — needs a name',
+    );
     Haptics.notificationAsync(
       product?.name != null
         ? Haptics.NotificationFeedbackType.Success
@@ -331,6 +353,7 @@ export function ScanScreen() {
         userId,
         name: trimmed,
         brand: brand.trim() || null,
+        barcode: isRetailBarcode(phase.barcode) ? phase.barcode : null,
         quantity: 1,
         location,
         expiresIso: suggestExpiryISO({ name: trimmed, location }),
@@ -352,6 +375,11 @@ export function ScanScreen() {
 
   function renameBasket(key: string, value: string) {
     setBasket((prev) => prev.map((b) => (b.key === key ? { ...b, name: value } : b)));
+  }
+  function rebrandBasket(key: string, value: string) {
+    setBasket((prev) =>
+      prev.map((b) => (b.key === key ? { ...b, brand: value.trim() || null } : b)),
+    );
   }
   function qtyBasket(key: string, delta: number) {
     setBasket((prev) =>
@@ -377,6 +405,7 @@ export function ScanScreen() {
           userId,
           name: nm,
           brand: b.brand?.trim() || null,
+          barcode: isRetailBarcode(b.barcode) ? b.barcode : null,
           quantity: b.qty,
           location,
           expiresIso: suggestExpiryISO({ name: nm, location }),
@@ -713,6 +742,7 @@ export function ScanScreen() {
         storeLabel={detectedStore}
         onClose={() => setReviewOpen(false)}
         onRename={renameBasket}
+        onRebrand={rebrandBasket}
         onQty={qtyBasket}
         onRemove={removeBasket}
         onAddAll={() => void onAddAll()}

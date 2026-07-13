@@ -34,7 +34,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { categorizeByName, matchCookedItems, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
+import { categorizeByName, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { CategoryIcon } from '../pantry/CategoryIcon';
 import { useReduceMotion } from '../../components/useReduceMotion';
@@ -45,10 +45,12 @@ import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useFavorites } from './useFavorites';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
+import { buildCookedSheetItems } from './buildCookedSheetItems';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookModeView } from './CookModeView';
 import { fetchRecipeInstructions } from '../../data/spoonacular/client';
 import type { RecipeInstructionGroup } from '../../data/spoonacular/types';
+import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -208,24 +210,11 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     return new Map(swaps.map((s) => [s.missingIngredient.toLowerCase(), s]));
   }, [recipe.ingredients, usedLc, items]);
 
-  // Same matching the Cook tab uses: matched pantry items pre-selected; if the
-  // API gave us no names, fall back to the whole pantry defaulting to "Kept".
-  const sheetItems = useMemo<CookedSheetItem[]>(() => {
-    const matches = matchCookedItems(
-      recipe.usedIngredientNames,
-      items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
-    );
-    if (matches.length > 0) {
-      return matches.map((m) => ({
-        itemId: m.itemId,
-        itemName: m.itemName,
-        quantity: m.quantity,
-        matched: true,
-        matchedIngredient: m.matchedIngredient,
-      }));
-    }
-    return items.map((i) => ({ itemId: i.id, itemName: i.name, quantity: i.quantity, matched: false }));
-  }, [recipe.usedIngredientNames, items]);
+  // Same matching the Cook tab uses — never dump the whole pantry.
+  const sheetItems = useMemo<CookedSheetItem[]>(
+    () => buildCookedSheetItems(recipe.usedIngredientNames, items),
+    [recipe.usedIngredientNames, items],
+  );
 
   async function onAddMissing() {
     if (!activeHouseholdId || !userId || recipe.missedIngredientNames.length === 0) return;
@@ -321,6 +310,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const summary = recipe.summary ? shortSummary(recipe.summary) : '';
   const hasSteps = effectiveInstructions.some((g) => g.steps.length > 0);
   const showHealth = recipe.healthScore !== null && recipe.healthScore >= 55;
+  const imageSource = resolveRecipeImageSource(recipe);
 
   return (
     <View style={styles.root}>
@@ -330,8 +320,8 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.heroWrap}>
-          {recipe.image ? (
-            <Image source={{ uri: recipe.image }} style={styles.hero} />
+          {imageSource ? (
+            <Image source={imageSource} style={styles.hero} />
           ) : (
             <View style={[styles.hero, styles.heroFallback]} />
           )}

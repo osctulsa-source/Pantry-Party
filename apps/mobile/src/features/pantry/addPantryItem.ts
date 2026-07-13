@@ -23,6 +23,8 @@ export interface NewPantryItem {
   name: string;
   /** Optional brand (e.g. "Horizon"). null when unspecified. */
   brand?: string | null;
+  /** Retail UPC/EAN when the item came from a barcode scan — enables re-scan memory. */
+  barcode?: string | null;
   quantity: number;
   /** Canonical UNITS value or null for unitless counts (UnitPicker). */
   unit?: string | null;
@@ -35,14 +37,15 @@ export async function addPantryItem(input: NewPantryItem): Promise<void> {
   const db = getPowerSync();
   await db.execute(
     `INSERT INTO pantry_items
-       (id, household_id, name, category, brand, quantity, unit, location, expires_at, added_at, source, added_by, updated_at, deleted)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (id, household_id, name, category, brand, barcode, quantity, unit, location, expires_at, added_at, source, added_by, updated_at, deleted)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       Crypto.randomUUID(),
       input.householdId,
       input.name,
       categorizeByName(input.name) ?? null,
       input.brand ?? null,
+      input.barcode ?? null,
       input.quantity,
       input.unit ?? null,
       input.location,

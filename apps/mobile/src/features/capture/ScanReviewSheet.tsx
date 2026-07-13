@@ -47,6 +47,7 @@ export function ScanReviewSheet({
   storeLabel,
   onClose,
   onRename,
+  onRebrand,
   onQty,
   onRemove,
   onAddAll,
@@ -58,6 +59,7 @@ export function ScanReviewSheet({
   storeLabel?: string | null;
   onClose: () => void;
   onRename: (key: string, name: string) => void;
+  onRebrand: (key: string, brand: string) => void;
   onQty: (key: string, delta: number) => void;
   onRemove: (key: string) => void;
   onAddAll: () => void;
@@ -94,7 +96,6 @@ export function ScanReviewSheet({
               ) : (
                 items.map((it) => {
                   const unnamed = it.name.trim().length === 0;
-                  const meta = [it.brand, it.sizeText].filter(Boolean).join(' · ');
                   return (
                     <View key={it.key} style={[styles.row, unnamed && styles.rowUnknown]}>
                       {it.imageUrl ? (
@@ -111,8 +112,20 @@ export function ScanReviewSheet({
                           placeholderTextColor={tokens.color.warning}
                           maxLength={100}
                         />
+                        <TextInput
+                          style={styles.brandInput}
+                          value={it.brand ?? ''}
+                          onChangeText={(t) => onRebrand(it.key, t)}
+                          placeholder="Brand (optional)"
+                          placeholderTextColor={tokens.color.inkMuted}
+                          maxLength={60}
+                        />
                         <Text style={styles.rsub} numberOfLines={1}>
-                          {unnamed ? `Unknown barcode · ${it.barcode}` : meta || it.barcode}
+                          {unnamed
+                            ? `Unknown barcode · ${it.barcode}`
+                            : it.sizeText
+                              ? `${it.sizeText} · ${it.barcode}`
+                              : it.barcode}
                         </Text>
                       </View>
                       <View style={styles.stepper}>
@@ -191,7 +204,7 @@ const styles = StyleSheet.create({
   empty: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted, paddingVertical: tokens.space(6), textAlign: 'center' },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: tokens.space(3),
     paddingVertical: tokens.space(2),
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -208,6 +221,13 @@ const styles = StyleSheet.create({
   thumbEmpty: { borderWidth: 1, borderColor: tokens.color.line },
   rtext: { flex: 1, minWidth: 0 },
   nameInput: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.ink, padding: 0 },
+  brandInput: {
+    fontFamily: tokens.font.body.regular,
+    fontSize: 12.5,
+    color: tokens.color.inkMuted,
+    padding: 0,
+    marginTop: 2,
+  },
   nameInputUnknown: { color: tokens.color.warning },
   rsub: { fontFamily: tokens.font.body.regular, fontSize: 11, color: tokens.color.inkMuted, marginTop: 2 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), flex: 0 },

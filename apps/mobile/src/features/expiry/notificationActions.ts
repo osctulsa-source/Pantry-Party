@@ -11,6 +11,8 @@
  * ExpiringSoonScreen's semantics). The pantry's reactive query picks up the
  * change and the reconciler reschedules around it.
  *
+ * Body tap (DEFAULT_ACTION) opens Cook with use-it-up focus via navigationRef.
+ *
  * Killed-app caveat (accepted): with opensAppToForeground: false the system
  * delivers the action without opening the app; if the JS process isn't
  * running, expo-notifications surfaces the response on next launch via

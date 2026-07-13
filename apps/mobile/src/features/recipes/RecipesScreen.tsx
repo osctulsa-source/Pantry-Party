@@ -58,21 +58,26 @@ import {
   Users,
   X,
 } from 'lucide-react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   buildTasteProfile,
+  COOKING_DEVICES,
   defaultMealForHour,
+  detectDevices,
+  formatDeviceBadge,
   formatUseItUpBadge,
   getExpiryStatus,
-  matchCookedItems,
   mealtimeLabel,
+  scoreDeviceBoost,
   scoreTitle,
   scoreUseItUp,
   seedPrefsFromTaste,
   suggestSubstitutes,
   titleCaseIngredient,
+  type CookingDevice,
   type MealType,
   type PantryItem,
   type PrefEvent,
@@ -91,13 +96,17 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useTasteProfile } from './useTasteProfile';
+import { useTonightDevices } from './useTonightDevices';
 import { useFavorites } from './useFavorites';
 import { useActivity } from '../activity/useActivity';
 import { CookErrorArt } from '../../components/illustrations/CookErrorArt';
 import { CookedItSheet, type CookedSheetItem } from './CookedItSheet';
+import { buildCookedSheetItems } from './buildCookedSheetItems';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
+import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
+import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
 const CARD_W = Dimensions.get('window').width;
@@ -165,16 +174,19 @@ function hasInstructions(r: SpoonacularRecipe): boolean {
 function RecipeRow({
   recipe,
   useItUp,
+  deviceBadge,
   onOpen,
 }: {
   recipe: SpoonacularRecipe;
   useItUp: { badge: string | null; expired: boolean } | null;
+  deviceBadge: string | null;
   onOpen: (r: SpoonacularRecipe) => void;
 }) {
+  const imageSource = resolveRecipeImageSource(recipe);
   return (
     <Pressable style={styles.altRow} onPress={() => onOpen(recipe)}>
-      {recipe.image ? (
-        <Image source={{ uri: recipe.image }} style={styles.altThumb} />
+      {imageSource ? (
+        <Image source={imageSource} style={styles.altThumb} />
       ) : (
         <View style={[styles.altThumb, styles.altThumbPlaceholder]}>
           <ChefHat size={22} color={tokens.color.accent} strokeWidth={1.5} />
@@ -205,6 +217,11 @@ function RecipeRow({
             {useItUp.badge}
           </Text>
         )}
+        {deviceBadge && (
+          <Text style={styles.deviceBadge} numberOfLines={1}>
+            {deviceBadge}
+          </Text>
+        )}
       </View>
       <ChevronRight size={18} color={tokens.color.inkMuted} />
     </Pressable>
@@ -213,10 +230,23 @@ function RecipeRow({
 
 export function RecipesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tabNavigation = useNavigation<BottomTabNavigationProp<TabParamList, 'CookTab'>>();
+  const route = useRoute<RouteProp<TabParamList, 'CookTab'>>();
+  const focusUseItUp = route.params?.focus === 'useItUp';
+  const focusIngredient = route.params?.ingredient?.trim() || undefined;
+  const onConsumeFocus = useCallback(() => {
+    tabNavigation.setParams({ focus: undefined, ingredient: undefined });
+  }, [tabNavigation]);
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
   const { prefs, record } = useRecipePrefs(activeHouseholdId);
+  const tonight = useTonightDevices(activeHouseholdId);
+  // Prompt-card selection buffer — committed on "Show me recipes".
+  const [pendingDevices, setPendingDevices] = useState<CookingDevice[]>([]);
+  // Reset the prompt buffer whenever the prompt's gating flips (day roll,
+  // household switch, answer committed) — never leak a stale selection.
+  useEffect(() => setPendingDevices([]), [activeHouseholdId, tonight.answered]);
 
   const { items, isLoading: pantryLoading, error: pantryError } = usePantryItems();
 
@@ -232,7 +262,8 @@ export function RecipesScreen() {
       const h = new Date().getHours();
       setHour(h);
       if (!userPickedMeal.current) setMeal(defaultMealForHour(h));
-    }, []),
+      tonight.refreshDay();
+    }, [tonight.refreshDay]),
   );
   const [healthy, setHealthy] = useState(false);
   const [easy, setEasy] = useState(false);
@@ -334,6 +365,12 @@ export function RecipesScreen() {
     setMeal(m);
     setOffset(0);
   }
+  function toggleTonightDevice(id: CookingDevice) {
+    const next = tonight.devices.includes(id)
+      ? tonight.devices.filter((d) => d !== id)
+      : [...tonight.devices, id];
+    tonight.setDevices(next);
+  }
   function toggleExclude(name: string) {
     const k = name.toLowerCase();
     setExcluded((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
@@ -381,6 +418,40 @@ export function RecipesScreen() {
             );
           })}
         </View>
+
+        {tonight.answered && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.deviceRow}
+          >
+            <Text style={styles.deviceRowLabel}>Cooking with</Text>
+            <Pressable
+              onPress={() => tonight.setDevices([])}
+              style={[styles.chip, tonight.devices.length === 0 && styles.chipSelected]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: tonight.devices.length === 0 }}
+            >
+              <Text style={[styles.chipText, tonight.devices.length === 0 && styles.chipTextSelected]}>
+                Any
+              </Text>
+            </Pressable>
+            {COOKING_DEVICES.map((d) => {
+              const on = tonight.devices.includes(d.id);
+              return (
+                <Pressable
+                  key={d.id}
+                  onPress={() => toggleTonightDevice(d.id)}
+                  style={[styles.chip, on && styles.chipSelected]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
+                >
+                  <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
 
         <View style={styles.controls}>
           <Pressable style={styles.ctrlBtn} onPress={refresh}>
@@ -473,6 +544,58 @@ export function RecipesScreen() {
         </View>
       )}
 
+      {recipeState.kind === 'ok' && tonight.loaded && !tonight.answered && (
+        <View style={styles.deviceCard}>
+          <View style={styles.deviceCardHead}>
+            <Text style={styles.deviceCardTitle}>
+              What are you cooking with {mealtimeLabel(hour)}?
+            </Text>
+            <Pressable
+              hitSlop={8}
+              onPress={tonight.dismiss}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss — show everything"
+            >
+              <X size={16} color={tokens.color.inkMuted} />
+            </Pressable>
+          </View>
+          <View style={styles.deviceCardChips}>
+            {COOKING_DEVICES.map((d) => {
+              const on = pendingDevices.includes(d.id);
+              return (
+                <Pressable
+                  key={d.id}
+                  onPress={() =>
+                    setPendingDevices((prev) =>
+                      prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id],
+                    )
+                  }
+                  style={[styles.chip, on && styles.chipSelected]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: on }}
+                >
+                  <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <View style={styles.deviceCardActions}>
+            <Pressable onPress={tonight.dismiss} hitSlop={6} accessibilityRole="button">
+              <Text style={styles.deviceCardSkip}>Anything goes</Text>
+            </Pressable>
+            {pendingDevices.length > 0 && (
+              <Pressable
+                style={styles.deviceCardGo}
+                onPress={() => tonight.setDevices(pendingDevices)}
+                accessibilityRole="button"
+              >
+                <Text style={styles.deviceCardGoTxt}>Show me recipes</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
+
       {recipeState.kind === 'ok' && (
         <CookThis
           recipes={recipeState.recipes}
@@ -484,8 +607,12 @@ export function RecipesScreen() {
           healthy={healthy}
           easy={easy}
           readyNow={readyNow}
+          focusUseItUp={focusUseItUp}
+          focusIngredient={focusIngredient}
+          onConsumeFocus={onConsumeFocus}
           onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
           onSaved={(title) => setSavedToast({ title, key: Date.now() })}
+          tonightDevices={tonight.devices}
         />
       )}
 
@@ -598,8 +725,12 @@ function CookThis({
   healthy,
   easy,
   readyNow,
+  focusUseItUp,
+  focusIngredient,
+  onConsumeFocus,
   onCookComplete,
   onSaved,
+  tonightDevices,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -610,8 +741,12 @@ function CookThis({
   healthy: boolean;
   easy: boolean;
   readyNow: boolean;
+  focusUseItUp: boolean;
+  focusIngredient?: string;
+  onConsumeFocus: () => void;
   onCookComplete: (updatedCount: number) => void;
   onSaved: (title: string) => void;
+  tonightDevices: CookingDevice[];
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, isFavorited, toggleFavorite } = useFavorites();
@@ -628,7 +763,27 @@ function CookThis({
   // sit mounted across midnight, so a fixed `new Date()` would drift.
   const now = useMemo(() => new Date(), [items]);
   const urgent = pickUrgent(items, now);
-  const reason = urgent ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}` : null;
+
+  // Latch one-shot CookTab params so clearing the route doesn't undo ranking.
+  const [latchedFocus, setLatchedFocus] = useState<{
+    useItUp: boolean;
+    ingredient?: string;
+  }>({ useItUp: false });
+  useEffect(() => {
+    if (focusUseItUp || focusIngredient) {
+      setLatchedFocus({ useItUp: focusUseItUp, ingredient: focusIngredient });
+      onConsumeFocus();
+    }
+  }, [focusUseItUp, focusIngredient, onConsumeFocus]);
+
+  const focusIngredientLc = latchedFocus.ingredient?.toLowerCase();
+  const reason = latchedFocus.ingredient
+    ? `Recipes that use your ${latchedFocus.ingredient.toLowerCase()}`
+    : latchedFocus.useItUp && urgent
+      ? `Using up what expires soon — starting with ${urgent.name.toLowerCase()}`
+      : urgent
+        ? `Because your ${urgent.name.toLowerCase()} ${lowerFirst(formatExpiryMeta(urgent, now))}`
+        : null;
   const reasonColor =
     urgent && getExpiryStatus(urgent, now) === 'expired' ? tokens.semantic.expiry.expired : tokens.semantic.expiry.warning;
 
@@ -656,6 +811,23 @@ function CookThis({
     }
     return map;
   }, [recipes, items, now]);
+
+  // "Cooking with": tonight's-device boost + badge. Keyword detection over
+  // title + per-step equipment, memoized per fetched page. Empty selection
+  // (or "Anything") short-circuits to an empty map — ranking unchanged.
+  const deviceByRecipe = useMemo(() => {
+    const map = new Map<number, { boost: number; badge: string | null }>();
+    if (tonightDevices.length === 0) return map;
+    for (const r of recipes) {
+      const detected = detectDevices(
+        r.title,
+        r.instructions.flatMap((g) => g.steps.flatMap((s) => s.equipment)),
+      );
+      const boost = scoreDeviceBoost(tonightDevices, detected);
+      if (boost > 0) map.set(r.id, { boost, badge: formatDeviceBadge(tonightDevices, detected) });
+    }
+    return map;
+  }, [recipes, tonightDevices]);
 
   /** What's-missing → shopping list, dedupe-aware, source 'recipe'. */
   async function onAddMissing(r: SpoonacularRecipe) {
@@ -693,17 +865,41 @@ function CookThis({
     // Post-#143 nearly every result qualifies, so this rarely changes anything.
     const withSteps = candidates.filter(hasInstructions);
     if (withSteps.length > 0) candidates = withSteps;
-    const blend = (r: SpoonacularRecipe) =>
-      scoreTitle(prefs, r.title) * 1.5 +
-      scoreTitle(tasteProfile, r.title) * 2 +
-      scoreTitle(seedPrefs, r.title) * 1.5 +
-      r.usedIngredientCount +
-      (useItUpByRecipe.get(r.id)?.score ?? 0) +
-      (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
-      (readyNow && isReadyNow(r) ? 3 : 0) +
-      (easy && isEasy(r) ? 3 : 0);
+    const ingredientBoost = (r: SpoonacularRecipe) => {
+      if (!focusIngredientLc) return 0;
+      return r.usedIngredientNames.some((n) => n.toLowerCase().includes(focusIngredientLc)) ? 40 : 0;
+    };
+    const blend = (r: SpoonacularRecipe) => {
+      const useItUp = useItUpByRecipe.get(r.id)?.score ?? 0;
+      const base =
+        scoreTitle(prefs, r.title) * 1.5 +
+        scoreTitle(tasteProfile, r.title) * 2 +
+        scoreTitle(seedPrefs, r.title) * 1.5 +
+        r.usedIngredientCount +
+        useItUp +
+        ingredientBoost(r) +
+        (deviceByRecipe.get(r.id)?.boost ?? 0) +
+        (healthy ? ((r.healthScore ?? 0) / 100) * 6 : 0) +
+        (readyNow && isReadyNow(r) ? 3 : 0) +
+        (easy && isEasy(r) ? 3 : 0);
+      // When arriving from Pantry / notifications, use-it-up is the primary key.
+      if (latchedFocus.useItUp) return useItUp * 100 + base;
+      return base;
+    };
     return [...candidates].sort((a, b) => blend(b) - blend(a));
-  }, [recipes, prefs, tasteProfile, seedPrefs, healthy, easy, readyNow, useItUpByRecipe]);
+  }, [
+    recipes,
+    prefs,
+    tasteProfile,
+    seedPrefs,
+    healthy,
+    easy,
+    readyNow,
+    useItUpByRecipe,
+    deviceByRecipe,
+    latchedFocus.useItUp,
+    focusIngredientLc,
+  ]);
 
   const top = pool.slice(0, 3);
   // Curated pantry stand-ins for each hero card's missing ingredients ("no
@@ -743,26 +939,12 @@ function CookThis({
     : 'Because you cook these';
   const first = top[0]; // the pick-one-for-me target (guarded before use)
 
-  // Rows for the cooked-it sheet: matched pantry items (pre-selected) when the
-  // API gave us ingredient names, otherwise the full active pantry defaulting
-  // to "Kept" so the user can mark things manually.
+  // Rows for the cooked-it sheet: matched pantry items when possible; never
+  // dump the whole pantry (urgent fallback capped in buildCookedSheetItems).
   const sheetItems = useMemo<CookedSheetItem[]>(() => {
     if (!cooking) return [];
-    const matches = matchCookedItems(
-      cooking.usedIngredientNames,
-      items.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
-    );
-    if (matches.length > 0) {
-      return matches.map((m) => ({
-        itemId: m.itemId,
-        itemName: m.itemName,
-        quantity: m.quantity,
-        matched: true,
-        matchedIngredient: m.matchedIngredient,
-      }));
-    }
-    return items.map((i) => ({ itemId: i.id, itemName: i.name, quantity: i.quantity, matched: false }));
-  }, [cooking, items]);
+    return buildCookedSheetItems(cooking.usedIngredientNames, items, now);
+  }, [cooking, items, now]);
 
   async function onToggleFavorite(r: SpoonacularRecipe) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -829,6 +1011,7 @@ function CookThis({
             missingAdded={missingAdded.has(item.id)}
             substitutes={swapsByRecipe.get(item.id) ?? []}
             useItUp={useItUpByRecipe.get(item.id) ?? null}
+            deviceBadge={deviceByRecipe.get(item.id)?.badge ?? null}
             onToggleFavorite={(r) => void onToggleFavorite(r)}
             onSkip={onSkip}
             onOpen={onOpen}
@@ -852,7 +1035,13 @@ function CookThis({
             {tasteLabel}
           </Text>
           {suggestions.map((r) => (
-            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              useItUp={useItUpByRecipe.get(r.id) ?? null}
+              deviceBadge={deviceByRecipe.get(r.id)?.badge ?? null}
+              onOpen={onOpen}
+            />
           ))}
         </View>
       )}
@@ -861,7 +1050,13 @@ function CookThis({
         <View style={styles.altsPad}>
           <Text style={styles.altHead}>More from your pantry</Text>
           {alternates.map((r) => (
-            <RecipeRow key={r.id} recipe={r} useItUp={useItUpByRecipe.get(r.id) ?? null} onOpen={onOpen} />
+            <RecipeRow
+              key={r.id}
+              recipe={r}
+              useItUp={useItUpByRecipe.get(r.id) ?? null}
+              deviceBadge={deviceByRecipe.get(r.id)?.badge ?? null}
+              onOpen={onOpen}
+            />
           ))}
         </View>
       )}
@@ -887,6 +1082,7 @@ function HeroCard({
   missingAdded,
   substitutes,
   useItUp,
+  deviceBadge,
   onToggleFavorite,
   onSkip,
   onOpen,
@@ -899,18 +1095,20 @@ function HeroCard({
   missingAdded: boolean;
   substitutes: SubstituteSuggestion[];
   useItUp: { badge: string | null; expired: boolean } | null;
+  deviceBadge: string | null;
   onToggleFavorite: (r: SpoonacularRecipe) => void;
   onSkip: (r: SpoonacularRecipe) => void;
   onOpen: (r: SpoonacularRecipe) => void;
   onCooked: (r: SpoonacularRecipe) => void;
   onAddMissing: (r: SpoonacularRecipe) => void;
 }) {
+  const imageSource = resolveRecipeImageSource(recipe);
   return (
     <View style={styles.cardPage}>
       <Pressable style={[styles.hero, skipped && styles.heroDim]} onPress={() => onOpen(recipe)}>
         <View style={styles.heroImgWrap}>
-          {recipe.image ? (
-            <Image source={{ uri: recipe.image }} style={styles.heroImg} />
+          {imageSource ? (
+            <Image source={imageSource} style={styles.heroImg} />
           ) : (
             <View style={[styles.heroImg, styles.heroImgPlaceholder]}>
               <ChefHat size={44} color={tokens.color.accent} strokeWidth={1.5} />
@@ -988,6 +1186,11 @@ function HeroCard({
               numberOfLines={1}
             >
               {useItUp.badge}
+            </Text>
+          )}
+          {deviceBadge && (
+            <Text style={styles.deviceBadge} numberOfLines={1}>
+              {deviceBadge}
             </Text>
           )}
         </View>
@@ -1098,6 +1301,40 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: tokens.color.accent },
   chipText: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
   chipTextSelected: { color: tokens.color.onAccent },
+  deviceRow: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), paddingTop: tokens.space(2) },
+  deviceRowLabel: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.inkMuted },
+  deviceCard: {
+    marginHorizontal: tokens.space(4),
+    marginBottom: tokens.space(2),
+    padding: tokens.space(4),
+    borderRadius: tokens.radius.lg,
+    backgroundColor: tokens.color.surfaceAlt,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  deviceCardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  deviceCardTitle: {
+    flex: 1,
+    fontFamily: tokens.font.display.semibold,
+    fontSize: 16,
+    color: tokens.color.ink,
+    paddingRight: tokens.space(2),
+  },
+  deviceCardChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  deviceCardActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: tokens.space(3),
+  },
+  deviceCardSkip: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted },
+  deviceCardGo: {
+    backgroundColor: tokens.color.accent,
+    borderRadius: tokens.radius.md,
+    paddingVertical: tokens.space(2),
+    paddingHorizontal: tokens.space(3),
+  },
+  deviceCardGoTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
   controls: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), marginTop: tokens.space(3) },
   ctrlBtn: {
     paddingVertical: tokens.space(2),
@@ -1124,6 +1361,12 @@ const styles = StyleSheet.create({
   metaTxtHealth: { color: tokens.color.success },
   metaTxtEasy: { color: tokens.color.accent },
   useItUp: { fontFamily: tokens.font.body.semibold, fontSize: 12, marginTop: tokens.space(1) },
+  deviceBadge: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 12,
+    marginTop: tokens.space(1),
+    color: tokens.color.accent,
+  },
   houseChip: { backgroundColor: tokens.color.accentSoft },
   heroImgPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
   altThumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: tokens.color.accentSoft },
