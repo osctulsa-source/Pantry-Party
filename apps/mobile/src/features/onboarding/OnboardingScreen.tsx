@@ -37,23 +37,25 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState<1 | 2>(1);
   const [dietSel, setDietSel] = useState<DietSelection>({ diets: [], allergies: [] });
   const [dietSaved, setDietSaved] = useState(false);
-  const { profile, save: saveProfile, loaded: profileLoaded } = useTasteProfile(activeHouseholdId);
+  const { profile, save: saveProfile, loadedFor: profileLoadedFor } = useTasteProfile(activeHouseholdId);
 
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const householdReady = userId !== null && activeHouseholdId !== null;
 
-  // Persist step-1 answers once the household + stored profile are ready. Runs
-  // at most once (dietSaved guard); survives the first-moment null-household race
-  // without blocking the UI (the user is on step 2 by the time it fires).
+  // Persist step-1 answers once the profile for THIS household has actually
+  // loaded. Gate on loadedFor === activeHouseholdId (not the bare `loaded`
+  // flag): during the first-launch null→resolved household race the profile is
+  // briefly a stale EMPTY loaded "for" null, and merging onto that would wipe
+  // any existing cuisines/flavors/speed. Runs at most once (dietSaved guard).
   useEffect(() => {
-    if (step === 1 || dietSaved || !profileLoaded || activeHouseholdId === null) return;
+    if (step === 1 || dietSaved || activeHouseholdId === null || profileLoadedFor !== activeHouseholdId) return;
     if (dietSel.diets.length === 0 && dietSel.allergies.length === 0) {
       setDietSaved(true);
       return;
     }
     saveProfile({ ...profile, diets: dietSel.diets, allergies: dietSel.allergies });
     setDietSaved(true);
-  }, [step, dietSaved, profileLoaded, activeHouseholdId, dietSel, profile, saveProfile]);
+  }, [step, dietSaved, profileLoadedFor, activeHouseholdId, dietSel, profile, saveProfile]);
 
   async function onAdd(staple: Staple) {
     if (!userId || !activeHouseholdId || added.includes(staple.name)) return;

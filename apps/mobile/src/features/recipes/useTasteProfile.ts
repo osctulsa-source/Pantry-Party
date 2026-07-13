@@ -7,6 +7,13 @@
  *
  * `loaded` lets the screen wait before deciding whether to show the
  * "Set your taste" card, so it doesn't flash for someone who already has one.
+ *
+ * `loadedFor` is the household the current `profile` actually belongs to (null
+ * when unresolved/none). Callers that persist a merged profile during the
+ * first-launch null→resolved household race MUST gate on
+ * `loadedFor === activeHouseholdId`: `loaded` alone flips true synchronously on
+ * the null fast-path, so a save fired the instant the household resolves would
+ * otherwise merge onto a stale EMPTY profile and clobber cuisines/flavors/speed.
  */
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,12 +24,14 @@ const storageKey = (householdId: string) => `tasteProfile:${householdId}`;
 export function useTasteProfile(householdId: string | null) {
   const [profile, setProfile] = useState<TasteProfile>(EMPTY_TASTE_PROFILE);
   const [loaded, setLoaded] = useState(false);
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
     if (!householdId) {
       setProfile(EMPTY_TASTE_PROFILE);
+      setLoadedFor(null);
       setLoaded(true);
       return;
     }
@@ -37,11 +46,13 @@ export function useTasteProfile(householdId: string | null) {
         } catch {
           setProfile(EMPTY_TASTE_PROFILE);
         }
+        setLoadedFor(householdId);
         setLoaded(true);
       })
       .catch(() => {
         if (!cancelled) {
           setProfile(EMPTY_TASTE_PROFILE);
+          setLoadedFor(householdId);
           setLoaded(true);
         }
       });
@@ -55,11 +66,12 @@ export function useTasteProfile(householdId: string | null) {
       const stamped: TasteProfile = { ...next, updatedAt: new Date().toISOString() };
       setProfile(stamped);
       if (householdId) {
+        setLoadedFor(householdId);
         AsyncStorage.setItem(storageKey(householdId), JSON.stringify(stamped)).catch(() => {});
       }
     },
     [householdId],
   );
 
-  return { profile, save, loaded };
+  return { profile, save, loaded, loadedFor };
 }
