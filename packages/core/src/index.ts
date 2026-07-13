@@ -3,6 +3,7 @@ export * from "./expiry.ts";
 export * from "./notifications.ts";
 export * from "./notificationCopy.ts";
 export * from "./shelfLife.ts";
+export * from "./dateRepair.ts";
 export * from "./recipePrefs.ts";
 export * from "./mealtime.ts";
 export * from "./cooked.ts";

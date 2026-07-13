@@ -38,7 +38,7 @@ import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-reac
 
 import { suggestExpiryISO, suggestStorageLocation, type CaptureSource } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { addPantryItem } from '../pantry/addPantryItem';
+import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useFavoriteStores } from '../settings/useFavoriteStores';
@@ -326,7 +326,7 @@ export function ScanScreen() {
       // location — storing milk as "pantry" while estimating with a fridge
       // duration is how scanned items used to get wildly wrong dates.
       const location = suggestStorageLocation(trimmed) ?? 'pantry';
-      await addPantryItem({
+      await addOrMergePantryItem({
         householdId: activeHouseholdId,
         userId,
         name: trimmed,
@@ -372,7 +372,7 @@ export function ScanScreen() {
         const nm = b.name.trim();
         // Same location-consistent estimate as the single-item confirm path.
         const location = suggestStorageLocation(nm) ?? 'pantry';
-        await addPantryItem({
+        await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
           name: nm,

@@ -24,7 +24,7 @@ import * as Haptics from 'expo-haptics';
 
 import { suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { addPantryItem } from '../pantry/addPantryItem';
+import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
@@ -67,7 +67,7 @@ export function BulkPasteScreen() {
         // Location-consistent estimate (see ScanScreen): infer where the food
         // lives, then estimate expiry AT that location.
         const location = suggestStorageLocation(name) ?? 'pantry';
-        await addPantryItem({
+        await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
           name,
