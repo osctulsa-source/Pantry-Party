@@ -4,8 +4,9 @@
  * Stateless like QuickAddStaples; the parent owns selection.
  *
  * `cornerAccessory` (optional) renders in the panel's top-left with its own
- * touch handling — Quick Add uses it for the refine chevron. The glyph is
- * decorative; the label (via accessibilityLabel) carries meaning.
+ * touch handling — Quick Add uses it for the refine chevron. Accessories should
+ * supply their own hitSlop (the wrapper sits at a 2px corner offset). The glyph
+ * is decorative; the label (via accessibilityLabel) carries meaning.
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -43,7 +44,9 @@ export function BrandTile({
       style={[styles.card, selected && styles.cardSelected]}
     >
       <View style={[styles.panel, { backgroundColor: ground }]}>
-        <BrandIcon name={glyph} tone={tone} variant="onColor" size={34} />
+        <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <BrandIcon name={glyph} tone={tone} variant="onColor" size={34} />
+        </View>
         {selected && (
           <View style={styles.checkDot}>
             <Text style={styles.checkTxt}>✓</Text>
