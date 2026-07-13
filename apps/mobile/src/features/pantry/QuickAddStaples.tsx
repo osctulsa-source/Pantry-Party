@@ -1,20 +1,22 @@
 /**
- * QuickAddStaples — the grouped staple chips, shared by the Quick Add screen and
- * the first-run onboarding flow. Stateless: the parent owns insertion and the
- * `added` set (which drives the ✓). `hiddenGroups` lets a caller (Quick Add)
- * drop sections the user has hidden; onboarding omits it and shows everything.
+ * QuickAddStaples — grouped staple TILES (loaf-mark BrandTile), shared by the
+ * Quick Add screen and first-run onboarding. Stateless: the parent owns
+ * insertion and the `added` set (which drives the selected ✓ state).
+ * `hiddenGroups` lets Quick Add drop sections the user has hidden.
  *
- * `onRefine` (optional): when provided, staples whose food has a known kind
- * guide (pasta, rice…) gain a small chevron segment that opens the refine
- * flow — the chip BODY stays instant-add, the chevron is the explicit opt-in.
- * Onboarding omits the prop and renders exactly as before.
+ * `onRefine` (optional): staples whose food has a known kind guide (pasta,
+ * rice…) gain a small corner chevron that opens the refine flow — the tile
+ * BODY stays instant-add, the chevron is the explicit opt-in. Onboarding
+ * omits the prop and renders plain tiles.
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronDown } from 'lucide-react-native';
 
 import { guideFor } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandTile } from '../../components/BrandTile';
 import { STAPLE_GROUPS, type Staple } from './staples';
+import { stapleGlyph } from './stapleArt';
 
 export function QuickAddStaples({
   added,
@@ -33,31 +35,32 @@ export function QuickAddStaples({
       {STAPLE_GROUPS.filter((group) => !hiddenGroups.includes(group.title)).map((group) => (
         <View key={group.title} style={styles.group}>
           <Text style={styles.groupTitle}>{group.title}</Text>
-          <View style={styles.chips}>
+          <View style={styles.grid}>
             {group.items.map((s) => {
               const isAdded = added.includes(s.name);
               const refinable = onRefine !== undefined && guideFor(s.name) !== undefined;
               return (
-                <View key={s.name} style={[styles.staple, isAdded && styles.stapleAdded]}>
-                  <Pressable onPress={() => onAdd(s)} disabled={isAdded} hitSlop={4}>
-                    <Text style={[styles.stapleTxt, isAdded && styles.stapleTxtAdded]}>
-                      {isAdded ? `✓ ${s.name}` : `+ ${s.name}`}
-                    </Text>
-                  </Pressable>
-                  {refinable && (
-                    <Pressable
-                      onPress={() => onRefine?.(s)}
-                      hitSlop={6}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Refine ${s.name} — choose kind or brand`}
-                      style={styles.refineBtn}
-                    >
-                      <ChevronDown
-                        size={13}
-                        color={isAdded ? tokens.color.accent : tokens.color.inkMuted}
-                      />
-                    </Pressable>
-                  )}
+                <View key={s.name} style={styles.cell}>
+                  <BrandTile
+                    glyph={stapleGlyph(s.name)}
+                    label={s.name}
+                    selected={isAdded}
+                    disabled={isAdded}
+                    onPress={() => onAdd(s)}
+                    cornerAccessory={
+                      refinable ? (
+                        <Pressable
+                          onPress={() => onRefine?.(s)}
+                          hitSlop={8}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Refine ${s.name} — choose kind or brand`}
+                          style={styles.refineBtn}
+                        >
+                          <ChevronDown size={12} color={isAdded ? tokens.color.accent : tokens.color.ink} />
+                        </Pressable>
+                      ) : undefined
+                    }
+                  />
                 </View>
               );
             })}
@@ -67,6 +70,8 @@ export function QuickAddStaples({
     </View>
   );
 }
+
+const CELL = '23%'; // 4 per row; grow is capped by maxWidth 25% so ragged last rows stay near full-row width
 
 const styles = StyleSheet.create({
   group: { marginBottom: tokens.space(4) },
@@ -78,22 +83,12 @@ const styles = StyleSheet.create({
     color: tokens.color.inkMuted,
     marginBottom: tokens.space(2),
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
-  staple: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: tokens.space(2),
-    paddingHorizontal: tokens.space(3),
-    backgroundColor: tokens.color.surfaceAlt,
-    borderRadius: 999,
-  },
-  stapleAdded: { backgroundColor: tokens.color.accentSoft },
-  stapleTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, color: tokens.color.ink },
-  stapleTxtAdded: { color: tokens.color.accent },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
+  cell: { flexBasis: CELL, flexGrow: 1, maxWidth: '25%' },
   refineBtn: {
-    marginLeft: tokens.space(2),
-    paddingLeft: tokens.space(2),
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: tokens.color.line,
+    backgroundColor: tokens.color.surface,
+    borderRadius: 999,
+    padding: 2,
+    opacity: 0.9,
   },
 });
