@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { X } from 'lucide-react-native';
 import {
+  ALLERGY_OPTIONS,
   CUISINE_OPTIONS,
   DIET_OPTIONS,
   FLAVOR_OPTIONS,
@@ -181,6 +182,28 @@ export function TasteQuizSheet({
                           onPress={() => {
                             tap();
                             setDiets((d) => toggle(d, o.slug));
+                          }}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: on }}
+                          accessibilityLabel={o.label}
+                        >
+                          <Text style={[styles.chipTxt, on && styles.chipTxtSoftOn]}>{o.label}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  <Text style={styles.subLabel}>Allergies</Text>
+                  <View style={styles.chips}>
+                    {ALLERGY_OPTIONS.map((o) => {
+                      const on = allergies.includes(o.slug);
+                      return (
+                        <Pressable
+                          key={o.slug}
+                          style={[styles.chip, on && styles.chipSoftOn]}
+                          onPress={() => {
+                            tap();
+                            setAllergies((a) => toggle(a, o.slug));
                           }}
                           accessibilityRole="button"
                           accessibilityState={{ selected: on }}
