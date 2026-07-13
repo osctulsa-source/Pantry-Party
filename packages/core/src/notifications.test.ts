@@ -146,6 +146,15 @@ describe('computeDigestIntents', () => {
     expect(future[0]!.triggerDate.getTime()).toBe(localPin(expiryMs - 7 * MS_PER_DAY).getTime());
   });
 
+  it('honors a custom notify hour (the Settings reminder-time preference)', () => {
+    const intents = computeDigestIntents([item('a', 'Parsley', daysFromNow(30))], NOW, undefined, undefined, 18);
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.triggerDate.getHours()).toBe(18);
+    // Same morning-vs-evening pin, same day as the default-hour trigger.
+    const defaultHour = computeDigestIntents([item('a', 'Parsley', daysFromNow(30))], NOW);
+    expect(intents[0]!.triggerDate.toDateString()).toBe(defaultHour[0]!.triggerDate.toDateString());
+  });
+
   it('is idempotent — same inputs produce deeply-equal output', () => {
     const items = [
       item('a', 'Parsley', daysFromNow(30)),

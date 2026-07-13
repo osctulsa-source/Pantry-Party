@@ -109,16 +109,21 @@ function localDayKey(d: Date): string {
 /**
  * The per-item trigger moment (before grouping):
  *  - "warning zone start" = expiresAt - warningDays days
- *  - if warningStart is in the future → 09:00 LOCAL on warningStart's day
+ *  - if warningStart is in the future → notifyHour LOCAL on warningStart's day
  *    (or now + 5m if that pin has already passed today), and
  *  - if warningStart is already here → now + 5m, so the reminder fires shortly
  *    after open instead of as a jarring immediate popup.
  */
-function itemTrigger(expiryMs: number, nowMs: number, warningDays: number): Date {
+function itemTrigger(
+  expiryMs: number,
+  nowMs: number,
+  warningDays: number,
+  notifyHour: number,
+): Date {
   const warningStartMs = expiryMs - warningDays * MS_PER_DAY;
   if (warningStartMs > nowMs) {
     const t = new Date(warningStartMs);
-    t.setHours(NOTIFY_LOCAL_HOUR, 0, 0, 0);
+    t.setHours(notifyHour, 0, 0, 0);
     return t.getTime() > nowMs ? t : new Date(nowMs + FIVE_MINUTES_MS);
   }
   return new Date(nowMs + FIVE_MINUTES_MS);
@@ -144,6 +149,8 @@ export function computeDigestIntents(
   now: Date,
   warningDays: number = DEFAULT_EXPIRY_WARNING_DAYS,
   maxIntents: number = MAX_SCHEDULE_INTENTS,
+  /** Local hour digests aim for — a user preference (Settings → Reminders). */
+  notifyLocalHour: number = NOTIFY_LOCAL_HOUR,
 ): DigestIntent[] {
   const nowMs = now.getTime();
 
@@ -159,7 +166,7 @@ export function computeDigestIntents(
     if (Number.isNaN(expiryMs)) continue;
     if (expiryMs <= nowMs) continue;
 
-    const trigger = itemTrigger(expiryMs, nowMs, warningDays);
+    const trigger = itemTrigger(expiryMs, nowMs, warningDays, notifyLocalHour);
     const daysUntilExpiry = Math.max(
       0,
       Math.round((expiryMs - trigger.getTime()) / MS_PER_DAY),
