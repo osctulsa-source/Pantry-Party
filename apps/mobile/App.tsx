@@ -18,7 +18,6 @@ import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
 import { navigationRef } from './src/navigation/navigationRef';
 import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
-import { navigationRef } from './src/navigation/navigationRef';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { ScanScreen } from './src/features/capture/ScanScreen';
 import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
