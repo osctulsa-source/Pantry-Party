@@ -4,13 +4,14 @@
  * `cut` marks, `leaf` only where botanically natural. Marks OUTSIDE the
  * silhouette (steam, handles, strings) use `body` — `cut` is the panel color.
  */
-import { Circle, Path, Rect } from 'react-native-svg';
+import { Circle, Ellipse, Path, Rect } from 'react-native-svg';
 
 import type { BrandTone } from '../theme/brandPalette';
 import type { Paint } from './brandGlyphs.core';
 
 export type PantryFoodName =
-  | 'floursack' | 'sugarbowl' | 'sugarbag' | 'sodabox' | 'powdertin' | 'saltshaker' | 'yeastpacket';
+  | 'floursack' | 'sugarbowl' | 'sugarbag' | 'sodabox' | 'powdertin' | 'saltshaker' | 'yeastpacket'
+  | 'oliveoilbottle' | 'oiljug' | 'soybottle' | 'ketchupbottle' | 'mustardbottle' | 'mayojar' | 'hotsaucebottle' | 'vinegarflask' | 'honeypot';
 
 export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode> = {
   // Rolled-top flour sack, stitch marks.
@@ -79,10 +80,93 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Circle cx={28} cy={27} r={1.2} fill={cut} />
     </>
   ),
+  // Slim olive-oil cruet with a pour spout and an olive sprig (leaf natural).
+  oliveoilbottle: ({ body, cut, leaf }) => (
+    <>
+      <Path d="M22 12 h4 v6 l4 6 v13 q0 3 -3 3 h-6 q-3 0 -3 -3 V24 l4 -6 Z" fill={body} />
+      <Path d="M22 12 l-3 -3" fill="none" stroke={body} />
+      <Path d="M27 13 C30 10 34 11 34 11 C34 14 31 16 28 15 Z" fill={leaf} />
+      <Path d="M20 30 h8" fill="none" stroke={cut} />
+    </>
+  ),
+  // Handled vegetable-oil jug with a cap.
+  oiljug: ({ body, cut }) => (
+    <>
+      <Path d="M16 22 l4 -5 v-4 h8 v4 l2 3 v17 q0 3 -3 3 H19 q-3 0 -3 -3 Z" fill={body} />
+      <Path d="M31 24 q5 2 3 8" fill="none" stroke={body} />
+      <Rect x={20} y={10} width={8} height={3} rx={1} fill={body} />
+      <Path d="M20 30 h8" fill="none" stroke={cut} />
+    </>
+  ),
+  // Narrow-waist soy bottle with a collar line.
+  soybottle: ({ body, cut }) => (
+    <>
+      <Path d="M21 12 h6 v7 q5 2 5 8 v10 q0 3 -3 3 h-10 q-3 0 -3 -3 V27 q0 -6 5 -8 Z" fill={body} />
+      <Path d="M21 19 h6" fill="none" stroke={cut} />
+      <Path d="M19 31 h10" fill="none" stroke={cut} />
+    </>
+  ),
+  // Ketchup squeeze bottle with a cone cap.
+  ketchupbottle: ({ body, cut }) => (
+    <>
+      <Path d="M20 20 q-3 9 0 17 q0 3 3 3 h2 q3 0 3 -3 q3 -8 0 -17 Z" fill={body} />
+      <Rect x={21.5} y={14} width={5} height={7} rx={1} fill={body} />
+      <Path d="M21 14 L24 9 L27 14 Z" fill={body} />
+      <Path d="M21 27 h6" fill="none" stroke={cut} />
+    </>
+  ),
+  // Mustard bottle — squared shoulders, pointed nozzle.
+  mustardbottle: ({ body, cut }) => (
+    <>
+      <Rect x={19} y={18} width={10} height={22} rx={3} fill={body} />
+      <Path d="M20 18 l2 -4 h4 l2 4 Z" fill={body} />
+      <Path d="M24 8 l1.5 6 h-3 Z" fill={body} />
+      <Circle cx={24} cy={28} r={3} fill="none" stroke={cut} />
+    </>
+  ),
+  // Wide mayo jar with a tall lid band and oval label.
+  mayojar: ({ body, cut }) => (
+    <>
+      <Rect x={16} y={20} width={16} height={18} rx={4} fill={body} />
+      <Rect x={15} y={13} width={18} height={7} rx={2} fill={body} />
+      <Ellipse cx={24} cy={29} rx={4.5} ry={3.5} fill="none" stroke={cut} />
+    </>
+  ),
+  // Small hot-sauce bottle with cap rings.
+  hotsaucebottle: ({ body, cut }) => (
+    <>
+      <Rect x={19} y={22} width={10} height={18} rx={3} fill={body} />
+      <Rect x={21.5} y={16} width={5} height={7} fill={body} />
+      <Rect x={20.5} y={12} width={7} height={5} rx={1} fill={body} />
+      <Path d="M21.5 14.5 h5" fill="none" stroke={cut} />
+      <Path d="M22 29 q2 4 4 0" fill="none" stroke={cut} />
+    </>
+  ),
+  // Corked vinegar flask with sloped shoulders.
+  vinegarflask: ({ body, cut }) => (
+    <>
+      <Path d="M21 20 L15 33 q-2 5 3 5 h12 q5 0 3 -5 L27 20 Z" fill={body} />
+      <Rect x={21} y={13} width={6} height={8} fill={body} />
+      <Rect x={21.5} y={9} width={5} height={4} rx={1} fill={body} />
+      <Path d="M19 28 h10" fill="none" stroke={cut} />
+    </>
+  ),
+  // Honey pot with a rim band, drip mark, and dipper handle.
+  honeypot: ({ body, cut }) => (
+    <>
+      <Path d="M15 25 q0 -7 9 -7 q9 0 9 7 q0 13 -9 13 q-9 0 -9 -13 Z" fill={body} />
+      <Rect x={17} y={15} width={14} height={4} rx={2} fill={body} />
+      <Path d="M30 13 l6 -5" fill="none" stroke={body} />
+      <Path d="M20 27 q1 4 3 3" fill="none" stroke={cut} />
+    </>
+  ),
 };
 
 /** Natural ground per pantry glyph — merged into BrandIcon's FOOD_TONE. */
 export const PANTRY_TONE: Record<PantryFoodName, BrandTone> = {
   floursack: 'ochre', sugarbowl: 'blue', sugarbag: 'cocoa', sodabox: 'spruce',
   powdertin: 'terracotta', saltshaker: 'blue', yeastpacket: 'ochre',
+  oliveoilbottle: 'olive', oiljug: 'ochre', soybottle: 'cocoa', ketchupbottle: 'brick',
+  mustardbottle: 'ochre', mayojar: 'blue', hotsaucebottle: 'brick', vinegarflask: 'plum',
+  honeypot: 'ochre',
 } as const;
