@@ -23,4 +23,11 @@ describe('DietStep', () => {
     fireEvent.press(screen.getByText('Continue'));
     expect(onContinue).toHaveBeenCalledTimes(1);
   });
+
+  it('toggles an allergy tile independently of diets', () => {
+    const onChange = jest.fn();
+    render(<DietStep diets={['vegetarian']} allergies={[]} onChange={onChange} onContinue={() => {}} />);
+    fireEvent.press(screen.getByLabelText('Egg'));
+    expect(onChange).toHaveBeenCalledWith({ diets: ['vegetarian'], allergies: ['egg'] });
+  });
 });

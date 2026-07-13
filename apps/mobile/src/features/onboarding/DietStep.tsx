@@ -133,5 +133,5 @@ const styles = StyleSheet.create({
     paddingVertical: tokens.space(4),
     alignItems: 'center',
   },
-  ctaText: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
+  ctaText: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.onAccent },
 });
