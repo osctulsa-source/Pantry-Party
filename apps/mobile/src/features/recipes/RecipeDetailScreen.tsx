@@ -34,7 +34,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { categorizeByName, matchCookedItems, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
+import { categorizeByName, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { CategoryIcon } from '../pantry/CategoryIcon';
 import { useReduceMotion } from '../../components/useReduceMotion';

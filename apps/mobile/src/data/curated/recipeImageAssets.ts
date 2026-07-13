@@ -1,4 +1,5 @@
 /** Auto-generated local recipe hero images (batch 2). Do not edit by hand. */
+/* eslint-disable @typescript-eslint/no-require-imports -- Metro resolves static image assets via require() */
 import type { ImageSourcePropType } from 'react-native';
 
 export const RECIPE_IMAGE_ASSETS: Record<number, ImageSourcePropType> = {
