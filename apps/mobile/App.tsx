@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
+import { navigationRef } from './src/navigation/navigationRef';
 import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
 import { ScanScreen } from './src/features/capture/ScanScreen';
@@ -222,7 +223,7 @@ export default function App() {
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
           <ActiveHouseholdProvider>
-            <NavigationContainer linking={linking}>
+            <NavigationContainer ref={navigationRef} linking={linking}>
               <AppRoot />
             </NavigationContainer>
           </ActiveHouseholdProvider>
