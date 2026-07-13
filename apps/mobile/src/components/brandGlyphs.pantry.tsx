@@ -190,31 +190,32 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Circle cx={24} cy={26} r={3.5} fill="none" stroke={cut} />
     </>
   ),
-  // Tomato can — label circle + tiny leaf (natural: it IS a tomato).
+  // Tomato can — double rim (cans have two), label circle + tiny leaf (natural: it IS a tomato).
   tomatocan: ({ body, cut, leaf }) => (
     <>
       <Rect x={16} y={14} width={16} height={24} rx={2} fill={body} />
-      <Path d="M16 17.5 h16" fill="none" stroke={cut} />
-      <Circle cx={24} cy={28} r={4} fill={cut} />
-      <Path d="M24 24 C26 21 29 22 29 22 C29 24 27 25 25 24.5 Z" fill={leaf} />
+      <Path d="M16 17.5 h16 M16 36 h16" fill="none" stroke={cut} />
+      <Circle cx={24} cy={27} r={3.5} fill={cut} />
+      <Path d="M24 23 C26 20 29 21 29 21 C29 23 27 24 25 23.5 Z" fill={leaf} />
     </>
   ),
-  // Bean can — tilted open lid + two bean dots.
+  // Bean can — tilted open lid + double bottom rim + two bean dots.
   beancan: ({ body, cut }) => (
     <>
       <Rect x={16} y={16} width={16} height={22} rx={2} fill={body} />
       <Path d="M16 15 L32 11" fill="none" stroke={body} />
-      <Ellipse cx={21} cy={27} rx={2.6} ry={1.9} fill={cut} />
-      <Ellipse cx={27} cy={30} rx={2.6} ry={1.9} fill={cut} />
+      <Path d="M16 36 h16" fill="none" stroke={cut} />
+      <Ellipse cx={21} cy={26} rx={2.6} ry={1.9} fill={cut} />
+      <Ellipse cx={27} cy={29} rx={2.6} ry={1.9} fill={cut} />
     </>
   ),
-  // Gable-top stock carton with a steam curl on the label.
+  // Squat, wide gable-top stock carton with a steam curl on the label.
   stockcarton: ({ body, cut }) => (
     <>
-      <Path d="M16 20 h16 v18 q0 2 -2 2 H18 q-2 0 -2 -2 Z" fill={body} />
-      <Path d="M16 20 L20 12 h8 l4 8 Z" fill={body} />
-      <Path d="M22 12 v4" fill="none" stroke={cut} />
-      <Path d="M22 30 q2 -3 0 -5 M26 30 q2 -3 0 -5" fill="none" stroke={cut} />
+      <Path d="M13 24 h22 v14 q0 2 -2 2 H15 q-2 0 -2 -2 Z" fill={body} />
+      <Path d="M13 24 L17 16 h14 l4 8 Z" fill={body} />
+      <Path d="M24 16 v4" fill="none" stroke={cut} />
+      <Path d="M21 32 q2 -3 0 -5 M27 32 q2 -3 0 -5" fill="none" stroke={cut} />
     </>
   ),
   // Waisted pepper grinder with a crank arm.
@@ -271,22 +272,22 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Path d="M17 26 h8" fill="none" stroke={cut} />
     </>
   ),
-  // Slim soda can with a pull tab and a swoosh.
+  // Necked soda can — tapered top rim, slim body, pull tab and a swoosh.
   sodacan: ({ body, cut }) => (
     <>
-      <Rect x={17} y={14} width={14} height={26} rx={3} fill={body} />
-      <Path d="M17 17.5 h14" fill="none" stroke={cut} />
-      <Circle cx={22} cy={16} r={1.2} fill={cut} />
-      <Path d="M20 34 q6 -8 8 -12" fill="none" stroke={cut} />
+      <Path d="M18 18 Q18 14 21 14 H27 Q30 14 30 18 V37 Q30 40 27 40 H21 Q18 40 18 37 Z" fill={body} />
+      <Path d="M19.5 20 h9" fill="none" stroke={cut} />
+      <Circle cx={22} cy={16} r={1} fill={cut} />
+      <Path d="M20.5 35 q5.5 -7 7 -11" fill="none" stroke={cut} />
     </>
   ),
-  // Rounded milk jug with a cap, side handle, and label band.
+  // Bulging round milk jug with a cap, side handle, and label band.
   milkjug: ({ body, cut }) => (
     <>
-      <Path d="M19 14 h10 v5 l4 7 v10 q0 4 -4 4 H19 q-4 0 -4 -4 V26 l4 -7 Z" fill={body} />
+      <Path d="M19 14 h10 v5 l4 7 q3 5 3 10 q0 4 -4 4 H16 q-4 0 -4 -4 q0 -5 3 -10 l4 -7 Z" fill={body} />
       <Rect x={20} y={10} width={8} height={4} rx={1} fill={body} />
-      <Path d="M33 25 q4 3 2 8" fill="none" stroke={body} />
-      <Path d="M17 31 h14" fill="none" stroke={cut} />
+      <Path d="M33 25 q5 3 2 9" fill="none" stroke={body} />
+      <Path d="M15 31 h18" fill="none" stroke={cut} />
     </>
   ),
   // Covered butter dish: base, dome, knob, pat line.
