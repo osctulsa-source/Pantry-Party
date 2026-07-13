@@ -152,8 +152,34 @@ commit hash).
   that's your signal to ship a **full build** instead.
 - **What can ship OTA:** JS/TS, styles, JS-imported assets. **What cannot:**
   anything in the full-build row of the table above.
-- (Sentry note: `SENTRY_DISABLE_AUTO_UPLOAD=true` means OTA bundles don't upload
-  sourcemaps — stack traces from updated installs may be unsymbolicated.)
+- **Prefer `scripts/publish-ota.sh "msg"`** over the raw command — it enforces
+  the clean-tree + APP_VARIANT guardrails above and uploads Sentry sourcemaps
+  when credentials are set.
+
+### Sentry in production — current state & how to turn it on
+
+The app initializes Sentry from `EXPO_PUBLIC_SENTRY_DSN`
+(`src/observability/sentry.ts`) — and **nothing supplies that variable in
+production**: it's absent from `eas.json`'s production env, the EAS-hosted
+production environment is empty, and the root `.env`'s `SENTRY_DSN` lacks the
+`EXPO_PUBLIC_` prefix so it never reaches the app. Production builds log
+"error reporting disabled" and every TestFlight crash goes unreported.
+
+To enable (in order of preference):
+
+1. **EAS-hosted env var** (works for OTA bundles immediately, no fingerprint
+   change): `eas env:create --environment production --name
+   EXPO_PUBLIC_SENTRY_DSN --value <dsn> --visibility plain --scope project`,
+   then publish an OTA with `--environment production`. A DSN is not a secret
+   (it ships inside every client bundle by design).
+2. For **full builds**, the same EAS env var is injected at build time too —
+   no `eas.json` edit needed (editing `eas.json` would move the fingerprint).
+
+Sourcemap upload for OTA bundles additionally needs `SENTRY_AUTH_TOKEN`,
+`SENTRY_ORG`, and `SENTRY_PROJECT` in the publishing shell —
+`scripts/publish-ota.sh` picks them up automatically and warns when missing.
+(`SENTRY_DISABLE_AUTO_UPLOAD=true` in `eas.json` only affects build-time
+uploads, and stays until Sentry credentials exist on EAS workers.)
 
 **One-time activation:** OTA only works in builds that CONTAIN the expo-updates
 runtime — i.e. builds made after this config landed. The first build after
