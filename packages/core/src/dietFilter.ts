@@ -21,13 +21,13 @@ export interface DietCheckRecipe {
   vegetarian?: boolean | null;
   vegan?: boolean | null;
   glutenFree?: boolean | null;
-  /** Lowercased ingredient names (caller maps from its recipe shape). */
+  /** Ingredient names — matching is case-insensitive regardless of caller casing. */
   ingredientNames: string[];
 }
 
 export const DAIRY_KEYWORDS = [
   "milk", "butter", "cheese", "cream", "yogurt", "ghee",
-  "mozzarella", "parmesan", "cheddar", "feta", "ricotta",
+  "mozzarella", "parmesan", "cheddar", "feta", "ricotta", "whey", "casein",
 ] as const;
 
 export const NUT_KEYWORDS = [
@@ -45,6 +45,7 @@ export const FISH_KEYWORDS = [
 
 export const SHELLFISH_KEYWORDS = [
   "shrimp", "prawn", "crab", "lobster", "scallop", "clam", "mussel", "oyster",
+  "crawfish", "crayfish", "langoustine",
 ] as const;
 
 /** True when the profile has no dietary lines at all — callers skip filtering entirely. */

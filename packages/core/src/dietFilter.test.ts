@@ -64,6 +64,18 @@ describe("keyword-backed lines", () => {
     expect(passesDiet(profile({ allergies: ["egg"] }), recipe({ ingredientNames: ["eggplant"] }))).toBe(false);
   });
 
+  it("shellfish catches crawfish and crayfish (regression: under-hide gap)", () => {
+    const p = profile({ allergies: ["shellfish"] });
+    expect(passesDiet(p, recipe({ ingredientNames: ["crawfish tails"] }))).toBe(false);
+    expect(passesDiet(p, recipe({ ingredientNames: ["crayfish"] }))).toBe(false);
+  });
+
+  it("dairy-free catches hidden dairy: whey and caseinate", () => {
+    const p = profile({ diets: ["dairy-free"] });
+    expect(passesDiet(p, recipe({ ingredientNames: ["whey protein isolate"] }))).toBe(false);
+    expect(passesDiet(p, recipe({ ingredientNames: ["sodium caseinate"] }))).toBe(false);
+  });
+
   it("reports every violated slug", () => {
     const p = profile({ diets: ["vegetarian", "dairy-free"], allergies: ["shellfish"] });
     const r = recipe({ vegetarian: false, ingredientNames: ["shrimp", "butter"] });
