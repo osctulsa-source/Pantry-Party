@@ -10,12 +10,13 @@
  * SQLite, and App.tsx's auth conditional swaps AppStack → AuthStack. No manual
  * navigation from this screen.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
+import { suggestDateRepairs } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { Body, Button, Caption, Input, ListRow, Screen } from '../../components/ui';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -23,6 +24,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useDisplayName } from '../household/useDisplayName';
 import { useInsights } from '../insights/useInsights';
+import { usePantryItems } from '../pantry/usePantryItems';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -37,8 +39,25 @@ export function SettingsScreen() {
   const { activeHouseholdId } = useActiveHousehold();
   const { insights } = useInsights(activeHouseholdId);
   const { myName, setMyName } = useDisplayName();
+  const { items } = usePantryItems();
   const [signingOut, setSigningOut] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+
+  // Badge for the date-repair row: how many items today's inference would
+  // correct (see ReviewDatesScreen). Zero once the user has applied repairs.
+  const repairCount = useMemo(
+    () =>
+      suggestDateRepairs(
+        items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          location: i.location,
+          addedAt: i.addedAt,
+          expiresAt: i.expiresAt,
+        })),
+      ).length,
+    [items],
+  );
 
   // Seed the field once the synced name loads (the reactive query may resolve
   // after first render); editing thereafter is local until blur/submit saves.
@@ -96,6 +115,11 @@ export function SettingsScreen() {
           <ListRow label="Cookbook" onPress={() => navigation.navigate('Cookbook')} />
           <ListRow label="History" onPress={() => navigation.navigate('History')} />
           <ListRow label="Your stores" onPress={() => navigation.navigate('FavoriteStores')} />
+          <ListRow
+            label="Review expiry dates"
+            value={repairCount > 0 ? `${repairCount} to fix` : undefined}
+            onPress={() => navigation.navigate('ReviewDates')}
+          />
           <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
         </View>
 

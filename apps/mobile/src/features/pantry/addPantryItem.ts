@@ -55,3 +55,45 @@ export async function addPantryItem(input: NewPantryItem): Promise<void> {
     ],
   );
 }
+
+/**
+ * Insert — or, when an IDENTICAL row already exists, bump its quantity
+ * instead. "Identical" mirrors core's itemMergeKey (name/brand/unit/location/
+ * exact expiry), so this can never hide a sooner-expiring duplicate behind a
+ * later one; the failure mode is under-merging, same as the display grouping.
+ *
+ * Used by the capture flows: scanning the same product twice in one stock-take
+ * used to create twin rows ("Eggs ×1", "Eggs ×1") that the user then had to
+ * clean up. Returns what happened so callers can phrase their feedback.
+ */
+export async function addOrMergePantryItem(input: NewPantryItem): Promise<'inserted' | 'merged'> {
+  const db = getPowerSync();
+  const rows = await db.getAll<{ id: string }>(
+    `SELECT id FROM pantry_items
+      WHERE deleted = 0 AND household_id = ?
+        AND lower(trim(name)) = lower(trim(?))
+        AND lower(trim(coalesce(brand, ''))) = lower(trim(?))
+        AND lower(trim(coalesce(unit, ''))) = lower(trim(?))
+        AND lower(trim(location)) = lower(trim(?))
+        AND coalesce(expires_at, '') = ?
+      LIMIT 1`,
+    [
+      input.householdId,
+      input.name,
+      input.brand ?? '',
+      input.unit ?? '',
+      input.location,
+      input.expiresIso ?? '',
+    ],
+  );
+  const existing = rows[0];
+  if (existing) {
+    await db.execute(
+      'UPDATE pantry_items SET quantity = quantity + ?, updated_at = ? WHERE id = ?',
+      [input.quantity, Date.now(), existing.id],
+    );
+    return 'merged';
+  }
+  await addPantryItem(input);
+  return 'inserted';
+}
