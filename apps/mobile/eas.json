@@ -8,6 +8,7 @@
       "distribution": "internal",
       "env": {
         "APP_VARIANT": "development",
+        "EXPO_USE_PRECOMPILED_MODULES": "0",
         "EXPO_PUBLIC_POWERSYNC_URL": "https://6a19dc178d064eb85eea1728.powersync.journeyapps.com",
         "EXPO_PUBLIC_API_URL": "https://api-production-f3c5.up.railway.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://yclvepnvoisgprqcenvj.supabase.co",

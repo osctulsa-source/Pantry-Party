@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  computeScheduleIntents,
+  computeDigestIntents,
   MAX_SCHEDULE_INTENTS,
   NOTIFY_LOCAL_HOUR,
+  type DigestTier,
 } from './notifications.ts';
 
 const NOW = new Date('2026-06-02T12:00:00Z');
@@ -24,129 +25,134 @@ const localPin = (ms: number) => {
 const expectedDays = (expiryMs: number, trigger: Date) =>
   Math.max(0, Math.round((expiryMs - trigger.getTime()) / MS_PER_DAY));
 
+const tierFrom = (days: number): DigestTier =>
+  days <= 0 ? 'today' : days === 1 ? 'tomorrow' : 'soon';
+
 const item = (
   id: string,
   name: string,
   expiresAt?: string,
 ): { id: string; name: string; expiresAt?: string } => ({ id, name, expiresAt });
 
-describe('computeScheduleIntents', () => {
+describe('computeDigestIntents', () => {
   it('returns an empty array for empty input', () => {
-    expect(computeScheduleIntents([], NOW)).toEqual([]);
+    expect(computeDigestIntents([], NOW)).toEqual([]);
   });
 
   it('skips items with no expiresAt', () => {
-    expect(computeScheduleIntents([item('a', 'Salt')], NOW)).toEqual([]);
+    expect(computeDigestIntents([item('a', 'Salt')], NOW)).toEqual([]);
   });
 
   it('skips items with unparseable expiresAt', () => {
-    expect(
-      computeScheduleIntents([item('a', 'Mystery', 'not a date')], NOW),
-    ).toEqual([]);
-    expect(computeScheduleIntents([item('a', 'Mystery', '')], NOW)).toEqual([]);
+    expect(computeDigestIntents([item('a', 'Mystery', 'not a date')], NOW)).toEqual([]);
+    expect(computeDigestIntents([item('a', 'Mystery', '')], NOW)).toEqual([]);
   });
 
   it('skips items already expired', () => {
-    expect(
-      computeScheduleIntents([item('a', 'Old Milk', daysFromNow(-1))], NOW),
-    ).toEqual([]);
-    expect(
-      computeScheduleIntents([item('a', 'Old Milk', daysFromNow(-30))], NOW),
-    ).toEqual([]);
+    expect(computeDigestIntents([item('a', 'Old Milk', daysFromNow(-1))], NOW)).toEqual([]);
+    expect(computeDigestIntents([item('a', 'Old Milk', daysFromNow(-30))], NOW)).toEqual([]);
   });
 
   it('skips items expiring exactly at now (boundary)', () => {
-    expect(
-      computeScheduleIntents([item('a', 'On The Edge', NOW.toISOString())], NOW),
-    ).toEqual([]);
+    expect(computeDigestIntents([item('a', 'On The Edge', NOW.toISOString())], NOW)).toEqual([]);
   });
 
-  it('schedules a far-future item at 09:00 LOCAL on the warning-start day', () => {
-    const intents = computeScheduleIntents(
-      [item('a', 'Parsley', daysFromNow(30))],
-      NOW,
-    );
+  it('emits one digest for a far-future item, pinned to 09:00 local on warning-start', () => {
+    const intents = computeDigestIntents([item('a', 'Parsley', daysFromNow(30))], NOW);
     expect(intents).toHaveLength(1);
-    const intent = intents[0]!;
-    expect(intent.itemId).toBe('a');
-    expect(intent.itemName).toBe('Parsley');
-    // expiry = NOW + 30 days; warningStart (default 3 days) = NOW + 27 days,
-    // pinned to 09:00 in the runtime's local timezone.
+    const d = intents[0]!;
     const expiryMs = NOW.getTime() + 30 * MS_PER_DAY;
-    const expectedTrigger = localPin(expiryMs - 3 * MS_PER_DAY);
-    expect(intent.triggerDate.getTime()).toBe(expectedTrigger.getTime());
-    expect(intent.triggerDate.getHours()).toBe(NOTIFY_LOCAL_HOUR);
-    expect(intent.daysUntilExpiry).toBe(expectedDays(expiryMs, expectedTrigger));
+    const expectedTrigger = localPin(expiryMs - 3 * MS_PER_DAY); // default warningDays = 3
+    expect(d.id).toBe(`digest-${expectedTrigger.getFullYear()}-${`${expectedTrigger.getMonth() + 1}`.padStart(2, '0')}-${`${expectedTrigger.getDate()}`.padStart(2, '0')}`);
+    expect(d.triggerDate.getTime()).toBe(expectedTrigger.getTime());
+    expect(d.triggerDate.getHours()).toBe(NOTIFY_LOCAL_HOUR);
+    expect(d.items).toEqual([
+      { id: 'a', name: 'Parsley', daysUntilExpiry: expectedDays(expiryMs, expectedTrigger) },
+    ]);
+    expect(d.minDaysUntilExpiry).toBe(expectedDays(expiryMs, expectedTrigger));
+    expect(d.tier).toBe(tierFrom(expectedDays(expiryMs, expectedTrigger)));
   });
 
-  it('schedules an already-in-warning-zone item at now + 5 minutes', () => {
-    const intents = computeScheduleIntents(
-      [item('a', 'Yogurt', daysFromNow(2))],
+  it('BUNDLES multiple items that fire the same morning into ONE digest', () => {
+    // Two items expiring the same instant → same warning-start day → one digest.
+    const intents = computeDigestIntents(
+      [item('a', 'Spinach', daysFromNow(30)), item('b', 'Yogurt', daysFromNow(30))],
       NOW,
     );
     expect(intents).toHaveLength(1);
-    const intent = intents[0]!;
-    // trigger = now + 5min = 2026-06-02T12:05:00.000Z
-    expect(intent.triggerDate.toISOString()).toBe('2026-06-02T12:05:00.000Z');
-    // expiry - trigger ≈ 2 days - 5min ≈ 1.9965 → round = 2
-    expect(intent.daysUntilExpiry).toBe(2);
+    expect(intents[0]!.items.map((i) => i.id).sort()).toEqual(['a', 'b']);
   });
 
-  it('falls back to now + 5 minutes when the 09:00 local pin has already passed', () => {
-    // Build the scenario in the local frame: "now" is 12:00 local today, and the
-    // warning zone starts at 16:00 local today. The 09:00 pin on that day is in
-    // the past relative to now — the reconciler must never schedule in the past.
-    const nowLocal = new Date(2026, 5, 2, 12, 0, 0, 0); // Jun 2 2026, 12:00 local
-    const warningStart = new Date(2026, 5, 2, 16, 0, 0, 0); // +4h, same local day
-    const expiresAt = new Date(warningStart.getTime() + 3 * MS_PER_DAY); // default warningDays
+  it('separates items whose warning-start days differ into distinct digests', () => {
+    const intents = computeDigestIntents(
+      [item('a', 'Parsley', daysFromNow(30)), item('b', 'Basil', daysFromNow(40))],
+      NOW,
+    );
+    expect(intents).toHaveLength(2);
+    // Sorted soonest-first: the +30d item's morning comes before the +40d one.
+    expect(intents[0]!.items[0]!.id).toBe('a');
+    expect(intents[1]!.items[0]!.id).toBe('b');
+  });
 
-    const intents = computeScheduleIntents(
-      [item('a', 'Tonight Milk', expiresAt.toISOString())],
-      nowLocal,
+  it('orders items within a digest soonest-expiring first (the lead)', () => {
+    // Both already in the warning zone → same now+5m trigger, one digest.
+    const intents = computeDigestIntents(
+      [item('later', 'Cheese', daysFromNow(2.5)), item('sooner', 'Milk', daysFromNow(0.5))],
+      NOW,
     );
     expect(intents).toHaveLength(1);
-    expect(intents[0]!.triggerDate.getTime()).toBe(
-      nowLocal.getTime() + 5 * 60 * 1000,
+    expect(intents[0]!.items[0]!.id).toBe('sooner'); // most urgent leads
+    expect(intents[0]!.items[1]!.id).toBe('later');
+  });
+
+  it('schedules an already-in-warning-zone digest at now + 5 minutes', () => {
+    const intents = computeDigestIntents([item('a', 'Yogurt', daysFromNow(2))], NOW);
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.triggerDate.toISOString()).toBe('2026-06-02T12:05:00.000Z');
+    expect(intents[0]!.items[0]!.daysUntilExpiry).toBe(2);
+    expect(intents[0]!.tier).toBe('soon');
+  });
+
+  it('derives the today tier for an item expiring within the day', () => {
+    const intents = computeDigestIntents([item('a', 'Milk', daysFromNow(0.5))], NOW);
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.minDaysUntilExpiry).toBe(0);
+    expect(intents[0]!.tier).toBe('today');
+  });
+
+  it('derives the tomorrow tier for an item ~1.5 days out', () => {
+    const intents = computeDigestIntents([item('a', 'Bread', daysFromNow(1.5))], NOW);
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.minDaysUntilExpiry).toBe(1);
+    expect(intents[0]!.tier).toBe('tomorrow');
+  });
+
+  it('takes the digest tier from its SOONEST item', () => {
+    // Two immediate items: one today (0.5d), one soon (2.5d) → min = today.
+    const intents = computeDigestIntents(
+      [item('a', 'Berries', daysFromNow(2.5)), item('b', 'Lettuce', daysFromNow(0.5))],
+      NOW,
     );
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.tier).toBe('today');
+    expect(intents[0]!.minDaysUntilExpiry).toBe(0);
   });
 
   it('honors a custom warningDays threshold', () => {
-    // 5 days out, warningDays=7 → warningStart 2 days in the past → now + 5min
-    const inWindow = computeScheduleIntents(
-      [item('a', 'Bread', daysFromNow(5))],
-      NOW,
-      7,
-    );
-    expect(inWindow).toHaveLength(1);
-    expect(inWindow[0]!.triggerDate.toISOString()).toBe(
-      '2026-06-02T12:05:00.000Z',
-    );
-
-    // 10 days out, warningDays=7 → warningStart 3 days out → 09:00 local pin
+    // 10 days out, warningDays=7 → warningStart 3 days out → 09:00 local pin.
     const expiryMs = NOW.getTime() + 10 * MS_PER_DAY;
-    const future = computeScheduleIntents(
-      [item('a', 'Bread', daysFromNow(10))],
-      NOW,
-      7,
-    );
+    const future = computeDigestIntents([item('a', 'Bread', daysFromNow(10))], NOW, 7);
     expect(future).toHaveLength(1);
-    expect(future[0]!.triggerDate.getTime()).toBe(
-      localPin(expiryMs - 7 * MS_PER_DAY).getTime(),
-    );
+    expect(future[0]!.triggerDate.getTime()).toBe(localPin(expiryMs - 7 * MS_PER_DAY).getTime());
   });
 
-  it('preserves input order across mixed-status items', () => {
-    const intents = computeScheduleIntents(
-      [
-        item('skip-1', 'Salt'), // no expiresAt
-        item('future', 'Parsley', daysFromNow(30)),
-        item('skip-2', 'Old Milk', daysFromNow(-2)),
-        item('warn', 'Yogurt', daysFromNow(2)),
-        item('skip-3', 'Mystery', 'garbage'),
-      ],
-      NOW,
-    );
-    expect(intents.map((i) => i.itemId)).toEqual(['future', 'warn']);
+  it('honors a custom notify hour (the Settings reminder-time preference)', () => {
+    const intents = computeDigestIntents([item('a', 'Parsley', daysFromNow(30))], NOW, undefined, undefined, 18);
+    expect(intents).toHaveLength(1);
+    expect(intents[0]!.triggerDate.getHours()).toBe(18);
+    // Same morning-vs-evening pin, same day as the default-hour trigger.
+    const defaultHour = computeDigestIntents([item('a', 'Parsley', daysFromNow(30))], NOW);
+    expect(intents[0]!.triggerDate.toDateString()).toBe(defaultHour[0]!.triggerDate.toDateString());
   });
 
   it('is idempotent — same inputs produce deeply-equal output', () => {
@@ -155,32 +161,20 @@ describe('computeScheduleIntents', () => {
       item('b', 'Yogurt', daysFromNow(2)),
       item('c', 'Salt'),
     ];
-    const a = computeScheduleIntents(items, NOW);
-    const b = computeScheduleIntents(items, NOW);
-    expect(a).toEqual(b);
+    expect(computeDigestIntents(items, NOW)).toEqual(computeDigestIntents(items, NOW));
   });
 
-  it('clamps daysUntilExpiry to 0 (never negative) at warning-zone trigger', () => {
-    // expires in 0.001 days (~86 seconds) — trigger is now + 5min, so the
-    // delta is negative; the Math.max(0, ...) clamp must fire.
-    const intents = computeScheduleIntents(
-      [
-        {
-          id: 'a',
-          name: 'About to go',
-          expiresAt: new Date(NOW.getTime() + 86).toISOString(),
-        },
-      ],
+  it('clamps daysUntilExpiry to 0 (never negative)', () => {
+    const intents = computeDigestIntents(
+      [{ id: 'a', name: 'About to go', expiresAt: new Date(NOW.getTime() + 86).toISOString() }],
       NOW,
     );
     expect(intents).toHaveLength(1);
-    expect(intents[0]!.daysUntilExpiry).toBe(0);
+    expect(intents[0]!.items[0]!.daysUntilExpiry).toBe(0);
   });
 
-  it('caps output at maxIntents, keeping the soonest triggers in input order', () => {
-    // Five items with staggered future expiries → staggered 09:00-local pins.
-    // ids by expiry: a(+10d) c(+20d) d(+15d) b(+30d) e(+25d)
-    // trigger order (soonest first): a(+7d) d(+12d) c(+17d) e(+22d) b(+27d)
+  it('caps output at maxIntents, keeping the soonest-firing digests', () => {
+    // Five items on distinct future days → five one-item digests.
     const items = [
       item('a', 'A', daysFromNow(10)),
       item('b', 'B', daysFromNow(30)),
@@ -188,22 +182,21 @@ describe('computeScheduleIntents', () => {
       item('d', 'D', daysFromNow(15)),
       item('e', 'E', daysFromNow(25)),
     ];
-    const intents = computeScheduleIntents(items, NOW, undefined, 3);
-    // Soonest three are a, d, c — surviving intents keep INPUT order: a, c, d.
-    expect(intents.map((i) => i.itemId)).toEqual(['a', 'c', 'd']);
+    const intents = computeDigestIntents(items, NOW, undefined, 3);
+    expect(intents).toHaveLength(3);
+    // Soonest three triggers → items a(+10), d(+15), c(+20), in trigger order.
+    expect(intents.map((d) => d.items[0]!.id)).toEqual(['a', 'd', 'c']);
   });
 
   it('defaults the cap to the iOS 64-pending-notification budget', () => {
+    // Distinct future days so each item is its own digest.
     const many = Array.from({ length: MAX_SCHEDULE_INTENTS + 11 }, (_, i) =>
       item(`id-${i}`, `Item ${i}`, daysFromNow(10 + i)),
     );
-    const intents = computeScheduleIntents(many, NOW);
+    const intents = computeDigestIntents(many, NOW);
     expect(intents).toHaveLength(MAX_SCHEDULE_INTENTS);
-    // The dropped intents must be the 11 farthest-out triggers.
-    const kept = new Set(intents.map((i) => i.itemId));
-    for (let i = 0; i < MAX_SCHEDULE_INTENTS; i++) {
-      expect(kept.has(`id-${i}`)).toBe(true);
-    }
+    const kept = new Set(intents.flatMap((d) => d.items.map((i) => i.id)));
+    for (let i = 0; i < MAX_SCHEDULE_INTENTS; i++) expect(kept.has(`id-${i}`)).toBe(true);
     for (let i = MAX_SCHEDULE_INTENTS; i < MAX_SCHEDULE_INTENTS + 11; i++) {
       expect(kept.has(`id-${i}`)).toBe(false);
     }

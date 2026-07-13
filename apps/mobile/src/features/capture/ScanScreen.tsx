@@ -38,9 +38,9 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'ex
 import * as Haptics from 'expo-haptics';
 import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-react-native';
 
-import { suggestExpiryISO, type CaptureSource } from '@breadbox/core';
+import { suggestExpiryISO, suggestStorageLocation, type CaptureSource } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { addPantryItem } from '../pantry/addPantryItem';
+import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { useFavoriteStores } from '../settings/useFavoriteStores';
@@ -344,15 +344,19 @@ export function ScanScreen() {
     if (!trimmed || !userId || !activeHouseholdId || busy) return;
     setBusy(true);
     try {
-      await addPantryItem({
+      // Infer where the food naturally lives, then estimate expiry AT that
+      // location — storing milk as "pantry" while estimating with a fridge
+      // duration is how scanned items used to get wildly wrong dates.
+      const location = suggestStorageLocation(trimmed) ?? 'pantry';
+      await addOrMergePantryItem({
         householdId: activeHouseholdId,
         userId,
         name: trimmed,
         brand: brand.trim() || null,
         barcode: isRetailBarcode(phase.barcode) ? phase.barcode : null,
         quantity: 1,
-        location: 'pantry',
-        expiresIso: suggestExpiryISO({ name: trimmed }),
+        location,
+        expiresIso: suggestExpiryISO({ name: trimmed, location }),
         source: target === 'qr' ? 'manual' : 'barcode',
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -394,15 +398,17 @@ export function ScanScreen() {
     try {
       for (const b of addable) {
         const nm = b.name.trim();
-        await addPantryItem({
+        // Same location-consistent estimate as the single-item confirm path.
+        const location = suggestStorageLocation(nm) ?? 'pantry';
+        await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
           name: nm,
           brand: b.brand?.trim() || null,
           barcode: isRetailBarcode(b.barcode) ? b.barcode : null,
           quantity: b.qty,
-          location: 'pantry',
-          expiresIso: suggestExpiryISO({ name: nm }),
+          location,
+          expiresIso: suggestExpiryISO({ name: nm, location }),
           source: basketSource(b.barcode),
         });
       }

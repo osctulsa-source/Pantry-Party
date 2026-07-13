@@ -36,6 +36,7 @@ import { useQuery } from '@powersync/react-native';
 import { User } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from './ActiveHouseholdContext';
@@ -100,7 +101,7 @@ export function HouseholdScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader variant="dots" />
         </View>
       </SafeAreaView>
     );
@@ -113,7 +114,7 @@ export function HouseholdScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.loadingState}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader variant="dots" />
           <Text style={styles.caption}>Setting up your household...</Text>
         </View>
       </SafeAreaView>

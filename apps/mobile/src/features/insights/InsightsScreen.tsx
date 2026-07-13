@@ -11,7 +11,6 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   FlatList,
   StyleSheet,
@@ -26,6 +25,7 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useInsights } from './useInsights';
 import { readExpiryEvents, type ExpiryEvent } from '../pantry/expiryEvents';
 import { readCookEvents, type CookEvent } from '../recipes/cookLog';
+import { BrandLoader, BrandOrnament } from '../../components/BrandDecor';
 
 interface ActivityRow {
   id: string;
@@ -121,7 +121,7 @@ export function InsightsScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoader variant="carousel" />
         </View>
       </SafeAreaView>
     );
@@ -135,6 +135,9 @@ export function InsightsScreen() {
         contentContainerStyle={styles.scroll}
         ListHeaderComponent={
           <>
+            <View style={styles.ornament}>
+              <BrandOrnament foods={['tomato', 'herb', 'apple', 'grapes', 'carrot', 'lemon']} size={26} opacity={0.5} />
+            </View>
             {/* Hero streak card */}
             <View style={styles.heroCard}>
               <Text style={styles.heroFlame}>🔥</Text>
@@ -200,6 +203,7 @@ function StatTile({ label, value, color }: { label: string; value: string; color
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  ornament: { marginBottom: tokens.space(4) },
   scroll: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(4), paddingBottom: tokens.space(10) },
 
   // Hero

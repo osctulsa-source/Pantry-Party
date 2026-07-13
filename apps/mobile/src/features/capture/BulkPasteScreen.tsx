@@ -22,9 +22,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 
-import { suggestExpiryISO } from '@breadbox/core';
+import { suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { addPantryItem } from '../pantry/addPantryItem';
+import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import type { RootStackParamList } from '../../../App';
@@ -64,13 +64,16 @@ export function BulkPasteScreen() {
     setBusy(true);
     try {
       for (const name of names) {
-        await addPantryItem({
+        // Location-consistent estimate (see ScanScreen): infer where the food
+        // lives, then estimate expiry AT that location.
+        const location = suggestStorageLocation(name) ?? 'pantry';
+        await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
           name,
           quantity: 1,
-          location: 'pantry',
-          expiresIso: suggestExpiryISO({ name }),
+          location,
+          expiresIso: suggestExpiryISO({ name, location }),
           source: 'manual',
         });
       }

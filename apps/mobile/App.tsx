@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { tokens } from './src/theme/tokens';
 import { setupPowerSync } from './src/data/powersync/db';
+import { navigationRef } from './src/navigation/navigationRef';
 import { MainTabs, type TabParamList } from './src/navigation/MainTabs';
 import { navigationRef } from './src/navigation/navigationRef';
 import { AddItemScreen } from './src/features/pantry/AddItemScreen';
@@ -24,7 +25,10 @@ import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
+import { ReviewDatesScreen } from './src/features/pantry/ReviewDatesScreen';
 import { InsightsScreen } from './src/features/insights/InsightsScreen';
+import { CollectionsScreen } from './src/features/insights/CollectionsScreen';
+import { CookbookScreen } from './src/features/insights/CookbookScreen';
 import { RecipeDetailScreen } from './src/features/recipes/RecipeDetailScreen';
 import { FavoritesScreen } from './src/features/recipes/FavoritesScreen';
 import { HistoryScreen } from './src/features/activity/HistoryScreen';
@@ -51,7 +55,10 @@ export type RootStackParamList = {
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
+  ReviewDates: undefined;
   Insights: undefined;
+  Collections: undefined;
+  Cookbook: undefined;
   RecipeDetail: { recipe: SpoonacularRecipe };
   Favorites: undefined;
   History: undefined;
@@ -112,7 +119,10 @@ function AppStack() {
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
+      <Stack.Screen name="ReviewDates" component={ReviewDatesScreen} options={{ title: 'Review dates' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
+      <Stack.Screen name="Collections" component={CollectionsScreen} options={{ title: 'Your collection' }} />
+      <Stack.Screen name="Cookbook" component={CookbookScreen} options={{ title: 'Your cookbook' }} />
       <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ title: 'Your Kitchen' }} />
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />
@@ -225,8 +235,7 @@ export default function App() {
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
           <ActiveHouseholdProvider>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped navigationRef avoids circular import with RootStackParamList */}
-            <NavigationContainer ref={navigationRef as any} linking={linking}>
+            <NavigationContainer ref={navigationRef} linking={linking}>
               <AppRoot />
             </NavigationContainer>
           </ActiveHouseholdProvider>

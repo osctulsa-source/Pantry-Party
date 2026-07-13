@@ -86,7 +86,7 @@ import {
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { CookEmptyArt } from '../../components/illustrations/CookEmptyArt';
+import { BrandEmptyArt } from '../../components/BrandDecor';
 import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
@@ -392,6 +392,8 @@ export function RecipesScreen() {
       <ScreenHeader
         title="Cook"
         subtitle={`Cook this · ${mealtimeLabel(hour)}`}
+        watermark="spoon"
+        watermarkTone="spruce"
         right={
           <Pressable
             onPress={() => navigation.navigate('Favorites')}
@@ -519,7 +521,7 @@ export function RecipesScreen() {
 
       {recipeState.kind === 'empty' && (
         <View style={styles.center}>
-          <CookEmptyArt />
+          <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
           <Text style={styles.errorTitle}>
             {recipeState.reason === 'no-pantry'
               ? 'Your pantry is the menu'

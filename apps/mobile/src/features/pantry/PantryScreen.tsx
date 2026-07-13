@@ -90,6 +90,11 @@ const PANTRY_QUERY =
 
 // Visual treatment per expiry status — the three color-coded cards. Soft tint
 // for the card fill, the matching expiry color for the title + status dot.
+// The calm card is titled "Still good" (NOT "Fresh") so it can't collide with
+// the Fresh ZONE chip above — one word meaning both a food type and an expiry
+// status read as a broken filter. Its colors are zone-aware (see StatusCard):
+// select the Drinks chip and the Still-good card tints blue with it, making
+// the chip→card relationship visible.
 const STATUS_CARD: Record<ExpiryStatus, { title: string; tint: string; accent: string }> = {
   expired: {
     title: 'Expired',
@@ -102,7 +107,7 @@ const STATUS_CARD: Record<ExpiryStatus, { title: string; tint: string; accent: s
     accent: tokens.semantic.expiry.warning,
   },
   fresh: {
-    title: 'Fresh',
+    title: 'Still good',
     tint: tokens.semantic.expiry.freshSoft,
     accent: tokens.color.success,
   },
@@ -486,7 +491,11 @@ export function PantryScreen() {
 
   const zoneTheme = pantryZoneTheme(zone);
 
-  const renderRows = (groups: PantryItemGroup[]) =>
+  // `rowSoft` fills the row's soft elements (icon circle, selection, chips).
+  // Inside the Still-good card — whose tint IS the zone soft — rows use the
+  // plain surface instead, so circles keep contrast (they used to vanish when
+  // the Fresh zone's soft matched the card's freshSoft exactly).
+  const renderRows = (groups: PantryItemGroup[], rowSoft: string = zoneTheme.soft) =>
     groups.map((group, index) => {
       const ids = group.items.map((i) => i.id);
       const groupSelected = group.items.every((i) => selected.has(i.id));
@@ -496,7 +505,7 @@ export function PantryScreen() {
           group={group}
           now={now}
           zoneAccent={zoneTheme.accent}
-          zoneSoft={zoneTheme.soft}
+          zoneSoft={rowSoft}
           selected={groupSelected}
           last={index === groups.length - 1}
           swipeEnabled={!selecting && !busy}
@@ -523,6 +532,8 @@ export function PantryScreen() {
       <ScreenHeader
         title="Pantry"
         subtitle={`${items.length} ${items.length === 1 ? 'item' : 'items'}`}
+        watermark="herb"
+        watermarkTone="fern"
         right={
           <>
             {insights.streakDays >= 1 && (
@@ -682,7 +693,7 @@ export function PantryScreen() {
                 setFreshCollapsed((c) => !c);
               }}
             >
-              {!freshCollapsed && renderRows(grouped.fresh.groups)}
+              {!freshCollapsed && renderRows(grouped.fresh.groups, tokens.color.surface)}
             </StatusCard>
           )}
             </ScrollView>
@@ -753,10 +764,15 @@ function StatusCard({
   children: ReactNode;
 }) {
   const meta = STATUS_CARD[status];
+  // The calm card follows the SELECTED ZONE's palette (green for Fresh, blue
+  // for Drinks, ochre for Shelf-stable) so the chip you tapped and the box
+  // below visibly belong together. Urgency cards keep their semantic colors.
+  const accent = status === 'fresh' ? zoneTheme.accent : meta.accent;
+  const tint = status === 'fresh' ? zoneTheme.soft : meta.tint;
   const collapsible = onToggle !== undefined;
   const headerPress = onToggle ?? onHeaderPress;
   return (
-    <View style={[styles.card, { backgroundColor: meta.tint }]}>
+    <View style={[styles.card, { backgroundColor: tint }]}>
       <Pressable
         style={styles.cardHeader}
         onPress={headerPress}
@@ -771,8 +787,8 @@ function StatusCard({
         }
       >
         <View style={styles.cardHeaderLeft}>
-          <View style={[styles.statusDot, { backgroundColor: meta.accent }]} />
-          <Text style={[styles.cardTitle, { color: meta.accent }]}>{meta.title}</Text>
+          <View style={[styles.statusDot, { backgroundColor: accent }]} />
+          <Text style={[styles.cardTitle, { color: accent }]}>{meta.title}</Text>
           <Text style={styles.cardCount}>{count}</Text>
         </View>
         <View style={styles.cardHeaderRight}>
@@ -788,9 +804,9 @@ function StatusCard({
           )}
           {collapsible &&
             (collapsed ? (
-              <ChevronRight size={16} color={meta.accent} accessibilityLabel="Expand" />
+              <ChevronRight size={16} color={accent} accessibilityLabel="Expand" />
             ) : (
-              <ChevronDown size={16} color={meta.accent} accessibilityLabel="Collapse" />
+              <ChevronDown size={16} color={accent} accessibilityLabel="Collapse" />
             ))}
         </View>
       </Pressable>
@@ -1052,13 +1068,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(3),
     borderRadius: 999,
   },
-  // Explicit lineHeight: Nunito Sans clips vertically on iOS without it —
-  // invisible on the soft chip fill, obvious once a selected chip goes accent.
-  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 18 },
+  // Nunito Sans sits high in its line box on iOS: a tight lineHeight clips the
+  // ascenders/digits (the glyph is drawn above the frame and cropped). A prior
+  // pass set lineHeight 18 — still too tight (obvious once a chip goes accent).
+  // Give it generous headroom + a little vertical padding so the frame fully
+  // contains the glyph on every device.
+  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 22, paddingVertical: 2 },
   zoneChipCount: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
-    lineHeight: 16,
+    lineHeight: 20,
+    paddingVertical: 2,
     fontVariant: ['tabular-nums'],
   },
   scroll: { paddingBottom: tokens.space(10) },

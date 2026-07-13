@@ -12,18 +12,35 @@ import { type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { tokens } from '../theme/tokens';
+import { BrandIcon, type BrandFoodName } from './BrandIcon';
+import type { BrandTone } from '../theme/brandPalette';
 
 export function ScreenHeader({
   title,
   subtitle,
   right,
+  watermark,
+  watermarkTone,
 }: {
   title: string;
   subtitle?: string;
   right?: ReactNode;
+  /** Optional faint brand-icon watermark bleeding off the header's edge. */
+  watermark?: BrandFoodName;
+  watermarkTone?: BrandTone;
 }) {
   return (
     <View style={styles.header}>
+      {watermark ? (
+        <View
+          style={styles.watermark}
+          pointerEvents="none"
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          <BrandIcon name={watermark} tone={watermarkTone} variant="onLight" size={92} />
+        </View>
+      ) : null}
       <View style={styles.main}>
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -42,6 +59,7 @@ const styles = StyleSheet.create({
     paddingTop: tokens.space(4),
     paddingBottom: tokens.space(3),
   },
+  watermark: { position: 'absolute', right: -16, top: -6, opacity: 0.08 },
   main: { flex: 1 },
   title: { fontFamily: tokens.font.display.bold, fontSize: 28, color: tokens.color.ink, letterSpacing: -0.5 },
   subtitle: {

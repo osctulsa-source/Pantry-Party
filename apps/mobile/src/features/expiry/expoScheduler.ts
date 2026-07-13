@@ -5,18 +5,22 @@
 import * as Notifications from 'expo-notifications';
 import type { NotificationScheduler } from '@breadbox/core';
 
-import { EXPIRY_CATEGORY } from './notificationActions';
-
 export const expoScheduler: NotificationScheduler = {
   async cancelAll() {
     await Notifications.cancelAllScheduledNotificationsAsync();
   },
-  async schedule({ id, title, body, triggerDate }) {
+  async schedule({ id, title, body, triggerDate, categoryId, data }) {
     await Notifications.scheduleNotificationAsync({
       identifier: id,
-      // categoryIdentifier attaches the "✓ Used / Snooze 2 days" actions;
-      // data.itemId is what the response handler resolves against.
-      content: { title, body, categoryIdentifier: EXPIRY_CATEGORY, data: { itemId: id } },
+      content: {
+        title,
+        body,
+        // A single-item digest passes the EXPIRY category (its "✓ Used /
+        // Snooze" actions resolve against data.itemId); a bundle passes none,
+        // so a default tap just opens the app.
+        ...(categoryId ? { categoryIdentifier: categoryId } : {}),
+        data: data ?? {},
+      },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: triggerDate,

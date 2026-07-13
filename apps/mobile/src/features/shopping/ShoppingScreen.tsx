@@ -38,10 +38,10 @@ import * as Crypto from 'expo-crypto';
 import * as Haptics from 'expo-haptics';
 import { X } from 'lucide-react-native';
 
-import { suggestExpiryISO, type ShoppingListItem } from '@breadbox/core';
+import { suggestExpiryISO, suggestStorageLocation, type ShoppingListItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { ShoppingEmptyArt } from '../../components/illustrations/ShoppingEmptyArt';
+import { BrandEmptyArt } from '../../components/BrandDecor';
 import { getPowerSync } from '../../data/powersync/db';
 import { rowToShoppingListItem } from '../../data/powersync/mapShoppingRow';
 import type { ShoppingListItemRow } from '../../data/powersync/schema';
@@ -150,14 +150,17 @@ export function ShoppingScreen() {
     setBusy(true);
     animate();
     try {
+      // Location-consistent estimate (see ScanScreen): infer where the food
+      // lives, then estimate expiry AT that location.
+      const location = suggestStorageLocation(item.name) ?? 'pantry';
       await addPantryItem({
         householdId: activeHouseholdId,
         userId,
         name: item.name,
         quantity: item.quantity,
         unit: item.unit ?? null,
-        location: 'pantry',
-        expiresIso: suggestExpiryISO({ name: item.name, location: 'pantry' }),
+        location,
+        expiresIso: suggestExpiryISO({ name: item.name, location }),
         source: 'restock',
       });
       // Log the restock to the household activity history (best-effort,
@@ -311,6 +314,8 @@ export function ShoppingScreen() {
       <ScreenHeader
         title="Shopping"
         subtitle={`${open.length} to pick up`}
+        watermark="jar"
+        watermarkTone="blue"
         right={
           done.length > 0 ? (
             <View style={styles.headerActions}>
@@ -362,7 +367,7 @@ export function ShoppingScreen() {
         contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.list}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
-            <ShoppingEmptyArt />
+            <BrandEmptyArt foods={['jar', 'bread', 'carrot']} />
             <Text style={styles.emptyTitle}>All stocked up</Text>
             <Text style={styles.emptySub}>
               Items you run low on — and recipe extras — show up here automatically.

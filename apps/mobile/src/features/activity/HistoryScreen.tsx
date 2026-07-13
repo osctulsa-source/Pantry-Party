@@ -18,6 +18,7 @@ import { InsightsEmptyArt } from '../../components/illustrations/InsightsEmptyAr
 import { useActivity } from './useActivity';
 import { useDisplayName } from '../household/useDisplayName';
 import { useAuth } from '../auth/AuthContext';
+import { BrandOrnament } from '../../components/BrandDecor';
 
 type Filter = 'all' | 'cooked' | 'used' | 'tossed';
 
@@ -84,6 +85,9 @@ export function HistoryScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
+      <View style={styles.ornament}>
+        <BrandOrnament foods={['bread', 'cheese', 'mushroom', 'herb', 'jar', 'spoon']} size={24} opacity={0.45} />
+      </View>
       <View style={styles.chips}>
         {FILTERS.map((f) => {
           const selected = f.value === filter;
@@ -151,6 +155,7 @@ export function HistoryScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
+  ornament: { marginTop: tokens.space(2), marginBottom: tokens.space(1) },
   chips: {
     flexDirection: 'row',
     gap: tokens.space(2),
