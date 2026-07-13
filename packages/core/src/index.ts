@@ -19,6 +19,7 @@ export * from "./favorites.ts";
 export * from "./activity.ts";
 export * from "./taste.ts";
 export * from "./tasteProfile.ts";
+export * from "./dietFilter.ts";
 export * from "./historyFormat.ts";
 export * from "./storeChains.ts";
 export * from "./receiptLines.ts";
