@@ -23,6 +23,7 @@ import * as Notifications from 'expo-notifications';
 import { addDaysUTC } from '@breadbox/core';
 
 import { getPowerSync } from '../../data/powersync/db';
+import { navigateWhenReady } from '../../navigation/navigationRef';
 import { recordExpiryEvents } from '../pantry/expiryEvents';
 
 export const EXPIRY_CATEGORY = 'expiry';
@@ -50,10 +51,29 @@ export async function handleExpiryActionResponse(
   response: Notifications.NotificationResponse,
 ): Promise<void> {
   const action = response.actionIdentifier;
-  // Default tap (open the app) isn't ours to handle.
+  const data = response.notification.request.content.data as {
+    itemId?: string;
+    screen?: string;
+  } | null;
+
+  // Default tap on an expiry digest: land the user on the "Use soon" list —
+  // the notification said "3 things need you"; the app should open ON those
+  // three things, not wherever it was last left. (Single-item digests carry
+  // itemId + actions; their default tap goes to the same list for one calm,
+  // consistent destination.) Same dup-guard as the actions: a cold-start
+  // response replays through both the live listener and last-response.
+  if (action === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+    if (data?.screen === 'expiring' || data?.itemId) {
+      const dupKey = `${response.notification.request.identifier}:open`;
+      if (handledResponses.has(dupKey)) return;
+      handledResponses.add(dupKey);
+      navigateWhenReady('ExpiringSoon');
+    }
+    return;
+  }
+
   if (action !== ACTION_USED && action !== ACTION_SNOOZE) return;
 
-  const data = response.notification.request.content.data as { itemId?: string } | null;
   const itemId = data?.itemId ?? response.notification.request.identifier;
   if (!itemId) return;
 
