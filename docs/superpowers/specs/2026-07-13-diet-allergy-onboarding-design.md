@@ -65,9 +65,17 @@ export interface DietCheckRecipe {
 /** Slugs from profile.diets + profile.allergies the recipe violates. */
 export function recipeViolations(profile: TasteProfile, recipe: DietCheckRecipe): string[];
 
-/** Recipes with zero violations. Empty profile returns the input array unchanged (same reference). */
-export function filterByDiet<T extends DietCheckRecipe>(profile: TasteProfile, recipes: T[]): T[];
+/** True when the recipe violates nothing. */
+export function passesDiet(profile: TasteProfile, recipe: DietCheckRecipe): boolean;
+
+/** True when the profile has no dietary lines at all — callers skip filtering entirely. */
+export function hasDietLines(profile: TasteProfile): boolean;
 ```
+
+(Callers adapt their recipe shape per item — `SpoonacularRecipe` maps flags + `ingredients[].name`
+with a `usedIngredientNames ∪ missedIngredientNames` fallback for older cached responses — so the
+per-recipe API fits better than an array-level `filterByDiet`. The empty-profile zero-change
+guarantee moves to the callsite: when `hasDietLines` is false, the original array is used untouched.)
 
 Rules:
 
@@ -143,11 +151,13 @@ editing the same fields.
 
 ## 4 · Filtering application — Cook tab only
 
-In `RecipesScreen`, apply `filterByDiet(tasteProfile, recipes)` to the candidate pool before the
-existing ranking/urgency blends (single site — the memoized candidates step), mapping each recipe to
-`DietCheckRecipe` via its existing fields (`vegetarian/vegan/glutenFree` + lowercased
-`extendedIngredients`/curated ingredient names). Hero cards and "More from your pantry" both flow
-from that pool. Favorites, cook history, recipe detail: untouched.
+In `RecipesScreen`, a memoized `dietSafe` pool replaces `recipes` as the input to the existing
+ranking/urgency blends: when `hasDietLines(tasteProfile)` is false it IS `recipes` (same reference);
+otherwise `recipes.filter((r) => passesDiet(tasteProfile, adapt(r)))` where `adapt` maps
+`vegetarian/vegan/glutenFree` plus lowercased `ingredients[].name` (falling back to
+`usedIngredientNames ∪ missedIngredientNames` when `ingredients` is empty on older cached
+responses). Hero cards and "More from your pantry" both flow from that pool. Favorites, cook
+history, recipe detail: untouched.
 
 Edge note: if filtering empties the pool entirely (aggressive profile + small fetch), show the
 existing empty state — acceptable for v1 and honest; noted in QA.
