@@ -30,6 +30,24 @@ describe('useTasteProfile loadedFor', () => {
     expect(result.current.profile.cuisines).toEqual(['italian']);
   });
 
+  it('stays loadedFor=null across a live null→resolved transition until the real profile loads', async () => {
+    await AsyncStorage.setItem(
+      'tasteProfile:house-1',
+      JSON.stringify({ ...EMPTY_TASTE_PROFILE, cuisines: ['italian'] }),
+    );
+    const { result, rerender } = renderHook(({ id }: { id: string | null }) => useTasteProfile(id), {
+      initialProps: { id: null as string | null },
+    });
+    await waitFor(() => expect(result.current.loaded).toBe(true));
+    expect(result.current.loadedFor).toBeNull();
+
+    // Household resolves — this is the commit where the old code clobbered.
+    rerender({ id: 'house-1' });
+    // loadedFor must not jump to 'house-1' until the async load actually completes.
+    await waitFor(() => expect(result.current.loadedFor).toBe('house-1'));
+    expect(result.current.profile.cuisines).toEqual(['italian']);
+  });
+
   it('a save that merges onto the loaded profile preserves cuisines/flavors', async () => {
     await AsyncStorage.setItem(
       'tasteProfile:house-1',
