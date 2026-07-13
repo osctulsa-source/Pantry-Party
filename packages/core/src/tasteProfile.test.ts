@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+  ALLERGY_OPTIONS,
   CUISINE_OPTIONS,
   DIET_OPTIONS,
   EMPTY_TASTE_PROFILE,
@@ -71,5 +72,15 @@ describe('seedPrefsFromTaste', () => {
     const prefs = seedPrefsFromTaste(profile({ cuisines: ['italian'], flavors: ['herby'] }));
     // "basil" is a herby token; "pasta" is an italian token — a basil-pasta dish scores both.
     expect(scoreTitle(prefs, 'Basil Pesto Pasta')).toBeGreaterThan(scoreTitle(prefs, 'Plain Pasta'));
+  });
+});
+
+describe('allergies field', () => {
+  it('EMPTY_TASTE_PROFILE has an empty allergies list', () => {
+    expect(EMPTY_TASTE_PROFILE.allergies).toEqual([]);
+  });
+
+  it('ALLERGY_OPTIONS carries the four supported allergens', () => {
+    expect(ALLERGY_OPTIONS.map((o) => o.slug)).toEqual(['egg', 'soy', 'fish', 'shellfish']);
   });
 });

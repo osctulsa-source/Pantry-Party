@@ -48,6 +48,7 @@ export function TasteQuizSheet({
   const [flavors, setFlavors] = useState<string[]>(initial.flavors);
   const [speed, setSpeed] = useState<TasteSpeed | null>(initial.speed);
   const [diets, setDiets] = useState<string[]>(initial.diets);
+  const [allergies, setAllergies] = useState<string[]>(initial.allergies);
 
   // Re-seed the working copy from the saved profile each time the sheet opens.
   useEffect(() => {
@@ -57,6 +58,7 @@ export function TasteQuizSheet({
     setFlavors(initial.flavors);
     setSpeed(initial.speed);
     setDiets(initial.diets);
+    setAllergies(initial.allergies);
   }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tap = () => Haptics.selectionAsync().catch(() => {});
@@ -67,7 +69,7 @@ export function TasteQuizSheet({
       setStep((s) => s + 1);
       return;
     }
-    onSave({ cuisines, flavors, speed, diets, updatedAt: initial.updatedAt });
+    onSave({ cuisines, flavors, speed, diets, allergies, updatedAt: initial.updatedAt });
     onClose();
   }
 
