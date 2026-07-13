@@ -24,6 +24,7 @@ import { BulkPasteScreen } from './src/features/capture/BulkPasteScreen';
 import { QuickAddScreen } from './src/features/pantry/QuickAddScreen';
 import { EditItemScreen } from './src/features/pantry/EditItemScreen';
 import { ExpiringSoonScreen } from './src/features/pantry/ExpiringSoonScreen';
+import { ReviewDatesScreen } from './src/features/pantry/ReviewDatesScreen';
 import { InsightsScreen } from './src/features/insights/InsightsScreen';
 import { CollectionsScreen } from './src/features/insights/CollectionsScreen';
 import { CookbookScreen } from './src/features/insights/CookbookScreen';
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;
+  ReviewDates: undefined;
   Insights: undefined;
   Collections: undefined;
   Cookbook: undefined;
@@ -108,6 +110,7 @@ function AppStack() {
       <Stack.Screen name="QuickAdd" component={QuickAddScreen} options={{ title: 'Quick add' }} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{ title: 'Edit item' }} />
       <Stack.Screen name="ExpiringSoon" component={ExpiringSoonScreen} options={{ title: 'Use soon' }} />
+      <Stack.Screen name="ReviewDates" component={ReviewDatesScreen} options={{ title: 'Review dates' }} />
       <Stack.Screen name="Insights" component={InsightsScreen} options={{ title: 'Your impact' }} />
       <Stack.Screen name="Collections" component={CollectionsScreen} options={{ title: 'Your collection' }} />
       <Stack.Screen name="Cookbook" component={CookbookScreen} options={{ title: 'Your cookbook' }} />
