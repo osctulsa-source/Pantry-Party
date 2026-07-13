@@ -643,17 +643,18 @@ git commit -m "feat(onboarding): two-step flow — diet/allergy step feeds the t
 
 ---
 
-### Task 7: TasteQuizSheet — allergy chips (parity)
+### Task 7: TasteQuizSheet allergy chips + FavoritesScreen summary parity
 
 **Files:**
 - Modify: `apps/mobile/src/features/recipes/TasteQuizSheet.tsx`
+- Modify: `apps/mobile/src/features/recipes/FavoritesScreen.tsx`
 
-- [ ] **Step 1: Integrate.** Read the file. Changes:
+- [ ] **Step 1: Quiz.** Read the file. Task 1 already landed the `allergies` state, reset-sync, and `onSave` wiring (controller-accepted pull-forward) — verify they exist, then add ONLY the UI:
 
 1. Import `ALLERGY_OPTIONS` alongside `DIET_OPTIONS`.
-2. Add state next to `diets`: `const [allergies, setAllergies] = useState<string[]>(initial.allergies);` (and reset it wherever the sheet resets `diets` from `initial` on open — find the `useEffect`/reset pattern and mirror it).
-3. In step 3's render, after the diets chip block, add an "Allergies" sub-heading (same style as the diets heading) and a chip row mapping `ALLERGY_OPTIONS` with identical Pressable/chip/a11y markup to the diets row, toggling `setAllergies`.
-4. In the `onSave` payload object include `allergies,` (and remove any `allergies: initial.allergies` pass-through Task 1 may have added).
+2. In step 3's render, after the diets chip block, add an "Allergies" sub-heading (same style as the diets heading) and a chip row mapping `ALLERGY_OPTIONS` with identical Pressable/chip/a11y markup to the diets row, toggling `setAllergies` via the existing `toggle` helper.
+
+- [ ] **Step 1b: Favorites summary parity** (gap found in Task 1 review): in `FavoritesScreen.tsx`, extend the label map seed `[...CUISINE_OPTIONS, ...FLAVOR_OPTIONS, ...DIET_OPTIONS]` with `...ALLERGY_OPTIONS` (import it), and where the "Your taste" summary renders `profile.diets` chips, also render `profile.allergies` through the same chip markup (append to the same rendered list — read the surrounding code and follow its exact pattern).
 
 - [ ] **Step 2: Verify** — `cd apps/mobile && npx tsc --noEmit && npx jest`.
 
