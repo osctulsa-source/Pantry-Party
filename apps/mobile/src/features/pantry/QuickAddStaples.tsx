@@ -56,7 +56,7 @@ export function QuickAddStaples({
                           accessibilityLabel={`Refine ${s.name} — choose kind or brand`}
                           style={styles.refineBtn}
                         >
-                          <ChevronDown size={12} color={tokens.color.ink} />
+                          <ChevronDown size={12} color={isAdded ? tokens.color.accent : tokens.color.ink} />
                         </Pressable>
                       ) : undefined
                     }
@@ -71,7 +71,7 @@ export function QuickAddStaples({
   );
 }
 
-const CELL = '23%'; // 4 per row with wrap gaps on standard widths
+const CELL = '23%'; // 4 per row; grow is capped by maxWidth 25% so ragged last rows stay near full-row width
 
 const styles = StyleSheet.create({
   group: { marginBottom: tokens.space(4) },
