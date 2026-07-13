@@ -1,5 +1,6 @@
 import { BRAND_FOODS, FOOD_TONE } from './BrandIcon';
 import { CORE_GLYPHS } from './brandGlyphs.core';
+import { PANTRY_GLYPHS } from './brandGlyphs.pantry';
 
 // FOOD_TONE and the glyph record must cover exactly the same names, and the
 // showcase order must not reference a missing glyph. Guards every future
@@ -7,7 +8,7 @@ import { CORE_GLYPHS } from './brandGlyphs.core';
 describe('brand glyph family', () => {
   it('every toned food has a glyph and vice versa', () => {
     const toneKeys = Object.keys(FOOD_TONE).sort();
-    const glyphKeys = Object.keys(CORE_GLYPHS).sort();
+    const glyphKeys = Object.keys({ ...CORE_GLYPHS, ...PANTRY_GLYPHS }).sort();
     expect(toneKeys).toEqual(glyphKeys);
   });
 

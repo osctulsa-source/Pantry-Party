@@ -14,8 +14,9 @@ import Svg, { G } from 'react-native-svg';
 
 import { BRAND_CREAM, BRAND_LEAF, toneHex, type BrandTone } from '../theme/brandPalette';
 import { CORE_GLYPHS, type CoreFoodName, type Paint } from './brandGlyphs.core';
+import { PANTRY_GLYPHS, PANTRY_TONE, type PantryFoodName } from './brandGlyphs.pantry';
 
-export type BrandFoodName = CoreFoodName;
+export type BrandFoodName = CoreFoodName | PantryFoodName;
 
 /** Each food's natural ground color (used when a tone isn't given). */
 export const FOOD_TONE: Record<BrandFoodName, BrandTone> = {
@@ -28,9 +29,10 @@ export const FOOD_TONE: Record<BrandFoodName, BrandTone> = {
   fish: 'spruce', bottle: 'spruce',
   egg: 'blue', jar: 'blue',
   grapes: 'plum', cherry: 'plum',
+  ...PANTRY_TONE,
 };
 
-const GLYPHS = CORE_GLYPHS;
+const GLYPHS = { ...CORE_GLYPHS, ...PANTRY_GLYPHS };
 
 export interface BrandIconProps {
   name: BrandFoodName;
