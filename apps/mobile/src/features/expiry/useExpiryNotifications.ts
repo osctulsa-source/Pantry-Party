@@ -37,6 +37,7 @@ import {
 } from '@breadbox/core';
 
 import { expoScheduler, ensureNotificationPermission } from './expoScheduler';
+import { getNotifyHour } from './notificationPrefs';
 import {
   EXPIRY_CATEGORY,
   handleExpiryActionResponse,
@@ -83,7 +84,10 @@ async function reconcile(
     }
   }
 
-  const digests = computeDigestIntents(items, now);
+  // Reminder-time preference (Settings → Reminders); defaults to 9am.
+  const notifyHour = await getNotifyHour();
+
+  const digests = computeDigestIntents(items, now, undefined, undefined, notifyHour);
   await expoScheduler.cancelAll();
   for (const digest of digests) {
     const { title, body } = digestNotification(digest, streakDays);
