@@ -22,6 +22,27 @@ describe('categorizeByName', () => {
     expect(categorizeByName('Orange')).toBe('produce');
   });
 
+  it('keeps pantry compounds out of produce (vegetable oil, canned tomatoes)', () => {
+    expect(categorizeByName('Vegetable oil')).toBe('pantry');
+    expect(categorizeByName('Avocado oil')).toBe('pantry');
+    expect(categorizeByName('Canned tomatoes')).toBe('pantry');
+    expect(categorizeByName('Tomato')).toBe('produce');
+    expect(categorizeByName('Vegetables')).toBe('produce');
+  });
+
+  it('does not treat baking soda as a beverage', () => {
+    expect(categorizeByName('Baking soda')).toBe('pantry');
+    expect(categorizeByName('Baking powder')).toBe('pantry');
+    expect(categorizeByName('Soda')).toBe('beverage');
+    expect(categorizeByName('Club soda')).toBe('beverage');
+  });
+
+  it('routes tea and coffee to beverage', () => {
+    expect(categorizeByName('Tea')).toBe('beverage');
+    expect(categorizeByName('Coffee')).toBe('beverage');
+    expect(categorizeByName('Sparkling water')).toBe('beverage');
+  });
+
   it('returns undefined when nothing matches', () => {
     expect(categorizeByName('zorblax')).toBeUndefined();
   });

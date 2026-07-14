@@ -18,7 +18,11 @@ export const PANTRY_ZONE_LABELS: Record<PantryZone, string> = {
 };
 
 function effectiveCategory(item: Pick<PantryItem, 'name' | 'category'>): string {
-  return (item.category ?? categorizeByName(item.name) ?? '').toLowerCase();
+  // Prefer live name inference over a persisted category. Category is auto-set
+  // at insert and can be stale for compound names (e.g. "Vegetable oil" once
+  // mis-tagged as produce). Fall back to the stored value when the name has
+  // no keyword match (refined staples like "Barilla spaghetti").
+  return (categorizeByName(item.name) ?? item.category ?? '').toLowerCase();
 }
 
 /**

@@ -11,8 +11,8 @@ import { DEFAULT_SHELF_LIFE } from './schema';
 import { daysForLocation, matchFood } from './shelfLifeLookup';
 
 // Keyword → category. First match wins. Order matters: more-specific intents
-// (e.g. "juice") are checked before broad ones (e.g. "orange") so "orange juice"
-// resolves to beverage, not produce.
+// (e.g. "juice", "oil", "canned", "baking soda") are checked before broad words
+// (e.g. "orange", "vegetable", "soda") so compound names land correctly.
 const NAME_CATEGORY_RULES: Array<[RegExp, string]> = [
   // Preservation words outrank the food word: "canned tomatoes" is a pantry
   // good, not produce — without this, the produce rule's 'tomatoes' hit gave
@@ -21,10 +21,14 @@ const NAME_CATEGORY_RULES: Array<[RegExp, string]> = [
   [/\b(milk|cream|yogurt|yoghurt|cheese|butter|kefir)\b/, 'dairy'],
   [/\b(chicken|beef|pork|turkey|fish|salmon|shrimp|bacon|sausage|steak|mince|meat)\b/, 'meat'],
   [/\b(bread|bagel|tortilla|bun|roll|muffin|croissant|pastry|cake)\b/, 'bakery'],
-  [/\b(juice|soda|beer|wine|kombucha|cola|lemonade|drink|beverage)\b/, 'beverage'],
+  // Before beverage: "baking soda" contains "soda" but is a pantry staple.
+  [/\bbaking\s+(soda|powder)\b/, 'pantry'],
+  // (?<!baking\s) keeps a bare "soda" as a drink without re-catching baking soda.
+  [/\b(juice|(?<!baking\s)soda|beer|wine|kombucha|cola|lemonade|drink|beverage|tea|coffee|water|seltzer|sparkling)\b/, 'beverage'],
   [/\b(frozen|ice cream|freezer)\b/, 'frozen'],
-  [/\b(lettuce|spinach|kale|tomato|tomatoes|berry|berries|banana|apple|orange|grape|carrot|broccoli|cucumber|onion|herb|cilantro|parsley|avocado|mushroom|produce|fruit|veg|vegetable|salad)\b/, 'produce'],
-  [/\b(flour|sugar|salt|rice|pasta|oil|sauce|ketchup|mustard|mayo|vinegar|honey|oats|cereal|bean|beans|canned|stock|broth|spice|pepper|baking|yeast|peanut|jam|tea|coffee|pantry|dry)\b/, 'pantry'],
+  // Pantry compounds before produce: "vegetable oil", "canned tomatoes", "avocado oil".
+  [/\b(flour|sugar|salt|rice|pasta|oil|sauce|ketchup|mustard|mayo|vinegar|honey|oats|cereal|bean|beans|canned|stock|broth|spice|pepper|baking|yeast|peanut|jam|pantry|dry)\b/, 'pantry'],
+  [/\b(lettuce|spinach|kale|tomato|tomatoes|berry|berries|banana|apple|orange|grape|carrot|broccoli|cucumber|onion|herb|cilantro|parsley|avocado|mushroom|produce|fruit|veg|veggies|vegetable|vegetables|salad)\b/, 'produce'],
 ];
 
 /** Infer a category from a free-text item name. Returns undefined when nothing matches. */

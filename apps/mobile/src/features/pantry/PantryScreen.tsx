@@ -199,11 +199,25 @@ function PantryZoneBar({
               { backgroundColor: chipTheme.soft },
               selected && { backgroundColor: chipTheme.accent },
             ]}
+            // Contain the Android ripple inside the pill — without overflow +
+            // an explicit ripple, the default circular ripple punches a hole
+            // through the center of Fresh / Shelf-stable chips on press.
+            android_ripple={{
+              color: selected ? 'rgba(255,255,255,0.22)' : `${chipTheme.accent}33`,
+              borderless: false,
+            }}
             accessibilityRole="button"
             accessibilityState={{ selected }}
             accessibilityLabel={`${z.label}, ${count} items`}
           >
-            <Text style={[styles.zoneChipTxt, { color: chipTheme.accent }, selected && { color: chipTheme.onAccent }]}>
+            <Text
+              style={[
+                styles.zoneChipTxt,
+                { color: chipTheme.accent },
+                selected && { color: chipTheme.onAccent },
+              ]}
+              allowFontScaling={false}
+            >
               {z.label}
             </Text>
             {count > 0 && (
@@ -213,6 +227,7 @@ function PantryZoneBar({
                   { color: chipTheme.accent },
                   selected && { color: chipTheme.onAccent, opacity: 0.85 },
                 ]}
+                allowFontScaling={false}
               >
                 {count}
               </Text>
@@ -1064,9 +1079,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.space(1),
-    paddingVertical: tokens.space(2),
-    paddingHorizontal: tokens.space(3),
+    paddingVertical: tokens.space(2.5),
+    paddingHorizontal: tokens.space(3.5),
     borderRadius: 999,
+    overflow: 'hidden',
+  },
+  // Explicit lineHeight + includeFontPadding: Nunito Sans clips vertically on
+  // iOS/Android without them — invisible on the soft chip fill, obvious once a
+  // selected chip goes accent (looks like the center of the pill is cut out).
+  zoneChipTxt: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    lineHeight: 18,
+    includeFontPadding: false,
   },
   // Nunito Sans sits high in its line box on iOS: a tight lineHeight clips the
   // ascenders/digits (the glyph is drawn above the frame and cropped). A prior

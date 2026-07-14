@@ -12,6 +12,14 @@ describe('getPantryZone', () => {
 
   it('routes beverages to drinks', () => {
     expect(getPantryZone({ name: 'Orange juice', category: 'beverage' })).toBe('drinks');
+    expect(getPantryZone({ name: 'Tea', category: undefined })).toBe('drinks');
+  });
+
+  it('does not put pantry compounds in fresh even if category was stale', () => {
+    // Persisted category can be wrong from older inference; name wins.
+    expect(getPantryZone({ name: 'Vegetable oil', category: 'produce' })).toBe('shelfStable');
+    expect(getPantryZone({ name: 'Canned tomatoes', category: 'produce' })).toBe('shelfStable');
+    expect(getPantryZone({ name: 'Baking soda', category: 'beverage' })).toBe('shelfStable');
   });
 
   it('routes shelf-stable items to shelf-stable', () => {

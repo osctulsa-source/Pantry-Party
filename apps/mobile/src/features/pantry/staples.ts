@@ -58,6 +58,17 @@ export const STAPLE_GROUPS: Array<{ title: string; items: Staple[] }> = [
     ],
   },
   {
+    title: 'Drinks',
+    items: [
+      { name: 'Water', category: 'beverage', location: 'pantry', noExpiry: true },
+      { name: 'Sparkling water', category: 'beverage', location: 'pantry' },
+      { name: 'Orange juice', category: 'beverage', location: 'fridge' },
+      { name: 'Coffee', category: 'beverage', location: 'pantry', noExpiry: true },
+      { name: 'Tea', category: 'beverage', location: 'pantry', noExpiry: true },
+      { name: 'Soda', category: 'beverage', location: 'pantry' },
+    ],
+  },
+  {
     title: 'Fridge basics',
     items: [
       { name: 'Milk', category: 'dairy', location: 'fridge' },

@@ -6,11 +6,12 @@
  * Centralized so the INSERT shape (column order, sync bookkeeping) lives in one
  * place — both callers stay in lockstep.
  *
- * Category is inferred from the name at insert time (categorizeByName) so the
- * Pantry row shows a real CategoryIcon instead of the fallback basket. It's
+ * Category is taken from an explicit caller override when provided (quick-add
+ * staples), otherwise inferred from the name (categorizeByName) so the Pantry
+ * row shows a real CategoryIcon instead of the fallback basket. It's
  * persisted (the upload-proxy's pantry_items INSERT allowlist includes
- * `category`, so it syncs); null when nothing matches. Legacy rows with no
- * category get the same inference at read time (see rowToPantryItem).
+ * `category`, so it syncs); null when nothing matches. Legacy / mis-tagged
+ * rows get re-inferred at read time (see rowToPantryItem / getPantryZone).
  */
 import * as Crypto from 'expo-crypto';
 import { categorizeByName, type CaptureSource, type StorageLocation } from '@breadbox/core';
@@ -28,6 +29,11 @@ export interface NewPantryItem {
   quantity: number;
   /** Canonical UNITS value or null for unitless counts (UnitPicker). */
   unit?: string | null;
+  /**
+   * Explicit category when the caller already knows it (quick-add staples).
+   * Wins over name inference so curated chips stay in the right browse zone.
+   */
+  category?: string | null;
   location: StorageLocation;
   expiresIso: string | null;
   source?: CaptureSource;
@@ -43,7 +49,7 @@ export async function addPantryItem(input: NewPantryItem): Promise<void> {
       Crypto.randomUUID(),
       input.householdId,
       input.name,
-      categorizeByName(input.name) ?? null,
+      input.category ?? categorizeByName(input.name) ?? null,
       input.brand ?? null,
       input.barcode ?? null,
       input.quantity,
