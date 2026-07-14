@@ -250,8 +250,8 @@ Add imports: `import { BrandTile } from '../../components/BrandTile';` and `impo
 Add styles (near the other deviceCard styles):
 
 ```ts
-  deviceCardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginBottom: tokens.space(3) },
-  // 4 per row; grow capped by maxWidth so ragged last rows stay near full-row width
+  deviceCardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  // 4 per row, grow capped at 25%; with 6 devices that's a 4-row + a left-aligned 2-row.
   deviceCell: { flexBasis: '23%', flexGrow: 1, maxWidth: '25%' },
 ```
 
