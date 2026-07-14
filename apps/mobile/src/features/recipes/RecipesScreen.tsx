@@ -1342,8 +1342,9 @@ const styles = StyleSheet.create({
     color: tokens.color.ink,
     paddingRight: tokens.space(2),
   },
-  deviceCardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginBottom: tokens.space(3) },
-  // 4 per row; grow capped by maxWidth so ragged last rows stay near full-row width
+  // marginTop matches the old chips row: head→grid 12px, grid→actions 12px (actions has its own marginTop).
+  deviceCardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  // 4 per row, grow capped at 25%; with 6 devices that's a 4-row + a left-aligned 2-row.
   deviceCell: { flexBasis: '23%', flexGrow: 1, maxWidth: '25%' },
   deviceCardActions: {
     flexDirection: 'row',
