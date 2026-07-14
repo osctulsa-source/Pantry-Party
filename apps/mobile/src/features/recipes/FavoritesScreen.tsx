@@ -18,6 +18,7 @@ import { Heart, Sparkles, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
+  ALLERGY_OPTIONS,
   CUISINE_OPTIONS,
   DIET_OPTIONS,
   FLAVOR_OPTIONS,
@@ -38,7 +39,7 @@ import type { RootStackParamList } from '../../../App';
 
 // slug -> display label, across every catalog the header might show.
 const TASTE_LABELS = new Map<string, string>();
-for (const o of [...CUISINE_OPTIONS, ...FLAVOR_OPTIONS, ...DIET_OPTIONS]) TASTE_LABELS.set(o.slug, o.label);
+for (const o of [...CUISINE_OPTIONS, ...FLAVOR_OPTIONS, ...DIET_OPTIONS, ...ALLERGY_OPTIONS]) TASTE_LABELS.set(o.slug, o.label);
 const SPEED_LABEL: Record<string, string> = { quick: 'Quick', project: 'Project cook' };
 
 export function FavoritesScreen() {
@@ -66,6 +67,7 @@ export function FavoritesScreen() {
     for (const s of profile.flavors) out.push(TASTE_LABELS.get(s) ?? s);
     if (profile.speed) out.push(SPEED_LABEL[profile.speed] ?? profile.speed);
     for (const s of profile.diets) out.push(TASTE_LABELS.get(s) ?? s);
+    for (const s of profile.allergies) out.push(TASTE_LABELS.get(s) ?? s);
     return out;
   }, [profile]);
 

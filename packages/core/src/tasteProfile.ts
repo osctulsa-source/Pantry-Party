@@ -23,6 +23,8 @@ export interface TasteProfile {
   speed: TasteSpeed | null;
   /** Hard dietary lines (DIET_OPTIONS) — applied as filters, not nudges. */
   diets: string[];
+  /** Allergen slugs (ALLERGY_OPTIONS) — hard filters, like diets. */
+  allergies: string[];
   /** ISO timestamp of the last quiz save; '' when never set. */
   updatedAt: string;
 }
@@ -63,6 +65,14 @@ export const DIET_OPTIONS: TasteOption[] = [
   { slug: 'nut-free', label: 'Nut-free' },
 ];
 
+/** Allergen lines beyond the diet list (peanut/tree-nut ride on 'nut-free'). */
+export const ALLERGY_OPTIONS: TasteOption[] = [
+  { slug: 'egg', label: 'Egg' },
+  { slug: 'soy', label: 'Soy' },
+  { slug: 'fish', label: 'Fish' },
+  { slug: 'shellfish', label: 'Shellfish' },
+];
+
 /** Weeknight-rhythm choices, with a short hint for the quiz cards. */
 export const SPEED_OPTIONS: Array<{ slug: TasteSpeed; label: string; hint: string }> = [
   { slug: 'quick', label: 'Quick — 30 min or less', hint: 'Weeknight-friendly, few steps.' },
@@ -74,6 +84,7 @@ export const EMPTY_TASTE_PROFILE: TasteProfile = {
   flavors: [],
   speed: null,
   diets: [],
+  allergies: [],
   updatedAt: '',
 };
 
@@ -83,6 +94,7 @@ export function isTasteProfileEmpty(p: TasteProfile): boolean {
     p.cuisines.length === 0 &&
     p.flavors.length === 0 &&
     p.diets.length === 0 &&
+    p.allergies.length === 0 &&
     p.speed === null
   );
 }

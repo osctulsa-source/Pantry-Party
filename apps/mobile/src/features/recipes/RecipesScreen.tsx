@@ -70,7 +70,9 @@ import {
   formatDeviceBadge,
   formatUseItUpBadge,
   getExpiryStatus,
+  hasDietLines,
   mealtimeLabel,
+  passesDiet,
   scoreDeviceBoost,
   scoreTitle,
   scoreUseItUp,
@@ -840,14 +842,33 @@ function CookThis({
     setMissingAdded((prev) => new Set(prev).add(r.id));
   }
 
+  // Hard dietary lines: violating recipes never enter ranking. Same-reference
+  // passthrough when no lines are set, so users who never set a diet/allergy
+  // see zero change. Uses the STORED quiz/onboarding profile (tasteQuiz), not
+  // the behavioural buildTasteProfile.
+  const dietSafe = useMemo(() => {
+    if (!hasDietLines(tasteQuiz)) return recipes;
+    return recipes.filter((r) =>
+      passesDiet(tasteQuiz, {
+        vegetarian: r.vegetarian,
+        vegan: r.vegan,
+        glutenFree: r.glutenFree,
+        ingredientNames: (r.ingredients.length > 0
+          ? r.ingredients.map((i) => i.name)
+          : [...r.usedIngredientNames, ...r.missedIngredientNames]
+        ).map((n) => n.toLowerCase()),
+      }),
+    );
+  }, [recipes, tasteQuiz]);
+
   const pool = useMemo(() => {
     // Healthy / Ready-now / Easy filters stack, each with a keep-all fallback so
     // a strict filter never leaves an empty screen (badges still tell the
     // story). Pantry-match stays the dominant signal; toggles filter + nudge.
     // All run client-side off the same cached response — zero extra quota.
-    let candidates = recipes;
+    let candidates = dietSafe;
     if (healthy) {
-      const fit = recipes.filter((r) => (r.healthScore ?? 0) >= 35);
+      const fit = dietSafe.filter((r) => (r.healthScore ?? 0) >= 35);
       if (fit.length > 0) candidates = fit;
     }
     if (readyNow) {
@@ -888,7 +909,7 @@ function CookThis({
     };
     return [...candidates].sort((a, b) => blend(b) - blend(a));
   }, [
-    recipes,
+    dietSafe,
     prefs,
     tasteProfile,
     seedPrefs,

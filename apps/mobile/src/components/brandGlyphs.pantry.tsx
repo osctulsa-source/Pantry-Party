@@ -13,7 +13,7 @@ export type PantryFoodName =
   | 'floursack' | 'sugarbowl' | 'sugarbag' | 'sodabox' | 'powdertin' | 'saltshaker' | 'yeastpacket'
   | 'oliveoilbottle' | 'oiljug' | 'soybottle' | 'ketchupbottle' | 'mustardbottle' | 'mayojar' | 'hotsaucebottle' | 'vinegarflask' | 'honeypot'
   | 'ricebowl' | 'spaghetti' | 'oatcanister' | 'tomatocan' | 'beancan' | 'stockcarton' | 'peppergrinder'
-  | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish';
+  | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish' | 'wheat' | 'peanut' | 'shrimp';
 
 export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode> = {
   // Rolled-top flour sack, stitch marks.
@@ -299,6 +299,36 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Path d="M19 30 h6" fill="none" stroke={cut} />
     </>
   ),
+  // Wheat sheaf — stalk + grain ellipses, awn ticks.
+  wheat: ({ body, cut }) => (
+    <>
+      <Path d="M24 42 V14" fill="none" stroke={body} />
+      <Ellipse cx={24} cy={12} rx={2.6} ry={5} fill={body} />
+      <Ellipse cx={19} cy={17} rx={2.4} ry={4.6} fill={body} />
+      <Ellipse cx={29} cy={17} rx={2.4} ry={4.6} fill={body} />
+      <Ellipse cx={19.5} cy={24} rx={2.4} ry={4.6} fill={body} />
+      <Ellipse cx={28.5} cy={24} rx={2.4} ry={4.6} fill={body} />
+      <Path d="M19 16 v3 M29 16 v3" fill="none" stroke={cut} />
+    </>
+  ),
+  // Peanut — waisted shell with dimple cross-marks.
+  peanut: ({ body, cut }) => (
+    <>
+      <Path d="M24 10 q7 0 7 7 q0 4 -3 5 q3 2 3 6 q0 8 -7 8 q-7 0 -7 -8 q0 -4 3 -6 q-3 -1 -3 -5 q0 -7 7 -7 Z" fill={body} />
+      <Path d="M20 16 l3 3 M25 15 l3 3" fill="none" stroke={cut} />
+      <Path d="M20 29 l3 3 M25 28 l3 3" fill="none" stroke={cut} />
+    </>
+  ),
+  // Shrimp — curled body, segment lines, tail fan, eye dot.
+  shrimp: ({ body, cut }) => (
+    <>
+      <Path d="M30 12 C38 16 38 28 30 32 C24 35 16 33 14 28 C19 31 25 30 27 26 C21 26 18 22 20 17 C22 13 27 11 30 12 Z" fill={body} />
+      <Path d="M14 28 l-3 6 l7 -1 Z" fill={body} />
+      <Path d="M28 15 q4 6 0 13" fill="none" stroke={cut} />
+      <Path d="M24 16 q3 5 0 10" fill="none" stroke={cut} />
+      <Circle cx={32} cy={16} r={1.4} fill={cut} />
+    </>
+  ),
 };
 
 /** Natural ground per pantry glyph — merged into BrandIcon's FOOD_TONE. */
@@ -312,4 +342,5 @@ export const PANTRY_TONE: Record<PantryFoodName, BrandTone> = {
   beancan: 'cocoa', stockcarton: 'spruce', peppergrinder: 'cocoa',
   waterglass: 'blue', fizzybottle: 'spruce', juicecarton: 'terracotta', coffeemug: 'cocoa',
   teacup: 'fern', sodacan: 'plum', milkjug: 'blue', butterdish: 'ochre',
+  wheat: 'ochre', peanut: 'cocoa', shrimp: 'brick',
 } as const;

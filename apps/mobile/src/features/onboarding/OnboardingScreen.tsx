@@ -13,7 +13,7 @@
  * isn't silently ignored. (The reactive ActiveHouseholdContext fills it in
  * without a relaunch.)
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,15 +26,36 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from '../pantry/addPantryItem';
 import { QuickAddStaples } from '../pantry/QuickAddStaples';
 import type { Staple } from '../pantry/staples';
+import { useTasteProfile } from '../recipes/useTasteProfile';
+import { DietStep, type DietSelection } from './DietStep';
 
 export function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const { state } = useAuth();
   const { activeHouseholdId } = useActiveHousehold();
   const [added, setAdded] = useState<string[]>([]);
   const [finishing, setFinishing] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [dietSel, setDietSel] = useState<DietSelection>({ diets: [], allergies: [] });
+  const [dietSaved, setDietSaved] = useState(false);
+  const { profile, save: saveProfile, loadedFor: profileLoadedFor } = useTasteProfile(activeHouseholdId);
 
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const householdReady = userId !== null && activeHouseholdId !== null;
+
+  // Persist step-1 answers once the profile for THIS household has actually
+  // loaded. Gate on loadedFor === activeHouseholdId (not the bare `loaded`
+  // flag): during the first-launch null→resolved household race the profile is
+  // briefly a stale EMPTY loaded "for" null, and merging onto that would wipe
+  // any existing cuisines/flavors/speed. Runs at most once (dietSaved guard).
+  useEffect(() => {
+    if (step === 1 || dietSaved || activeHouseholdId === null || profileLoadedFor !== activeHouseholdId) return;
+    if (dietSel.diets.length === 0 && dietSel.allergies.length === 0) {
+      setDietSaved(true);
+      return;
+    }
+    saveProfile({ ...profile, diets: dietSel.diets, allergies: dietSel.allergies });
+    setDietSaved(true);
+  }, [step, dietSaved, profileLoadedFor, activeHouseholdId, dietSel, profile, saveProfile]);
 
   async function onAdd(staple: Staple) {
     if (!userId || !activeHouseholdId || added.includes(staple.name)) return;
@@ -64,32 +85,43 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <OnboardingHeroArt />
-        <Text style={styles.eyebrow}>Welcome to {BRAND.productName}</Text>
-        <Text style={styles.title}>Let's stock your pantry</Text>
-        <Text style={styles.hint}>
-          Tap the staples you usually keep on hand — we'll add them with smart expiry dates. You can skip this and add
-          things anytime.
-        </Text>
-        {!householdReady && <Text style={styles.settingUp}>Getting your pantry ready…</Text>}
-        <View style={styles.list}>
-          <QuickAddStaples added={added} onAdd={onAdd} />
-        </View>
-      </ScrollView>
+      {step === 1 ? (
+        <DietStep
+          diets={dietSel.diets}
+          allergies={dietSel.allergies}
+          onChange={setDietSel}
+          onContinue={() => setStep(2)}
+        />
+      ) : (
+        <>
+          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+            <OnboardingHeroArt />
+            <Text style={styles.eyebrow}>2 of 2 · Welcome to {BRAND.productName}</Text>
+            <Text style={styles.title}>Let's stock your pantry</Text>
+            <Text style={styles.hint}>
+              Tap the staples you usually keep on hand — we'll add them with smart expiry dates. You can skip this and add
+              things anytime.
+            </Text>
+            {!householdReady && <Text style={styles.settingUp}>Getting your pantry ready…</Text>}
+            <View style={styles.list}>
+              <QuickAddStaples added={added} onAdd={onAdd} />
+            </View>
+          </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable style={styles.cta} onPress={finish} disabled={finishing}>
-          <Text style={styles.ctaText}>
-            {added.length > 0 ? `Added ${added.length} — continue` : 'Continue'}
-          </Text>
-        </Pressable>
-        {added.length === 0 && (
-          <Pressable style={styles.skip} onPress={finish} disabled={finishing}>
-            <Text style={styles.skipText}>Skip for now</Text>
-          </Pressable>
-        )}
-      </View>
+          <View style={styles.footer}>
+            <Pressable style={styles.cta} onPress={finish} disabled={finishing}>
+              <Text style={styles.ctaText}>
+                {added.length > 0 ? `Added ${added.length} — continue` : 'Continue'}
+              </Text>
+            </Pressable>
+            {added.length === 0 && (
+              <Pressable style={styles.skip} onPress={finish} disabled={finishing}>
+                <Text style={styles.skipText}>Skip for now</Text>
+              </Pressable>
+            )}
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 }
