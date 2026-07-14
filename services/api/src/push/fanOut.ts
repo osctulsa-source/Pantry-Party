@@ -9,7 +9,7 @@ import {
   isRunnerSummaryDue,
   runnerSummaryBody,
   type AnnouncementKind,
-} from '@breadbox/core';
+} from './announcementsCore.js';
 import type { PushSender } from './expoClient.js';
 
 interface PgLike {
