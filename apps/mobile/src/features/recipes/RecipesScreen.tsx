@@ -89,6 +89,7 @@ import {
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { BrandEmptyArt } from '../../components/BrandDecor';
+import { BrandTile } from '../../components/BrandTile';
 import { searchByMeal } from '../../data/spoonacular/client';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { formatExpiryMeta } from '../pantry/expiryFormat';
@@ -96,6 +97,7 @@ import { usePantryItems } from '../pantry/usePantryItems';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
+import { deviceGlyph } from './deviceArt';
 import { useRecipePrefs } from './useRecipePrefs';
 import { useTasteProfile } from './useTasteProfile';
 import { useTonightDevices } from './useTonightDevices';
@@ -561,23 +563,22 @@ export function RecipesScreen() {
               <X size={16} color={tokens.color.inkMuted} />
             </Pressable>
           </View>
-          <View style={styles.deviceCardChips}>
+          <View style={styles.deviceCardGrid}>
             {COOKING_DEVICES.map((d) => {
               const on = pendingDevices.includes(d.id);
               return (
-                <Pressable
-                  key={d.id}
-                  onPress={() =>
-                    setPendingDevices((prev) =>
-                      prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id],
-                    )
-                  }
-                  style={[styles.chip, on && styles.chipSelected]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on }}
-                >
-                  <Text style={[styles.chipText, on && styles.chipTextSelected]}>{d.label}</Text>
-                </Pressable>
+                <View key={d.id} style={styles.deviceCell}>
+                  <BrandTile
+                    glyph={deviceGlyph(d.id)}
+                    label={d.label}
+                    selected={on}
+                    onPress={() =>
+                      setPendingDevices((prev) =>
+                        prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id],
+                      )
+                    }
+                  />
+                </View>
               );
             })}
           </View>
@@ -1341,7 +1342,10 @@ const styles = StyleSheet.create({
     color: tokens.color.ink,
     paddingRight: tokens.space(2),
   },
-  deviceCardChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  // marginTop matches the old chips row: head→grid 12px, grid→actions 12px (actions has its own marginTop).
+  deviceCardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(3) },
+  // 4 per row, grow capped at 25%; with 6 devices that's a 4-row + a left-aligned 2-row.
+  deviceCell: { flexBasis: '23%', flexGrow: 1, maxWidth: '25%' },
   deviceCardActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',

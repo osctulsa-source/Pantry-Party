@@ -13,7 +13,8 @@ export type PantryFoodName =
   | 'floursack' | 'sugarbowl' | 'sugarbag' | 'sodabox' | 'powdertin' | 'saltshaker' | 'yeastpacket'
   | 'oliveoilbottle' | 'oiljug' | 'soybottle' | 'ketchupbottle' | 'mustardbottle' | 'mayojar' | 'hotsaucebottle' | 'vinegarflask' | 'honeypot'
   | 'ricebowl' | 'spaghetti' | 'oatcanister' | 'tomatocan' | 'beancan' | 'stockcarton' | 'peppergrinder'
-  | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish' | 'wheat' | 'peanut' | 'shrimp';
+  | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish' | 'wheat' | 'peanut' | 'shrimp'
+  | 'stove' | 'oven' | 'crockpot' | 'airfryer' | 'grill' | 'griddle' | 'instantpot' | 'sheetpan' | 'microwave' | 'nocook';
 
 export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode> = {
   // Rolled-top flour sack, stitch marks.
@@ -329,6 +330,99 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Circle cx={32} cy={16} r={1.4} fill={cut} />
     </>
   ),
+  // ---- appliances (cook-device tiles) — no leaf, ever ----------------------
+  // Frying pan: top-down disc + long handle, sizzle ticks inside.
+  stove: ({ body, cut }) => (
+    <>
+      <Circle cx={20} cy={28} r={10} fill={body} />
+      <Path d="M29 24 L40 19" fill="none" stroke={body} />
+      <Path d="M17 26 l2 -3 M23 26 l2 -3" fill="none" stroke={cut} />
+    </>
+  ),
+  // Oven: portrait box, door window outline, handle bar.
+  oven: ({ body, cut }) => (
+    <>
+      <Rect x={13} y={12} width={22} height={28} rx={3} fill={body} />
+      <Rect x={17} y={22} width={14} height={12} rx={2} fill="none" stroke={cut} />
+      <Path d="M17 17 h14" fill="none" stroke={cut} />
+    </>
+  ),
+  // Crockpot: squat pot, domed lid + knob, side handles, rim seam.
+  crockpot: ({ body, cut }) => (
+    <>
+      <Path d="M13 20 h22 v11 q0 9 -11 9 q-11 0 -11 -9 Z" fill={body} />
+      <Path d="M15 20 q0 -5 9 -5 q9 0 9 5 Z" fill={body} />
+      <Circle cx={24} cy={12.5} r={2} fill={body} />
+      <Path d="M13 24 h-3 M35 24 h3" fill="none" stroke={body} />
+      <Path d="M15 20 h18" fill="none" stroke={cut} />
+    </>
+  ),
+  // Air fryer: tall rounded body, vent lines, drawer seam + handle slot.
+  airfryer: ({ body, cut }) => (
+    <>
+      <Rect x={15} y={10} width={18} height={30} rx={6} fill={body} />
+      <Path d="M20 15 h8" fill="none" stroke={cut} />
+      <Path d="M15 26 h18" fill="none" stroke={cut} />
+      <Path d="M20 32 h8" fill="none" stroke={cut} />
+    </>
+  ),
+  // Kettle grill: dome + bowl, splayed legs, lid handle, vent dot.
+  grill: ({ body, cut }) => (
+    <>
+      <Path d="M12 24 q0 -11 12 -11 q12 0 12 11 Z" fill={body} />
+      <Path d="M12 26 h24 q0 9 -12 9 q-12 0 -12 -9 Z" fill={body} />
+      <Path d="M24 13 v-3" fill="none" stroke={body} />
+      <Path d="M18 34 l-4 7 M30 34 l4 7" fill="none" stroke={body} />
+      <Circle cx={24} cy={19} r={1.5} fill={cut} />
+    </>
+  ),
+  // Griddle: flat plate, side handle nubs, steam curls (exterior = body).
+  griddle: ({ body, cut }) => (
+    <>
+      <Rect x={11} y={26} width={26} height={7} rx={3} fill={body} />
+      <Path d="M11 29 h-3 M37 29 h3" fill="none" stroke={body} />
+      <Path d="M19 22 q2 -3 0 -6 M27 22 q2 -3 0 -6" fill="none" stroke={body} />
+      <Path d="M15 29.5 h18" fill="none" stroke={cut} />
+    </>
+  ),
+  // Instant Pot: straight cylinder, flat lid, steam valve, side handles, panel.
+  instantpot: ({ body, cut }) => (
+    <>
+      <Rect x={14} y={16} width={20} height={22} rx={3} fill={body} />
+      <Rect x={13} y={12.5} width={22} height={5} rx={2} fill={body} />
+      <Rect x={22.5} y={8.5} width={3} height={4} rx={1} fill={body} />
+      <Path d="M14 22 h-3.5 M34 22 h3.5" fill="none" stroke={body} />
+      <Circle cx={24} cy={28} r={3} fill="none" stroke={cut} />
+      <Circle cx={24} cy={34} r={1.2} fill={cut} />
+    </>
+  ),
+  // Sheet pan: rimmed tray, inner outline, two cookie dots.
+  sheetpan: ({ body, cut }) => (
+    <>
+      <Rect x={10} y={20} width={28} height={14} rx={4} fill={body} />
+      <Rect x={14} y={23} width={20} height={8} rx={2} fill="none" stroke={cut} />
+      <Circle cx={20} cy={27} r={1.5} fill={cut} />
+      <Circle cx={27} cy={27} r={1.5} fill={cut} />
+    </>
+  ),
+  // Microwave: landscape box, window outline, door seam, button dot.
+  microwave: ({ body, cut }) => (
+    <>
+      <Rect x={10} y={17} width={28} height={17} rx={3} fill={body} />
+      <Rect x={14} y={21} width={13} height={9} rx={1.5} fill="none" stroke={cut} />
+      <Path d="M30 21 v9" fill="none" stroke={cut} />
+      <Circle cx={33.5} cy={24} r={1.2} fill={cut} />
+    </>
+  ),
+  // No-cook: cutting board (corner hole) with a knife laid across.
+  nocook: ({ body, cut }) => (
+    <>
+      <Rect x={12} y={18} width={20} height={22} rx={4} fill={body} />
+      <Path d="M18 34 L32 20 l3 3 L21 37 Z" fill={body} />
+      <Path d="M32 20 l4 -4" fill="none" stroke={body} />
+      <Circle cx={16} cy={22} r={1.6} fill={cut} />
+    </>
+  ),
 };
 
 /** Natural ground per pantry glyph — merged into BrandIcon's FOOD_TONE. */
@@ -343,4 +437,6 @@ export const PANTRY_TONE: Record<PantryFoodName, BrandTone> = {
   waterglass: 'blue', fizzybottle: 'spruce', juicecarton: 'terracotta', coffeemug: 'cocoa',
   teacup: 'fern', sodacan: 'plum', milkjug: 'blue', butterdish: 'ochre',
   wheat: 'ochre', peanut: 'cocoa', shrimp: 'brick',
+  stove: 'spruce', oven: 'cocoa', crockpot: 'brick', airfryer: 'plum', grill: 'fern',
+  griddle: 'ochre', instantpot: 'blue', sheetpan: 'terracotta', microwave: 'blue', nocook: 'cocoa',
 } as const;
