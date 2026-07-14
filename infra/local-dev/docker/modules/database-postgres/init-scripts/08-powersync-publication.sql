@@ -13,8 +13,9 @@
 --   2. add the stream to sync-config.yaml
 --
 -- Renumbered 03- → 04- in the shopping-list arc, then 04- → 06- in the
--- favorites/history arc, so each new table-creation script (04-favorite-recipes,
--- 05-activity-events) runs first — a publication can only list existing tables.
+-- favorites/history arc, then 06- → 08- in the household-announcements arc,
+-- so each new table-creation script (04-favorite-recipes, 05-activity-events,
+-- 07-announcements) runs first — a publication can only list existing tables.
 --
 -- Note: Init scripts run only when the Postgres data directory is empty (first
 -- container start). Existing dev volumes evolve via ../migrations/ instead —
@@ -29,4 +30,7 @@ CREATE PUBLICATION powersync FOR TABLE
   household_invites,
   shopping_list_items,
   favorite_recipes,
-  activity_events;
+  activity_events,
+  announcements,
+  announcement_reactions,
+  push_tokens;

@@ -21,6 +21,9 @@ import { AppModule } from './app.module.js';
 import { uploadRouter } from './routes/upload.js';
 import { householdRouter } from './routes/household.js';
 import { recipesRouter } from './routes/recipes.js';
+import { sweepRunnerSummaries } from './push/fanOut.js';
+import { getPushSender } from './push/sender.js';
+import { pool } from './db.js';
 import { attachSentryErrorHandler } from './instrument.js';
 
 const PORT = Number(process.env.API_PORT ?? '8090');
@@ -69,6 +72,15 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(PORT);
   console.log(`[api] listening on :${PORT} (NestJS + legacy Express)`);
+
+  // Batched runner-summary ping: check once a minute for runs entering their
+  // 5-min departure window. State lives in Postgres (runner_summary_sent_at),
+  // so this survives restarts and multiple instances stamp idempotently.
+  setInterval(() => {
+    void sweepRunnerSummaries({ pg: pool, sender: getPushSender() }).catch((err) =>
+      console.error('[api] runner-summary sweep failed:', err),
+    );
+  }, 60_000).unref();
 }
 
 bootstrap().catch((err) => {

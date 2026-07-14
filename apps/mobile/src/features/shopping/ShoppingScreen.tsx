@@ -49,6 +49,10 @@ import { addPantryItem } from '../pantry/addPantryItem';
 import { recordActivity } from '../activity/recordActivity';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
+import { useActiveAnnouncements } from '../announcements/useActiveAnnouncements';
+import { AnnouncementCard } from '../announcements/AnnouncementCard';
+import { AnnounceRunSheet } from '../announcements/AnnounceRunSheet';
+import { activeRunId } from '../announcements/announceRun';
 
 const QUERY =
   'SELECT * FROM shopping_list_items WHERE deleted = 0 AND household_id = ? ' +
@@ -67,8 +71,23 @@ export function ShoppingScreen() {
   const { data: rows } = useQuery<ShoppingListItemRow>(QUERY, [activeHouseholdId ?? '']);
   const items = useMemo(() => rows.map(rowToShoppingListItem), [rows]);
 
+  const announcements = useActiveAnnouncements();
+  const runAnnouncements = useMemo(
+    () => announcements.filter((a) => a.kind === 'shopping_run'),
+    [announcements],
+  );
+
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const [announceRunSheet, setAnnounceRunSheet] = useState(false);
+  const [activeRun, setActiveRun] = useState<string | null>(null);
+
+  // Refresh activeRun once per focus/screen load
+  useEffect(() => {
+    if (activeHouseholdId) {
+      void activeRunId(activeHouseholdId).then(setActiveRun);
+    }
+  }, [activeHouseholdId]);
 
   // The row mid-swoosh (flying off to the pantry). One at a time; the shared
   // animated value drives its fly-out and is reused for the next restock.
@@ -317,18 +336,36 @@ export function ShoppingScreen() {
         watermark="jar"
         watermarkTone="blue"
         right={
-          done.length > 0 ? (
-            <View style={styles.headerActions}>
-              <Pressable onPress={() => void stockAllChecked()} hitSlop={8} disabled={busy}>
-                <Text style={styles.clear}>Stock all</Text>
+          <View style={styles.headerActions}>
+            {runAnnouncements.length === 0 && activeHouseholdId && userId && (
+              <Pressable
+                onPress={() => setAnnounceRunSheet(true)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Announce a shopping run"
+              >
+                <Text style={styles.announceBtn}>Notify</Text>
               </Pressable>
-              <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
-                <Text style={styles.clearMuted}>Clear done</Text>
-              </Pressable>
-            </View>
-          ) : undefined
+            )}
+            {done.length > 0 && (
+              <>
+                <Pressable onPress={() => void stockAllChecked()} hitSlop={8} disabled={busy}>
+                  <Text style={styles.clear}>Stock all</Text>
+                </Pressable>
+                <Pressable onPress={clearChecked} hitSlop={8} disabled={busy}>
+                  <Text style={styles.clearMuted}>Clear done</Text>
+                </Pressable>
+              </>
+            )}
+          </View>
         }
       />
+
+      {runAnnouncements.map((a) => (
+        <View key={a.id} style={styles.announcementWrap}>
+          <AnnouncementCard announcement={a} isMine={a.created_by === userId} />
+        </View>
+      ))}
 
       <View style={styles.addRow}>
         <TextInput
@@ -429,6 +466,18 @@ export function ShoppingScreen() {
           );
         }}
       />
+      {activeHouseholdId && userId && (
+        <AnnounceRunSheet
+          visible={announceRunSheet}
+          householdId={activeHouseholdId}
+          userId={userId}
+          onDone={(runId) => {
+            setAnnounceRunSheet(false);
+            setActiveRun(runId);
+          }}
+          onClose={() => setAnnounceRunSheet(false)}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -438,6 +487,8 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), paddingTop: tokens.space(2) },
   clear: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
   clearMuted: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.inkMuted },
+  announceBtn: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  announcementWrap: { marginHorizontal: tokens.space(6), marginBottom: tokens.space(2) },
   addRow: { flexDirection: 'row', gap: tokens.space(2), marginHorizontal: tokens.space(6), marginBottom: tokens.space(3) },
   input: {
     flex: 1,

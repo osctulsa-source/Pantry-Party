@@ -51,6 +51,7 @@ const shopping_list_items = new Table({
   source: column.text,
   added_by: column.text,
   added_at: column.text,
+  run_id: column.text,
   updated_at: column.integer,
   deleted: column.integer,
 });
@@ -88,6 +89,46 @@ const activity_events = new Table({
   meta: column.text,
   occurred_at: column.text,
   added_by: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
+// announcements: cross-user household notifications (shopping runs + cooking).
+// Streams via household_data; writes drain through the upload-proxy, which fans
+// out Expo pushes. Mirrors init-scripts/07-announcements.sql + core Announcement.
+const announcements = new Table({
+  household_id: column.text,
+  kind: column.text,
+  created_by: column.text,
+  created_at: column.text,
+  status: column.text,
+  departs_at: column.text,
+  store_hint: column.text,
+  recipe_id: column.text,
+  recipe_title: column.text,
+  image: column.text,
+  runner_summary_sent_at: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
+const announcement_reactions = new Table({
+  announcement_id: column.text,
+  household_id: column.text,
+  user_id: column.text,
+  reaction: column.text,
+  created_at: column.text,
+  updated_at: column.integer,
+  deleted: column.integer,
+});
+
+// push_tokens: USER-scoped (never streams to co-members). Written locally on
+// permission grant; the upload-proxy tombstones dead tokens server-side.
+const push_tokens = new Table({
+  user_id: column.text,
+  token: column.text,
+  platform: column.text,
+  announcements_enabled: column.integer,
   updated_at: column.integer,
   deleted: column.integer,
 });
@@ -135,6 +176,9 @@ export const AppSchema = new Schema({
   shopping_list_items,
   favorite_recipes,
   activity_events,
+  announcements,
+  announcement_reactions,
+  push_tokens,
 });
 
 export interface ShoppingListItemRow {
@@ -148,6 +192,7 @@ export interface ShoppingListItemRow {
   source: string;
   added_by: string;
   added_at: string;
+  run_id: string | null;
   updated_at: number;
   deleted: number;
 }
@@ -184,6 +229,34 @@ export interface ActivityEventRow {
   meta: string | null;
   occurred_at: string;
   added_by: string;
+  updated_at: number;
+  deleted: number;
+}
+
+export interface AnnouncementRow {
+  id: string;
+  household_id: string;
+  kind: string;
+  created_by: string;
+  created_at: string;
+  status: string;
+  departs_at: string | null;
+  store_hint: string | null;
+  recipe_id: string | null;
+  recipe_title: string | null;
+  image: string | null;
+  runner_summary_sent_at: string | null;
+  updated_at: number;
+  deleted: number;
+}
+
+export interface AnnouncementReactionRow {
+  id: string;
+  announcement_id: string;
+  household_id: string;
+  user_id: string;
+  reaction: string;
+  created_at: string;
   updated_at: number;
   deleted: number;
 }
