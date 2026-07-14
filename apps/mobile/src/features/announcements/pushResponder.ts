@@ -5,7 +5,7 @@
  */
 import * as Notifications from 'expo-notifications';
 
-import { navigationRef, navigateToCookUseItUp } from '../../navigation/navigationRef';
+import { navigationRef } from '../../navigation/navigationRef';
 
 export function attachAnnouncementResponder(): { remove: () => void } {
   const sub = Notifications.addNotificationResponseReceivedListener((response) => {
