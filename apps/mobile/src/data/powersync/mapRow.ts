@@ -12,11 +12,11 @@
  * Validation via parsePantryItem is intentional: SQLite stores text/int/real,
  * and we want runtime certainty the shape matches what screens expect.
  *
- * Category fallback: rows added before auto-categorization (or whose name
- * matched nothing at insert) have no stored category. We infer it from the name
- * at read time (categorizeByName) so the Pantry's CategoryIcon lights up for
- * every item without a write-backfill — which the upload-proxy's PATCH
- * allowlist wouldn't accept anyway. A stored category always wins.
+ * Category fallback: prefer live name inference, then the stored category.
+ * Category is auto-set at insert and can be stale for compound names that used
+ * to mis-match (e.g. "Vegetable oil" → produce). Inference-first fixes those
+ * rows at read time without a write-backfill. Stored category still covers
+ * refined names with no keyword match (e.g. "Barilla spaghetti").
  */
 import { categorizeByName, parsePantryItem, type PantryItem } from '@breadbox/core';
 
@@ -28,7 +28,7 @@ export function rowToPantryItem(row: PantryItemRow): PantryItem {
     householdId: row.household_id,
     name: row.name,
     brand: row.brand ?? undefined,
-    category: row.category ?? categorizeByName(row.name) ?? undefined,
+    category: categorizeByName(row.name) ?? row.category ?? undefined,
     barcode: row.barcode ?? undefined,
     quantity: row.quantity,
     unit: row.unit ?? undefined,

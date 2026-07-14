@@ -65,6 +65,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
         userId,
         name: staple.name,
         quantity: 1,
+        category: staple.category,
         location: staple.location,
         expiresIso: staple.noExpiry
           ? null

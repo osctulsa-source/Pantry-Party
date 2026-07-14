@@ -20,8 +20,9 @@ and Spoonacular responses).
   persistent, editable chip row under the meal chips.
 - **Effect:** **soft ranking boost** — matching recipes float up; nothing is
   hidden.
-- **Devices:** 6 core, **multi-select** — Stove/pan, Oven, Crockpot,
-  Air fryer, Grill, Griddle — plus an "Anything" reset.
+- **Devices:** 10 devices, **multi-select**, lazy-first order — Crockpot,
+  Instant Pot, Air fryer, Sheet pan, Microwave, No-cook, Stove/pan, Oven,
+  Grill, Griddle — plus an "Anything" reset.
 - **Detection:** client-side keyword match against title + equipment strings.
   No Spoonacular search-parameter changes (option kept as a follow-up if
   niche-device nights feel starved).
@@ -148,6 +149,19 @@ export function formatDeviceBadge(
 - No Spoonacular `equipment` search parameter (documented follow-up if
   needed).
 - No household "devices we own" setting — tonight's pick only.
-- No extended device list (Instant Pot, microwave, no-cook) yet.
 - No server/API/schema changes; entirely client-side.
 - No learning from device picks (taste prefs already learn from titles).
+
+## Addendum — Full Lazy Kitchen (2026-07-10)
+
+Extended the device list and curated catalog so dump-and-go nights have a real
+pool to boost:
+
+- **Devices (10, lazy-first order):** crockpot, instantpot, airfryer, sheetpan,
+  microwave, nocook, stove, oven, grill, griddle.
+- **Keyword split:** `sheet pan` / `baking sheet` live on `sheetpan` only (no
+  longer oven), so sheet-pan nights don't over-tag as oven.
+- **Curated batch:** ids `9000151`–`9000183` (33 recipes) — 6 crockpot, 5 air
+  fryer, 6 Instant Pot, 6 sheet pan, 5 microwave, 5 no-cook — authored to
+  SPEC.md with detection keywords in title and/or step equipment.
+- Soft `+5` boost unchanged; no hard filter; no remembered "devices I own".

@@ -8,13 +8,20 @@
  * plus the per-step `equipment` strings that both curated and Spoonacular
  * recipes carry. Soft boost only: non-matching recipes are never penalized
  * or hidden.
+ *
+ * Display order leads with lazy appliances (crockpot, Instant Pot, …) so
+ * dump-and-go nights are one tap away.
  */
 
 export type CookingDevice =
+  | "crockpot"
+  | "instantpot"
+  | "airfryer"
+  | "sheetpan"
+  | "microwave"
+  | "nocook"
   | "stove"
   | "oven"
-  | "crockpot"
-  | "airfryer"
   | "grill"
   | "griddle";
 
@@ -28,26 +35,8 @@ export interface CookingDeviceDef {
   keywords: string[];
 }
 
-/** Display order for the prompt card and chip row. */
+/** Display order for the prompt card and chip row — lazy appliances first. */
 export const COOKING_DEVICES: CookingDeviceDef[] = [
-  {
-    id: "stove",
-    label: "Stove / pan",
-    badgeLabel: "Stovetop",
-    keywords: [
-      "skillet", "saucepan", "sauté pan", "saute pan", "frying pan",
-      "stovetop", "stove", "wok", "pan-fried", "pan-seared",
-    ],
-  },
-  {
-    id: "oven",
-    label: "Oven",
-    badgeLabel: "Oven",
-    keywords: [
-      "oven", "baking sheet", "sheet pan", "baking dish", "roasting pan",
-      "casserole dish", "baked", "roasted",
-    ],
-  },
   {
     id: "crockpot",
     label: "Crockpot",
@@ -55,10 +44,71 @@ export const COOKING_DEVICES: CookingDeviceDef[] = [
     keywords: ["slow cooker", "slow-cooker", "crock pot", "crockpot", "slow-cooked"],
   },
   {
+    id: "instantpot",
+    label: "Instant Pot",
+    badgeLabel: "Instant Pot",
+    keywords: [
+      "instant pot",
+      "instantpot",
+      "pressure cooker",
+      "pressure cook",
+      "multicooker",
+    ],
+  },
+  {
     id: "airfryer",
     label: "Air fryer",
     badgeLabel: "Air fryer",
     keywords: ["air fryer", "air-fryer", "air fried", "air-fried"],
+  },
+  {
+    id: "sheetpan",
+    label: "Sheet pan",
+    badgeLabel: "Sheet pan",
+    keywords: ["sheet pan", "sheet-pan", "sheetpan", "baking sheet"],
+  },
+  {
+    id: "microwave",
+    label: "Microwave",
+    badgeLabel: "Microwave",
+    keywords: ["microwave", "microwaved"],
+  },
+  {
+    id: "nocook",
+    label: "No-cook",
+    badgeLabel: "No-cook",
+    keywords: ["no-cook", "no cook", "no-bake", "no bake"],
+  },
+  {
+    id: "stove",
+    label: "Stove / pan",
+    badgeLabel: "Stovetop",
+    keywords: [
+      "skillet",
+      "saucepan",
+      "sauté pan",
+      "saute pan",
+      "frying pan",
+      "stovetop",
+      "stove",
+      "wok",
+      "pan-fried",
+      "pan-seared",
+    ],
+  },
+  {
+    id: "oven",
+    label: "Oven",
+    badgeLabel: "Oven",
+    // sheet pan / baking sheet live on sheetpan — keep oven for true ovenware.
+    keywords: [
+      "oven",
+      "baking dish",
+      "roasting pan",
+      "casserole dish",
+      "baked",
+      "roasted",
+    ],
   },
   {
     id: "grill",

@@ -99,6 +99,7 @@ export function QuickAddScreen() {
         userId,
         name: spec.name,
         quantity: 1,
+        category: spec.category,
         location: spec.location,
         // The staple's curated location feeds the estimate too, so a fridge
         // staple gets a fridge duration (not the location-less default).
@@ -128,6 +129,7 @@ export function QuickAddScreen() {
         name: result.name,
         brand: result.brand,
         quantity: result.quantity,
+        category: base.category,
         location: base.location,
         expiresIso: base.noExpiry
           ? null
