@@ -37,3 +37,6 @@ spikes/**/results/*.json
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# generated glyph QA sheet (regenerate via gen-glyph-sheet.mjs)
+apps/mobile/scripts/glyph-sheet.html
