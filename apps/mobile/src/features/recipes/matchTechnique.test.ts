@@ -1,6 +1,13 @@
-import { matchTechnique, resolveStepGlyph } from './matchTechnique';
+import { matchTechnique, resolveStepGlyph, TECHNIQUE_RULES } from './matchTechnique';
+import { TECHNIQUES } from '../../components/brandGlyphs.technique';
 
 describe('matchTechnique', () => {
+  it('every technique id has at least one rule', () => {
+    for (const t of TECHNIQUES) {
+      expect(TECHNIQUE_RULES.some(([id]) => id === t)).toBe(true);
+    }
+  });
+
   it('matches core technique verbs', () => {
     expect(matchTechnique('Dice the onion into small, even pieces.')).toBe('chop');
     expect(matchTechnique('Whisk the eggs until frothy.')).toBe('stir');
