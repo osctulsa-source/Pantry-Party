@@ -150,9 +150,11 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const favorited = isFavorited(recipe.id);
 
   // Device variants: full alternate instruction sets for curated recipes.
-  // activeDevice null = the original instructions. Auto-defaults ONCE to the
+  // activeDevice null = the original instructions. Auto-defaults to the
   // first of tonight's picked devices that has a variant (a native keyword
-  // match wins as Original) — but never after the user touches the switcher.
+  // match wins as Original) — but never after the user touches the switcher;
+  // re-fires (household change) may upgrade to a variant but never revert to
+  // Original.
   const variants = useMemo(() => getDeviceVariants(recipe.id), [recipe.id]);
   const { devices: tonightDevices, loaded: tonightLoaded } = useTonightDevices(activeHouseholdId);
   const [activeDevice, setActiveDevice] = useState<CookingDevice | null>(null);
@@ -165,7 +167,11 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
       recipe.instructions.flatMap((g) => g.steps.flatMap((s) => s.equipment)),
     );
     const def = pickDefaultDevice(tonightDevices, variants, native);
-    if (def) setActiveDevice(def);
+    if (def) {
+      setActiveDevice(def);
+      // Checked-off steps belong to the previous instruction set.
+      setDoneSteps(new Set());
+    }
   }, [tonightLoaded, tonightDevices, variants, recipe.title, recipe.instructions]);
 
   const activeVariant = useMemo(
