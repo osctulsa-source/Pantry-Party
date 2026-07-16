@@ -83,15 +83,19 @@ export function getVariantDeviceIds(recipeId: number): CookingDevice[] {
 }
 
 /**
- * The detail screen's default switcher position: the first of tonight's
- * picked devices that has a variant, in the user's selection order. Null
- * means show the original instructions.
+ * The detail screen's default switcher position: walk tonight's picked
+ * devices in selection order; a device the recipe natively cooks on (keyword
+ * detection) wins as Original (null) — the base instructions already satisfy
+ * it; otherwise the first device with a variant wins. Null means show the
+ * original instructions. Mirrors the Cook-tab badge order exactly.
  */
 export function pickDefaultDevice(
   tonight: CookingDevice[],
   variants: DeviceVariant[],
+  native: ReadonlySet<CookingDevice> = new Set(),
 ): CookingDevice | null {
   for (const d of tonight) {
+    if (native.has(d)) return null;
     if (variants.some((v) => v.device === d)) return d;
   }
   return null;

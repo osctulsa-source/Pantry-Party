@@ -70,4 +70,19 @@ describe('pickDefaultDevice', () => {
     expect(pickDefaultDevice([], variants)).toBeNull();
     expect(pickDefaultDevice(['crockpot'], [])).toBeNull();
   });
+
+  it('prefers Original when an earlier tonight device matches natively', () => {
+    const native = new Set<CookingDevice>(['grill']);
+    expect(pickDefaultDevice(['grill', 'airfryer'], variants, native)).toBeNull();
+  });
+
+  it('native match on a LATER device does not block an earlier variant', () => {
+    const native = new Set<CookingDevice>(['grill']);
+    expect(pickDefaultDevice(['airfryer', 'grill'], variants, native)).toBe('airfryer');
+  });
+
+  it('a device that is both native and variant resolves to Original', () => {
+    const native = new Set<CookingDevice>(['airfryer']);
+    expect(pickDefaultDevice(['airfryer'], variants, native)).toBeNull();
+  });
 });
