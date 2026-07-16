@@ -21,6 +21,10 @@ const DEVICES = new Set([
   'crockpot', 'instantpot', 'airfryer', 'sheetpan', 'microwave',
   'nocook', 'stove', 'oven', 'grill', 'griddle',
 ]);
+const TECHNIQUES = new Set([
+  'chop', 'stir', 'simmer', 'flip', 'knead', 'season',
+  'pour', 'grate', 'roll', 'rest', 'preheat', 'mash', 'none',
+]);
 
 let errors = 0;
 let warnings = 0;
@@ -107,6 +111,8 @@ for (const file of files) {
       if (!(s.lengthMinutes === null || (Number.isInteger(s.lengthMinutes) && s.lengthMinutes >= 1 && s.lengthMinutes <= 240)))
         where(`step ${si + 1} lengthMinutes must be null or 1-240`);
       else if (typeof s.lengthMinutes === 'number') stepMinutes += s.lengthMinutes;
+      if (s.technique !== undefined && !TECHNIQUES.has(s.technique))
+        where(`step ${si + 1} technique invalid (got ${s.technique})`);
       for (const n of s.ingredients) {
         const nl = String(n).toLowerCase();
         const hit = ingNames.find((g) => g.includes(nl) || nl.includes(g));
@@ -176,6 +182,8 @@ function validateVariants(files, baseFile) {
         if (!(s.lengthMinutes === null || (Number.isInteger(s.lengthMinutes) && s.lengthMinutes >= 1 && s.lengthMinutes <= 600)))
           where(`step ${si + 1} lengthMinutes must be null or 1-600`);
         else if (typeof s.lengthMinutes === 'number') stepMinutes += s.lengthMinutes;
+        if (s.technique !== undefined && !TECHNIQUES.has(s.technique))
+          where(`step ${si + 1} technique invalid (got ${s.technique})`);
         for (const n of s.ingredients) {
           const nl = String(n).toLowerCase();
           if (!ingNames.some((g) => g.includes(nl) || nl.includes(g)))

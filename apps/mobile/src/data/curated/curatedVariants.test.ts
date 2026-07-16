@@ -54,6 +54,30 @@ describe('getDeviceVariants', () => {
   });
 });
 
+describe('technique field passthrough', () => {
+  it('parseVariants keeps an authored technique on a step', () => {
+    const raw = [
+      {
+        recipeId: 9000001,
+        device: 'crockpot',
+        readyInMinutes: 240,
+        steps: [
+          {
+            number: 1,
+            step: 'Dice the onion into small, even pieces.',
+            ingredients: [],
+            equipment: [],
+            lengthMinutes: null,
+            technique: 'chop',
+          },
+        ],
+      },
+    ];
+    const parsed = parseVariants(raw);
+    expect(parsed.get(9000001)?.[0]?.steps[0]?.technique).toBe('chop');
+  });
+});
+
 describe('pickDefaultDevice', () => {
   const variants = parseVariants([
     goodVariant,
