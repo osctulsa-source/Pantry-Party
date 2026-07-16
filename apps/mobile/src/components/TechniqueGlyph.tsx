@@ -11,30 +11,13 @@
  * same posture as BrandIcon. Honors OS reduce-motion by never starting the
  * loop: progress stays 0, which every spec defines as the rest pose.
  */
-import { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, View, type ViewStyle } from 'react-native';
 import Svg, { G } from 'react-native-svg';
 
 import { TECHNIQUE_GLYPHS, type TechniqueGlyphName } from './brandGlyphs.technique';
 import { TECHNIQUE_MOTION, type LayerMotion, type MotionKeyframe } from './techniqueMotion';
-
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
-  useEffect(() => {
-    let live = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((v) => {
-        if (live) setReduced(v);
-      })
-      .catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduced);
-    return () => {
-      live = false;
-      sub.remove();
-    };
-  }, []);
-  return reduced;
-}
+import { useReduceMotion } from './useReduceMotion';
 
 type NumericKey = 'translateX' | 'translateY' | 'scaleX' | 'scaleY' | 'opacity';
 
@@ -79,7 +62,7 @@ function layerStyle(
 export function TechniqueGlyph({ name, size = 96 }: { name: TechniqueGlyphName; size?: number }) {
   const def = TECHNIQUE_GLYPHS[name];
   const spec = TECHNIQUE_MOTION[name];
-  const reduced = useReducedMotion();
+  const reduced = useReduceMotion();
   const progress = useRef(new Animated.Value(0)).current;
 
   const shouldAnimate = !reduced && def.layers.length > 0;
