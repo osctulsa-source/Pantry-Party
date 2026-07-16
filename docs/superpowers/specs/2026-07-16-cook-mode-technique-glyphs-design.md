@@ -35,9 +35,10 @@ No new dependencies: `react-native-svg` + core `Animated`.
 Twelve technique glyphs plus three stage-fallback glyphs, following the existing
 construction rules (`Paint` interface, solid silhouette, cream cut-marks, stroke 3,
 one leaf where natural). Each glyph is split into a **static base layer** and **1–3
-animatable layers** (e.g. chop = carrot base + knife layer), each layer a function of
-`Paint` returning SVG nodes, so the pieces also compose into a static icon for use
-elsewhere.
+animatable layers** (e.g. chop = carrot base + knife layer). Technique scenes are
+multi-tone (carrot + knife), so unlike the single-tone `Paint` family, tones are baked
+per glyph from `brandPalette`; the layer split still lets the pieces compose into a
+static icon for use elsewhere.
 
 **`apps/mobile/src/components/techniqueMotion.ts`**
 Declarative motion spec per technique: loop duration, and per-layer keyframes over
@@ -65,7 +66,7 @@ first step → prep, last step → finishing, everything between → cooking.
 
 ### Data pipeline (curated recipes)
 
-- Optional per-step `technique` field in `data/recipes/curated.json` and
+- Optional per-step `technique` field in `data/recipes/curated.recipes.json` and
   `data/recipes/curated.variants.json`: enum of the 12 technique ids plus `"none"`
   (suppress matcher, force stage fallback).
 - `data/recipes/validate.mjs` validates the enum on both base and variants.
