@@ -131,6 +131,7 @@ function validateVariants(files, baseFile) {
     err(baseFile, '', `base file does not parse as JSON: ${e.message}`);
     return 0;
   }
+  if (!Array.isArray(base)) { err(baseFile, '', 'base top level must be an array'); return 0; }
   const baseById = new Map(base.map((r) => [r.id, r]));
   const seenPairs = new Set();
   let count = 0;
