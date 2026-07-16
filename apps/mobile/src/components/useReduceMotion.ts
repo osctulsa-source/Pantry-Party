@@ -9,7 +9,9 @@ export function useReduceMotion(): boolean {
   const [reduce, setReduce] = useState(false);
   useEffect(() => {
     let alive = true;
-    AccessibilityInfo.isReduceMotionEnabled().then((v) => alive && setReduce(v));
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((v) => alive && setReduce(v))
+      .catch(() => {}); // never let a failed capability probe reject unhandled
     const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduce);
     return () => {
       alive = false;
