@@ -48,6 +48,12 @@ const SPRUCE = toneHex('spruce');
 const BLUE = toneHex('blue');
 const PLUM = toneHex('plum');
 
+// Stroke-weight convention (deliberate, per the approved motion mockups — not
+// drift from BrandIcon's uniform 3): cream cut-marks are 2 (as in the loaf-mark
+// family); delicate lines (steam wisps, heat waves, leaf fronds) are 2.2–2.4 so
+// they read as vapor/foliage; solid utensil handles DRAWN as strokes (spoon,
+// pan, pin, masher) are 3.4–3.6 so they carry silhouette weight. Everything
+// unmarked inherits 3 from TechniqueGlyph's wrapping <G>.
 export const TECHNIQUE_GLYPHS: Record<TechniqueGlyphName, TechniqueGlyphDef> = {
   // -------- techniques (12) --------
   chop: {
