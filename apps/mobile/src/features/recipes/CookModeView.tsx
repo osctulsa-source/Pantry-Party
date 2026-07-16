@@ -27,6 +27,8 @@ import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react
 import { tokens } from '../../theme/tokens';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { ensureNotificationPermission } from '../expiry/expoScheduler';
+import { TechniqueGlyph } from '../../components/TechniqueGlyph';
+import { resolveStepGlyph } from './matchTechnique';
 
 type Phase = 'prep' | 'steps';
 
@@ -35,6 +37,7 @@ interface FlatStep {
   step: string;
   ingredients: string[];
   lengthMinutes: number | null;
+  technique: string | null;
 }
 
 /**
@@ -114,6 +117,7 @@ export function CookModeView({
           step: s.step,
           ingredients: s.ingredients ?? [],
           lengthMinutes: s.lengthMinutes ?? null,
+          technique: s.technique ?? null,
         });
       }
     }
@@ -368,6 +372,12 @@ export function CookModeView({
                 </View>
               )}
             </View>
+            <View style={styles.hero}>
+              <TechniqueGlyph
+                name={resolveStepGlyph(current.technique, current.step, idx, total)}
+                size={88}
+              />
+            </View>
             <Text style={styles.stepText}>{current.step}</Text>
 
             {(timerOnThisStep || mins !== null) && (
@@ -587,6 +597,16 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
   },
   stepHead: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2), marginBottom: tokens.space(3) },
+  // The technique hero — a constant slot so the step text never jumps
+  // between steps (glanceability mid-cook, per the design spec).
+  hero: {
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: tokens.radius.md,
+    backgroundColor: tokens.color.surfaceAlt,
+    marginBottom: tokens.space(4),
+  },
   stepLabel: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 13,
