@@ -21,6 +21,8 @@ export interface RecipeStep {
   equipment: string[];
   /** Step duration in minutes when tagged — drives in-step timers. null otherwise. */
   lengthMinutes: number | null;
+  /** Authored technique id for the cook-mode glyph ("none" suppresses the keyword matcher). Curated pipeline only; absent everywhere else. */
+  technique?: string;
 }
 
 /** A (possibly named) block of steps, e.g. "For the sauce". `name` is '' for the main block. */
