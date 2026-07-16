@@ -13,7 +13,7 @@
       "stove": "native",
       "oven": "skip",
       "grill": "skip",
-      "griddle": "convert"
+      "griddle": "native"
     }
   },
   {
@@ -1842,7 +1842,7 @@
     "devices": {
       "crockpot": "skip",
       "instantpot": "skip",
-      "airfryer": "convert",
+      "airfryer": "skip",
       "sheetpan": "skip",
       "microwave": "skip",
       "nocook": "skip",
@@ -1876,7 +1876,7 @@
     "devices": {
       "crockpot": "skip",
       "instantpot": "skip",
-      "airfryer": "convert",
+      "airfryer": "skip",
       "sheetpan": "skip",
       "microwave": "skip",
       "nocook": "skip",

@@ -1,0 +1,2052 @@
+[
+  {
+    "recipeId": 9000093,
+    "device": "grill",
+    "readyInMinutes": 28,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the soy sauce, cornstarch, and vegetable broth together in a small bowl until smooth and set aside.",
+        "ingredients": [
+          "soy sauce",
+          "cornstarch",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Heat the grill to high with a grill basket set on top to preheat, and rub the basket well with a little of the vegetable oil so nothing sticks.",
+        "ingredients": [
+          "vegetable oil"
+        ],
+        "equipment": [
+          "grill basket"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 3,
+        "step": "Toss the broccoli and carrots with a splash of vegetable oil, spread them in the hot basket, and grill with the lid down, tossing once, until they start to char at the edges, about 5 minutes.",
+        "ingredients": [
+          "broccoli florets",
+          "carrot",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "grill basket"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 4,
+        "step": "Add the bell pepper and snap peas to the basket and keep grilling until all the vegetables are bright and lightly charred, about 4 more minutes.",
+        "ingredients": [
+          "bell pepper",
+          "snap peas"
+        ],
+        "equipment": [],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 5,
+        "step": "Push the vegetables to one side of the basket, scatter the garlic and ginger into the cleared space, and let them sit over the heat just until fragrant, about 1 minute — watch closely, since grill heat runs hotter than a stovetop burner.",
+        "ingredients": [
+          "garlic",
+          "ginger"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 6,
+        "step": "Set a small saucepan directly on the grill grate, pour in the sauce, and whisk until it thickens and turns glossy, about 2 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "small saucepan"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 7,
+        "step": "Pour the sauce over the grilled vegetables in the basket and toss everything together until well coated.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 8,
+        "step": "Serve hot, straight off the grill.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000093,
+    "device": "sheetpan",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Preheat the oven to 425°F with a sheet pan inside — a hot pan means the vegetables sear on contact instead of steaming.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan",
+          "oven"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 2,
+        "step": "Whisk the soy sauce, cornstarch, and vegetable broth together in a small bowl until smooth and set aside.",
+        "ingredients": [
+          "soy sauce",
+          "cornstarch",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Toss the broccoli and carrots with the vegetable oil, carefully spread them in a single layer on the hot sheet pan, and roast for 8 minutes.",
+        "ingredients": [
+          "broccoli florets",
+          "carrot",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 4,
+        "step": "Add the bell pepper and snap peas to the pan, toss, and roast until all the vegetables are bright and lightly browned at the edges, about 7 more minutes.",
+        "ingredients": [
+          "bell pepper",
+          "snap peas"
+        ],
+        "equipment": [],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 5,
+        "step": "Push the vegetables to one side of the pan, scatter the garlic and ginger onto the cleared space, and return to the oven just until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "ginger"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 6,
+        "step": "Pour the sauce directly over the vegetables on the pan and toss well to coat.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Return the pan to the oven for 2 minutes, until the sauce clings to the vegetables and looks glossy and thickened.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 8,
+        "step": "Serve hot, straight off the pan.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000094,
+    "device": "crockpot",
+    "readyInMinutes": 430,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet over medium heat and cook the onion and bell peppers until softened, about 6 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "bell pepper"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, chili powder, and cumin, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "chili powder",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Scrape the mixture into the slow cooker.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Stir in the diced tomatoes, black beans, kidney beans, corn, and only half the vegetable broth — a slow cooker traps moisture instead of letting it cook off, so starting lighter on liquid keeps the chili thick.",
+        "ingredients": [
+          "diced tomatoes",
+          "black beans",
+          "kidney beans",
+          "corn",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cover and cook on low for 7 hours, or on high for 4 hours, until the vegetables are completely tender and the chili has thickened.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 420
+      },
+      {
+        "number": 6,
+        "step": "Season with salt and pepper, stir well, and serve hot straight from the slow cooker.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000094,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to the sauté function, heat the olive oil, and cook the onion and bell peppers until softened, about 6 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "bell pepper"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, chili powder, and cumin, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "chili powder",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Stir in the diced tomatoes, black beans, kidney beans, corn, and vegetable broth, scraping up any browned bits from the bottom of the pot so nothing scorches once it's sealed.",
+        "ingredients": [
+          "diced tomatoes",
+          "black beans",
+          "kidney beans",
+          "corn",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid, set the valve to sealing, and cook on high pressure for 8 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 5,
+        "step": "Let the pressure release naturally for 10 minutes, then carefully switch the valve to venting to release any steam left.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Open the lid, season with salt and pepper, stir, and serve — the beans will have soaked up even more flavor than the stovetop version, in a fraction of the time.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000095,
+    "device": "crockpot",
+    "readyInMinutes": 400,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet over medium heat and cook the onion until soft and golden at the edges, about 5 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, ginger, and curry powder, stirring until fragrant, about 1 minute — blooming the spices in oil now means they still taste bright after hours in the slow cooker.",
+        "ingredients": [
+          "garlic",
+          "ginger",
+          "curry powder"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Transfer everything to the slow cooker and stir in the diced tomatoes and chickpeas.",
+        "ingredients": [
+          "diced tomatoes",
+          "chickpeas"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low for 6 hours, or on high for 3 hours, until the chickpeas are plump and the kitchen smells like curry.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 5,
+        "step": "Stir in the coconut milk during the last 20 minutes of cooking rather than at the start — coconut milk can turn grainy and separate after hours of slow simmering.",
+        "ingredients": [
+          "coconut milk"
+        ],
+        "equipment": [],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 6,
+        "step": "Stir in the spinach, cover, and let it wilt in the residual heat, about 5 minutes.",
+        "ingredients": [
+          "spinach"
+        ],
+        "equipment": [],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 7,
+        "step": "Season with salt and pepper and serve warm.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000095,
+    "device": "instantpot",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, heat the olive oil, and cook the onion until soft and golden, about 5 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, ginger, and curry powder, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "ginger",
+          "curry powder"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Stir in the diced tomatoes and chickpeas, holding back the coconut milk for now — it can curdle under high heat and pressure.",
+        "ingredients": [
+          "diced tomatoes",
+          "chickpeas"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid and cook on high pressure for 5 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 5,
+        "step": "Quick release the pressure right away so the sauce doesn't keep cooking longer than it needs to.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 6,
+        "step": "Switch back to sauté, stir in the coconut milk and spinach, and simmer uncovered just until the spinach wilts and everything is heated through, about 3 minutes.",
+        "ingredients": [
+          "coconut milk",
+          "spinach"
+        ],
+        "equipment": [],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Season with salt and pepper and serve warm.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000096,
+    "device": "crockpot",
+    "readyInMinutes": 190,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Combine the olive oil, onion, garlic, cumin, and chili powder directly in the slow cooker — there's no need to sauté first, since low heat will soften the onion and bloom the spices over time.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "garlic",
+          "cumin",
+          "chili powder"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Add the black beans along with a splash of water, stirring to coat them in the spiced oil.",
+        "ingredients": [
+          "black beans"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Cover and cook on low for 3 hours, or on high for 1 1/2 hours, until the onion is completely soft and the beans have soaked up the spices.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 180
+      },
+      {
+        "number": 4,
+        "step": "Mash about half the beans right in the slow cooker with a fork, leaving the rest whole for texture.",
+        "ingredients": [
+          "black beans"
+        ],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Stir in the lime juice and season with salt and pepper.",
+        "ingredients": [
+          "lime",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Warm the tortillas in a dry skillet, about 20 seconds per side, until soft and pliable.",
+        "ingredients": [
+          "corn tortillas"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Fill each tortilla with the black bean mixture and top with avocado and cilantro before serving.",
+        "ingredients": [
+          "corn tortillas",
+          "avocado",
+          "cilantro"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000096,
+    "device": "instantpot",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, heat the olive oil, and cook the onion until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, cumin, and chili powder, stirring until fragrant, about 30 seconds.",
+        "ingredients": [
+          "garlic",
+          "cumin",
+          "chili powder"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Add the black beans with a splash of water, scraping up anything stuck to the bottom of the pot.",
+        "ingredients": [
+          "black beans"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid and cook on high pressure for 3 minutes — just long enough for the beans to soak up the spices without turning to mush.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 5,
+        "step": "Quick release the pressure, then mash about half the beans right in the pot with a fork, leaving the rest whole for texture.",
+        "ingredients": [
+          "black beans"
+        ],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Stir in the lime juice and season with salt and pepper.",
+        "ingredients": [
+          "lime",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Warm the tortillas in a dry skillet, about 20 seconds per side, until soft and pliable.",
+        "ingredients": [
+          "corn tortillas"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 8,
+        "step": "Fill each tortilla with the black bean mixture and top with avocado and cilantro before serving.",
+        "ingredients": [
+          "corn tortillas",
+          "avocado",
+          "cilantro"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000097,
+    "device": "airfryer",
+    "readyInMinutes": 60,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet over medium heat and cook the onion until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and cumin, stirring until fragrant, about 30 seconds.",
+        "ingredients": [
+          "garlic",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Stir in the rice, black beans, diced tomatoes, and half the cheddar cheese, then season with salt and pepper.",
+        "ingredients": [
+          "rice",
+          "black beans",
+          "diced tomatoes",
+          "cheddar cheese",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Spoon the filling into each pepper, packing it in gently and mounding slightly at the top — no need to parboil the peppers first, since the air fryer's strong circulating heat will cook them through on its own.",
+        "ingredients": [
+          "bell pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Preheat the air fryer to 350°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 6,
+        "step": "Working in batches of 2 so each pepper stands upright with room for air to move around it, place the peppers in the basket and air fry for 18 minutes, until tender when pierced with a knife.",
+        "ingredients": [
+          "bell pepper"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 7,
+        "step": "Sprinkle the remaining cheddar cheese over the peppers and air fry until melted, about 3 more minutes.",
+        "ingredients": [
+          "cheddar cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 8,
+        "step": "Move the finished peppers to a plate and repeat the last two steps with the remaining peppers, since the basket needs open space around each one to cook evenly.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 21
+      },
+      {
+        "number": 9,
+        "step": "Serve the peppers warm, spooning any juices left on the plate over the top.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000097,
+    "device": "crockpot",
+    "readyInMinutes": 390,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet over medium heat and cook the onion until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and cumin, stirring until fragrant, about 30 seconds.",
+        "ingredients": [
+          "garlic",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Stir in the rice, black beans, diced tomatoes, and half the cheddar cheese, then season with salt and pepper.",
+        "ingredients": [
+          "rice",
+          "black beans",
+          "diced tomatoes",
+          "cheddar cheese",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Spoon the filling into each pepper, packing it in gently and mounding slightly at the top.",
+        "ingredients": [
+          "bell pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Pour a little water into the bottom of the slow cooker, just enough to cover the base, and stand the stuffed peppers up inside, nestling them close together so they support one another.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Cover and cook on low for 6 hours, or on high for 3 hours, until the peppers are completely tender.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 7,
+        "step": "Sprinkle the remaining cheddar cheese over the tops, cover again, and cook just until melted, about 10 minutes.",
+        "ingredients": [
+          "cheddar cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 8,
+        "step": "Lift the peppers out carefully with tongs and serve warm.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000098,
+    "device": "griddle",
+    "readyInMinutes": 25,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the griddle to medium-high and drizzle on 1 tablespoon of the vegetable oil, spreading it thin across the surface.",
+        "ingredients": [
+          "vegetable oil"
+        ],
+        "equipment": [
+          "griddle"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 2,
+        "step": "Pour the eggs onto one section of the griddle and scramble with a spatula until just set, breaking them into small pieces, then push them to a cooler section.",
+        "ingredients": [
+          "eggs"
+        ],
+        "equipment": [
+          "spatula"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 3,
+        "step": "Drizzle a little more oil onto an open section, add the carrot, and cook, stirring, until slightly softened, about 2 minutes.",
+        "ingredients": [
+          "vegetable oil",
+          "carrot"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 4,
+        "step": "Add the frozen peas and garlic to the same section and cook until the peas are bright and heated through, about 2 minutes.",
+        "ingredients": [
+          "frozen peas",
+          "garlic"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 5,
+        "step": "Push everything to one side, drizzle the remaining oil onto the open space, and spread the cold rice across the hot griddle in a thin layer so it makes good contact and crisps instead of steaming.",
+        "ingredients": [
+          "vegetable oil",
+          "rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Let the rice sit undisturbed for a minute to pick up some char, then break up any clumps and toss everything together, stir-frying until heated through, about 4 minutes.",
+        "ingredients": [
+          "rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 7,
+        "step": "Fold the scrambled eggs back in, drizzle the soy sauce and sesame oil over the top, and toss until evenly coated.",
+        "ingredients": [
+          "eggs",
+          "soy sauce",
+          "sesame oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 8,
+        "step": "Scatter the green onions over the top and serve hot right off the griddle.",
+        "ingredients": [
+          "green onion"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000099,
+    "device": "airfryer",
+    "readyInMinutes": 75,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Lay the eggplant slices on paper towels, sprinkle both sides with salt, and let sit for 15 minutes to draw out excess moisture, then pat dry.",
+        "ingredients": [
+          "eggplant",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "paper towels"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 2,
+        "step": "Set up three shallow dishes: one with flour, one with the beaten eggs, and one with the breadcrumbs mixed with the parmesan cheese.",
+        "ingredients": [
+          "flour",
+          "eggs",
+          "breadcrumbs",
+          "parmesan cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Dip each eggplant slice in flour, then egg, then the breadcrumb mixture, pressing gently so it sticks.",
+        "ingredients": [
+          "eggplant"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Preheat the air fryer to 375°F, then lightly brush both sides of the breaded slices with olive oil — this stands in for the frying oil and is what gets them golden and crisp.",
+        "ingredients": [
+          "olive oil"
+        ],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 5,
+        "step": "Working in batches so the slices sit in a single layer without touching, air fry for 10 minutes, flipping halfway, until golden and crisp.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Repeat with the remaining batches, keeping the finished slices on a rack nearby.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 7,
+        "step": "Spread a thin layer of marinara sauce in a small air-fryer-safe baking dish, then layer in eggplant slices, more sauce, and a scatter of mozzarella cheese, repeating until everything is used — you may need two smaller dishes rather than one large one.",
+        "ingredients": [
+          "marinara sauce",
+          "eggplant",
+          "mozzarella cheese"
+        ],
+        "equipment": [
+          "baking dish"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Air fry at 350°F until the cheese is melted and golden and the sauce is bubbling at the edges, about 8 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 9,
+        "step": "Let it rest for 5 minutes, then scatter the basil over the top before serving.",
+        "ingredients": [
+          "basil"
+        ],
+        "equipment": [],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000099,
+    "device": "grill",
+    "readyInMinutes": 65,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Lay the eggplant slices on paper towels, sprinkle both sides with salt, and let sit for 15 minutes to draw out excess moisture, then pat dry.",
+        "ingredients": [
+          "eggplant",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "paper towels"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 2,
+        "step": "Set up three shallow dishes: one with flour, one with the beaten eggs, and one with the breadcrumbs mixed with the parmesan cheese.",
+        "ingredients": [
+          "flour",
+          "eggs",
+          "breadcrumbs",
+          "parmesan cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Dip each eggplant slice in flour, then egg, then the breadcrumb mixture, pressing firmly so the coating can hold up to the grill grates.",
+        "ingredients": [
+          "eggplant"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Heat the grill to medium and oil the grates well, using a folded paper towel dipped in olive oil and held with tongs — a well-oiled grate is what keeps the breading from tearing away.",
+        "ingredients": [
+          "olive oil"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 5,
+        "step": "Grill the breaded slices directly on the grate, working in batches, until deep golden grill marks form and the coating sets, about 4 minutes per side.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 6,
+        "step": "Move the grilled slices to a tray as each batch finishes.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "In a grill-safe baking dish, spread a thin layer of marinara sauce, then layer in the grilled eggplant, more sauce, and a scatter of mozzarella cheese, repeating until everything is used.",
+        "ingredients": [
+          "marinara sauce",
+          "eggplant",
+          "mozzarella cheese"
+        ],
+        "equipment": [
+          "baking dish"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Set the dish on the grill grates, close the lid, and cook over indirect heat until the cheese is melted and the sauce bubbles at the edges, about 12 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 9,
+        "step": "Let it rest for 5 minutes off the heat, then scatter the basil over the top before serving.",
+        "ingredients": [
+          "basil"
+        ],
+        "equipment": [],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000100,
+    "device": "crockpot",
+    "readyInMinutes": 495,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet over medium heat and cook the onion, carrots, and celery until softened, about 6 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "carrot",
+          "celery"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and cumin, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Scrape the mixture into the slow cooker.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Stir in the lentils, diced tomatoes, vegetable broth, and bay leaf.",
+        "ingredients": [
+          "lentils",
+          "diced tomatoes",
+          "vegetable broth",
+          "bay leaf"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cover and cook on low for 8 hours, or on high for 4 hours, until the lentils are fully tender and the soup has thickened.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 480
+      },
+      {
+        "number": 6,
+        "step": "Remove the bay leaf and season with salt and pepper before serving.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000100,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, heat the olive oil, and cook the onion, carrots, and celery until softened, about 6 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "carrot",
+          "celery"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and cumin, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Stir in the lentils, diced tomatoes, vegetable broth, and bay leaf, scraping up any browned bits from the bottom of the pot.",
+        "ingredients": [
+          "lentils",
+          "diced tomatoes",
+          "vegetable broth",
+          "bay leaf"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid and cook on high pressure for 15 minutes — dried lentils go from raw to tender in a fraction of the stovetop time.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 5,
+        "step": "Let the pressure release naturally for 10 minutes before opening the valve — releasing it quickly can cause the soup to sputter out through the vent.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Remove the bay leaf and season with salt and pepper before serving.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000101,
+    "device": "airfryer",
+    "readyInMinutes": 65,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Beat the butter, brown sugar, and granulated sugar together in a large bowl until light and fluffy, about 2 minutes.",
+        "ingredients": [
+          "butter",
+          "brown sugar",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "large bowl"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 2,
+        "step": "Beat in the eggs one at a time, then stir in the vanilla extract until smooth.",
+        "ingredients": [
+          "eggs",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "In a separate bowl, whisk together the flour, baking soda, and salt.",
+        "ingredients": [
+          "flour",
+          "baking soda",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Stir the dry ingredients into the butter mixture just until no streaks of flour remain.",
+        "ingredients": [
+          "flour"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Fold in the chocolate chips so they are spread evenly through the dough.",
+        "ingredients": [
+          "chocolate chips"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Cut a piece of parchment paper to fit the air fryer basket and preheat the air fryer to 325°F — about 25 degrees cooler than the oven, since air fryers cook hotter and faster than their dial suggests.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Drop rounded tablespoons of dough onto the parchment, leaving space between each — a standard basket only holds about 6 cookies at a time, so plan on baking in rounds.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Air fry until the edges are golden but the centers still look slightly underdone, 7 to 8 minutes, checking a minute early since air fryers vary.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 9,
+        "step": "Let the cookies rest on the parchment for 5 minutes before moving them to a wire rack, then repeat with the remaining dough in batches.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000102,
+    "device": "airfryer",
+    "readyInMinutes": 70,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Melt the butter in a small saucepan over low heat, then remove from the heat and whisk in the cocoa powder until smooth.",
+        "ingredients": [
+          "butter",
+          "cocoa powder"
+        ],
+        "equipment": [
+          "saucepan",
+          "whisk"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 2,
+        "step": "Whisk in the granulated sugar, then the eggs one at a time, then the vanilla extract, whisking hard after each addition until the batter looks glossy.",
+        "ingredients": [
+          "granulated sugar",
+          "eggs",
+          "vanilla extract"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Sprinkle the flour and salt over the batter and fold in gently with a spatula, stopping as soon as the flour disappears.",
+        "ingredients": [
+          "flour",
+          "salt"
+        ],
+        "equipment": [
+          "spatula"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Stir in the chocolate chips.",
+        "ingredients": [
+          "chocolate chips"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Line a 6-inch round cake pan with parchment paper, leaving an overhang to lift the brownies out later — this smaller size is what actually fits inside most air fryer baskets.",
+        "ingredients": [],
+        "equipment": [
+          "cake pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Pour the batter into the prepared pan, smooth the top, and preheat the air fryer to 325°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Set the pan in the basket and air fry until a toothpick inserted in the center comes out with a few moist crumbs, 30 to 35 minutes — loosely tent the top with foil partway through if it's browning faster than the center is setting.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 35
+      },
+      {
+        "number": 8,
+        "step": "Cool the brownies completely in the pan before lifting them out by the parchment overhang and cutting into squares.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 15
+      }
+    ]
+  },
+  {
+    "recipeId": 9000103,
+    "device": "airfryer",
+    "readyInMinutes": 110,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk together the flour, baking powder, baking soda, cinnamon, and salt in a medium bowl.",
+        "ingredients": [
+          "flour",
+          "baking powder",
+          "baking soda",
+          "cinnamon",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "In a large bowl, whisk the vegetable oil, granulated sugar, and brown sugar together, then beat in the eggs one at a time until the mixture is smooth and light.",
+        "ingredients": [
+          "vegetable oil",
+          "granulated sugar",
+          "brown sugar",
+          "eggs"
+        ],
+        "equipment": [
+          "large bowl",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Stir the dry ingredients into the wet ingredients until just combined, then fold in the grated carrots.",
+        "ingredients": [
+          "flour",
+          "carrots"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Grease two 6-inch round cake pans — the size that actually fits an air fryer basket — and line the bottoms with parchment paper.",
+        "ingredients": [],
+        "equipment": [
+          "cake pans"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Divide the batter evenly between the two pans, then preheat the air fryer to 325°F — most baskets only have room to bake one 6-inch pan at a time.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 6,
+        "step": "Air fry the first pan until a toothpick inserted in the center comes out clean, 25 to 28 minutes, then repeat with the second pan.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 56
+      },
+      {
+        "number": 7,
+        "step": "Cool the cakes in their pans for 10 minutes, then turn them out onto a wire rack and cool completely before frosting.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 30
+      },
+      {
+        "number": 8,
+        "step": "Beat the cream cheese and butter together in a clean bowl until smooth, then add the powdered sugar and beat until the frosting is fluffy and holds its shape.",
+        "ingredients": [
+          "cream cheese",
+          "butter",
+          "powdered sugar"
+        ],
+        "equipment": [
+          "mixer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 9,
+        "step": "Set one cake layer on a plate, spread a thick layer of frosting on top, stack the second layer, then frost the top and sides of the whole cake.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000107,
+    "device": "airfryer",
+    "readyInMinutes": 110,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Beat the butter and granulated sugar together in a large bowl until pale and fluffy, about 2 minutes.",
+        "ingredients": [
+          "butter",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "large bowl"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 2,
+        "step": "Beat in the egg and vanilla extract until fully combined.",
+        "ingredients": [
+          "egg",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Whisk the flour, baking powder, and salt together in a separate bowl, then mix into the butter mixture until a soft dough forms.",
+        "ingredients": [
+          "flour",
+          "baking powder",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Shape the dough into a disk, wrap it, and refrigerate until firm, at least 1 hour.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 60
+      },
+      {
+        "number": 5,
+        "step": "Roll the dough out on a lightly floured surface to about 1/4-inch thickness and cut into shapes.",
+        "ingredients": [
+          "flour"
+        ],
+        "equipment": [
+          "rolling pin"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Cut a piece of parchment paper to fit the air fryer basket and preheat the air fryer to 325°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Arrange as many cookies as fit without touching — usually about 6 — on the parchment in the basket, and air fry until the edges are just barely golden, 6 to 7 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 8,
+        "step": "Let the cookies cool on the parchment for 5 minutes, then move them to a wire rack, and repeat with the remaining dough in batches before decorating.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000108,
+    "device": "airfryer",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Stir the peanut butter and granulated sugar together in a large bowl until smooth.",
+        "ingredients": [
+          "peanut butter",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "large bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Mix in the egg, vanilla extract, baking soda, and salt until a soft dough comes together.",
+        "ingredients": [
+          "egg",
+          "vanilla extract",
+          "baking soda",
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Roll the dough into 1-inch balls, then roll each ball in a little extra granulated sugar.",
+        "ingredients": [
+          "granulated sugar"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cut a piece of parchment paper to fit the air fryer basket and preheat the air fryer to 325°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 5,
+        "step": "Place the balls on the parchment a couple inches apart — about 6 at a time in most baskets — then press a crosshatch pattern into each with a fork.",
+        "ingredients": [],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Air fry until the edges are set but the centers still look soft, 7 to 8 minutes — they will firm up as they cool.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 7,
+        "step": "Cool the cookies on the parchment for 5 minutes before moving them to a wire rack, then repeat with the remaining dough in batches.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000110,
+    "device": "airfryer",
+    "readyInMinutes": 75,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the flour, baking powder, and salt together in a bowl and set aside.",
+        "ingredients": [
+          "flour",
+          "baking powder",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Beat the butter and granulated sugar together until light and fluffy, about 2 minutes.",
+        "ingredients": [
+          "butter",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "mixer"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 3,
+        "step": "Beat in the eggs one at a time, then the vanilla extract.",
+        "ingredients": [
+          "eggs",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Add the flour mixture and milk in alternating additions, mixing just until smooth after each.",
+        "ingredients": [
+          "flour",
+          "milk"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Line silicone muffin cups with paper liners — silicone holds up to the air fryer basket better than a standard metal pan, which usually won't fit.",
+        "ingredients": [],
+        "equipment": [
+          "muffin pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Fill 4 to 5 cups about two-thirds full, preheat the air fryer to 325°F, and set the filled cups in the basket.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Air fry until a toothpick inserted in the center comes out clean, 11 to 13 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 13
+      },
+      {
+        "number": 8,
+        "step": "Cool the cupcakes for 5 minutes, then move them to a wire rack, and repeat with the remaining batter in batches — a full dozen usually takes about three rounds.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 9,
+        "step": "Once completely cool, frost with the powdered sugar buttercream.",
+        "ingredients": [
+          "powdered sugar"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000113,
+    "device": "airfryer",
+    "readyInMinutes": 55,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the sliced apples with the granulated sugar, lemon juice, and half the cinnamon.",
+        "ingredients": [
+          "apples",
+          "granulated sugar",
+          "lemon juice",
+          "cinnamon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "In a separate bowl, mix the rolled oats, flour, brown sugar, remaining cinnamon, and salt together.",
+        "ingredients": [
+          "rolled oats",
+          "flour",
+          "brown sugar",
+          "cinnamon",
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Cut the cold butter into the oat mixture with your fingers or a fork until it looks like coarse, clumpy crumbs.",
+        "ingredients": [
+          "butter"
+        ],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Grease a small baking dish that fits inside your air fryer basket, about 6 to 7 inches across, and spread the apples in an even layer.",
+        "ingredients": [
+          "apples"
+        ],
+        "equipment": [
+          "baking dish"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Scatter the topping evenly over the apples.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Preheat the air fryer to 350°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Set the dish in the basket and air fry until the topping is deep golden and the apples are bubbling at the edges, 22 to 25 minutes — check at 20 minutes, since the topping can go from golden to too dark quickly in the strong airflow.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 25
+      },
+      {
+        "number": 8,
+        "step": "Let the crisp rest for 10 minutes before serving so the juices can settle.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 10
+      }
+    ]
+  },
+  {
+    "recipeId": 9000114,
+    "device": "airfryer",
+    "readyInMinutes": 50,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Beat the butter, brown sugar, and granulated sugar together until light and fluffy, about 2 minutes.",
+        "ingredients": [
+          "butter",
+          "brown sugar",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "mixer"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 2,
+        "step": "Beat in the eggs one at a time, then the vanilla extract.",
+        "ingredients": [
+          "eggs",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Whisk the flour, baking soda, cinnamon, and salt together in a separate bowl, then stir into the butter mixture until just combined.",
+        "ingredients": [
+          "flour",
+          "baking soda",
+          "cinnamon",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Fold in the rolled oats and raisins until evenly distributed through the dough.",
+        "ingredients": [
+          "rolled oats",
+          "raisins"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cut a piece of parchment paper to fit the air fryer basket and preheat the air fryer to 325°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 6,
+        "step": "Drop rounded tablespoons of dough onto the parchment, spacing them apart — about 6 fit per batch.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Air fry until the edges are golden and the centers look set, 8 to 9 minutes.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 8,
+        "step": "Cool the cookies on the parchment for 5 minutes before moving them to a wire rack, then repeat with the remaining dough in batches.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000115,
+    "device": "airfryer",
+    "readyInMinutes": 50,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Beat the butter and 1 cup of the granulated sugar together until light and fluffy, about 2 minutes.",
+        "ingredients": [
+          "butter",
+          "granulated sugar"
+        ],
+        "equipment": [
+          "mixer"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 2,
+        "step": "Beat in the eggs one at a time, then the vanilla extract.",
+        "ingredients": [
+          "eggs",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Whisk the flour, cream of tartar, baking soda, and salt together in a separate bowl, then mix into the wet ingredients until a soft dough forms.",
+        "ingredients": [
+          "flour",
+          "cream of tartar",
+          "baking soda",
+          "salt"
+        ],
+        "equipment": [
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Stir the remaining 1/2 cup granulated sugar and the cinnamon together in a small shallow bowl.",
+        "ingredients": [
+          "granulated sugar",
+          "cinnamon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Roll the dough into 1-inch balls, then roll each ball in the cinnamon sugar until fully coated.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Cut a piece of parchment paper to fit the air fryer basket and preheat the air fryer to 325°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Arrange the balls on the parchment, spacing them apart — about 6 per batch — and air fry until the tops crackle and the edges just set, 7 to 8 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 8,
+        "step": "Cool the cookies on the parchment for 5 minutes before moving them to a wire rack, then repeat with the remaining dough in batches.",
+        "ingredients": [],
+        "equipment": [
+          "wire rack"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  }
+]

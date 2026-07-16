@@ -1,0 +1,2292 @@
+[
+  {
+    "recipeId": 9000073,
+    "device": "airfryer",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Pat the pork tenderloin dry and season all over with salt and pepper.",
+        "ingredients": [
+          "pork tenderloin",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Rub the tenderloin with the olive oil, curl the thin tail end underneath itself so it cooks at an even thickness, and set it in the air fryer basket.",
+        "ingredients": [
+          "olive oil",
+          "pork tenderloin"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Air fry at 380°F until lightly browned on the outside, about 10 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 4,
+        "step": "Meanwhile, whisk the honey, dijon mustard, garlic, and apple cider vinegar together in a small bowl to make the glaze.",
+        "ingredients": [
+          "honey",
+          "dijon mustard",
+          "garlic",
+          "apple cider vinegar"
+        ],
+        "equipment": [
+          "whisk",
+          "small bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Brush the tenderloin with half the glaze, flip it, and air fry 5 more minutes — in the tight space of a basket the glaze can catch fast, so keep an eye on it.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 6,
+        "step": "Brush with the remaining glaze and continue air frying until a thermometer in the thickest part reads 145°F, about 6 to 8 minutes more.",
+        "ingredients": [],
+        "equipment": [
+          "thermometer"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 7,
+        "step": "Move the tenderloin to a cutting board and let it rest 5 minutes before slicing so the juices redistribute.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000073,
+    "device": "grill",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Pat the pork tenderloin dry and season all over with salt and pepper.",
+        "ingredients": [
+          "pork tenderloin",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Rub it all over with the olive oil, then preheat the grill to medium-high and set up two zones — direct heat on one side, a cooler indirect area on the other.",
+        "ingredients": [
+          "olive oil"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Sear the tenderloin directly over the hot side, turning every couple of minutes, until browned on all sides, about 8 minutes total.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 4,
+        "step": "While it sears, whisk the honey, dijon mustard, garlic, and apple cider vinegar together in a small bowl to make the glaze.",
+        "ingredients": [
+          "honey",
+          "dijon mustard",
+          "garlic",
+          "apple cider vinegar"
+        ],
+        "equipment": [
+          "whisk",
+          "small bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Move the tenderloin to the cooler side of the grill, brush with half the glaze, and close the lid.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Grill with the lid closed, brushing with the remaining glaze once or twice, until a thermometer in the thickest part reads 145°F, about 12 to 15 minutes — indirect heat lets the glaze caramelize without scorching.",
+        "ingredients": [],
+        "equipment": [
+          "thermometer"
+        ],
+        "lengthMinutes": 14
+      },
+      {
+        "number": 7,
+        "step": "Transfer to a cutting board, tent loosely with foil, and rest 5 minutes before slicing.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000073,
+    "device": "sheetpan",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the oven to 425°F and set a sheet pan nearby.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Pat the pork tenderloin dry, season all over with salt and pepper, and rub with the olive oil.",
+        "ingredients": [
+          "pork tenderloin",
+          "salt and pepper",
+          "olive oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Set the tenderloin on the sheet pan and roast for 15 minutes to start building color, since a sheet pan won't sear the meat the way a hot skillet does.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan",
+          "oven"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 4,
+        "step": "Meanwhile, whisk the honey, dijon mustard, garlic, and apple cider vinegar together in a small bowl to make the glaze.",
+        "ingredients": [
+          "honey",
+          "dijon mustard",
+          "garlic",
+          "apple cider vinegar"
+        ],
+        "equipment": [
+          "whisk",
+          "small bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Brush the tenderloin with half the glaze and return the sheet pan to the oven for 8 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 6,
+        "step": "Brush with the remaining glaze and roast until a thermometer in the thickest part reads 145°F, about 5 to 7 minutes more.",
+        "ingredients": [],
+        "equipment": [
+          "thermometer"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 7,
+        "step": "Let the tenderloin rest on the sheet pan for 5 minutes before slicing, spooning any pan juices back over the top.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": 5
+      }
+    ]
+  },
+  {
+    "recipeId": 9000076,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Pat the salmon fillets dry and season with salt and pepper.",
+        "ingredients": [
+          "salmon fillets",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Melt the butter and stir in the lemon juice, garlic, and dried dill.",
+        "ingredients": [
+          "butter",
+          "lemon",
+          "garlic",
+          "dried dill"
+        ],
+        "equipment": [
+          "small bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 380°F for a few minutes — starting hot gives the fillets a bit of color they'd otherwise miss without a broiler.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Brush the salmon all over with the butter mixture and set the fillets skin-side down in the air fryer basket, leaving space between them.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Lay the lemon slices over the top of the fillets.",
+        "ingredients": [
+          "lemon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Air fry until the salmon flakes easily and looks opaque in the center, about 8 to 10 minutes — no need to flip.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 7,
+        "step": "Let the fillets rest a couple of minutes, then drizzle with any butter mixture left in the bowl before serving.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 2
+      }
+    ]
+  },
+  {
+    "recipeId": 9000076,
+    "device": "grill",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Pat the salmon fillets dry and season with salt and pepper.",
+        "ingredients": [
+          "salmon fillets",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Melt the butter and stir in the lemon juice, garlic, and dried dill.",
+        "ingredients": [
+          "butter",
+          "lemon",
+          "garlic",
+          "dried dill"
+        ],
+        "equipment": [
+          "small bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the grill to medium and oil the grates well — skinless fillets stick easily, so don't skip this.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lay the lemon slices in a row on the grates and set the salmon on top of them skin-side down; the lemon keeps the delicate fish from falling through or sticking.",
+        "ingredients": [
+          "lemon",
+          "salmon fillets"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Brush the fillets with the butter mixture, close the lid, and grill until the salmon flakes easily and is opaque throughout, about 8 to 10 minutes — resist flipping it.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 6,
+        "step": "Lift the fillets off, lemon slices and all, using a wide spatula.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Drizzle with any remaining butter mixture before serving.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000078,
+    "device": "grill",
+    "readyInMinutes": 25,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Bring a large pot of salted water to a boil and cook the linguine until just short of tender, about 1 minute less than the package says. Scoop out a cup of the pasta water before draining.",
+        "ingredients": [
+          "linguine"
+        ],
+        "equipment": [
+          "large pot"
+        ],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 2,
+        "step": "Toss the shrimp with the olive oil, salt, and pepper, then thread them onto skewers.",
+        "ingredients": [
+          "shrimp",
+          "olive oil",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the grill to medium-high and oil the grates.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Grill the shrimp skewers until pink, curled, and lightly charred, about 2 minutes per side.",
+        "ingredients": [
+          "shrimp"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 5,
+        "step": "Meanwhile, melt half the butter in a small skillet over medium heat, add the garlic and red pepper flakes, and stir until fragrant, about 30 seconds.",
+        "ingredients": [
+          "butter",
+          "garlic",
+          "red pepper flakes"
+        ],
+        "equipment": [
+          "small skillet"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 6,
+        "step": "Pour in the white wine and let it bubble for a minute to cook off the sharp smell.",
+        "ingredients": [
+          "white wine"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Stir in the remaining butter and the lemon juice until the sauce looks glossy.",
+        "ingredients": [
+          "butter",
+          "lemon"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 8,
+        "step": "Slide the shrimp off the skewers into the skillet, add the drained linguine, and toss well, splashing in reserved pasta water a little at a time until the sauce coats the noodles.",
+        "ingredients": [
+          "shrimp",
+          "linguine"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 9,
+        "step": "Scatter the parsley over the top and serve right away while the sauce is still glossy.",
+        "ingredients": [
+          "parsley"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000079,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the cabbage with the mayonnaise and half the lime juice in a bowl, season with salt, and set aside so it softens while you cook the fish.",
+        "ingredients": [
+          "cabbage",
+          "mayonnaise",
+          "lime",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Preheat the air fryer to 400°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Pat the fish dry and rub both sides with the olive oil, chili powder, cumin, salt, and pepper.",
+        "ingredients": [
+          "white fish fillets",
+          "olive oil",
+          "chili powder",
+          "cumin",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Set the fish in the air fryer basket in a single layer and air fry until it flakes easily and the edges are golden, about 8 minutes, flipping halfway.",
+        "ingredients": [
+          "white fish fillets"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 5,
+        "step": "Move the fish to a plate and break it into large flaky chunks with a fork.",
+        "ingredients": [
+          "white fish fillets"
+        ],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Stack the tortillas, wrap loosely in foil, and warm them in the air fryer for a couple of minutes while the fish rests.",
+        "ingredients": [
+          "corn tortillas"
+        ],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 7,
+        "step": "Fill each tortilla with fish and a spoonful of the cabbage slaw.",
+        "ingredients": [
+          "corn tortillas",
+          "white fish fillets",
+          "cabbage"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Top with cilantro and a squeeze of the remaining lime juice before serving.",
+        "ingredients": [
+          "cilantro",
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000079,
+    "device": "grill",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the cabbage with the mayonnaise and half the lime juice in a bowl, season with salt, and set aside so it softens while you cook the fish.",
+        "ingredients": [
+          "cabbage",
+          "mayonnaise",
+          "lime",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Preheat the grill to medium-high and oil the grates well — white fish is delicate and sticks fast.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Pat the fish dry and rub both sides with the olive oil, chili powder, cumin, salt, and pepper.",
+        "ingredients": [
+          "white fish fillets",
+          "olive oil",
+          "chili powder",
+          "cumin",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Grill the fish until it releases easily and flakes apart, with good char marks, about 3 to 4 minutes per side.",
+        "ingredients": [
+          "white fish fillets"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 5,
+        "step": "Move the fish to a plate and break it into large flaky chunks with a fork.",
+        "ingredients": [
+          "white fish fillets"
+        ],
+        "equipment": [
+          "fork"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Warm the tortillas directly on the grill grates, about 15 to 20 seconds per side, until soft and lightly charred.",
+        "ingredients": [
+          "corn tortillas"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Fill each tortilla with fish and a spoonful of the cabbage slaw.",
+        "ingredients": [
+          "corn tortillas",
+          "white fish fillets",
+          "cabbage"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Top with cilantro and a squeeze of the remaining lime juice before serving.",
+        "ingredients": [
+          "cilantro",
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000080,
+    "device": "crockpot",
+    "readyInMinutes": 185,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Melt the butter in a small saucepan on the stovetop, whisk in the flour, and cook for 1 minute until it smells toasty, not raw.",
+        "ingredients": [
+          "butter",
+          "flour"
+        ],
+        "equipment": [
+          "small saucepan"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 2,
+        "step": "Slowly whisk in the milk until smooth, then pour the mixture into the slow cooker.",
+        "ingredients": [
+          "milk"
+        ],
+        "equipment": [
+          "slow cooker",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Add the uncooked pasta, half the cheddar cheese, and salt and pepper to the slow cooker and stir to coat the pasta in the sauce.",
+        "ingredients": [
+          "pasta",
+          "cheddar cheese",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low until the pasta is tender, about 2 1/2 hours, stirring once around the halfway mark so it doesn't clump or stick to the bottom.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 150
+      },
+      {
+        "number": 5,
+        "step": "Stir in the tuna and frozen peas during the last 20 minutes of cooking, so they heat through without turning rubbery or falling apart.",
+        "ingredients": [
+          "canned tuna",
+          "frozen peas"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 6,
+        "step": "Stir in the remaining cheddar cheese until melted.",
+        "ingredients": [
+          "cheddar cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Meanwhile, toast the breadcrumbs in a dry skillet over medium heat until golden, about 3 minutes, stirring often — this gives you a crunchy topping a slow cooker can't.",
+        "ingredients": [
+          "breadcrumbs"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 8,
+        "step": "Scatter the toasted breadcrumbs over each portion just before serving so they stay crisp.",
+        "ingredients": [
+          "breadcrumbs"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000081,
+    "device": "airfryer",
+    "readyInMinutes": 55,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Soak the cut potatoes in a bowl of cold water for at least 15 minutes to rinse away extra starch, then drain and pat completely dry.",
+        "ingredients": [
+          "russet potatoes"
+        ],
+        "equipment": [
+          "bowl"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 2,
+        "step": "Toss the dried potatoes with 1 tablespoon of the vegetable oil and a pinch of salt.",
+        "ingredients": [
+          "russet potatoes",
+          "vegetable oil",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 380°F, then air fry the potatoes in a single layer, shaking the basket every 5 minutes, until golden and crisp, about 18 to 20 minutes. Move them to a bowl and raise the temperature to 400°F.",
+        "ingredients": [
+          "russet potatoes"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 19
+      },
+      {
+        "number": 4,
+        "step": "Whisk the remaining flour, the cornstarch, the baking powder, and a pinch of salt and pepper together in a bowl for the dry coating.",
+        "ingredients": [
+          "flour",
+          "cornstarch",
+          "baking powder",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Pat the fish dry, dip each piece briefly in the cold sparkling water, then press it into the dry coating until evenly covered, patting off the excess — the fizzy water helps the coating cling without needing a deep-fry batter.",
+        "ingredients": [
+          "white fish fillets",
+          "cold sparkling water",
+          "flour"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Lightly brush or spray both sides of the coated fish with vegetable oil and set the pieces in the air fryer basket in a single layer.",
+        "ingredients": [
+          "white fish fillets",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Air fry at 400°F, flipping once halfway, until deep golden and the fish flakes easily, about 10 to 12 minutes total.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 11
+      },
+      {
+        "number": 8,
+        "step": "Return the potatoes to the basket for the last 2 minutes just to re-crisp and warm through.",
+        "ingredients": [
+          "russet potatoes"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 9,
+        "step": "Serve the fish and chips hot with malt vinegar on the side.",
+        "ingredients": [
+          "malt vinegar"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000082,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the soy sauce, honey, and cornstarch together in a small bowl until smooth and set aside.",
+        "ingredients": [
+          "soy sauce",
+          "honey",
+          "cornstarch"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the broccoli, bell pepper, and carrot with half the vegetable oil.",
+        "ingredients": [
+          "broccoli florets",
+          "bell pepper",
+          "carrot",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 400°F, then air fry the vegetables in the basket, shaking once, until bright and just tender-crisp, about 8 minutes. Move them to a bowl.",
+        "ingredients": [
+          "broccoli florets",
+          "bell pepper",
+          "carrot"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 4,
+        "step": "Toss the shrimp with the remaining vegetable oil, garlic, and ginger.",
+        "ingredients": [
+          "shrimp",
+          "vegetable oil",
+          "garlic",
+          "ginger"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Set the shrimp in the basket in a single layer and air fry until pink and curled, about 6 minutes, shaking halfway.",
+        "ingredients": [
+          "shrimp"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 6,
+        "step": "Meanwhile, warm the sauce in a small saucepan on the stovetop until it thickens and turns glossy, about 1 minute — the air fryer can't reduce a sauce for you.",
+        "ingredients": [],
+        "equipment": [
+          "small saucepan"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Toss the air-fried vegetables and shrimp with the warm sauce until everything is coated, then serve hot.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000082,
+    "device": "grill",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the soy sauce, honey, and cornstarch together in a small bowl until smooth and set aside.",
+        "ingredients": [
+          "soy sauce",
+          "honey",
+          "cornstarch"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Thread the shrimp onto skewers. Toss the broccoli, bell pepper, and carrot with half the vegetable oil and load them into a grill basket.",
+        "ingredients": [
+          "shrimp",
+          "broccoli florets",
+          "bell pepper",
+          "carrot",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "grill basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the grill to medium-high and oil the grates.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Grill the vegetables in the grill basket, tossing occasionally, until charred at the edges and just tender-crisp, about 7 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "grill basket"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 5,
+        "step": "Brush the shrimp skewers with the remaining vegetable oil, then grill until pink, curled, and lightly charred, about 2 minutes per side.",
+        "ingredients": [
+          "shrimp",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 6,
+        "step": "Meanwhile, add the garlic and ginger to a small saucepan with the sauce and simmer over medium heat, stirring, until fragrant and thickened, about 2 minutes.",
+        "ingredients": [
+          "garlic",
+          "ginger"
+        ],
+        "equipment": [
+          "small saucepan"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 7,
+        "step": "Slide the shrimp off the skewers, toss everything with the grilled vegetables and warm sauce, and serve hot.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000083,
+    "device": "griddle",
+    "readyInMinutes": 15,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Stir the tuna, mayonnaise, and celery together in a bowl, then season with salt and pepper.",
+        "ingredients": [
+          "canned tuna",
+          "mayonnaise",
+          "celery",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Lay out the bread slices and spread the tuna mixture evenly over two of them.",
+        "ingredients": [
+          "bread"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Top the tuna with the cheddar cheese, then close each sandwich with the remaining bread.",
+        "ingredients": [
+          "cheddar cheese",
+          "bread"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Butter the outside of each sandwich on both sides.",
+        "ingredients": [
+          "butter"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Preheat the griddle over medium heat — its flat, wide surface heats more evenly edge to edge than a skillet, so both sandwiches toast at the same rate.",
+        "ingredients": [],
+        "equipment": [
+          "griddle"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Set the sandwiches on the griddle and cook until golden and crisp on the first side, about 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "griddle"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Flip carefully and cook the second side until golden and the cheese has melted through, about 3 more minutes.",
+        "ingredients": [],
+        "equipment": [
+          "griddle"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 8,
+        "step": "Slice in half and serve while the cheese is still warm and stretchy.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000084,
+    "device": "airfryer",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cook the white rice according to the package directions and keep it warm.",
+        "ingredients": [
+          "white rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 2,
+        "step": "Whisk the tamari, honey, rice vinegar, and sesame oil together in a small bowl.",
+        "ingredients": [
+          "gluten-free tamari",
+          "honey",
+          "rice vinegar",
+          "sesame oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 380°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Pat the salmon dry, brush with half the sauce, and set it skin-side down in the air fryer basket.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Air fry until the fish flakes easily and looks opaque in the center, about 8 minutes, brushing with a little more sauce halfway through for a sticky glaze.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 6,
+        "step": "Break the salmon into large chunks.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Divide the warm rice between two bowls and top with the salmon, cucumber, and avocado.",
+        "ingredients": [
+          "white rice",
+          "salmon fillets",
+          "cucumber",
+          "avocado"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Drizzle the remaining sauce over the bowls and finish with a scatter of sesame seeds.",
+        "ingredients": [
+          "sesame seeds"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000084,
+    "device": "grill",
+    "readyInMinutes": 32,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cook the white rice according to the package directions and keep it warm.",
+        "ingredients": [
+          "white rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 2,
+        "step": "Whisk the tamari, honey, rice vinegar, and sesame oil together in a small bowl.",
+        "ingredients": [
+          "gluten-free tamari",
+          "honey",
+          "rice vinegar",
+          "sesame oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the grill to medium-high and oil the grates well — skinless salmon sticks fast without it.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Brush the salmon with a little of the sesame oil and set it on the hot grates. Let it sit untouched until it releases easily and has good grill marks, about 4 minutes.",
+        "ingredients": [
+          "salmon fillets",
+          "sesame oil"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 5,
+        "step": "Flip carefully, brush with half the sauce, and grill until the fish flakes easily, about 3 to 4 minutes more.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 6,
+        "step": "Break the salmon into large chunks.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Divide the warm rice between two bowls and top with the salmon, cucumber, and avocado.",
+        "ingredients": [
+          "white rice",
+          "salmon fillets",
+          "cucumber",
+          "avocado"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Drizzle the remaining sauce over the bowls and finish with a scatter of sesame seeds.",
+        "ingredients": [
+          "sesame seeds"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000084,
+    "device": "sheetpan",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cook the white rice according to the package directions and keep it warm.",
+        "ingredients": [
+          "white rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 2,
+        "step": "Heat the oven to 425°F and line a sheet pan with foil.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Whisk the tamari, honey, rice vinegar, and sesame oil together in a small bowl.",
+        "ingredients": [
+          "gluten-free tamari",
+          "honey",
+          "rice vinegar",
+          "sesame oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Pat the salmon dry, set it on the sheet pan, and brush with half the sauce.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Roast until the salmon is just about opaque at the edges, about 8 minutes.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "sheet pan",
+          "oven"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 6,
+        "step": "Brush with the remaining sauce and roast until it flakes easily and looks glossy, about 3 to 4 more minutes.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 7,
+        "step": "Break the salmon into large chunks.",
+        "ingredients": [
+          "salmon fillets"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Divide the warm rice between two bowls, top with the salmon, cucumber, and avocado, and finish with a scatter of sesame seeds.",
+        "ingredients": [
+          "white rice",
+          "salmon fillets",
+          "cucumber",
+          "avocado",
+          "sesame seeds"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000085,
+    "device": "crockpot",
+    "readyInMinutes": 320,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cook the bacon in a skillet on the stovetop over medium heat until crisp, about 5 minutes, then lift it out onto a paper towel, leaving the fat in the pan — a slow cooker won't crisp bacon, so this step still needs the stovetop.",
+        "ingredients": [
+          "bacon"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the onion and celery to the bacon fat and cook until softened, about 5 minutes.",
+        "ingredients": [
+          "onion",
+          "celery"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 3,
+        "step": "Sprinkle the flour over the vegetables and stir constantly for 1 minute, then scrape everything into the slow cooker.",
+        "ingredients": [
+          "flour"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 4,
+        "step": "Stir the reserved clam juice from the cans and the bottled clam juice into the slow cooker, along with the potatoes and bay leaf.",
+        "ingredients": [
+          "canned clams",
+          "clam juice",
+          "russet potatoes",
+          "bay leaf"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cover and cook on low until the potatoes are fork-tender, about 4 1/2 hours.",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 270
+      },
+      {
+        "number": 6,
+        "step": "Stir in the heavy cream and milk during the last 20 minutes so they warm through gently — added any earlier, the dairy can break under hours of heat.",
+        "ingredients": [
+          "heavy cream",
+          "milk"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 7,
+        "step": "Add the chopped clams in the last 5 minutes and re-cover — clams turn rubbery fast, so they only need enough time to heat through, not to cook further.",
+        "ingredients": [
+          "canned clams"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 8,
+        "step": "Remove the bay leaf, season with salt and pepper, and ladle into bowls topped with the reserved crisp bacon.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper",
+          "bacon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000085,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, cook the bacon until crisp, about 5 minutes, then lift it out onto a paper towel, leaving the fat behind.",
+        "ingredients": [
+          "bacon"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the onion and celery to the fat and cook until softened, about 4 minutes.",
+        "ingredients": [
+          "onion",
+          "celery"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 3,
+        "step": "Sprinkle in the flour and stir constantly for 1 minute, then pour in the reserved clam juice from the cans and the bottled clam juice, scraping up any browned bits.",
+        "ingredients": [
+          "flour",
+          "canned clams",
+          "clam juice"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 4,
+        "step": "Add the potatoes and bay leaf, lock the lid, and pressure cook on high for 5 minutes.",
+        "ingredients": [
+          "russet potatoes",
+          "bay leaf"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 5,
+        "step": "Quick release the pressure as soon as it's done — letting it sit would carry the potatoes past tender into mushy.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Switch back to sauté, stir in the heavy cream and milk, and warm through gently, about 3 minutes — do not let it boil hard.",
+        "ingredients": [
+          "heavy cream",
+          "milk"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 7,
+        "step": "Stir in the chopped clams and cook just 2 minutes on sauté — added at the very end so the pressure cycle never touches them and they stay tender.",
+        "ingredients": [
+          "canned clams"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 8,
+        "step": "Remove the bay leaf, season with salt and pepper, and ladle into bowls topped with the reserved crisp bacon.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper",
+          "bacon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000089,
+    "device": "crockpot",
+    "readyInMinutes": 340,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet on the stovetop and cook the onion and carrots until softened, about 5 minutes — a quick sauté first builds more flavor than dropping everything in raw.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "carrot"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and stir until fragrant, about 30 seconds, then scrape everything into the slow cooker.",
+        "ingredients": [
+          "garlic"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Add the vegetable broth and diced tomatoes to the slow cooker and season with salt and pepper.",
+        "ingredients": [
+          "vegetable broth",
+          "diced tomatoes",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low until the vegetables are tender and the flavors have melded, about 5 hours (or high for 2 1/2 hours).",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 300
+      },
+      {
+        "number": 5,
+        "step": "Stir in the tortellini during the last 20 minutes of cooking on high — fresh tortellini turns to mush if it simmers for hours, so it only goes in near the end.",
+        "ingredients": [
+          "cheese tortellini"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 6,
+        "step": "Stir in the spinach in the last 5 minutes, just until wilted.",
+        "ingredients": [
+          "spinach"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 7,
+        "step": "Ladle into bowls and top with parmesan cheese before serving.",
+        "ingredients": [
+          "parmesan cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000089,
+    "device": "instantpot",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, heat the olive oil, and cook the onion and carrots until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "carrot"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic and stir until fragrant, about 30 seconds.",
+        "ingredients": [
+          "garlic"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Pour in the vegetable broth and diced tomatoes, season with salt and pepper, and scrape up any browned bits.",
+        "ingredients": [
+          "vegetable broth",
+          "diced tomatoes",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid and pressure cook on high for 3 minutes, then quick release — the vegetables just need to finish softening and the flavors to meld.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 13
+      },
+      {
+        "number": 5,
+        "step": "Switch back to sauté, stir in the tortellini, and simmer gently until tender and floating, about 4 minutes — pressure cooking fresh tortellini directly would turn it to paste, so it finishes in the open pot instead.",
+        "ingredients": [
+          "cheese tortellini"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 6,
+        "step": "Stir in the spinach and cook just until wilted, about 1 minute.",
+        "ingredients": [
+          "spinach"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Ladle into bowls and top with parmesan cheese before serving.",
+        "ingredients": [
+          "parmesan cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000090,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, melt 2 tablespoons of the butter, and add the mushrooms in a single layer. Cook without stirring too much until deeply browned, about 6 minutes, then set aside.",
+        "ingredients": [
+          "butter",
+          "cremini mushrooms"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add 2 more tablespoons of butter to the pot along with the onion, cooking until soft, about 4 minutes.",
+        "ingredients": [
+          "butter",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 3,
+        "step": "Add the arborio rice and stir for about a minute until the edges of the grains look slightly translucent.",
+        "ingredients": [
+          "arborio rice"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 4,
+        "step": "Pour in the white wine and stir until it's absorbed, about 1 minute.",
+        "ingredients": [
+          "white wine"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 5,
+        "step": "Add all of the vegetable broth at once — pressure cooking means you don't need to add it gradually the way you would on the stovetop. Lock the lid and pressure cook on high for 6 minutes.",
+        "ingredients": [
+          "vegetable broth"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 16
+      },
+      {
+        "number": 6,
+        "step": "Quick release the pressure as soon as it's done — letting the rice sit under natural release would carry it past creamy into mushy.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Stir the browned mushrooms, remaining butter, and parmesan cheese back in, switching to sauté for a minute or two and stirring constantly until glossy and creamy — this mimics the stovetop finish.",
+        "ingredients": [
+          "cremini mushrooms",
+          "butter",
+          "parmesan cheese"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 8,
+        "step": "Season with salt and pepper and serve immediately, while it's still loose and creamy.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000090,
+    "device": "oven",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the oven to 375°F.",
+        "ingredients": [],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Melt 2 tablespoons of the butter in an oven-safe pot over medium-high heat on the stovetop and add the mushrooms in a single layer. Cook without stirring too much until deeply browned, about 6 minutes, then set aside.",
+        "ingredients": [
+          "butter",
+          "cremini mushrooms"
+        ],
+        "equipment": [
+          "oven-safe pot"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 3,
+        "step": "Add 2 more tablespoons of butter to the same pot along with the onion, cooking until soft, about 4 minutes.",
+        "ingredients": [
+          "butter",
+          "onion"
+        ],
+        "equipment": [
+          "oven-safe pot"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 4,
+        "step": "Add the arborio rice and stir for about a minute until the edges of the grains look slightly translucent.",
+        "ingredients": [
+          "arborio rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 5,
+        "step": "Pour in the white wine and stir until it's absorbed, about 1 minute.",
+        "ingredients": [
+          "white wine"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 6,
+        "step": "Pour in all of the vegetable broth at once, stir once, cover the pot tightly, and transfer it to the oven — the oven's steady heat means you don't have to stand and stir constantly like you would on the stovetop.",
+        "ingredients": [
+          "vegetable broth"
+        ],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Bake until the rice is tender with just a little bite left and the broth is mostly absorbed, about 20 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 8,
+        "step": "Stir the browned mushrooms, remaining butter, and parmesan cheese in vigorously for about a minute until glossy and creamy — the vigorous stirring at the end releases the rice's starch and mimics a stovetop finish.",
+        "ingredients": [
+          "cremini mushrooms",
+          "butter",
+          "parmesan cheese"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 9,
+        "step": "Season with salt and pepper and serve immediately, while it's still loose and creamy.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000091,
+    "device": "airfryer",
+    "readyInMinutes": 22,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Preheat the air fryer to 370°F.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 2,
+        "step": "Stir the crushed tomatoes, garlic, salt, and pepper together in a small bowl.",
+        "ingredients": [
+          "crushed tomatoes",
+          "garlic",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Brush both flatbreads lightly with olive oil on one side.",
+        "ingredients": [
+          "flatbread",
+          "olive oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Spread the tomato mixture evenly over the oiled side of each flatbread, leaving a small border.",
+        "ingredients": [
+          "crushed tomatoes"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Arrange the mozzarella slices over the top of each flatbread.",
+        "ingredients": [
+          "fresh mozzarella"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Place one flatbread at a time in the air fryer basket — most baskets only fit one, and crowding blocks the hot air that crisps the crust — and air fry until the cheese is melted and bubbling and the edges are golden, about 6 to 8 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 7,
+        "step": "Repeat with the second flatbread while the first stays warm.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 7
+      },
+      {
+        "number": 8,
+        "step": "Scatter the basil over both, slice, and serve hot.",
+        "ingredients": [
+          "basil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000092,
+    "device": "crockpot",
+    "readyInMinutes": 420,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the olive oil in a skillet on the stovetop and cook the onion until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, ginger, and curry powder, stirring until fragrant, about 1 minute, then scrape everything into the slow cooker.",
+        "ingredients": [
+          "garlic",
+          "ginger",
+          "curry powder"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Add the sweet potato, diced tomatoes, and only half the vegetable broth to the slow cooker — a slow cooker traps all its moisture instead of letting it evaporate, so the full amount would turn the curry watery.",
+        "ingredients": [
+          "sweet potato",
+          "diced tomatoes",
+          "vegetable broth"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low until the sweet potato is fork-tender, about 6 1/2 hours (or high for 3 1/2 hours).",
+        "ingredients": [],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 390
+      },
+      {
+        "number": 5,
+        "step": "Stir in the peanut butter until fully melted into the sauce, then cover and cook 10 more minutes on high to let it meld.",
+        "ingredients": [
+          "peanut butter"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Stir in the spinach, cover, and cook just until wilted, about 5 minutes.",
+        "ingredients": [
+          "spinach"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 7,
+        "step": "Season with salt and pepper and serve warm.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000092,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Set the pressure cooker to sauté, heat the olive oil, and cook the onion until softened, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, ginger, and curry powder, stirring until fragrant, about 1 minute.",
+        "ingredients": [
+          "garlic",
+          "ginger",
+          "curry powder"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Add the sweet potato, diced tomatoes, and all of the vegetable broth — under pressure nothing evaporates, so unlike a slow cooker, the full amount is fine here.",
+        "ingredients": [
+          "sweet potato",
+          "diced tomatoes",
+          "vegetable broth"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid and pressure cook on high for 8 minutes, then quick release.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 5,
+        "step": "Switch back to sauté, stir in the peanut butter until melted, and simmer uncovered for 3 minutes to thicken slightly.",
+        "ingredients": [
+          "peanut butter"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 6,
+        "step": "Stir in the spinach and cook just until wilted, about 1 minute.",
+        "ingredients": [
+          "spinach"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 7,
+        "step": "Season with salt and pepper and serve warm.",
+        "ingredients": [
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000093,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the soy sauce, cornstarch, and vegetable broth together in a small bowl until smooth; set aside.",
+        "ingredients": [
+          "soy sauce",
+          "cornstarch",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the broccoli and carrots with half the vegetable oil.",
+        "ingredients": [
+          "broccoli florets",
+          "carrot",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 400°F, then air fry the broccoli and carrots, shaking the basket halfway, until bright and starting to crisp at the edges, about 8 minutes — these take longest, so they go in first.",
+        "ingredients": [
+          "broccoli florets",
+          "carrot"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 4,
+        "step": "Toss the bell pepper and snap peas with the remaining oil, add them to the basket, and air fry until all the vegetables are bright and tender-crisp, about 4 more minutes.",
+        "ingredients": [
+          "bell pepper",
+          "snap peas",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 5,
+        "step": "Add the garlic and ginger to the basket for the final minute so they turn fragrant without burning — hot circulating air scorches minced garlic fast, so it goes in last, not first.",
+        "ingredients": [
+          "garlic",
+          "ginger"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 6,
+        "step": "Meanwhile, warm the sauce in a small saucepan on the stovetop until it thickens and turns glossy, about 2 minutes — the air fryer can't reduce a sauce for you.",
+        "ingredients": [],
+        "equipment": [
+          "small saucepan"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 7,
+        "step": "Toss the air-fried vegetables with the warm sauce until evenly coated.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 8,
+        "step": "Serve right away while the edges are still crisp - the sauce softens them as they sit.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  }
+]
