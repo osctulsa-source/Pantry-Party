@@ -71,7 +71,8 @@ export function parseVariants(raw: unknown): Map<number, DeviceVariant[]> {
 // time, and defensively re-checked here by parseVariants.
 const VARIANTS = parseVariants(variantsJson as unknown);
 
-/** All device variants for a recipe — [] for Spoonacular ids and unconverted recipes. */
+/** All device variants for a recipe — [] for Spoonacular ids and unconverted
+ *  recipes. Returns the module's cached array: treat as read-only. */
 export function getDeviceVariants(recipeId: number): DeviceVariant[] {
   return VARIANTS.get(recipeId) ?? [];
 }
