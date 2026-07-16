@@ -15,9 +15,10 @@
  * is uploaded to Play until the brand (Larder/Crumb) clears. Display name
  * changes freely at any time; ids do not.
  *
- * Widget (lock-screen): the @bacons/apple-targets plugin links targets/widget/
- * at prebuild. The App Group below is FIXED (no .dev suffix) so the app, the
- * widget extension entitlement, and the Swift literal all share one suite.
+ * Widgets: expo-widgets generates the widget extension at prebuild; the widget
+ * layouts are React components in src/features/widget/ (no Swift). The App
+ * Group below is FIXED (no .dev suffix) so the app and the widget extension
+ * share one suite across dev/prod variants.
  */
 const VARIANT = process.env.APP_VARIANT ?? 'development';
 const IS_PROD = VARIANT === 'production';
@@ -108,7 +109,36 @@ module.exports = {
         },
       ],
       '@sentry/react-native',
-      '@bacons/apple-targets',
+      [
+        'expo-widgets',
+        {
+          groupIdentifier: 'group.com.osctulsa.pantryparty',
+          widgets: [
+            {
+              name: 'ExpiringSoonWidget',
+              displayName: 'Expiring Soon',
+              description: "See what's about to expire in your pantry.",
+              ios: {
+                supportedFamilies: [
+                  'accessoryInline',
+                  'accessoryCircular',
+                  'accessoryRectangular',
+                  'systemSmall',
+                  'systemMedium',
+                ],
+              },
+            },
+            {
+              name: 'ShoppingListWidget',
+              displayName: 'Shopping List',
+              description: 'Your shopping list, at a glance.',
+              ios: {
+                supportedFamilies: ['systemSmall', 'systemMedium', 'systemLarge'],
+              },
+            },
+          ],
+        },
+      ],
     ],
     experiments: {
       typedRoutes: false,
