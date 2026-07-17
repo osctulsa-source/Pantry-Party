@@ -20,7 +20,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
-import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import { ArrowLeft, Check, Pause, Play, RotateCcw, Timer, X } from 'lucide-react-native';
 
@@ -29,6 +28,16 @@ import type { SpoonacularRecipe } from '../../data/spoonacular/types';
 import { ensureNotificationPermission } from '../expiry/expoScheduler';
 import { TechniqueGlyph } from '../../components/TechniqueGlyph';
 import { resolveStepGlyph } from './matchTechnique';
+import {
+  type CookTimer,
+  crossedZero,
+  otherStepTimers,
+  remainingSecOf,
+  timerNotifId,
+} from './cookTimers';
+import { buildCookActivitySnapshot } from '../widget/cookActivitySnapshot';
+import { endCookActivity, syncCookActivity } from '../widget/cookActivity';
+import { feedback } from '../../feedback/feedback';
 
 type Phase = 'prep' | 'steps';
 
@@ -40,27 +49,16 @@ interface FlatStep {
   technique: string | null;
 }
 
-/**
- * A single in-flight timer. Timestamp-based so backgrounding the app never
- * drifts it: `endsAt` is the wall-clock moment it finishes; remaining is always
- * recomputed from now. Bound to the step it was started on (stepIdx) so it can
- * persist while you move around + a pill can bring you back.
- */
-type CookTimer =
-  | null
-  | { stepIdx: number; status: 'running'; endsAt: number; totalSec: number }
-  | { stepIdx: number; status: 'paused'; remainingSec: number; totalSec: number };
-
-// One cook-along timer at a time → one notification id; scheduling again
-// replaces it, and we cancel on pause / reset / completion / leaving the screen.
-const TIMER_NOTIF_ID = 'cookmode-timer';
+// Timers live in cookTimers.ts (pure, unit-tested): one per step, concurrent,
+// timestamp-based so backgrounding never drifts them. Each gets its own
+// notification id; scheduling again for a step replaces that step's alarm.
 
 async function scheduleTimerNotif(endsAt: number, stepIdx: number): Promise<void> {
   try {
     const ok = await ensureNotificationPermission();
     if (!ok) return;
     await Notifications.scheduleNotificationAsync({
-      identifier: TIMER_NOTIF_ID,
+      identifier: timerNotifId(stepIdx),
       content: { title: 'Timer done', body: `Your step ${stepIdx + 1} timer is up.`, sound: true },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(endsAt) },
     });
@@ -69,8 +67,21 @@ async function scheduleTimerNotif(endsAt: number, stepIdx: number): Promise<void
   }
 }
 
-function cancelTimerNotif(): void {
-  Notifications.cancelScheduledNotificationAsync(TIMER_NOTIF_ID).catch(() => {});
+function cancelTimerNotif(stepIdx: number): void {
+  Notifications.cancelScheduledNotificationAsync(timerNotifId(stepIdx)).catch(() => {});
+}
+
+/** Cancel every cook-mode timer notification (used when leaving cook mode). */
+function cancelAllTimerNotifs(): void {
+  Notifications.getAllScheduledNotificationsAsync()
+    .then((all) => {
+      for (const n of all) {
+        if (n.identifier.startsWith('cookmode-timer-')) {
+          Notifications.cancelScheduledNotificationAsync(n.identifier).catch(() => {});
+        }
+      }
+    })
+    .catch(() => {});
 }
 
 /** Pull a usable timer duration out of a step's text when it isn't tagged. */
@@ -165,7 +176,7 @@ export function CookModeView({
   const [idx, setIdx] = useState(0);
   const [done, setDone] = useState<Set<number>>(new Set());
   const [gathered, setGathered] = useState<Set<number>>(new Set());
-  const [timer, setTimer] = useState<CookTimer>(null);
+  const [timers, setTimers] = useState<ReadonlyMap<number, CookTimer>>(new Map());
   const [nowTs, setNowTs] = useState(() => Date.now());
 
   const total = steps.length;
@@ -174,42 +185,59 @@ export function CookModeView({
   const isDone = done.has(idx);
   const mins = current ? current.lengthMinutes ?? parseMinutes(current.step) : null;
 
-  const remaining = timer
-    ? timer.status === 'paused'
-      ? timer.remainingSec
-      : Math.max(0, Math.round((timer.endsAt - nowTs) / 1000))
-    : 0;
-  const timerOnThisStep = timer !== null && timer.stepIdx === idx;
-  const timerElsewhere = timer !== null && timer.stepIdx !== idx;
+  const currentTimer = timers.get(idx) ?? null;
+  const remaining = currentTimer ? remainingSecOf(currentTimer, nowTs) : 0;
+  const pillTimers = otherStepTimers(timers, idx);
+  const anyRunning = [...timers.values()].some((t) => t.status === 'running');
 
-  // Tick once a second only while a timer is actually running.
+  // Tick once a second only while at least one timer is actually running.
   useEffect(() => {
-    if (timer?.status !== 'running') return;
+    if (!anyRunning) return;
     const id = setInterval(() => setNowTs(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [timer?.status]);
+  }, [anyRunning]);
 
-  // Zero-cross: when a running timer hits 0, buzz once, drop the OS notification
-  // (we're clearly foregrounded), and freeze it at "Time's up".
+  // Zero-cross: freeze finished timers at "Time's up", chime once, and drop
+  // their OS notifications (we're clearly foregrounded).
   useEffect(() => {
-    if (timer?.status !== 'running') return;
-    if (timer.endsAt - nowTs <= 0) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      cancelTimerNotif();
-      setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: 0, totalSec: timer.totalSec });
-    }
-  }, [timer, nowTs]);
+    const finished = crossedZero(timers, nowTs);
+    if (finished.length === 0) return;
+    feedback.timerDone();
+    setTimers((prev) => {
+      const next = new Map(prev);
+      for (const t of finished) {
+        cancelTimerNotif(t.stepIdx);
+        next.set(t.stepIdx, { stepIdx: t.stepIdx, status: 'paused', remainingSec: 0, totalSec: t.totalSec });
+      }
+      return next;
+    });
+  }, [timers, nowTs]);
 
-  // Leaving cook mode ends the cook-along — don't let a stray timer notification
-  // fire with no context.
-  useEffect(() => () => cancelTimerNotif(), []);
+  // Mirror the session into the lock-screen Live Activity on discrete changes
+  // only — the per-second countdown renders system-side from the interval.
+  useEffect(() => {
+    if (phase !== 'steps') return;
+    syncCookActivity(
+      buildCookActivitySnapshot({ recipeTitle: recipe.title, stepIdx: idx, stepCount: total, timers }),
+    );
+  }, [phase, timers, idx, total, recipe.title]);
+
+  // Leaving cook mode ends the cook-along — no stray notifications with no
+  // context, no orphaned Live Activity.
+  useEffect(
+    () => () => {
+      cancelAllTimerNotifs();
+      endCookActivity();
+    },
+    [],
+  );
 
   function startCooking() {
-    Haptics.selectionAsync().catch(() => {});
+    feedback.tick();
     setPhase('steps');
   }
   function toggleGather(i: number) {
-    Haptics.selectionAsync().catch(() => {});
+    feedback.tick();
     setGathered((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
@@ -218,7 +246,7 @@ export function CookModeView({
     });
   }
   function goBack() {
-    Haptics.selectionAsync().catch(() => {});
+    feedback.tick();
     if (idx === 0) {
       setPhase('prep'); // Back on step 1 returns to the setup screen.
       return;
@@ -228,39 +256,49 @@ export function CookModeView({
   function onForward() {
     setDone((prev) => new Set(prev).add(idx));
     if (isLast) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      feedback.success();
       onFinish();
     } else {
-      Haptics.selectionAsync().catch(() => {});
+      feedback.tick();
       setIdx((i) => Math.min(i + 1, total - 1));
     }
   }
 
   function startTimer() {
-    if (mins === null) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    if (mins === null || timers.has(idx)) return;
+    feedback.pop();
     const totalSec = mins * 60;
     const endsAt = Date.now() + totalSec * 1000;
     setNowTs(Date.now());
-    setTimer({ stepIdx: idx, status: 'running', endsAt, totalSec });
+    setTimers((prev) => new Map(prev).set(idx, { stepIdx: idx, status: 'running', endsAt, totalSec }));
     void scheduleTimerNotif(endsAt, idx);
   }
-  function toggleTimer() {
-    if (!timer) return;
-    if (timer.status === 'running') {
-      const rem = Math.max(0, Math.round((timer.endsAt - Date.now()) / 1000));
-      cancelTimerNotif();
-      setTimer({ stepIdx: timer.stepIdx, status: 'paused', remainingSec: rem, totalSec: timer.totalSec });
+  function toggleTimer(stepIdx: number) {
+    const t = timers.get(stepIdx);
+    if (!t) return;
+    feedback.tick();
+    if (t.status === 'running') {
+      const rem = remainingSecOf(t, Date.now());
+      cancelTimerNotif(stepIdx);
+      setTimers((prev) =>
+        new Map(prev).set(stepIdx, { stepIdx, status: 'paused', remainingSec: rem, totalSec: t.totalSec }),
+      );
     } else {
-      const endsAt = Date.now() + timer.remainingSec * 1000;
+      const endsAt = Date.now() + t.remainingSec * 1000;
       setNowTs(Date.now());
-      setTimer({ stepIdx: timer.stepIdx, status: 'running', endsAt, totalSec: timer.totalSec });
-      void scheduleTimerNotif(endsAt, timer.stepIdx);
+      setTimers((prev) =>
+        new Map(prev).set(stepIdx, { stepIdx, status: 'running', endsAt, totalSec: t.totalSec }),
+      );
+      void scheduleTimerNotif(endsAt, stepIdx);
     }
   }
-  function resetTimer() {
-    cancelTimerNotif();
-    setTimer(null);
+  function resetTimer(stepIdx: number) {
+    cancelTimerNotif(stepIdx);
+    setTimers((prev) => {
+      const next = new Map(prev);
+      next.delete(stepIdx);
+      return next;
+    });
   }
 
   const metaLine = [
@@ -298,20 +336,28 @@ export function CookModeView({
               <View style={[styles.fill, { width: `${total > 0 ? ((idx + 1) / total) * 100 : 0}%` }]} />
             </View>
             <Text style={styles.encourage}>{encouragement(idx, total)}</Text>
-            {timerElsewhere && timer && (
-              <Pressable
-                style={styles.timerPill}
-                onPress={() => setIdx(timer.stepIdx)}
-                accessibilityRole="button"
-                accessibilityLabel={`Return to the timer on step ${timer.stepIdx + 1}`}
-              >
-                <Timer size={14} color={tokens.color.accent} />
-                <Text style={styles.timerPillTxt}>
-                  {remaining === 0
-                    ? `Time's up · Step ${timer.stepIdx + 1}`
-                    : `${formatClock(remaining)} · Step ${timer.stepIdx + 1}`}
-                </Text>
-              </Pressable>
+            {pillTimers.length > 0 && (
+              <View style={styles.timerPillRow}>
+                {pillTimers.map((t) => {
+                  const rem = remainingSecOf(t, nowTs);
+                  return (
+                    <Pressable
+                      key={t.stepIdx}
+                      style={styles.timerPill}
+                      onPress={() => setIdx(t.stepIdx)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Return to the timer on step ${t.stepIdx + 1}`}
+                    >
+                      <Timer size={14} color={tokens.color.accent} />
+                      <Text style={styles.timerPillTxt}>
+                        {rem === 0
+                          ? `Time's up · Step ${t.stepIdx + 1}`
+                          : `${formatClock(rem)} · Step ${t.stepIdx + 1}`}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             )}
           </>
         )}
@@ -380,9 +426,9 @@ export function CookModeView({
             </View>
             <Text style={styles.stepText}>{current.step}</Text>
 
-            {(timerOnThisStep || mins !== null) && (
+            {(currentTimer !== null || mins !== null) && (
               <View style={styles.timer}>
-                {timerOnThisStep ? (
+                {currentTimer !== null ? (
                   <View style={styles.timerRunning}>
                     <Text style={[styles.timerClock, remaining === 0 && styles.timerClockDone]}>
                       {remaining === 0 ? "Time's up!" : formatClock(remaining)}
@@ -391,11 +437,11 @@ export function CookModeView({
                       {remaining > 0 && (
                         <Pressable
                           style={styles.timerCtrl}
-                          onPress={toggleTimer}
+                          onPress={() => toggleTimer(idx)}
                           accessibilityRole="button"
-                          accessibilityLabel={timer?.status === 'running' ? 'Pause timer' : 'Resume timer'}
+                          accessibilityLabel={currentTimer.status === 'running' ? 'Pause timer' : 'Resume timer'}
                         >
-                          {timer?.status === 'running' ? (
+                          {currentTimer.status === 'running' ? (
                             <Pause size={16} color={tokens.color.accent} />
                           ) : (
                             <Play size={16} color={tokens.color.accent} />
@@ -404,7 +450,7 @@ export function CookModeView({
                       )}
                       <Pressable
                         style={styles.timerCtrl}
-                        onPress={resetTimer}
+                        onPress={() => resetTimer(idx)}
                         accessibilityRole="button"
                         accessibilityLabel="Reset timer"
                       >
@@ -524,13 +570,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(5),
     marginTop: tokens.space(2),
   },
-  timerPill: {
+  timerPillRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexWrap: 'wrap',
     gap: tokens.space(2),
     marginHorizontal: tokens.space(5),
     marginTop: tokens.space(2),
+  },
+  timerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(2),
     paddingVertical: tokens.space(1),
     paddingHorizontal: tokens.space(3),
     borderRadius: 999,
