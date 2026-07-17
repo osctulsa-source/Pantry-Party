@@ -1,0 +1,384 @@
+[
+  {
+    "recipeId": 9000001,
+    "device": "sheetpan",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Heat the oven to 425°F and line a rimmed sheet pan with parchment paper, then grease it well.", "ingredients": [], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 2, "step": "In a large bowl, whisk together the flour, sugar, baking powder, and salt.", "ingredients": ["flour", "sugar", "baking powder", "salt"], "equipment": ["large bowl", "whisk"], "lengthMinutes": null },
+      { "number": 3, "step": "In a separate bowl, whisk the milk, egg, melted butter, and vanilla extract until smooth.", "ingredients": ["milk", "egg", "butter", "vanilla extract"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 4, "step": "Pour the wet ingredients into the dry and stir just until combined — small lumps are fine, they smooth out as the pancake bakes.", "ingredients": ["flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Pour the batter onto the prepared sheet pan and spread it into an even layer — an even layer is what keeps a sheet pan pancake from browning in spots the way a skillet would.", "ingredients": [], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 6, "step": "Bake until the center springs back when lightly pressed and the edges turn golden, 12 to 14 minutes.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 13 },
+      { "number": 7, "step": "Let the pancake cool on the pan for 3 minutes, then slice into squares.", "ingredients": [], "equipment": [], "lengthMinutes": 3 },
+      { "number": 8, "step": "Brush the squares lightly with butter and serve warm, stacked or fanned out on a platter.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000002,
+    "device": "airfryer",
+    "readyInMinutes": 22,
+    "steps": [
+      { "number": 1, "step": "In a wide, shallow dish, whisk together the eggs, milk, cinnamon, vanilla extract, sugar, and salt.", "ingredients": ["egg", "milk", "cinnamon", "vanilla extract", "sugar", "salt"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat the air fryer to 375°F for about 3 minutes — a hot basket is what gives the outside its crust.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Dip a slice of bread into the egg mixture, letting it soak for a few seconds per side until saturated but not falling apart.", "ingredients": ["bread"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Brush both sides of the soaked slice lightly with melted butter — a light coat is all an air fryer needs, unlike a skillet.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Lay the slices in a single layer in the air fryer basket, without overlapping, so hot air can reach every side.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry until golden and set, about 5 minutes, then flip and cook the other side until deep golden brown, about 4 more minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 9 },
+      { "number": 7, "step": "Repeat with the remaining bread in batches, brushing with more butter each time.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 8, "step": "Serve hot, stacked and ready for your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000002,
+    "device": "griddle",
+    "readyInMinutes": 18,
+    "steps": [
+      { "number": 1, "step": "In a wide, shallow dish, whisk together the eggs, milk, cinnamon, vanilla extract, sugar, and salt.", "ingredients": ["egg", "milk", "cinnamon", "vanilla extract", "sugar", "salt"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Heat a griddle over medium heat and melt a tablespoon of the butter across the surface.", "ingredients": ["butter"], "equipment": ["griddle"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Dip a slice of bread into the egg mixture, soaking a few seconds per side until saturated but not falling apart.", "ingredients": ["bread"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lay several soaked slices directly on the griddle at once — its flat, even surface means you can cook a full batch side by side instead of one pan at a time.", "ingredients": [], "equipment": ["griddle"], "lengthMinutes": null },
+      { "number": 5, "step": "Cook until deep golden brown on the bottom, about 3 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 3 },
+      { "number": 6, "step": "Flip each slice and cook the second side until golden and the center feels set when pressed, about 3 minutes more.", "ingredients": [], "equipment": [], "lengthMinutes": 3 },
+      { "number": 7, "step": "Move the finished slices to a plate and repeat with the remaining bread, adding more butter to the griddle as needed.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 8, "step": "Serve hot, stacked and ready for your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000002,
+    "device": "sheetpan",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "In a wide, shallow dish, whisk together the eggs, milk, cinnamon, vanilla extract, sugar, and salt.", "ingredients": ["egg", "milk", "cinnamon", "vanilla extract", "sugar", "salt"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Heat the oven to 425°F and put a rimmed sheet pan inside to preheat — a hot pan gives the bread a head start on browning the way a hot skillet would.", "ingredients": [], "equipment": ["oven", "sheet pan"], "lengthMinutes": 5 },
+      { "number": 3, "step": "Dip each slice of bread into the egg mixture, letting it soak for a few seconds per side until saturated but not falling apart.", "ingredients": ["bread"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Carefully remove the hot sheet pan, brush it with a little of the butter, and arrange the soaked slices in a single layer.", "ingredients": ["butter"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 5, "step": "Bake for 10 minutes, then flip each slice and bake until deep golden on both sides, about 8 more minutes.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 18 },
+      { "number": 6, "step": "Move the slices to a plate and repeat with any remaining bread.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Serve hot, stacked and ready for your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000003,
+    "device": "airfryer",
+    "readyInMinutes": 60,
+    "steps": [
+      { "number": 1, "step": "Grease a small loaf pan that fits inside your air fryer basket, about 6 inches long.", "ingredients": [], "equipment": ["loaf pan"], "lengthMinutes": null },
+      { "number": 2, "step": "In a large bowl, mash the bananas with a fork until mostly smooth.", "ingredients": ["banana"], "equipment": ["large bowl", "fork"], "lengthMinutes": null },
+      { "number": 3, "step": "Stir the melted butter into the mashed bananas until combined.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Mix in the sugar, egg, and vanilla extract until smooth.", "ingredients": ["sugar", "egg", "vanilla extract"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Sprinkle the baking soda and salt over the batter and stir them in.", "ingredients": ["baking soda", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Add the flour and stir just until no dry streaks remain — overmixing makes the loaf tough.", "ingredients": ["flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Pour the batter into the prepared pan, smooth the top, and preheat the air fryer to 320°F for 3 minutes — a lower temperature than an oven keeps the top from scorching before the center bakes through.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 8, "step": "Set the pan in the air fryer basket and cook until a toothpick inserted in the center comes out clean, 35 to 40 minutes, loosely tenting the top with foil halfway through if it's browning quickly.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 38 },
+      { "number": 9, "step": "Cool the loaf in the pan for 10 minutes, then turn it out onto a rack to cool completely before slicing.", "ingredients": [], "equipment": ["wire rack"], "lengthMinutes": 10 }
+    ]
+  },
+  {
+    "recipeId": 9000007,
+    "device": "airfryer",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, whisk together the flour, sugar, baking powder, and salt.", "ingredients": ["flour", "sugar", "baking powder", "salt"], "equipment": ["large bowl", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "In another bowl, whisk the eggs, milk, melted butter, and vanilla extract until smooth.", "ingredients": ["egg", "milk", "butter", "vanilla extract"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 3, "step": "Pour the wet ingredients into the dry ingredients and stir just until combined, with a few lumps remaining.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Toss the blueberries with a spoonful of the dry mix left in the bowl before folding them gently into the batter — this keeps them from sinking.", "ingredients": ["blueberries"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Divide the batter among greased silicone muffin cups, filling each about three-quarters full — silicone cups are easiest to lift out of a hot air fryer basket.", "ingredients": [], "equipment": ["muffin cups"], "lengthMinutes": null },
+      { "number": 6, "step": "Preheat the air fryer to 320°F for 3 minutes, then arrange as many cups as fit in a single layer in the basket, leaving space between them for air to circulate.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 7, "step": "Air fry until domed and golden and a toothpick inserted in the center comes out clean, 10 to 12 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 11 },
+      { "number": 8, "step": "Let the muffins cool in the cups for 5 minutes before moving them to a rack.", "ingredients": [], "equipment": ["wire rack"], "lengthMinutes": 5 },
+      { "number": 9, "step": "Repeat preheating and air frying with the remaining batter until all the muffins are baked.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000008,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Cook the breakfast sausage in a skillet over medium heat, breaking it into small pieces, until browned, about 5 minutes.", "ingredients": ["breakfast sausage"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Add the diced potato to the skillet and cook, stirring occasionally, until the edges turn golden, about 4 minutes.", "ingredients": ["potato"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 3, "step": "Whisk the eggs with the milk, salt, and pepper, then pour into the skillet and cook, stirring gently, until just set, about 3 minutes.", "ingredients": ["egg", "milk", "salt"], "equipment": ["whisk"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Warm the tortillas briefly in a dry pan so they fold without cracking.", "ingredients": ["flour tortilla"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 5, "step": "Divide the egg mixture and cheddar cheese among the tortillas, placing the filling just below the center.", "ingredients": ["cheddar cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Fold in the sides, then roll each tortilla up tightly into a burrito.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Preheat the air fryer to 375°F for 3 minutes, then place the burritos seam-side down in the basket so the seam seals as they cook.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 8, "step": "Air fry until the tortilla is golden and crisp, about 6 minutes, flipping halfway through — this crisps the outside the way a dry skillet would, without needing added oil.", "ingredients": [], "equipment": [], "lengthMinutes": 6 },
+      { "number": 9, "step": "Let the burritos rest for a minute, then serve warm, or wrap tightly in foil to eat on the go.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000010,
+    "device": "oven",
+    "readyInMinutes": 32,
+    "steps": [
+      { "number": 1, "step": "Heat the oven to 375°F.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": null },
+      { "number": 2, "step": "Warm the olive oil in a large oven-safe skillet over medium heat and add the onion and bell pepper. Cook, stirring occasionally, until softened, about 6 minutes.", "ingredients": ["olive oil", "onion", "bell pepper"], "equipment": ["oven-safe skillet"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Stir in the garlic, cumin, and paprika and cook until fragrant, about 30 seconds.", "ingredients": ["garlic", "cumin", "paprika"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in the crushed tomatoes, season with salt and pepper, and bring to a simmer.", "ingredients": ["crushed tomatoes", "salt"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 5, "step": "Let the sauce simmer on the stovetop until it thickens slightly, about 8 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 8 },
+      { "number": 6, "step": "Use the back of a spoon to make 6 small wells in the sauce, then crack an egg into each one.", "ingredients": ["egg"], "equipment": ["spoon"], "lengthMinutes": null },
+      { "number": 7, "step": "Slide the skillet into the oven and bake until the egg whites are set but the yolks are still soft, 8 to 10 minutes — the oven's steady, all-around heat sets the whites evenly without you needing to cover the pan.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 9 },
+      { "number": 8, "step": "Scatter the feta cheese and parsley over the top just before serving.", "ingredients": ["feta cheese", "parsley"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000011,
+    "device": "airfryer",
+    "readyInMinutes": 55,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, toss together the rolled oats, almonds, cinnamon, and salt.", "ingredients": ["rolled oats", "almonds", "cinnamon", "salt"], "equipment": ["large bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "In a small bowl, whisk the maple syrup, vegetable oil, and vanilla extract together.", "ingredients": ["maple syrup", "vegetable oil", "vanilla extract"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 3, "step": "Pour the wet mixture over the oats and stir until every piece is coated.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Line the air fryer basket with a piece of parchment paper, poking a few holes in it so air still flows, and preheat the air fryer to 300°F for 3 minutes — a gentler temperature keeps granola from scorching in the tighter space of a basket.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Spread a third of the oat mixture in a thin, even layer in the basket — granola needs room to crisp, so work in batches rather than crowding it.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry for 10 minutes, then shake the basket and stir the granola so the edges don't burn before the center catches up.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 7, "step": "Continue air frying, checking and stirring every few minutes, until deep golden brown, 5 to 8 more minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 7 },
+      { "number": 8, "step": "Slide the granola onto a plate to cool completely without stirring — this is when the clusters form — then repeat with the remaining batches.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 9, "step": "Once all batches are cool, break the granola into clusters and mix in the dried cranberries before storing in an airtight container.", "ingredients": ["dried cranberries"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000012,
+    "device": "airfryer",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "Shred the russet potatoes on the large holes of a box grater into a bowl of cold water.", "ingredients": ["russet potato"], "equipment": ["box grater", "bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Drain the shredded potatoes and squeeze them firmly in a clean kitchen towel to remove as much water as possible — the drier the shreds, the crisper they get without a deep pool of oil.", "ingredients": [], "equipment": ["kitchen towel"], "lengthMinutes": null },
+      { "number": 3, "step": "Toss the dried shreds with half the vegetable oil and season generously with salt and pepper.", "ingredients": ["vegetable oil", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Preheat the air fryer to 380°F for 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Divide the potatoes into two portions and press one portion into a thin, even patty directly in the air fryer basket.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry until deeply golden and crisp on the bottom, about 10 minutes, then flip carefully with a spatula.", "ingredients": [], "equipment": ["spatula"], "lengthMinutes": 10 },
+      { "number": 7, "step": "Brush the top with a little more of the remaining oil and air fry until crisp on the second side, about 6 more minutes.", "ingredients": ["vegetable oil"], "equipment": [], "lengthMinutes": 6 },
+      { "number": 8, "step": "Transfer to a plate and repeat with the remaining potatoes, then serve hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000012,
+    "device": "sheetpan",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Shred the russet potatoes on the large holes of a box grater into a bowl of cold water.", "ingredients": ["russet potato"], "equipment": ["box grater", "bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Drain the shredded potatoes and squeeze them firmly in a clean kitchen towel to remove as much water as possible.", "ingredients": [], "equipment": ["kitchen towel"], "lengthMinutes": null },
+      { "number": 3, "step": "Toss the dried shreds with the vegetable oil and season generously with salt and pepper.", "ingredients": ["vegetable oil", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Heat the oven to 450°F and put a rimmed sheet pan in to preheat — starting the potatoes on a hot pan is what gives them a crisp bottom without a stovetop.", "ingredients": [], "equipment": ["sheet pan", "oven"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Carefully remove the hot sheet pan and spread the potatoes in a thin, even layer across the whole pan — the more room between shreds, the crispier they get.", "ingredients": [], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 6, "step": "Bake for 15 minutes, then flip the potatoes in sections with a spatula.", "ingredients": [], "equipment": ["spatula"], "lengthMinutes": 15 },
+      { "number": 7, "step": "Bake until deeply golden and crisp, 10 to 12 more minutes.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 11 },
+      { "number": 8, "step": "Serve hot, straight off the pan.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000013,
+    "device": "airfryer",
+    "readyInMinutes": 22,
+    "steps": [
+      { "number": 1, "step": "Preheat the air fryer to 370°F for 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 2, "step": "Lay the bacon flat in the air fryer basket in a single layer and air fry until crisp, 7 to 9 minutes, flipping halfway — no added oil needed, the fat renders on its own.", "ingredients": ["bacon"], "equipment": ["air fryer basket"], "lengthMinutes": 8 },
+      { "number": 3, "step": "Move the bacon to a paper towel-lined plate.", "ingredients": [], "equipment": ["paper towels"], "lengthMinutes": null },
+      { "number": 4, "step": "Crack the egg into a small oven-safe ramekin that fits in the basket, season with salt and pepper, and gently break the yolk.", "ingredients": ["egg", "salt"], "equipment": ["ramekin"], "lengthMinutes": null },
+      { "number": 5, "step": "Air fry the egg until the white is just set, about 4 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 4 },
+      { "number": 6, "step": "Top the egg with the cheddar cheese and air fry 1 more minute, just until melted.", "ingredients": ["cheddar cheese"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 7, "step": "Meanwhile, spread the bread lightly with butter and air fry alongside, cut-side up, until toasted, about 3 minutes.", "ingredients": ["bread", "butter"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 8, "step": "Stack the bacon and cheesy egg between the toasted bread and serve warm.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000016,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Combine the eggs, cottage cheese, and milk in a blender and blend until smooth and frothy.", "ingredients": ["egg", "cottage cheese", "milk"], "equipment": ["blender"], "lengthMinutes": 1 },
+      { "number": 2, "step": "Season the mixture with salt and pepper.", "ingredients": ["salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Divide the spinach, bell pepper, and cheddar cheese evenly among the cups of a silicone egg bite mold.", "ingredients": ["spinach", "bell pepper", "cheddar cheese"], "equipment": ["silicone egg bite mold"], "lengthMinutes": null },
+      { "number": 4, "step": "Pour the egg mixture over the vegetables, filling each cup about two-thirds full.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Preheat the air fryer to 300°F for 3 minutes — a gentler temperature than an oven keeps these custardy instead of rubbery.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Set the mold in the air fryer basket and cook until puffed and set in the center, 12 to 14 minutes.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 13 },
+      { "number": 7, "step": "Let them cool for a few minutes before running a knife around the edges to loosen, then repeat with any remaining batter.", "ingredients": [], "equipment": [], "lengthMinutes": 3 }
+    ]
+  },
+  {
+    "recipeId": 9000016,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Combine the eggs, cottage cheese, and milk in a blender and blend until smooth and frothy.", "ingredients": ["egg", "cottage cheese", "milk"], "equipment": ["blender"], "lengthMinutes": 1 },
+      { "number": 2, "step": "Season the mixture with salt and pepper.", "ingredients": ["salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Divide the spinach, bell pepper, and cheddar cheese evenly among the cups of a silicone egg bite mold.", "ingredients": ["spinach", "bell pepper", "cheddar cheese"], "equipment": ["silicone egg bite mold"], "lengthMinutes": null },
+      { "number": 4, "step": "Pour the egg mixture over the vegetables, filling each cup about two-thirds full, then cover the mold tightly with foil so condensation doesn't drip in as it steams.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Pour 1 cup of water into the pressure cooker insert and set the trivet inside, then place the mold on top.", "ingredients": [], "equipment": ["pressure cooker", "trivet"], "lengthMinutes": null },
+      { "number": 6, "step": "Lock the lid, seal the valve, and cook on high pressure for 8 minutes, allowing a few extra minutes for the pot to come to pressure before the timer starts.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 7, "step": "Let the pressure release naturally for 10 minutes before opening the lid — a slow release keeps the custard from deflating the way a quick release would.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 8, "step": "Carefully lift out the mold, let it cool for a few minutes, then run a knife around the edges to release the egg bites.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000018,
+    "device": "instantpot",
+    "readyInMinutes": 60,
+    "steps": [
+      { "number": 1, "step": "Grease a 7-inch round pan that fits inside your pressure cooker.", "ingredients": [], "equipment": ["7-inch pan"], "lengthMinutes": null },
+      { "number": 2, "step": "Melt the butter in a skillet over medium heat and cook the onion until soft, about 4 minutes.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 4 },
+      { "number": 3, "step": "Add the spinach and cook just until wilted, about 1 minute, then spread the mixture in the bottom of the prepared pan.", "ingredients": ["spinach"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Scatter the swiss cheese over the vegetables.", "ingredients": ["swiss cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "In a bowl, whisk the eggs, milk, heavy cream, nutmeg, salt, and pepper until well combined.", "ingredients": ["egg", "milk", "heavy cream", "nutmeg", "salt"], "equipment": ["whisk"], "lengthMinutes": null },
+      { "number": 6, "step": "Pour the egg mixture over the vegetables and cheese, then cover the pan tightly with foil so condensation doesn't drip in as it steams.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Pour 1 1/2 cups of water into the pressure cooker insert, set the trivet inside, and lower the pan onto the trivet using a foil sling.", "ingredients": [], "equipment": ["pressure cooker", "trivet"], "lengthMinutes": null },
+      { "number": 8, "step": "Lock the lid, seal the valve, and cook on high pressure for 22 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 22 },
+      { "number": 9, "step": "Let the pressure release naturally for 10 minutes, then carefully lift out the pan — a natural release keeps the custard from sinking in the center the way a quick release can.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 10, "step": "Let the quiche rest for 10 minutes before slicing so it holds together.", "ingredients": [], "equipment": [], "lengthMinutes": 10 }
+    ]
+  },
+  {
+    "recipeId": 9000020,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      { "number": 1, "step": "Whisk the eggs, milk, salt, and pepper together in a bowl.", "ingredients": ["egg", "milk", "salt"], "equipment": ["bowl", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Melt the butter in a nonstick skillet over medium heat and scramble the eggs until just set, about 3 minutes. Slide them onto a plate.", "ingredients": ["butter"], "equipment": ["nonstick skillet"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Lay one tortilla flat and sprinkle half the cheddar cheese over one half, then top with the scrambled eggs and the rest of the cheese.", "ingredients": ["flour tortilla", "cheddar cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Fold the empty half of the tortilla over the filling and press down gently.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Preheat the air fryer to 370°F for 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Lightly brush or spray both sides of the folded quesadilla and set it in the air fryer basket.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 7, "step": "Air fry until golden and crisp, about 8 minutes, flipping halfway through — the air fryer crisps both sides at once, so there's no need to babysit a flip in a hot pan.", "ingredients": [], "equipment": [], "lengthMinutes": 8 },
+      { "number": 8, "step": "Repeat with the second tortilla, then slice each into wedges and serve with salsa.", "ingredients": ["salsa"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000020,
+    "device": "griddle",
+    "readyInMinutes": 15,
+    "steps": [
+      { "number": 1, "step": "Whisk the eggs, milk, salt, and pepper together in a bowl.", "ingredients": ["egg", "milk", "salt"], "equipment": ["bowl", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Melt the butter on a griddle set over medium heat and scramble the eggs until just set, about 3 minutes. Slide them to one side of the griddle.", "ingredients": ["butter"], "equipment": ["griddle"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Lay a tortilla flat on the open side of the griddle, sprinkle half the cheddar cheese over one half, then top with the scrambled eggs and the rest of the cheese.", "ingredients": ["flour tortilla", "cheddar cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Fold the empty half of the tortilla over the filling and press down gently with a spatula.", "ingredients": [], "equipment": ["spatula"], "lengthMinutes": null },
+      { "number": 5, "step": "Cook until golden and crisp on the bottom, about 2 minutes, then flip and crisp the other side, about 2 minutes more — a griddle's wide, flat surface makes it easy to cook both quesadillas side by side.", "ingredients": [], "equipment": [], "lengthMinutes": 4 },
+      { "number": 6, "step": "Repeat with the second tortilla using the same open space on the griddle.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Slice each quesadilla into wedges and serve with salsa.", "ingredients": ["salsa"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000023,
+    "device": "airfryer",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, whisk together the flour, baking powder, and salt.", "ingredients": ["flour", "baking powder", "salt"], "equipment": ["large bowl", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Cut the cold butter into the flour with your fingers or a pastry cutter until the mixture looks like coarse crumbs with some pea-sized pieces.", "ingredients": ["cold butter"], "equipment": ["pastry cutter"], "lengthMinutes": null },
+      { "number": 3, "step": "Pour in the buttermilk and stir just until a shaggy dough forms.", "ingredients": ["buttermilk"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Turn the dough onto a floured surface, pat it into a 1-inch-thick round, and cut into biscuits with a cutter or glass.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Preheat the air fryer to 330°F for 3 minutes, then arrange the biscuits in the basket with space between them — they need room for air to circulate and rise evenly.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Air fry until golden on top and cooked through, 10 to 12 minutes, checking a couple minutes early since air fryers run hotter than ovens.", "ingredients": [], "equipment": [], "lengthMinutes": 11 },
+      { "number": 7, "step": "While the biscuits cook, cook the breakfast sausage in a skillet over medium heat, breaking it up, until browned, about 6 minutes.", "ingredients": ["breakfast sausage"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 8, "step": "Sprinkle the gravy thickener over the sausage and stir for 1 minute to cook off the raw flour taste.", "ingredients": ["gravy thickener"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 9, "step": "Slowly pour in the whole milk while stirring, then simmer until thickened, about 5 minutes.", "ingredients": ["whole milk"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 10, "step": "Season the gravy generously with black pepper, split the warm biscuits, and spoon the gravy over the top to serve.", "ingredients": ["black pepper"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000024,
+    "device": "crockpot",
+    "readyInMinutes": 300,
+    "steps": [
+      { "number": 1, "step": "Grease the inside of the slow cooker insert and spread the cubed bread evenly across the bottom.", "ingredients": ["bread"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 2, "step": "In a large bowl, whisk together the eggs, milk, heavy cream, sugar, vanilla extract, and cinnamon until smooth.", "ingredients": ["egg", "milk", "heavy cream", "sugar", "vanilla extract", "cinnamon"], "equipment": ["large bowl", "whisk"], "lengthMinutes": null },
+      { "number": 3, "step": "Pour the egg mixture evenly over the bread cubes, pressing down gently so every piece gets soaked.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Drizzle the melted butter over the top.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Sprinkle the streusel topping evenly over the surface.", "ingredients": ["streusel topping"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Cover and cook on low for 4 to 5 hours, until the center is set and a knife inserted comes out clean — a slow cooker's gentle, even heat does the same custard-soaking work as the oven, just slower, so there's no need to soak the bread ahead of time.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 270 },
+      { "number": 7, "step": "Turn off the slow cooker and let the casserole rest with the lid ajar for 10 minutes — this lets the top firm up a bit since a slow cooker won't crisp it the way an oven does.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 8, "step": "Scoop into bowls and serve warm.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000025,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, whisk the eggs, milk, salt, and pepper until fully combined.", "ingredients": ["egg", "milk", "salt"], "equipment": ["large bowl", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Stir in the ham, bell pepper, and green onion.", "ingredients": ["ham", "bell pepper", "green onion"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Preheat the air fryer to 320°F for 3 minutes and grease a silicone muffin tray that fits inside the basket.", "ingredients": [], "equipment": ["air fryer", "silicone muffin cups"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Divide the mixture evenly among the muffin cups, filling each about two-thirds full.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Sprinkle the cheddar cheese over the top of each cup.", "ingredients": ["cheddar cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Set the tray in the air fryer basket and cook until puffed and set in the center, 12 to 14 minutes.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 13 },
+      { "number": 7, "step": "Let the egg cups cool for a few minutes before running a knife around the edges to lift them out, then repeat with any remaining batter.", "ingredients": [], "equipment": [], "lengthMinutes": 3 }
+    ]
+  },
+  {
+    "recipeId": 9000026,
+    "device": "crockpot",
+    "readyInMinutes": 240,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken breasts dry, season both sides with salt and pepper, and dust lightly with the flour, shaking off the excess.", "ingredients": ["chicken breasts", "salt and pepper", "flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Heat the olive oil in a skillet over medium-high heat and sear the chicken until golden, about 3 minutes per side — it won't cook through yet, but the color adds flavor the slow cooker can't build on its own.", "ingredients": ["olive oil", "chicken breasts"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Transfer the chicken to the slow cooker.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Add the garlic, sun-dried tomatoes, and italian seasoning to the slow cooker.", "ingredients": ["garlic", "sun-dried tomatoes", "italian seasoning"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Pour in only half the chicken broth — a slow cooker doesn't let liquid evaporate the way a stovetop pan does, so less keeps the sauce from turning thin.", "ingredients": ["chicken broth"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Cover and cook on low until the chicken is cooked through with no pink in the center, 3 to 4 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 210 },
+      { "number": 7, "step": "Stir in the heavy cream and parmesan during the last 15 minutes of cooking — adding dairy late keeps it from separating over a long, slow cook.", "ingredients": ["heavy cream", "parmesan"], "equipment": [], "lengthMinutes": 15 },
+      { "number": 8, "step": "Scatter the basil over the top just before serving.", "ingredients": ["basil"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000026,
+    "device": "grill",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken breasts dry, season both sides with salt and pepper, and dust lightly with the flour, shaking off the excess.", "ingredients": ["chicken breasts", "salt and pepper", "flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Heat a grill to medium-high and oil the grates. Grill the chicken until deep grill marks form and it releases easily, about 5 minutes per side, then move it to a plate — it will finish cooking in the sauce later.", "ingredients": ["chicken breasts"], "equipment": ["grill"], "lengthMinutes": 10 },
+      { "number": 3, "step": "Set a skillet directly on the grill grates over the cooler side of the grill, add the olive oil, and cook the garlic just until fragrant, about 30 seconds.", "ingredients": ["olive oil", "garlic"], "equipment": ["skillet"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in the chicken broth and scrape up any browned bits in the skillet.", "ingredients": ["chicken broth"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 5, "step": "Stir in the heavy cream, sun-dried tomatoes, and italian seasoning, and let the sauce bubble gently over the grill's indirect heat until it thickens slightly, about 5 minutes.", "ingredients": ["heavy cream", "sun-dried tomatoes", "italian seasoning"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Stir in the parmesan until melted and smooth.", "ingredients": ["parmesan"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 7, "step": "Return the chicken to the skillet, spoon sauce over the top, close the grill lid, and cook until the chicken is cooked through with no pink in the center, about 8 minutes — the closed lid turns the grill into an oven for this last step.", "ingredients": ["chicken breasts"], "equipment": ["grill"], "lengthMinutes": 8 },
+      { "number": 8, "step": "Scatter the basil over the top just before serving.", "ingredients": ["basil"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000026,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken breasts dry, season both sides with salt and pepper, and dust lightly with the flour, shaking off the excess.", "ingredients": ["chicken breasts", "salt and pepper", "flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Set the pressure cooker to sauté, heat the olive oil, and sear the chicken until golden, about 3 minutes per side. Move it to a plate.", "ingredients": ["olive oil", "chicken breasts"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Add the garlic to the pot and stir just until fragrant, about 30 seconds.", "ingredients": ["garlic"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in only half the chicken broth and scrape up the browned bits — a pressure cooker needs less liquid than a skillet since none evaporates during cooking.", "ingredients": ["chicken broth"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Stir in the sun-dried tomatoes and italian seasoning, then return the chicken to the pot.", "ingredients": ["sun-dried tomatoes", "italian seasoning", "chicken breasts"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Lock the lid, seal the valve, and cook on high pressure for 8 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 7, "step": "Quick release the pressure so the chicken doesn't overcook, then carefully open the lid.", "ingredients": [], "equipment": [], "lengthMinutes": 2 },
+      { "number": 8, "step": "Switch back to sauté, stir in the heavy cream and parmesan, and simmer until the sauce thickens slightly, about 4 minutes — this happens after pressure cooking since dairy can scorch or separate under high pressure.", "ingredients": ["heavy cream", "parmesan"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 9, "step": "Scatter the basil over the top just before serving.", "ingredients": ["basil"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000027,
+    "device": "crockpot",
+    "readyInMinutes": 360,
+    "steps": [
+      { "number": 1, "step": "Warm the vegetable oil in a skillet over medium heat and cook the onion, stirring often, until soft and translucent, about 5 minutes.", "ingredients": ["vegetable oil", "onion"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir in the garlic and ginger and cook until fragrant, about 1 minute.", "ingredients": ["garlic", "ginger"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the curry powder and stir constantly for 30 seconds to toast the spices — do this in the skillet, not the slow cooker, since dry heat is what wakes up ground spices.", "ingredients": ["curry powder"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Scrape the onion mixture into the slow cooker.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 5, "step": "Add the chicken, diced tomatoes, and only half the coconut milk — a slow cooker traps moisture instead of simmering it off, so extra liquid would leave the sauce thin.", "ingredients": ["chicken thighs", "diced tomatoes", "coconut milk"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Add the salt and stir to coat every piece of chicken in sauce.", "ingredients": ["salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Cover and cook on low until the chicken is fall-apart tender, 5 to 6 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 330 },
+      { "number": 8, "step": "Stir in the remaining coconut milk during the last 15 minutes of cooking to freshen the sauce's richness.", "ingredients": ["coconut milk"], "equipment": [], "lengthMinutes": 15 },
+      { "number": 9, "step": "Taste and adjust the salt, then scatter the cilantro over the top before serving.", "ingredients": ["cilantro", "salt"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000027,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, warm the vegetable oil, and cook the onion, stirring often, until soft and translucent, about 5 minutes.", "ingredients": ["vegetable oil", "onion"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir in the garlic and ginger and cook until fragrant, about 1 minute.", "ingredients": ["garlic", "ginger"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the curry powder and stir constantly for 30 seconds to toast the spices.", "ingredients": ["curry powder"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in the diced tomatoes and only half the coconut milk, scraping up any browned bits — a pressure cooker needs less liquid since nothing evaporates under a sealed lid.", "ingredients": ["diced tomatoes", "coconut milk"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Add the chicken and salt and stir to coat.", "ingredients": ["chicken thighs", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Lock the lid, seal the valve, and cook on high pressure for 8 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 7, "step": "Let the pressure release naturally for 10 minutes, then quick release any remaining pressure — the rest time keeps the chicken from turning stringy under a sudden release.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 8, "step": "Stir in the remaining coconut milk and simmer on sauté for a couple minutes to bring the sauce together.", "ingredients": ["coconut milk"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 9, "step": "Taste and adjust the salt, then scatter the cilantro over the top before serving.", "ingredients": ["cilantro", "salt"], "equipment": [], "lengthMinutes": null }
+    ]
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "id": 9000001,
+    "title": "Test Beef Chili",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [],
+    "readyInMinutes": 45,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "A weeknight chili that tastes like it simmered all Sunday afternoon.",
+    "ingredients": [
+      { "name": "ground beef", "original": "1 lb ground beef", "amount": 1, "unit": "lb" },
+      { "name": "onion", "original": "1 yellow onion, diced", "amount": 1, "unit": "" },
+      { "name": "chili powder", "original": "2 tbsp chili powder", "amount": 2, "unit": "tbsp" },
+      { "name": "beef broth", "original": "2 cups beef broth", "amount": 2, "unit": "cup" }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          { "number": 1, "step": "Brown the ground beef in a large pot over medium-high heat, about 6 minutes.", "ingredients": ["ground beef"], "equipment": ["large pot"], "lengthMinutes": 6 },
+          { "number": 2, "step": "Add the onion and cook until soft and translucent, about 4 minutes.", "ingredients": ["onion"], "equipment": [], "lengthMinutes": 4 },
+          { "number": 3, "step": "Stir in the chili powder and let it toast for 30 seconds until fragrant.", "ingredients": ["chili powder"], "equipment": [], "lengthMinutes": 1 },
+          { "number": 4, "step": "Pour in the beef broth and simmer uncovered until thickened, about 25 minutes.", "ingredients": ["beef broth"], "equipment": [], "lengthMinutes": 25 }
+        ]
+      }
+    ]
+  }
+]

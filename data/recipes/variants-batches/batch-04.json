@@ -1,0 +1,372 @@
+[
+  {
+    "recipeId": 9000055,
+    "device": "grill",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "Divide the ground beef into 4 equal portions and shape into patties slightly wider than the buns — they shrink as they cook.", "ingredients": ["ground beef"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Press a shallow dimple in the center of each patty with your thumb and season both sides generously with salt and pepper.", "ingredients": ["salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Preheat the grill to medium-high heat and lightly oil the grates so the patties release cleanly.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Grill the patties with the lid closed until deeply marked and browned, about 4 minutes per side for medium.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 8 },
+      { "number": 5, "step": "Lay a slice of cheddar cheese on each patty, close the lid, and let it melt in the trapped heat, about 1 minute.", "ingredients": ["cheddar cheese"], "equipment": ["grill"], "lengthMinutes": 1 },
+      { "number": 6, "step": "Set the burger buns cut-side down over direct heat for the last minute until lightly toasted and grill-marked.", "ingredients": ["burger buns"], "equipment": ["grill"], "lengthMinutes": 1 },
+      { "number": 7, "step": "Build each burger with lettuce, tomato, onion, and ketchup, then set the patty on top and close the bun.", "ingredients": ["lettuce", "tomato", "onion", "ketchup"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000055,
+    "device": "sheetpan",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 425°F and line a sheet pan with foil for easy cleanup.", "ingredients": [], "equipment": ["oven", "sheet pan"], "lengthMinutes": 10 },
+      { "number": 2, "step": "Divide the ground beef into 4 equal portions and shape into patties slightly wider than the buns — they shrink as they cook.", "ingredients": ["ground beef"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Season both sides generously with salt and pepper and arrange the patties on the sheet pan with space between them.", "ingredients": ["salt and pepper"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 4, "step": "Bake until browned and cooked through, flipping once, about 12 minutes total.", "ingredients": [], "equipment": ["oven", "sheet pan"], "lengthMinutes": 12 },
+      { "number": 5, "step": "Lay a slice of cheddar cheese on each patty for the last 2 minutes so it melts fully.", "ingredients": ["cheddar cheese"], "equipment": ["oven"], "lengthMinutes": 2 },
+      { "number": 6, "step": "Tuck the burger buns cut-side up onto an empty corner of the pan for the final 2 minutes to warm and lightly toast.", "ingredients": ["burger buns"], "equipment": ["sheet pan"], "lengthMinutes": 2 },
+      { "number": 7, "step": "Build each burger with lettuce, tomato, onion, and ketchup, then set the patty on top and close the bun.", "ingredients": ["lettuce", "tomato", "onion", "ketchup"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000057,
+    "device": "crockpot",
+    "readyInMinutes": 270,
+    "steps": [
+      { "number": 1, "step": "Season the sliced beef sirloin with salt and pepper. Melt 1 tablespoon of the butter in a skillet over high heat and sear the beef in batches until just browned, about 1 minute per side, then transfer it straight to the slow cooker.", "ingredients": ["beef sirloin", "salt and pepper", "butter"], "equipment": ["skillet", "slow cooker"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Melt the remaining butter in the same skillet over medium heat, add the onion and mushrooms, and cook until golden, about 7 minutes.", "ingredients": ["butter", "onion", "mushrooms"], "equipment": ["skillet"], "lengthMinutes": 7 },
+      { "number": 3, "step": "Stir in the garlic and flour, cook for 1 minute, then scrape the mixture and the beef broth into the slow cooker with the beef — slow cookers don't evaporate liquid the way a stovetop does, so every bit of that broth matters.", "ingredients": ["garlic", "flour", "beef broth"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until the beef is fork-tender and the sauce has thickened slightly, about 4 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 5, "step": "Near the end of cooking, bring a pot of salted water to a boil and cook the egg noodles until tender, then drain.", "ingredients": ["egg noodles"], "equipment": ["pot"], "lengthMinutes": 9 },
+      { "number": 6, "step": "Turn off the slow cooker and stir in the sour cream and dijon mustard until smooth — the gentler residual heat keeps the sauce from curdling the way direct stovetop heat can.", "ingredients": ["sour cream", "dijon mustard"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 7, "step": "Spoon the stroganoff over the egg noodles and serve immediately.", "ingredients": ["egg noodles"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000057,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, melt 1 tablespoon of the butter, season the beef sirloin with salt and pepper, and sear in batches until just browned, about 1 minute per side. Remove to a plate.", "ingredients": ["butter", "beef sirloin", "salt and pepper"], "equipment": ["pressure cooker"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Melt the remaining butter in the pot, add the onion and mushrooms, and sauté until golden, about 6 minutes.", "ingredients": ["butter", "onion", "mushrooms"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Stir in the garlic and flour and cook for 1 minute, then pour in the beef broth, scraping up any browned bits from the bottom.", "ingredients": ["garlic", "flour", "beef broth"], "equipment": ["pressure cooker"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Return the beef and any juices to the pot, lock the lid, and cook at high pressure for 8 minutes.", "ingredients": ["beef sirloin"], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 5, "step": "Let the pressure release naturally for 10 minutes before opening the valve — a natural release keeps the beef tender instead of tightening it up.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 6, "step": "While the pot is releasing, bring a pot of salted water to a boil and cook the egg noodles until tender, then drain.", "ingredients": ["egg noodles"], "equipment": ["pot"], "lengthMinutes": 9 },
+      { "number": 7, "step": "Stir the sour cream and dijon mustard into the pot until smooth.", "ingredients": ["sour cream", "dijon mustard"], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 8, "step": "Spoon the stroganoff over the egg noodles and serve immediately.", "ingredients": ["egg noodles"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000058,
+    "device": "crockpot",
+    "readyInMinutes": 360,
+    "steps": [
+      { "number": 1, "step": "In a skillet over medium-high heat, brown the ground beef, breaking it into crumbles, about 7 minutes, then drain excess fat.", "ingredients": ["ground beef"], "equipment": ["skillet"], "lengthMinutes": 7 },
+      { "number": 2, "step": "Add the onion and carrots to the skillet and cook until softened, about 5 minutes, then transfer everything to the slow cooker.", "ingredients": ["onion", "carrots"], "equipment": ["skillet", "slow cooker"], "lengthMinutes": 5 },
+      { "number": 3, "step": "Stir the tomato paste, worcestershire sauce, and half the beef broth into the slow cooker — slow cookers don't lose liquid to evaporation, so less broth here keeps the filling from turning soupy.", "ingredients": ["tomato paste", "worcestershire sauce", "beef broth"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until the vegetables are tender and the filling bubbles gently at the edges, about 5 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 300 },
+      { "number": 5, "step": "Near the end of cooking, put the potatoes in a pot of salted water, bring to a boil, and cook until tender when pierced with a fork, about 15 minutes.", "ingredients": ["potatoes"], "equipment": ["pot"], "lengthMinutes": 15 },
+      { "number": 6, "step": "Drain the potatoes and mash them with the butter and milk until smooth. Season with salt and pepper.", "ingredients": ["butter", "milk", "salt and pepper"], "equipment": ["potato masher"], "lengthMinutes": null },
+      { "number": 7, "step": "Stir the frozen peas into the filling, then spoon the mashed potato over the top in an even layer.", "ingredients": ["frozen peas"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 8, "step": "Cover and cook on high for 15 more minutes just to heat the potatoes through — the top won't turn golden under a lid the way it does in an oven, but it stays warm and creamy.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 15 }
+    ]
+  },
+  {
+    "recipeId": 9000059,
+    "device": "crockpot",
+    "readyInMinutes": 300,
+    "steps": [
+      { "number": 1, "step": "Bring a large pot of salted water to a boil and cook the lasagna noodles until just tender, about 9 minutes, then drain and lay flat so they don't stick.", "ingredients": ["lasagna noodles"], "equipment": ["pot"], "lengthMinutes": 9 },
+      { "number": 2, "step": "In a skillet over medium-high heat, brown the ground beef with the onion, breaking the meat into small pieces, about 7 minutes.", "ingredients": ["ground beef", "onion"], "equipment": ["skillet"], "lengthMinutes": 7 },
+      { "number": 3, "step": "Stir in the garlic, crushed tomatoes, and dried basil, season with salt and pepper, and simmer for 5 minutes.", "ingredients": ["garlic", "crushed tomatoes", "dried basil", "salt and pepper"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 4, "step": "In a bowl, stir together the ricotta cheese, egg, and a pinch of salt and pepper until smooth.", "ingredients": ["ricotta cheese", "egg", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 5, "step": "Spread a thin layer of meat sauce in the bottom of the slow cooker insert, then layer noodles (breaking them to fit the round shape), ricotta mixture, meat sauce, and mozzarella. Repeat the layers, ending with sauce and mozzarella on top.", "ingredients": ["lasagna noodles", "ricotta cheese", "mozzarella cheese"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 6, "step": "Sprinkle the parmesan over the top, cover, and cook on low until the noodles are tender and the cheese is melted, about 4 hours — resist lifting the lid, since every peek adds cooking time.", "ingredients": ["parmesan"], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 7, "step": "Turn off the slow cooker and let the lasagna rest with the lid ajar for 15 minutes so the layers set before slicing.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 15 }
+    ]
+  },
+  {
+    "recipeId": 9000061,
+    "device": "crockpot",
+    "readyInMinutes": 210,
+    "steps": [
+      { "number": 1, "step": "Cook the ground beef in a skillet over medium-high heat, breaking it into small pieces, until browned, about 6 minutes, then drain excess fat.", "ingredients": ["ground beef"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and bell pepper to the skillet and cook until just softened, about 3 minutes.", "ingredients": ["onion", "bell pepper"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Transfer the beef mixture to the slow cooker and stir in the ketchup, brown sugar, worcestershire sauce, and tomato paste, and season with salt and pepper.", "ingredients": ["ketchup", "brown sugar", "worcestershire sauce", "tomato paste", "salt and pepper"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until thick and glossy, about 3 hours, stirring once partway through.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 180 },
+      { "number": 5, "step": "Toast the burger buns lightly if you like, then pile the beef mixture generously onto the bottom halves and close with the tops.", "ingredients": ["burger buns"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000061,
+    "device": "instantpot",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté and brown the ground beef, breaking it into small pieces, about 6 minutes, then drain excess fat.", "ingredients": ["ground beef"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and bell pepper and cook until softened, about 3 minutes.", "ingredients": ["onion", "bell pepper"], "equipment": ["pressure cooker"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Stir in the ketchup, brown sugar, worcestershire sauce, and tomato paste, and season with salt and pepper.", "ingredients": ["ketchup", "brown sugar", "worcestershire sauce", "tomato paste", "salt and pepper"], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cancel sauté, lock the lid, and cook at high pressure for 5 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Quick release the pressure right away — there's no large cut of meat here to protect, so there's no reason to wait.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 6, "step": "Switch back to sauté and simmer uncovered for a few minutes if the mixture looks thin, about 3 minutes, until thick and glossy.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 3 },
+      { "number": 7, "step": "Toast the burger buns lightly if you like, then pile the beef mixture generously onto the bottom halves and close with the tops.", "ingredients": ["burger buns"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000062,
+    "device": "crockpot",
+    "readyInMinutes": 270,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, mix the ground beef, breadcrumbs, parmesan, egg, half the garlic, salt, and pepper until just combined.", "ingredients": ["ground beef", "breadcrumbs", "parmesan", "egg", "garlic", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Roll the mixture into golf ball-sized meatballs, about 16 total.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Heat the olive oil in a skillet over medium-high heat and brown the meatballs on all sides, about 6 minutes — they just need color, not to cook through.", "ingredients": ["olive oil"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 4, "step": "Transfer the meatballs to the slow cooker. Add the remaining garlic to the skillet, stir for 30 seconds, then pour in the crushed tomatoes and dried basil, season with salt and pepper, and pour the sauce over the meatballs.", "ingredients": ["garlic", "crushed tomatoes", "dried basil", "salt and pepper"], "equipment": ["skillet", "slow cooker"], "lengthMinutes": 1 },
+      { "number": 5, "step": "Cover and cook on low until the meatballs are cooked through and tender, about 4 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 6, "step": "Serve the meatballs and sauce hot, spooning extra sauce over the top.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000062,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "In a large bowl, mix the ground beef, breadcrumbs, parmesan, egg, half the garlic, salt, and pepper until just combined.", "ingredients": ["ground beef", "breadcrumbs", "parmesan", "egg", "garlic", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Roll the mixture into golf ball-sized meatballs, about 16 total.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Set the pressure cooker to sauté, heat the olive oil, and brown the meatballs on all sides in batches, about 6 minutes.", "ingredients": ["olive oil"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 4, "step": "Remove the meatballs, add the remaining garlic, and stir for 30 seconds, then pour in the crushed tomatoes and dried basil, season with salt and pepper, and scrape up any browned bits.", "ingredients": ["garlic", "crushed tomatoes", "dried basil", "salt and pepper"], "equipment": ["pressure cooker"], "lengthMinutes": 1 },
+      { "number": 5, "step": "Nestle the meatballs back into the sauce, lock the lid, and cook at high pressure for 8 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 6, "step": "Let the pressure release naturally for 10 minutes before opening — a natural release keeps the meatballs from bouncing around and breaking apart.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 7, "step": "Serve the meatballs and sauce hot, spooning extra sauce over the top.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000063,
+    "device": "griddle",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Preheat the griddle to medium-high heat and lightly oil the surface.", "ingredients": [], "equipment": ["griddle"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Spread the onion and bell pepper on the griddle and cook, stirring, until soft and lightly browned, about 8 minutes, then push them to a cooler zone.", "ingredients": ["onion", "bell pepper"], "equipment": ["griddle"], "lengthMinutes": 8 },
+      { "number": 3, "step": "Add the remaining vegetable oil to a hotter section of the griddle, lay the sliced ribeye in a thin layer, and season with salt and pepper.", "ingredients": ["vegetable oil", "ribeye steak", "salt and pepper"], "equipment": ["griddle"], "lengthMinutes": null },
+      { "number": 4, "step": "Chop the steak into smaller pieces with a spatula as it sears, mixing in the peppers and onions, until no pink remains, about 4 minutes.", "ingredients": [], "equipment": ["griddle", "spatula"], "lengthMinutes": 4 },
+      { "number": 5, "step": "Divide the mixture into 4 mounds, lay 2 slices of provolone cheese over each, and cover with a melting dome until the cheese melts, about 2 minutes.", "ingredients": ["provolone cheese"], "equipment": ["griddle"], "lengthMinutes": 2 },
+      { "number": 6, "step": "Meanwhile, toast the hoagie rolls cut-side down on an open section of the griddle until golden, about 1 minute.", "ingredients": ["hoagie rolls"], "equipment": ["griddle"], "lengthMinutes": 1 },
+      { "number": 7, "step": "Scoop each cheesy mound into a hoagie roll and serve right away.", "ingredients": ["hoagie rolls"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000063,
+    "device": "grill",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "Preheat the grill to medium-high heat and set a large cast iron skillet directly on the grates to heat, about 5 minutes — the skillet keeps the thin-sliced meat and vegetables from falling through.", "ingredients": [], "equipment": ["grill", "cast iron skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Add half the vegetable oil to the skillet, then the onion and bell pepper, and cook with the lid closed until soft and lightly browned, about 8 minutes.", "ingredients": ["vegetable oil", "onion", "bell pepper"], "equipment": ["grill"], "lengthMinutes": 8 },
+      { "number": 3, "step": "Move the vegetables to a plate, add the remaining oil, and lay the sliced ribeye in a thin layer, seasoning with salt and pepper.", "ingredients": ["vegetable oil", "ribeye steak", "salt and pepper"], "equipment": ["grill"], "lengthMinutes": null },
+      { "number": 4, "step": "Chop the steak into smaller pieces with a spatula as it browns, until no pink remains, about 4 minutes.", "ingredients": [], "equipment": ["spatula"], "lengthMinutes": 4 },
+      { "number": 5, "step": "Return the onion and bell pepper to the skillet and mix with the steak.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Divide into 4 mounds, top each with 2 slices of provolone cheese, close the grill lid, and let the cheese melt in the trapped heat, about 2 minutes.", "ingredients": ["provolone cheese"], "equipment": ["grill"], "lengthMinutes": 2 },
+      { "number": 7, "step": "Split the hoagie rolls and warm them cut-side down directly on the grill grates for the last minute.", "ingredients": ["hoagie rolls"], "equipment": ["grill"], "lengthMinutes": 1 },
+      { "number": 8, "step": "Scoop the cheesy steak into the rolls and serve right away.", "ingredients": ["hoagie rolls"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000064,
+    "device": "griddle",
+    "readyInMinutes": 20,
+    "steps": [
+      { "number": 1, "step": "Preheat the griddle to medium-high heat.", "ingredients": [], "equipment": ["griddle"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Crumble the ground beef onto the griddle and cook, chopping it into small pieces with a spatula, until browned, about 6 minutes, then scrape off excess grease.", "ingredients": ["ground beef"], "equipment": ["griddle", "spatula"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Push the beef aside, add the garlic and ginger to a hotter spot, and stir until fragrant, about 30 seconds, then mix everything together.", "ingredients": ["garlic", "ginger"], "equipment": ["griddle"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Drizzle the soy sauce, brown sugar, sesame oil, and red pepper flakes over the beef and toss to coat, letting the sauce bubble and cling to the meat, about 3 minutes.", "ingredients": ["soy sauce", "brown sugar", "sesame oil", "red pepper flakes"], "equipment": ["griddle"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Spoon the beef over bowls of warm rice.", "ingredients": ["rice"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Scatter the green onion and sesame seeds over the top before serving.", "ingredients": ["green onion", "sesame seeds"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000064,
+    "device": "grill",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Preheat the grill to medium-high heat and set a large cast iron skillet on the grates to heat, about 5 minutes — ground beef needs a solid surface, since it would fall straight through the grates.", "ingredients": [], "equipment": ["grill", "cast iron skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Crumble the ground beef into the skillet and cook with the lid closed, breaking it into small pieces, until browned, about 6 minutes.", "ingredients": ["ground beef"], "equipment": ["grill"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Stir in the garlic and ginger and cook until fragrant, about 30 seconds.", "ingredients": ["garlic", "ginger"], "equipment": ["grill"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Add the soy sauce, brown sugar, sesame oil, and red pepper flakes, close the lid, and let it bubble until it clings to the meat, about 3 minutes.", "ingredients": ["soy sauce", "brown sugar", "sesame oil", "red pepper flakes"], "equipment": ["grill"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Spoon the beef over bowls of warm rice.", "ingredients": ["rice"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Scatter the green onion and sesame seeds over the top before serving.", "ingredients": ["green onion", "sesame seeds"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000064,
+    "device": "sheetpan",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 450°F.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 10 },
+      { "number": 2, "step": "Crumble the ground beef onto a rimmed sheet pan in an even layer.", "ingredients": ["ground beef"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 3, "step": "Roast until browned, breaking it up with a spatula halfway through, about 10 minutes.", "ingredients": [], "equipment": ["oven", "spatula"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Stir the garlic, ginger, soy sauce, brown sugar, sesame oil, and red pepper flakes right into the beef on the pan, spreading it back into a thin layer.", "ingredients": ["garlic", "ginger", "soy sauce", "brown sugar", "sesame oil", "red pepper flakes"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 5, "step": "Return to the oven and roast until the sauce is bubbling and slightly sticky, about 5 minutes.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Spoon the beef over bowls of warm rice.", "ingredients": ["rice"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Scatter the green onion and sesame seeds over the top before serving.", "ingredients": ["green onion", "sesame seeds"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000065,
+    "device": "stove",
+    "readyInMinutes": 210,
+    "steps": [
+      { "number": 1, "step": "Pat the chuck roast dry and season all over generously with salt and pepper.", "ingredients": ["beef chuck roast", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Heat the olive oil in a large pot over medium-high heat and sear the roast on all sides until deeply browned, about 10 minutes total. Set the roast aside.", "ingredients": ["olive oil"], "equipment": ["large pot"], "lengthMinutes": 10 },
+      { "number": 3, "step": "Add the onion to the pot and cook until it starts to soften and picks up the browned bits, about 4 minutes. Stir in the garlic and tomato paste and cook for 1 minute.", "ingredients": ["onion", "garlic", "tomato paste"], "equipment": ["large pot"], "lengthMinutes": 5 },
+      { "number": 4, "step": "Pour in the beef broth, add the bay leaves and thyme, and return the roast to the pot.", "ingredients": ["beef broth", "bay leaf", "dried thyme"], "equipment": ["large pot"], "lengthMinutes": null },
+      { "number": 5, "step": "Bring to a gentle simmer, then lower the heat until the liquid barely bubbles, cover, and cook on the stovetop until the roast starts to turn tender, about 2 hours — a hard boil on the stove toughens the meat, so keep it low and slow.", "ingredients": [], "equipment": ["large pot"], "lengthMinutes": 120 },
+      { "number": 6, "step": "Add the carrots and potatoes around the roast, cover, and continue simmering until the meat shreds easily with a fork and the vegetables are tender, about 50 minutes.", "ingredients": ["carrots", "potatoes"], "equipment": ["large pot"], "lengthMinutes": 50 },
+      { "number": 7, "step": "Lift the roast onto a cutting board, discard the bay leaves, and let it rest for 10 minutes before slicing or shredding.", "ingredients": ["bay leaf"], "equipment": ["cutting board"], "lengthMinutes": 10 },
+      { "number": 8, "step": "Serve the sliced roast with the vegetables and spoon the pan juices over the top.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000066,
+    "device": "airfryer",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "Pat the pork chops dry and season both sides generously with salt and pepper.", "ingredients": ["pork chops", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat the air fryer to 380°F, about 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Lightly coat the air fryer basket, arrange the pork chops in a single layer without touching, and air fry until golden and cooked through, flipping halfway, about 12 minutes.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 12 },
+      { "number": 4, "step": "While the chops cook, melt the butter in a small skillet over medium heat, add the onion, and cook until softened, about 3 minutes.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Add the apples and dried thyme and cook, stirring occasionally, until softened and golden at the edges, about 5 minutes.", "ingredients": ["apples", "dried thyme"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Pour in the chicken broth, scrape up any browned bits, and simmer until slightly thickened, about 3 minutes.", "ingredients": ["chicken broth"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 7, "step": "Check the chops for doneness — they're ready at 145°F on an instant read thermometer; give them another minute or two in the basket if needed.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 8, "step": "Serve the pork chops topped with the apples and pan sauce.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000066,
+    "device": "grill",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the pork chops dry and season both sides generously with salt and pepper.", "ingredients": ["pork chops", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat the grill to medium-high heat, about 10 minutes.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 10 },
+      { "number": 3, "step": "Grill the chops directly over the heat until nicely marked and cooked through, about 5 minutes per side.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Move the chops to a platter to rest while you make the topping.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Melt the butter in a small skillet over medium heat, add the onion, and cook until softened, about 3 minutes.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Add the apples and dried thyme and cook until softened and golden at the edges, about 5 minutes.", "ingredients": ["apples", "dried thyme"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 7, "step": "Pour in the chicken broth, scrape up any browned bits, and simmer until slightly thickened, about 3 minutes.", "ingredients": ["chicken broth"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 8, "step": "Serve the grilled pork chops topped with the apples and pan sauce.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000066,
+    "device": "sheetpan",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 425°F.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 10 },
+      { "number": 2, "step": "Pat the pork chops dry, season with salt and pepper, and arrange on a sheet pan.", "ingredients": ["pork chops", "salt and pepper"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 3, "step": "Melt the butter and toss it with the onion, apples, and dried thyme in a bowl, then scatter the mixture around the chops on the pan.", "ingredients": ["butter", "onion", "apples", "dried thyme"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 4, "step": "Drizzle the chicken broth over the apples and onion.", "ingredients": ["chicken broth"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Roast until the chops are cooked through and the apples are tender and golden at the edges, about 18 minutes, stirring the apples once halfway through.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": 18 },
+      { "number": 6, "step": "Serve the pork chops topped with the roasted apples and pan juices.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000067,
+    "device": "instantpot",
+    "readyInMinutes": 100,
+    "steps": [
+      { "number": 1, "step": "In a small bowl, mix the brown sugar, paprika, garlic powder, salt, and pepper to make a dry rub.", "ingredients": ["brown sugar", "paprika", "garlic powder", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Rub the mixture all over the pork shoulder, pressing it into the surface.", "ingredients": ["pork shoulder"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Set the pressure cooker to sauté and sear the pork shoulder on all sides until browned, about 8 minutes.", "ingredients": ["pork shoulder"], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 4, "step": "Remove the pork, add the onion to the pot, and stir for 1 minute to loosen the browned bits.", "ingredients": ["onion"], "equipment": ["pressure cooker"], "lengthMinutes": 1 },
+      { "number": 5, "step": "Pour in the chicken broth and apple cider vinegar and return the pork to the pot.", "ingredients": ["chicken broth", "apple cider vinegar"], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 6, "step": "Lock the lid and cook at high pressure for 60 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 60 },
+      { "number": 7, "step": "Let the pressure release naturally for 15 minutes before opening — releasing it early can shock the meat and make it harder to shred.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 15 },
+      { "number": 8, "step": "Lift the pork onto a cutting board and shred it with two forks, discarding any large pieces of fat.", "ingredients": [], "equipment": ["cutting board"], "lengthMinutes": null },
+      { "number": 9, "step": "Return the shredded pork to the pot and toss with enough of the cooking liquid to keep it moist.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 10, "step": "Pile the pulled pork onto burger buns and serve warm.", "ingredients": ["burger buns"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000067,
+    "device": "stove",
+    "readyInMinutes": 210,
+    "steps": [
+      { "number": 1, "step": "In a small bowl, mix the brown sugar, paprika, garlic powder, salt, and pepper to make a dry rub.", "ingredients": ["brown sugar", "paprika", "garlic powder", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Rub the mixture all over the pork shoulder, pressing it into the surface.", "ingredients": ["pork shoulder"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Heat a large pot over medium-high heat and sear the pork shoulder on all sides until browned, about 8 minutes.", "ingredients": ["pork shoulder"], "equipment": ["large pot"], "lengthMinutes": 8 },
+      { "number": 4, "step": "Add the onion to the pot and stir for 1 minute to loosen the browned bits.", "ingredients": ["onion"], "equipment": ["large pot"], "lengthMinutes": 1 },
+      { "number": 5, "step": "Pour in the chicken broth and apple cider vinegar and cover the pot.", "ingredients": ["chicken broth", "apple cider vinegar"], "equipment": ["large pot"], "lengthMinutes": null },
+      { "number": 6, "step": "Bring to a boil, then reduce to a bare simmer and cook, covered, until the pork shreds easily with a fork, about 3 hours, turning it once partway through and checking that the liquid hasn't dried out.", "ingredients": [], "equipment": ["large pot"], "lengthMinutes": 180 },
+      { "number": 7, "step": "Lift the pork onto a cutting board and shred it with two forks, discarding any large pieces of fat.", "ingredients": [], "equipment": ["cutting board"], "lengthMinutes": null },
+      { "number": 8, "step": "Return the shredded pork to the pot and toss with enough of the cooking liquid to keep it moist.", "ingredients": [], "equipment": ["large pot"], "lengthMinutes": null },
+      { "number": 9, "step": "Pile the pulled pork onto burger buns and serve warm.", "ingredients": ["burger buns"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000069,
+    "device": "crockpot",
+    "readyInMinutes": 270,
+    "steps": [
+      { "number": 1, "step": "Heat the olive oil in a skillet over medium-high heat and brown the sausage links on all sides, about 6 minutes. Slice into thick coins once cool enough to handle.", "ingredients": ["olive oil", "pork sausage"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion to the skillet and cook until softened, about 4 minutes, then stir in the garlic for 30 seconds.", "ingredients": ["onion", "garlic"], "equipment": ["skillet"], "lengthMinutes": 4 },
+      { "number": 3, "step": "Transfer the sausage and onion mixture to the slow cooker. Stir in the diced tomatoes, cannellini beans, half the chicken broth, and dried rosemary, and season with salt and pepper — slow cookers don't evaporate, so a splash less broth keeps the casserole from turning watery.", "ingredients": ["diced tomatoes", "cannellini beans", "chicken broth", "dried rosemary", "salt and pepper"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until bubbling and the flavors have melded, about 4 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 5, "step": "Serve hot straight from the slow cooker.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000069,
+    "device": "instantpot",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, heat the olive oil, and brown the sausage links on all sides, about 6 minutes. Slice into thick coins once cool enough to handle.", "ingredients": ["olive oil", "pork sausage"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and cook until softened, about 4 minutes, then stir in the garlic for 30 seconds.", "ingredients": ["onion", "garlic"], "equipment": ["pressure cooker"], "lengthMinutes": 4 },
+      { "number": 3, "step": "Stir in the diced tomatoes, cannellini beans, chicken broth, and dried rosemary, season with salt and pepper, and nestle the sliced sausage back in.", "ingredients": ["diced tomatoes", "cannellini beans", "chicken broth", "dried rosemary", "salt and pepper"], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and cook at high pressure for 5 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Quick release the pressure — the beans are already soft from the can, so there's no reason to wait.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": null },
+      { "number": 6, "step": "Switch back to sauté and simmer uncovered for a few minutes if you'd like it thicker, about 3 minutes.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 3 },
+      { "number": 7, "step": "Serve hot straight from the pot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000070,
+    "device": "airfryer",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "Toss the pork cubes with the beaten egg, then coat evenly in half the cornstarch, shaking off the excess.", "ingredients": ["pork loin", "egg", "cornstarch"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat the air fryer to 400°F, about 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Lightly coat the air fryer basket and arrange the pork in a single layer, air frying until golden and cooked through, shaking the basket halfway, about 10 minutes.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 10 },
+      { "number": 4, "step": "While the pork cooks, heat a splash of the vegetable oil in a skillet over medium-high heat, add the bell pepper, and cook until just tender, about 3 minutes — the air fryer does the frying now, so the peppers only need a little oil.", "ingredients": ["vegetable oil", "bell pepper"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 5, "step": "In a small bowl, whisk together the ketchup, rice vinegar, brown sugar, soy sauce, and the remaining cornstarch dissolved in 3 tablespoons of water.", "ingredients": ["ketchup", "rice vinegar", "brown sugar", "soy sauce", "cornstarch"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 6, "step": "Pour the sauce into the skillet with the bell pepper and simmer until thickened and glossy, about 2 minutes.", "ingredients": [], "equipment": ["skillet"], "lengthMinutes": 2 },
+      { "number": 7, "step": "Add the pineapple and the air-fried pork to the skillet and toss until everything is coated and warmed through, about 2 minutes.", "ingredients": ["pineapple"], "equipment": ["skillet"], "lengthMinutes": 2 },
+      { "number": 8, "step": "Serve immediately over cooked rice.", "ingredients": ["cooked rice"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000071,
+    "device": "griddle",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Preheat the griddle to medium-high heat and add 1 tablespoon of the vegetable oil to one section.", "ingredients": ["vegetable oil"], "equipment": ["griddle"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Add the pork to the hot oil and cook, spreading it out, until browned and cooked through, about 4 minutes, then push it to a cooler zone.", "ingredients": ["pork loin"], "equipment": ["griddle"], "lengthMinutes": 4 },
+      { "number": 3, "step": "Pour the beaten eggs onto an open section of the griddle and scramble with a spatula until just set, about 1 minute, then push them over with the pork.", "ingredients": ["egg"], "equipment": ["griddle", "spatula"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Add the remaining oil, then the onion, and cook until softened, about 3 minutes.", "ingredients": ["vegetable oil", "onion"], "equipment": ["griddle"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Stir in the frozen peas and carrots and the garlic and cook until heated through, about 2 minutes.", "ingredients": ["frozen peas", "garlic"], "equipment": ["griddle"], "lengthMinutes": 2 },
+      { "number": 6, "step": "Spread the cold rice across the hottest part of the griddle, breaking up any clumps with the spatula, and stir-fry until it starts to crisp in spots, about 4 minutes.", "ingredients": ["rice"], "equipment": ["griddle", "spatula"], "lengthMinutes": 4 },
+      { "number": 7, "step": "Push everything together, return the pork and eggs, drizzle with the soy sauce and sesame oil, and toss until evenly combined and heated through, about 2 minutes.", "ingredients": ["soy sauce", "sesame oil"], "equipment": ["griddle"], "lengthMinutes": 2 },
+      { "number": 8, "step": "Sprinkle the green onion over the top and serve hot.", "ingredients": ["scallion"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000072,
+    "device": "airfryer",
+    "readyInMinutes": 55,
+    "steps": [
+      { "number": 1, "step": "Put the potatoes in a large pot of salted water, bring to a boil, and cook until tender, about 15 minutes.", "ingredients": ["potatoes"], "equipment": ["large pot"], "lengthMinutes": 15 },
+      { "number": 2, "step": "Preheat the air fryer to 380°F, about 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Arrange the sausages in the air fryer basket in a single layer and air fry, turning halfway, until browned and cooked through, about 14 minutes.", "ingredients": ["pork sausage"], "equipment": ["air fryer basket"], "lengthMinutes": 14 },
+      { "number": 4, "step": "While the sausages cook, melt 1 tablespoon of the butter in a skillet over medium-low heat and cook the onion, stirring often, until deeply golden and soft, about 15 minutes.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 15 },
+      { "number": 5, "step": "Sprinkle the flour over the onion and stir for 1 minute, then slowly whisk in the beef broth. Simmer until thickened into a gravy, about 4 minutes, and season with salt and pepper.", "ingredients": ["flour", "beef broth", "salt and pepper"], "equipment": ["skillet", "whisk"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Drain the potatoes and mash with the remaining butter and the milk until smooth. Season with salt and pepper.", "ingredients": ["milk", "salt and pepper"], "equipment": ["potato masher"], "lengthMinutes": null },
+      { "number": 7, "step": "Return the sausages to the gravy to warm through, about 1 minute.", "ingredients": [], "equipment": ["skillet"], "lengthMinutes": 1 },
+      { "number": 8, "step": "Serve the sausages and onion gravy over a mound of mashed potato.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  }
+]

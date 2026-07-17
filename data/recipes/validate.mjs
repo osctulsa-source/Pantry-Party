@@ -1,13 +1,30 @@
 #!/usr/bin/env node
 /**
  * Validator for Pantry Party curated recipes (see SPEC.md).
- * Usage: node validate.mjs <file.json> [more.json...]
+ * Usage:
+ *   node validate.mjs <file.json> [more.json...]
+ *     Validates base recipe files (see SPEC.md).
+ *   node validate.mjs --variants <file.json> [more.json...] [--base <file.json>]
+ *     Validates device-variant files against a base recipe file
+ *     (see SPEC-VARIANTS.md). --base defaults to curated.recipes.json.
  * Exits 1 on any ERROR. Warnings don't fail the run.
  */
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
 
 const MEALS = new Set(['breakfast', 'main course', 'dessert', 'snack']);
 const DIFF = new Set(['easy', 'medium']);
+const DEVICES = new Set([
+  'crockpot', 'instantpot', 'airfryer', 'sheetpan', 'microwave',
+  'nocook', 'stove', 'oven', 'grill', 'griddle',
+]);
+const TECHNIQUES = new Set([
+  'chop', 'stir', 'simmer', 'flip', 'knead', 'season',
+  'pour', 'grate', 'roll', 'rest', 'preheat', 'mash', 'none',
+]);
 
 let errors = 0;
 let warnings = 0;
@@ -18,7 +35,9 @@ const seenIds = new Set();
 const seenTitles = new Set();
 let total = 0;
 
-for (const file of process.argv.slice(2)) {
+/** Recipe mode: validate curated recipe files (see SPEC.md). */
+function validateRecipes(files) {
+for (const file of files) {
   let arr;
   try {
     arr = JSON.parse(readFileSync(file, 'utf8'));
@@ -92,6 +111,8 @@ for (const file of process.argv.slice(2)) {
       if (!(s.lengthMinutes === null || (Number.isInteger(s.lengthMinutes) && s.lengthMinutes >= 1 && s.lengthMinutes <= 240)))
         where(`step ${si + 1} lengthMinutes must be null or 1-240`);
       else if (typeof s.lengthMinutes === 'number') stepMinutes += s.lengthMinutes;
+      if (s.technique !== undefined && !TECHNIQUES.has(s.technique))
+        where(`step ${si + 1} technique invalid (got ${s.technique})`);
       for (const n of s.ingredients) {
         const nl = String(n).toLowerCase();
         const hit = ingNames.find((g) => g.includes(nl) || nl.includes(g));
@@ -105,7 +126,87 @@ for (const file of process.argv.slice(2)) {
     if (stepMinutes > r.readyInMinutes) warn(file, id, `step minutes (${stepMinutes}) exceed readyInMinutes (${r.readyInMinutes})`);
   }
 }
+}
 
-console.log(`\nchecked ${total} recipes — ${errors} errors, ${warnings} warnings`);
+/** --variants mode: validate variant files against the base recipe file. */
+function validateVariants(files, baseFile) {
+  let base;
+  try {
+    base = JSON.parse(readFileSync(baseFile, 'utf8'));
+  } catch (e) {
+    err(baseFile, '', `base file does not parse as JSON: ${e.message}`);
+    return 0;
+  }
+  if (!Array.isArray(base)) { err(baseFile, '', 'base top level must be an array'); return 0; }
+  const baseById = new Map(base.map((r) => [r.id, r]));
+  const seenPairs = new Set();
+  let count = 0;
+
+  for (const file of files) {
+    let arr;
+    try {
+      arr = JSON.parse(readFileSync(file, 'utf8'));
+    } catch (e) {
+      err(file, '', `does not parse as JSON: ${e.message}`);
+      continue;
+    }
+    if (!Array.isArray(arr)) { err(file, '', 'top level must be an array'); continue; }
+
+    for (const v of arr) {
+      count++;
+      const id = `${v?.recipeId ?? '?'}/${v?.device ?? '?'}`;
+      const where = (m) => err(file, id, m);
+
+      if (!Number.isInteger(v.recipeId)) where('recipeId must be an integer');
+      const baseRecipe = baseById.get(v.recipeId);
+      if (!baseRecipe) { where('recipeId matches no base recipe'); continue; }
+
+      if (!DEVICES.has(v.device)) { where(`unknown device "${v.device}"`); continue; }
+      const pair = `${v.recipeId}:${v.device}`;
+      if (seenPairs.has(pair)) where('duplicate (recipeId, device) pair');
+      else seenPairs.add(pair);
+
+      if (!Number.isInteger(v.readyInMinutes) || v.readyInMinutes < 5 || v.readyInMinutes > 600)
+        where('readyInMinutes out of range 5-600');
+
+      if (!Array.isArray(v.steps) || v.steps.length < 4 || v.steps.length > 12) {
+        where(`steps must be 4-12 (got ${v.steps?.length})`);
+        continue;
+      }
+      const ingNames = (baseRecipe.ingredients ?? []).map((x) => (x.name ?? '').toLowerCase());
+      let stepMinutes = 0;
+      for (const [si, s] of v.steps.entries()) {
+        if (s.number !== si + 1) where(`step ${si + 1} misnumbered (got ${s.number})`);
+        if (typeof s.step !== 'string' || s.step.length < 15) where(`step ${si + 1} text missing/too short`);
+        if (!Array.isArray(s.ingredients) || !Array.isArray(s.equipment)) { where(`step ${si + 1} ingredients/equipment must be arrays`); continue; }
+        if (!(s.lengthMinutes === null || (Number.isInteger(s.lengthMinutes) && s.lengthMinutes >= 1 && s.lengthMinutes <= 600)))
+          where(`step ${si + 1} lengthMinutes must be null or 1-600`);
+        else if (typeof s.lengthMinutes === 'number') stepMinutes += s.lengthMinutes;
+        if (s.technique !== undefined && !TECHNIQUES.has(s.technique))
+          where(`step ${si + 1} technique invalid (got ${s.technique})`);
+        for (const n of s.ingredients) {
+          const nl = String(n).toLowerCase();
+          if (!ingNames.some((g) => g.includes(nl) || nl.includes(g)))
+            where(`step ${si + 1} ingredient "${n}" matches no base recipe ingredient`);
+        }
+      }
+      if (stepMinutes > v.readyInMinutes) warn(file, id, `step minutes (${stepMinutes}) exceed readyInMinutes (${v.readyInMinutes})`);
+    }
+  }
+  return count;
+}
+
+const args = process.argv.slice(2);
+if (args[0] === '--variants') {
+  const rest = args.slice(1);
+  const baseIdx = rest.indexOf('--base');
+  const baseFile = baseIdx >= 0 ? rest[baseIdx + 1] : join(HERE, 'curated.recipes.json');
+  const files = baseIdx >= 0 ? [...rest.slice(0, baseIdx), ...rest.slice(baseIdx + 2)] : rest;
+  const n = validateVariants(files, baseFile);
+  console.log(`\nchecked ${n} variants — ${errors} errors, ${warnings} warnings`);
+} else {
+  validateRecipes(args);
+  console.log(`\nchecked ${total} recipes — ${errors} errors, ${warnings} warnings`);
+}
 if (errors > 0) { console.log('FAIL'); process.exit(1); }
 console.log('PASS');

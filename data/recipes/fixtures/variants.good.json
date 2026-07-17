@@ -1,0 +1,13 @@
+[
+  {
+    "recipeId": 9000001,
+    "device": "crockpot",
+    "readyInMinutes": 380,
+    "steps": [
+      { "number": 1, "step": "Brown the ground beef in a skillet over medium-high heat, about 6 minutes — this flavor is worth the one extra pan.", "ingredients": ["ground beef"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Move the beef to the slow cooker and add the onion and chili powder.", "ingredients": ["onion", "chili powder"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 3, "step": "Pour in only half the beef broth — slow cookers barely evaporate, so less liquid keeps it thick.", "ingredients": ["beef broth"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until deep red and thickened, about 6 hours.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 360 }
+    ]
+  }
+]

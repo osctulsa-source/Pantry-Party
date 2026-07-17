@@ -40,3 +40,6 @@ spikes/**/results/*.json
 
 # generated glyph QA sheet (regenerate via gen-glyph-sheet.mjs)
 apps/mobile/scripts/glyph-sheet.html
+
+# Isolated worktrees (superpowers workflow)
+.worktrees/

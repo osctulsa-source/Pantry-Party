@@ -1,0 +1,57 @@
+[
+  {
+    "recipeId": 9999999,
+    "device": "crockpot",
+    "readyInMinutes": 300,
+    "steps": [
+      { "number": 1, "step": "This is a padding step with enough characters.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "This is another padding step with enough characters.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "A third padding step long enough to pass the length check.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "A fourth and final padding step that is long enough too.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000001,
+    "device": "hologram",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "This is a padding step with enough characters.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "This is another padding step with enough characters.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "A third padding step long enough to pass the length check.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "A fourth and final padding step that is long enough too.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000001,
+    "device": "oven",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "Season the beef generously with saffron before browning it well.", "ingredients": ["saffron"], "equipment": [], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and cook until soft and translucent throughout.", "ingredients": ["onion"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 3, "step": "Stir in the chili powder and let it toast until fragrant.", "ingredients": ["chili powder"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in the beef broth and bake uncovered until thickened.", "ingredients": ["beef broth"], "equipment": ["oven"], "lengthMinutes": 25 }
+    ]
+  },
+  {
+    "recipeId": 9000001,
+    "device": "grill",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "Brown the ground beef in a grill-safe skillet over direct heat.", "ingredients": ["ground beef"], "equipment": ["grill"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and cook until soft and translucent, stirring often.", "ingredients": ["onion"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 3, "step": "Stir in the chili powder and let it toast until fragrant.", "ingredients": ["chili powder"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 4, "step": "Pour in the beef broth and simmer until thickened nicely.", "ingredients": ["beef broth"], "equipment": [], "lengthMinutes": 25 }
+    ]
+  },
+  {
+    "recipeId": 9000001,
+    "device": "grill",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "Brown the ground beef in a grill-safe skillet over direct heat.", "ingredients": ["ground beef"], "equipment": ["grill"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and cook until soft and translucent, stirring often.", "ingredients": ["onion"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 3, "step": "Stir in the chili powder and let it toast until fragrant.", "ingredients": ["chili powder"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 5, "step": "Pour in the beef broth and simmer until thickened nicely.", "ingredients": ["beef broth"], "equipment": [], "lengthMinutes": 25 }
+    ]
+  }
+]

@@ -1,0 +1,339 @@
+[
+  {
+    "recipeId": 9000150,
+    "device": "airfryer",
+    "readyInMinutes": 50,
+    "steps": [
+      { "number": 1, "step": "Soak the potato wedges in a bowl of cold water for 10 minutes to rinse away surface starch — this is what lets them crisp in the air fryer instead of turning soft.", "ingredients": ["russet potatoes"], "equipment": ["bowl"], "lengthMinutes": 10 },
+      { "number": 2, "step": "Drain and pat the wedges completely dry with a clean towel — any leftover water turns to steam and stops browning.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Toss the wedges with olive oil, garlic powder, paprika, salt, and black pepper until evenly coated.", "ingredients": ["olive oil", "garlic powder", "paprika", "salt", "black pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Preheat the air fryer to 380°F for 3 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Arrange half the wedges in a single layer in the basket, skin-side down — crowding is the enemy of crisp edges here.", "ingredients": ["russet potatoes"], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry the first batch until deeply golden and crisp, shaking the basket halfway, about 16 to 18 minutes.", "ingredients": ["russet potatoes"], "equipment": ["air fryer"], "lengthMinutes": 17 },
+      { "number": 7, "step": "Repeat with the second batch of wedges, shaking halfway, until just as golden and crisp.", "ingredients": ["russet potatoes"], "equipment": ["air fryer"], "lengthMinutes": 17 },
+      { "number": 8, "step": "Combine both batches, sprinkle with parsley, and serve hot.", "ingredients": ["parsley"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000151,
+    "device": "grill",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken breasts dry and rub both sides with the chili powder, cumin, garlic powder, and salt.", "ingredients": ["chicken breasts", "chili powder", "cumin", "garlic powder", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat a grill to medium-high heat and oil the grates.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 5 },
+      { "number": 3, "step": "Meanwhile, warm the salsa in a small saucepan over medium heat until simmering, about 5 minutes — this stands in for the sauce a slow cooker would build on its own.", "ingredients": ["salsa"], "equipment": ["small saucepan"], "lengthMinutes": 5 },
+      { "number": 4, "step": "Grill the chicken with the lid down until deep grill marks form and the thickest part reaches 165°F, about 6 minutes per side.", "ingredients": ["chicken breasts"], "equipment": ["grill"], "lengthMinutes": 12 },
+      { "number": 5, "step": "Move the chicken to a cutting board and rest 5 minutes so the juices settle back in.", "ingredients": ["chicken breasts"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Slice or shred the chicken, then spoon the warm salsa over the top and squeeze in the lime juice.", "ingredients": ["chicken breasts", "salsa", "lime"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Serve warm in tortillas, over rice, or piled onto nachos.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000151,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Place the chicken breasts in the pressure cooker in a single layer.", "ingredients": ["chicken breasts"], "equipment": ["pressure cooker"], "lengthMinutes": 2 },
+      { "number": 2, "step": "Pour the salsa over the chicken, then sprinkle on the chili powder, cumin, garlic powder, and salt.", "ingredients": ["salsa", "chili powder", "cumin", "garlic powder", "salt"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 3, "step": "Seal the lid and cook on high pressure for 12 minutes — plenty of time for the chicken to turn fork-tender without drying out.", "ingredients": ["chicken breasts"], "equipment": ["pressure cooker"], "lengthMinutes": 12 },
+      { "number": 4, "step": "Let the pressure release naturally for 10 minutes, then quick-release any that's left — natural release keeps the chicken from seizing up.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 5, "step": "Shred the chicken right in the pot, stir it through the sauce, and squeeze in the lime juice. Taste and adjust salt.", "ingredients": ["chicken breasts", "lime", "salt"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Serve warm in tortillas, over rice, or piled onto nachos.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000151,
+    "device": "stove",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken breasts dry and season with the chili powder, cumin, garlic powder, and salt on both sides.", "ingredients": ["chicken breasts", "chili powder", "cumin", "garlic powder", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Spread half the salsa over the bottom of a large skillet and set the chicken on top in a single layer.", "ingredients": ["salsa", "chicken breasts"], "equipment": ["large skillet"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Pour the remaining salsa over the chicken, cover, and bring to a simmer over medium heat.", "ingredients": ["salsa"], "equipment": ["large skillet"], "lengthMinutes": 5 },
+      { "number": 4, "step": "Reduce heat to medium-low and simmer, covered, flipping once, until the chicken reaches 165°F and shreds easily, about 18 to 20 minutes.", "ingredients": ["chicken breasts"], "equipment": ["large skillet"], "lengthMinutes": 19 },
+      { "number": 5, "step": "Transfer the chicken to a plate, shred with two forks, then stir it back into the skillet sauce with the lime juice. Taste and adjust salt.", "ingredients": ["chicken breasts", "lime", "salt"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Serve warm in tortillas, over rice, or piled onto nachos.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000152,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté and brown the ground beef with the onion and garlic until the meat is no longer pink, about 8 minutes. Drain excess fat.", "ingredients": ["ground beef", "onion", "garlic"], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 2, "step": "Stir in the diced tomatoes, tomato sauce, kidney beans, chili powder, cumin, salt, and black pepper.", "ingredients": ["diced tomatoes", "tomato sauce", "kidney beans", "chili powder", "cumin", "salt", "black pepper"], "equipment": ["pressure cooker"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Seal the lid and cook on high pressure for 8 minutes — just enough to marry the flavors since the beef and beans are already cooked.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 8 },
+      { "number": 4, "step": "Quick-release the pressure once the timer ends.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Switch back to sauté and simmer uncovered a few minutes until the chili reaches the thickness you like.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Taste and add a pinch more salt if needed. Ladle into bowls and top as you like.", "ingredients": ["salt"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000153,
+    "device": "instantpot",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "In a bowl, whisk together the honey, soy sauce, ketchup, garlic, and ginger until smooth.", "ingredients": ["honey", "soy sauce", "ketchup", "garlic", "ginger"], "equipment": ["bowl"], "lengthMinutes": 3 },
+      { "number": 2, "step": "Add the frozen meatballs to the pressure cooker and pour the sauce over the top without stirring — a little sauce touching the bottom helps the pot come to pressure.", "ingredients": ["frozen meatballs", "honey"], "equipment": ["pressure cooker"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Seal the lid and cook on high pressure for 5 minutes — frozen meatballs only need enough time to heat through and soak up the sauce.", "ingredients": ["frozen meatballs"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 4, "step": "Quick-release the pressure.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Switch to sauté and simmer uncovered, stirring gently, until the sauce thickens to a glossy glaze, about 3 to 4 minutes.", "ingredients": ["frozen meatballs"], "equipment": ["pressure cooker"], "lengthMinutes": 4 },
+      { "number": 6, "step": "Stir once more, sprinkle with sesame seeds, and serve over rice or with toothpicks.", "ingredients": ["sesame seeds"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000153,
+    "device": "stove",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "In a large skillet over medium heat, whisk together the honey, soy sauce, ketchup, garlic, and ginger until smooth and starting to bubble.", "ingredients": ["honey", "soy sauce", "ketchup", "garlic", "ginger"], "equipment": ["large skillet"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Add the frozen meatballs and stir to coat them in the sauce.", "ingredients": ["frozen meatballs", "honey"], "equipment": ["large skillet"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Cover and simmer over medium-low heat, stirring occasionally, until the meatballs are heated through, about 12 to 15 minutes.", "ingredients": ["frozen meatballs"], "equipment": ["large skillet"], "lengthMinutes": 14 },
+      { "number": 4, "step": "Uncover and simmer a few minutes more until the sauce clings to the meatballs in a glossy coat.", "ingredients": ["frozen meatballs"], "equipment": ["large skillet"], "lengthMinutes": 4 },
+      { "number": 5, "step": "Stir once more, sprinkle with sesame seeds, and serve over rice or with toothpicks.", "ingredients": ["sesame seeds"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000154,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Add the dried lentils, carrot, onion, celery, diced tomatoes, vegetable broth, garlic, thyme, salt, and black pepper to the pressure cooker.", "ingredients": ["dried lentils", "carrot", "onion", "celery", "diced tomatoes", "vegetable broth", "garlic", "thyme", "salt", "black pepper"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir to combine, seal the lid, and cook on high pressure for 10 minutes — lentils go from raw to tender fast under pressure, no all-day simmer needed.", "ingredients": ["dried lentils"], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 3, "step": "Let the pressure release naturally for 10 minutes, then quick-release any that's left.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Stir in the spinach and let it wilt in the residual heat with the lid ajar, about 2 minutes.", "ingredients": ["spinach"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 5, "step": "Taste for salt and pepper, then ladle into bowls.", "ingredients": ["salt", "black pepper"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000154,
+    "device": "stove",
+    "readyInMinutes": 48,
+    "steps": [
+      { "number": 1, "step": "Combine the dried lentils, carrot, onion, celery, diced tomatoes, vegetable broth, garlic, thyme, salt, and black pepper in a large pot.", "ingredients": ["dried lentils", "carrot", "onion", "celery", "diced tomatoes", "vegetable broth", "garlic", "thyme", "salt", "black pepper"], "equipment": ["large pot"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Bring to a boil over high heat, then reduce to a gentle simmer and cover partway.", "ingredients": [], "equipment": ["large pot"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Simmer, stirring occasionally, until the lentils are tender and the stew has thickened, about 30 to 35 minutes.", "ingredients": ["dried lentils"], "equipment": ["large pot"], "lengthMinutes": 33 },
+      { "number": 4, "step": "Stir in the spinach and cook just until wilted, about 2 minutes.", "ingredients": ["spinach"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 5, "step": "Taste for salt and pepper, then ladle into bowls.", "ingredients": ["salt", "black pepper"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000155,
+    "device": "instantpot",
+    "readyInMinutes": 70,
+    "steps": [
+      { "number": 1, "step": "Pat the ribs dry. Mix the brown sugar, paprika, garlic powder, onion powder, salt, and black pepper, then rub all over the ribs.", "ingredients": ["pork baby back ribs", "brown sugar", "paprika", "garlic powder", "onion powder", "salt", "black pepper"], "equipment": ["bowl"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Set the ribs in the pressure cooker on the trivet, curling them to fit, and pour the apple cider vinegar and a splash of water into the bottom — the liquid is what lets the pot build steam.", "ingredients": ["pork baby back ribs", "apple cider vinegar"], "equipment": ["pressure cooker"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Seal the lid and cook on high pressure for 25 minutes — ribs turn fall-off-the-bone tender in a fraction of the slow cooker's time.", "ingredients": ["pork baby back ribs"], "equipment": ["pressure cooker"], "lengthMinutes": 25 },
+      { "number": 4, "step": "Let the pressure release naturally for 10 minutes, then quick-release the rest.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 5, "step": "Carefully lift the ribs onto a foil-lined baking sheet and brush with half the BBQ sauce.", "ingredients": ["bbq sauce", "pork baby back ribs"], "equipment": ["baking sheet"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Broil 3 to 4 minutes until the sauce bubbles and starts to caramelize, then brush with the remaining BBQ sauce.", "ingredients": ["bbq sauce"], "equipment": ["oven"], "lengthMinutes": 4 },
+      { "number": 7, "step": "Rest a few minutes, then cut into portions and serve with extra napkins.", "ingredients": [], "equipment": [], "lengthMinutes": 5 }
+    ]
+  },
+  {
+    "recipeId": 9000155,
+    "device": "oven",
+    "readyInMinutes": 195,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 300°F and pat the ribs dry.", "ingredients": ["pork baby back ribs"], "equipment": ["oven"], "lengthMinutes": null },
+      { "number": 2, "step": "Mix the brown sugar, paprika, garlic powder, onion powder, salt, and black pepper, then rub all over the ribs.", "ingredients": ["brown sugar", "paprika", "garlic powder", "onion powder", "salt", "black pepper", "pork baby back ribs"], "equipment": ["bowl"], "lengthMinutes": 5 },
+      { "number": 3, "step": "Wrap the ribs tightly in foil with the apple cider vinegar drizzled inside — the sealed foil traps steam so the ribs braise in their own liquid, much like a slow cooker does.", "ingredients": ["pork baby back ribs", "apple cider vinegar"], "equipment": ["baking sheet"], "lengthMinutes": 5 },
+      { "number": 4, "step": "Bake until the meat has pulled back from the bone ends and is fork-tender, about 2 1/2 hours.", "ingredients": ["pork baby back ribs"], "equipment": ["oven"], "lengthMinutes": 150 },
+      { "number": 5, "step": "Carefully open the foil, watching for steam, brush the ribs with half the BBQ sauce, and raise the oven to 425°F.", "ingredients": ["bbq sauce"], "equipment": ["oven"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Bake uncovered until the sauce sets and starts to caramelize at the edges, about 12 to 15 minutes.", "ingredients": ["bbq sauce"], "equipment": ["oven"], "lengthMinutes": 13 },
+      { "number": 7, "step": "Brush with the remaining BBQ sauce, rest a few minutes, then cut into portions.", "ingredients": ["bbq sauce"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 8, "step": "Serve with extra napkins — these are messy in the best way.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000156,
+    "device": "grill",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken thighs dry and rub all over with the taco seasoning.", "ingredients": ["chicken thighs", "taco seasoning"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat a grill to medium-high heat and oil the grates.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 5 },
+      { "number": 3, "step": "Meanwhile, simmer the onion, green chiles, and chicken broth in a small saucepan over medium heat until the onion softens, about 6 minutes.", "ingredients": ["onion", "green chiles", "chicken broth"], "equipment": ["small saucepan"], "lengthMinutes": 6 },
+      { "number": 4, "step": "Grill the chicken thighs, lid down, until charred and the thickest part reaches 165°F, about 5 to 6 minutes per side.", "ingredients": ["chicken thighs"], "equipment": ["grill"], "lengthMinutes": 11 },
+      { "number": 5, "step": "Rest the chicken 5 minutes, then slice or shred it.", "ingredients": ["chicken thighs"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Toss the chicken with the warm onion-chile broth, then stir in the lime juice and cilantro.", "ingredients": ["chicken thighs", "lime", "cilantro"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Spoon into warm tortillas or bowls and load up your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000156,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Scatter the onion in the bottom of the pressure cooker and set the chicken thighs on top.", "ingredients": ["onion", "chicken thighs"], "equipment": ["pressure cooker"], "lengthMinutes": 2 },
+      { "number": 2, "step": "Sprinkle the taco seasoning over the chicken, then add the green chiles and chicken broth.", "ingredients": ["taco seasoning", "chicken thighs", "green chiles", "chicken broth"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 3, "step": "Seal the lid and cook on high pressure for 10 minutes — thighs turn shreddy-tender fast under pressure.", "ingredients": ["chicken thighs"], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Let the pressure release naturally for 10 minutes, then quick-release the rest.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 10 },
+      { "number": 5, "step": "Shred the chicken right in the pot, stir through the juices, then mix in the lime juice and cilantro.", "ingredients": ["chicken thighs", "lime", "cilantro"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Spoon into warm tortillas or bowls and load up your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000156,
+    "device": "stove",
+    "readyInMinutes": 38,
+    "steps": [
+      { "number": 1, "step": "Heat the chicken broth in a large skillet over medium heat, add the onion, and cook until softened, about 4 minutes.", "ingredients": ["chicken broth", "onion"], "equipment": ["large skillet"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Nestle the chicken thighs into the skillet, sprinkle the taco seasoning over the top, and add the green chiles.", "ingredients": ["chicken thighs", "taco seasoning", "green chiles"], "equipment": ["large skillet"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Cover and simmer over medium-low heat, flipping once, until the chicken reaches 165°F and shreds easily, about 20 to 22 minutes.", "ingredients": ["chicken thighs"], "equipment": ["large skillet"], "lengthMinutes": 21 },
+      { "number": 4, "step": "Transfer the chicken to a plate and shred with two forks, then stir it back into the skillet with the pan juices.", "ingredients": ["chicken thighs"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 5, "step": "Mix in the lime juice and cilantro.", "ingredients": ["lime", "cilantro"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Spoon into warm tortillas or bowls and load up your favorite toppings.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000157,
+    "device": "oven",
+    "readyInMinutes": 22,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 425°F and line a baking sheet with parchment paper.", "ingredients": [], "equipment": ["baking sheet", "oven"], "lengthMinutes": null },
+      { "number": 2, "step": "Pat the salmon fillets dry, brush with olive oil, and season with garlic powder, salt, and black pepper.", "ingredients": ["salmon fillets", "olive oil", "garlic powder", "salt", "black pepper"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 3, "step": "Place the salmon skin-side down on the baking sheet. Squeeze lemon juice over the top and lay a lemon slice on each fillet.", "ingredients": ["salmon fillets", "lemon"], "equipment": ["baking sheet"], "lengthMinutes": 2 },
+      { "number": 4, "step": "Bake until the salmon flakes easily with a fork and looks opaque in the center, about 12 to 14 minutes — a few minutes longer than the air fryer since the oven heats more gently around the fish.", "ingredients": ["salmon fillets"], "equipment": ["oven"], "lengthMinutes": 13 },
+      { "number": 5, "step": "Sprinkle with parsley and serve immediately.", "ingredients": ["parsley"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000158,
+    "device": "oven",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Set up three shallow dishes: flour mixed with half the salt; beaten eggs; and breadcrumbs mixed with paprika, garlic powder, and remaining salt.", "ingredients": ["flour", "salt", "egg", "breadcrumbs", "paprika", "garlic powder"], "equipment": ["bowl"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Dredge each chicken tender in flour, dip in egg, then press into the breadcrumb mix until coated.", "ingredients": ["chicken tenders", "flour", "egg", "breadcrumbs"], "equipment": [], "lengthMinutes": 8 },
+      { "number": 3, "step": "Preheat the oven to 425°F and set a wire rack inside a baking sheet — the rack lets air move underneath so the bottom crisps instead of steaming.", "ingredients": [], "equipment": ["baking sheet", "oven"], "lengthMinutes": null },
+      { "number": 4, "step": "Arrange the tenders on the rack in a single layer and mist both sides with cooking spray.", "ingredients": ["chicken tenders", "cooking spray"], "equipment": ["baking sheet"], "lengthMinutes": 2 },
+      { "number": 5, "step": "Bake until deep golden and the thickest piece reaches 165°F, about 18 to 20 minutes, flipping halfway.", "ingredients": ["chicken tenders"], "equipment": ["oven"], "lengthMinutes": 19 },
+      { "number": 6, "step": "Rest 2 minutes so the crust stays crisp, then serve with your favorite dip.", "ingredients": [], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000160,
+    "device": "oven",
+    "readyInMinutes": 42,
+    "steps": [
+      { "number": 1, "step": "Pat the firm tofu cubes very dry with paper towels.", "ingredients": ["firm tofu"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 2, "step": "In a bowl, toss the tofu with soy sauce, maple syrup, sesame oil, and garlic powder. Sprinkle on cornstarch and toss until every cube looks dusty and coated.", "ingredients": ["firm tofu", "soy sauce", "maple syrup", "sesame oil", "garlic powder", "cornstarch"], "equipment": ["bowl"], "lengthMinutes": 4 },
+      { "number": 3, "step": "Preheat the oven to 425°F and line a baking sheet with parchment paper.", "ingredients": [], "equipment": ["baking sheet", "oven"], "lengthMinutes": null },
+      { "number": 4, "step": "Spread the tofu in a single layer with space between the pieces — crowding traps steam and keeps the oven from browning it the way the air fryer's tight airflow does.", "ingredients": ["firm tofu"], "equipment": ["baking sheet"], "lengthMinutes": null },
+      { "number": 5, "step": "Bake until deeply golden and crisp on the edges, flipping once halfway, about 28 to 30 minutes.", "ingredients": ["firm tofu"], "equipment": ["oven"], "lengthMinutes": 29 },
+      { "number": 6, "step": "Top with scallions and serve over rice or in a grain bowl.", "ingredients": ["scallions"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000161,
+    "device": "oven",
+    "readyInMinutes": 16,
+    "steps": [
+      { "number": 1, "step": "Preheat the oven to 400°F.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": null },
+      { "number": 2, "step": "Pat the shrimp dry and toss with melted butter, garlic, paprika, salt, and black pepper.", "ingredients": ["shrimp", "butter", "garlic", "paprika", "salt", "black pepper"], "equipment": ["bowl"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Spread the shrimp in a single layer in a baking dish.", "ingredients": ["shrimp"], "equipment": ["baking dish"], "lengthMinutes": null },
+      { "number": 4, "step": "Bake until pink, curled, and opaque all the way through, about 8 to 10 minutes.", "ingredients": ["shrimp"], "equipment": ["oven"], "lengthMinutes": 9 },
+      { "number": 5, "step": "Toss with lemon juice and parsley right in the dish, then serve straight from the oven over pasta, rice, or salad.", "ingredients": ["lemon", "parsley"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000161,
+    "device": "sheetpan",
+    "readyInMinutes": 12,
+    "steps": [
+      { "number": 1, "step": "Pat the shrimp dry and toss with melted butter, garlic, paprika, salt, and black pepper.", "ingredients": ["shrimp", "butter", "garlic", "paprika", "salt", "black pepper"], "equipment": ["bowl"], "lengthMinutes": 3 },
+      { "number": 2, "step": "Preheat the broiler and set an oven rack about 6 inches from the heat.", "ingredients": [], "equipment": ["oven"], "lengthMinutes": null },
+      { "number": 3, "step": "Spread the shrimp in a single layer on a sheet pan, leaving space between each piece so they char instead of steam.", "ingredients": ["shrimp"], "equipment": ["sheet pan"], "lengthMinutes": null },
+      { "number": 4, "step": "Broil until pink, curled, and lightly charred at the edges, about 4 to 5 minutes — watch closely, broilers work fast.", "ingredients": ["shrimp"], "equipment": ["sheet pan"], "lengthMinutes": 5 },
+      { "number": 5, "step": "Toss with lemon juice and parsley right on the pan. Serve right away over pasta, rice, or salad.", "ingredients": ["lemon", "parsley"], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000163,
+    "device": "crockpot",
+    "readyInMinutes": 500,
+    "steps": [
+      { "number": 1, "step": "Add the dried black beans, onion, garlic, cumin, chili powder, vegetable broth, diced tomatoes, and salt to the slow cooker. Stir well.", "ingredients": ["dried black beans", "onion", "garlic", "cumin", "chili powder", "vegetable broth", "diced tomatoes", "salt"], "equipment": ["slow cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Cover and cook on low until the beans are fully tender and starting to fall apart, about 8 hours — no overnight soak needed, the slow cooker just takes its place.", "ingredients": ["dried black beans"], "equipment": ["slow cooker"], "lengthMinutes": 480 },
+      { "number": 3, "step": "Mash a cup of beans against the side of the pot to thicken the soup.", "ingredients": ["dried black beans"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 4, "step": "Stir in the lime juice and taste for salt. Serve hot.", "ingredients": ["lime", "salt"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000163,
+    "device": "stove",
+    "readyInMinutes": 125,
+    "steps": [
+      { "number": 1, "step": "Add the dried black beans, onion, garlic, cumin, chili powder, vegetable broth, diced tomatoes, and salt to a large pot.", "ingredients": ["dried black beans", "onion", "garlic", "cumin", "chili powder", "vegetable broth", "diced tomatoes", "salt"], "equipment": ["large pot"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Bring to a boil, then reduce to a low simmer and cover partway.", "ingredients": [], "equipment": ["large pot"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Simmer, stirring occasionally and adding a splash more broth if it thickens too fast, until the beans are fully tender, about 1 1/2 to 2 hours — unsoaked beans just need the extra time on the stove.", "ingredients": ["dried black beans"], "equipment": ["large pot"], "lengthMinutes": 105 },
+      { "number": 4, "step": "Mash a cup of beans against the side of the pot to thicken.", "ingredients": ["dried black beans"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 5, "step": "Stir in the lime juice and taste for salt. Serve hot.", "ingredients": ["lime", "salt"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000164,
+    "device": "crockpot",
+    "readyInMinutes": 320,
+    "steps": [
+      { "number": 1, "step": "Place the chicken breasts in the slow cooker.", "ingredients": ["chicken breasts"], "equipment": ["slow cooker"], "lengthMinutes": 1 },
+      { "number": 2, "step": "Add the chicken broth, apple cider vinegar, brown sugar, garlic powder, smoked paprika, salt, and half the BBQ sauce.", "ingredients": ["chicken broth", "apple cider vinegar", "brown sugar", "garlic powder", "smoked paprika", "salt", "bbq sauce"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 3, "step": "Cover and cook on low until the chicken shreds easily with two forks, about 5 hours (or 3 hours on high).", "ingredients": ["chicken breasts"], "equipment": ["slow cooker"], "lengthMinutes": 300 },
+      { "number": 4, "step": "Transfer the chicken to a board and shred with two forks — it should pull apart with almost no resistance.", "ingredients": ["chicken breasts"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 5, "step": "Return the chicken to the pot, stir in the remaining BBQ sauce, and let it sit uncovered a few minutes to soak in.", "ingredients": ["chicken breasts", "bbq sauce"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Serve on buns or over rice.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000164,
+    "device": "stove",
+    "readyInMinutes": 38,
+    "steps": [
+      { "number": 1, "step": "Place the chicken breasts in a large skillet.", "ingredients": ["chicken breasts"], "equipment": ["large skillet"], "lengthMinutes": 1 },
+      { "number": 2, "step": "Add the chicken broth, apple cider vinegar, brown sugar, garlic powder, smoked paprika, salt, and half the BBQ sauce.", "ingredients": ["chicken broth", "apple cider vinegar", "brown sugar", "garlic powder", "smoked paprika", "salt", "bbq sauce"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 3, "step": "Bring to a simmer, cover, and cook over medium-low heat, flipping once, until the chicken reaches 165°F and shreds easily, about 22 to 25 minutes.", "ingredients": ["chicken breasts"], "equipment": ["large skillet"], "lengthMinutes": 23 },
+      { "number": 4, "step": "Transfer the chicken to a board and shred with two forks.", "ingredients": ["chicken breasts"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 5, "step": "Return the chicken to the skillet, stir in the remaining BBQ sauce, and simmer uncovered 2 minutes until glossy.", "ingredients": ["chicken breasts", "bbq sauce"], "equipment": ["large skillet"], "lengthMinutes": 2 },
+      { "number": 6, "step": "Serve on buns or over rice.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000166,
+    "device": "crockpot",
+    "readyInMinutes": 390,
+    "steps": [
+      { "number": 1, "step": "In a skillet on the stovetop, cook the bacon until crisp, about 6 minutes. Scoop out most of it and set aside, leaving a little fat behind — a slow cooker can't crisp bacon on its own.", "ingredients": ["bacon"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and garlic to the same skillet and cook until soft, about 3 minutes.", "ingredients": ["onion", "garlic"], "equipment": ["skillet"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Transfer the bacon fat, onion, and garlic to the slow cooker along with the russet potatoes, chicken broth, salt, and black pepper.", "ingredients": ["onion", "garlic", "russet potatoes", "chicken broth", "salt", "black pepper"], "equipment": ["slow cooker"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Cover and cook on low until the potatoes are fork-tender, about 6 hours (or 3 hours on high).", "ingredients": ["russet potatoes"], "equipment": ["slow cooker"], "lengthMinutes": 360 },
+      { "number": 5, "step": "Mash some of the potatoes against the side of the pot until the soup looks thick but still chunky.", "ingredients": ["russet potatoes"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 6, "step": "Stir in the milk, sour cream, and cheddar cheese until melted and creamy. Taste for salt.", "ingredients": ["milk", "sour cream", "cheddar cheese", "salt"], "equipment": [], "lengthMinutes": 5 },
+      { "number": 7, "step": "Ladle into bowls and top with the reserved bacon and scallions.", "ingredients": ["bacon", "scallions"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000166,
+    "device": "stove",
+    "readyInMinutes": 42,
+    "steps": [
+      { "number": 1, "step": "In a large pot, cook the bacon until crisp, about 6 minutes. Scoop out most of it and set aside, leaving a little fat in the pot.", "ingredients": ["bacon"], "equipment": ["large pot"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Add the onion and garlic; cook until soft, about 3 minutes.", "ingredients": ["onion", "garlic"], "equipment": ["large pot"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Add the russet potatoes, chicken broth, salt, and black pepper. Bring to a boil, then reduce to a simmer.", "ingredients": ["russet potatoes", "chicken broth", "salt", "black pepper"], "equipment": ["large pot"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Simmer, partially covered, until the potatoes are fork-tender, about 18 to 20 minutes.", "ingredients": ["russet potatoes"], "equipment": ["large pot"], "lengthMinutes": 19 },
+      { "number": 5, "step": "Mash some of the potatoes against the side of the pot until the soup looks thick but still chunky.", "ingredients": ["russet potatoes"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 6, "step": "Stir in the milk, sour cream, and cheddar cheese until melted and creamy. Taste for salt.", "ingredients": ["milk", "sour cream", "cheddar cheese", "salt"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 7, "step": "Ladle into bowls and top with reserved bacon and scallions.", "ingredients": ["bacon", "scallions"], "equipment": [], "lengthMinutes": 2 }
+    ]
+  },
+  {
+    "recipeId": 9000168,
+    "device": "crockpot",
+    "readyInMinutes": 260,
+    "steps": [
+      { "number": 1, "step": "Heat the olive oil in a skillet over medium-high heat and sear the italian sausage links on all sides until browned, about 5 minutes — this is the flavor step a slow cooker can't do on its own.", "ingredients": ["olive oil", "italian sausage"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Toss the bell peppers and onion with the garlic powder, italian seasoning, salt, and black pepper, then spread them in the bottom of the slow cooker.", "ingredients": ["bell peppers", "onion", "garlic powder", "italian seasoning", "salt", "black pepper"], "equipment": ["slow cooker"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Nestle the browned sausage on top of the vegetables.", "ingredients": ["italian sausage"], "equipment": ["slow cooker"], "lengthMinutes": 1 },
+      { "number": 4, "step": "Cover and cook on low until the peppers are soft and the sausage reaches 165°F, about 4 hours (or 2 to 2 1/2 hours on high).", "ingredients": ["italian sausage", "bell peppers"], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 5, "step": "Rest 3 minutes, then slice the sausage and serve with the peppers on rolls or over rice.", "ingredients": ["italian sausage"], "equipment": [], "lengthMinutes": 3 }
+    ]
+  }
+]

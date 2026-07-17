@@ -34,7 +34,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Check, ChevronLeft, Clock, ExternalLink, Heart, Leaf, Plus, Repeat, Users, Utensils } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { categorizeByName, suggestSubstitutes, titleCaseIngredient } from '@breadbox/core';
+import {
+  categorizeByName,
+  COOKING_DEVICES,
+  detectDevices,
+  suggestSubstitutes,
+  titleCaseIngredient,
+  type CookingDevice,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { CategoryIcon } from '../pantry/CategoryIcon';
 import { useReduceMotion } from '../../components/useReduceMotion';
@@ -51,6 +58,8 @@ import { CookModeView } from './CookModeView';
 import { fetchRecipeInstructions } from '../../data/spoonacular/client';
 import type { RecipeInstructionGroup } from '../../data/spoonacular/types';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
+import { getDeviceVariants, pickDefaultDevice } from '../../data/curated/curatedVariants';
+import { useTonightDevices } from './useTonightDevices';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -139,6 +148,50 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const { record } = useRecipePrefs(activeHouseholdId);
   const { isFavorited, toggleFavorite } = useFavorites();
   const favorited = isFavorited(recipe.id);
+
+  // Device variants: full alternate instruction sets for curated recipes.
+  // activeDevice null = the original instructions. Auto-defaults to the
+  // first of tonight's picked devices that has a variant (a native keyword
+  // match wins as Original) — but never after the user touches the switcher;
+  // re-fires (household change) may upgrade to a variant but never revert to
+  // Original.
+  const variants = useMemo(() => getDeviceVariants(recipe.id), [recipe.id]);
+  const { devices: tonightDevices, loaded: tonightLoaded } = useTonightDevices(activeHouseholdId);
+  const [activeDevice, setActiveDevice] = useState<CookingDevice | null>(null);
+  const deviceTouched = useRef(false);
+
+  useEffect(() => {
+    if (!tonightLoaded || deviceTouched.current || variants.length === 0) return;
+    const native = detectDevices(
+      recipe.title,
+      recipe.instructions.flatMap((g) => g.steps.flatMap((s) => s.equipment)),
+    );
+    const def = pickDefaultDevice(tonightDevices, variants, native);
+    if (def) {
+      setActiveDevice(def);
+      // Checked-off steps belong to the previous instruction set.
+      setDoneSteps(new Set());
+    }
+  }, [tonightLoaded, tonightDevices, variants, recipe.title, recipe.instructions]);
+
+  const activeVariant = useMemo(
+    () => variants.find((v) => v.device === activeDevice) ?? null,
+    [variants, activeDevice],
+  );
+
+  // Chip row entries in COOKING_DEVICES display order (lazy appliances first).
+  const variantDevices = useMemo(
+    () => COOKING_DEVICES.filter((d) => variants.some((v) => v.device === d.id)),
+    [variants],
+  );
+
+  function selectDevice(device: CookingDevice | null) {
+    deviceTouched.current = true;
+    Haptics.selectionAsync().catch(() => {});
+    setActiveDevice(device);
+    // Checked-off steps belong to the previous instruction set.
+    setDoneSteps(new Set());
+  }
 
   const scrollRef = useRef<ScrollView>(null);
   const [cooking, setCooking] = useState(false);
@@ -262,18 +315,25 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
 
   // A few recipes arrive with empty instructions (see the backfill effect
   // above); once fetched by id, render from that copy instead of the payload.
-  const effectiveInstructions = useMemo(
-    () => (recipe.instructions.length > 0 ? recipe.instructions : (fetchedSteps ?? [])),
-    [recipe.instructions, fetchedSteps],
-  );
-  // Cook Mode reads recipe.instructions directly, so hand it the backfilled copy.
-  const effectiveRecipe = useMemo(
-    () =>
-      recipe.instructions.length === 0 && fetchedSteps
-        ? { ...recipe, instructions: fetchedSteps }
-        : recipe,
-    [recipe, fetchedSteps],
-  );
+  // An active device variant takes precedence over both.
+  const effectiveInstructions = useMemo(() => {
+    if (activeVariant) return [{ name: '', steps: activeVariant.steps }];
+    return recipe.instructions.length > 0 ? recipe.instructions : (fetchedSteps ?? []);
+  }, [activeVariant, recipe.instructions, fetchedSteps]);
+  // Cook Mode reads recipe.instructions directly, so hand it whichever
+  // instruction set is on screen (variant > backfill > payload).
+  const effectiveRecipe = useMemo(() => {
+    if (activeVariant) {
+      return {
+        ...recipe,
+        instructions: [{ name: '', steps: activeVariant.steps }],
+        readyInMinutes: activeVariant.readyInMinutes,
+      };
+    }
+    return recipe.instructions.length === 0 && fetchedSteps
+      ? { ...recipe, instructions: fetchedSteps }
+      : recipe;
+  }, [recipe, fetchedSteps, activeVariant]);
 
   // Flatten the grouped instructions into one ordered list with a stable key +
   // running number, so the timeline draws a continuous rail and the check-off
@@ -307,6 +367,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     return out;
   }, [effectiveInstructions]);
 
+  const displayMinutes = activeVariant ? activeVariant.readyInMinutes : recipe.readyInMinutes;
   const summary = recipe.summary ? shortSummary(recipe.summary) : '';
   const hasSteps = effectiveInstructions.some((g) => g.steps.length > 0);
   const showHealth = recipe.healthScore !== null && recipe.healthScore >= 55;
@@ -341,12 +402,12 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
         <View style={styles.body}>
           {cookedCount !== null && <CookSuccessBurst itemCount={cookedCount} />}
 
-          {(recipe.readyInMinutes !== null || recipe.servings !== null || showHealth) && (
+          {(displayMinutes !== null || recipe.servings !== null || showHealth) && (
             <View style={styles.metaRow}>
-              {recipe.readyInMinutes !== null && (
+              {displayMinutes !== null && (
                 <View style={styles.metaChip}>
                   <Clock size={13} color={tokens.color.inkMuted} />
-                  <Text style={styles.metaTxt}>{recipe.readyInMinutes} min</Text>
+                  <Text style={styles.metaTxt}>{displayMinutes} min</Text>
                 </View>
               )}
               {recipe.servings !== null && (
@@ -466,6 +527,38 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           )}
 
           <Text style={styles.sectionHead}>Steps</Text>
+          {variantDevices.length > 0 && (
+            <View style={styles.deviceRow}>
+              <Pressable
+                style={[styles.deviceChip, activeDevice === null && styles.deviceChipActive]}
+                onPress={() => selectDevice(null)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeDevice === null }}
+                accessibilityLabel="Show the original instructions"
+              >
+                <Text style={[styles.deviceChipTxt, activeDevice === null && styles.deviceChipTxtActive]}>
+                  Original
+                </Text>
+              </Pressable>
+              {variantDevices.map((d) => {
+                const active = activeDevice === d.id;
+                return (
+                  <Pressable
+                    key={d.id}
+                    style={[styles.deviceChip, active && styles.deviceChipActive]}
+                    onPress={() => selectDevice(d.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`Show the ${d.label} instructions`}
+                  >
+                    <Text style={[styles.deviceChipTxt, active && styles.deviceChipTxtActive]}>
+                      {d.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
           {hasSteps ? (
             stepList.map((item, idx) => {
               const done = doneSteps.has(item.key);
@@ -798,6 +891,33 @@ const styles = StyleSheet.create({
   },
   secondaryBtnDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
   secondaryBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  deviceRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: tokens.space(2),
+    marginBottom: tokens.space(3),
+  },
+  deviceChip: {
+    paddingHorizontal: tokens.space(3),
+    paddingVertical: tokens.space(2),
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+    backgroundColor: tokens.color.surfaceAlt,
+  },
+  deviceChipActive: {
+    borderColor: tokens.color.accent,
+    backgroundColor: tokens.color.accentSoft,
+  },
+  deviceChipTxt: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+  },
+  deviceChipTxtActive: {
+    fontFamily: tokens.font.body.semibold,
+    color: tokens.color.accent,
+  },
   stepGroupLabel: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,

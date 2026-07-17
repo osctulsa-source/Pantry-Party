@@ -1,0 +1,383 @@
+[
+  {
+    "recipeId": 9000119,
+    "device": "crockpot",
+    "readyInMinutes": 195,
+    "steps": [
+      { "number": 1, "step": "Rub the butter over the bottom and sides of the slow cooker insert — this keeps the custard from sticking to the hot ceramic as it cooks.", "ingredients": ["butter"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 2, "step": "Spread the cubed bread in an even layer in the buttered insert.", "ingredients": ["bread"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 3, "step": "Whisk the milk, heavy cream, eggs, granulated sugar, vanilla extract, and cinnamon together in a bowl until smooth.", "ingredients": ["milk", "heavy cream", "eggs", "granulated sugar", "vanilla extract", "cinnamon"], "equipment": ["bowl", "whisk"], "lengthMinutes": null },
+      { "number": 4, "step": "Scatter the raisins over the bread, then pour the custard on top and press the bread down gently so it all soaks in.", "ingredients": ["raisins"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Let it sit for 10 minutes so the bread fully absorbs the custard before cooking starts.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 6, "step": "Cover and cook on low, tucking a folded paper towel under the lid to catch condensation so it doesn't drip back onto the pudding — a slow cooker traps steam that an oven simply vents away. Cook until the center is just set and a knife comes out with only a few moist crumbs, about 2 hours 45 minutes.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 165 },
+      { "number": 7, "step": "Drizzle the melted butter over the top and let the pudding rest, still covered, for 10 minutes — it won't brown like an oven-baked version, but the low heat keeps every bite ultra custardy.", "ingredients": ["butter"], "equipment": [], "lengthMinutes": 10 },
+      { "number": 8, "step": "Serve warm, spooned straight from the insert.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000120,
+    "device": "microwave",
+    "readyInMinutes": 130,
+    "steps": [
+      { "number": 1, "step": "Line an 8-inch square pan with parchment paper, leaving an overhang on two sides for easy lifting later.", "ingredients": [], "equipment": ["baking pan", "parchment paper"], "lengthMinutes": null },
+      { "number": 2, "step": "Combine the chocolate chips, sweetened condensed milk, and butter in a large microwave-safe bowl.", "ingredients": ["chocolate chips", "sweetened condensed milk", "butter"], "equipment": ["microwave-safe bowl"], "lengthMinutes": null },
+      { "number": 3, "step": "Microwave on high in 30-second bursts, stirring well after each one, until fully melted and glossy, about 2 minutes total — microwaves heat unevenly, and stirring between bursts keeps the chocolate from scorching or seizing.", "ingredients": [], "equipment": ["microwave"], "lengthMinutes": 2 },
+      { "number": 4, "step": "Stir in the vanilla extract and salt until fully blended.", "ingredients": ["vanilla extract", "salt"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Stir in the walnuts if using, then pour the fudge into the prepared pan and smooth the top.", "ingredients": ["walnuts"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Refrigerate until firm, at least 2 hours, before lifting it out by the parchment and cutting into squares.", "ingredients": [], "equipment": [], "lengthMinutes": 120 }
+    ]
+  },
+  {
+    "recipeId": 9000123,
+    "device": "airfryer",
+    "readyInMinutes": 40,
+    "steps": [
+      { "number": 1, "step": "Toss the sliced strawberries with 2 tablespoons of the granulated sugar and let them sit until juicy, at least 20 minutes.", "ingredients": ["strawberries", "granulated sugar"], "equipment": [], "lengthMinutes": 20 },
+      { "number": 2, "step": "Whisk the flour, remaining granulated sugar, baking powder, and salt together in a bowl.", "ingredients": ["flour", "granulated sugar", "baking powder", "salt"], "equipment": ["bowl", "whisk"], "lengthMinutes": null },
+      { "number": 3, "step": "Cut the cold butter into the flour mixture with your fingers or a fork until it looks like coarse crumbs.", "ingredients": ["butter"], "equipment": ["fork"], "lengthMinutes": null },
+      { "number": 4, "step": "Stir in 3/4 cup of the heavy cream just until a shaggy dough forms, then pat it out on a floured surface and cut into 6 small rounds — smaller rounds cook more evenly in an air fryer basket than one large batch.", "ingredients": ["heavy cream", "flour"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Preheat the air fryer to 330°F and arrange the rounds in the basket with space between them, in two batches if they don't all fit — crowding blocks the hot air and leaves the centers doughy.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Air fry until golden and puffed, about 9 minutes, checking a couple minutes early since air fryers run hotter and faster than an oven.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 9 },
+      { "number": 7, "step": "Whip the remaining heavy cream with the vanilla extract until soft peaks form.", "ingredients": ["heavy cream", "vanilla extract"], "equipment": ["mixer"], "lengthMinutes": 3 },
+      { "number": 8, "step": "Split the biscuits, spoon the sugared strawberries and their juices over the bottoms, top with whipped cream, and set the tops back on.", "ingredients": ["strawberries"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000125,
+    "device": "airfryer",
+    "readyInMinutes": 15,
+    "steps": [
+      { "number": 1, "step": "In an oven-safe ramekin or mug, whisk the flour, granulated sugar, cocoa powder, baking powder, and salt together until no lumps remain.", "ingredients": ["flour", "granulated sugar", "cocoa powder", "baking powder", "salt"], "equipment": ["ramekin", "whisk"], "lengthMinutes": null },
+      { "number": 2, "step": "Add the milk, vegetable oil, and vanilla extract, and stir until the batter is smooth.", "ingredients": ["milk", "vegetable oil", "vanilla extract"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Drop the chocolate chips into the batter and give it one more quick stir.", "ingredients": ["chocolate chips"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Preheat the air fryer to 320°F — a quick preheat keeps the outside from setting before the inside has a chance to rise.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Place the ramekin in the basket and air fry until the cake has risen and the top springs back but the center is still a little soft, about 9 minutes — check at 8 minutes, since air fryers run hotter than a microwave and can dry the cake out fast.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 9 },
+      { "number": 6, "step": "Carefully lift out the ramekin (it will be very hot) and let it sit for 1 minute before eating.", "ingredients": [], "equipment": [], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000126,
+    "device": "crockpot",
+    "readyInMinutes": 280,
+    "steps": [
+      { "number": 1, "step": "Melt 2 tablespoons of the butter in a skillet over medium heat and cook the onion, stirring now and then, until soft and see-through, about 5 minutes — softening it on the stovetop first gives more flavor than a slow cooker alone would.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir in the garlic for 30 seconds, just until fragrant, then transfer the onion and garlic to the slow cooker.", "ingredients": ["garlic"], "equipment": ["slow cooker"], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the crushed tomatoes, sugar, only half the vegetable broth, and season with salt and pepper — slow cookers don't evaporate liquid the way a simmering pot does, so starting with less broth keeps the soup from turning thin.", "ingredients": ["crushed tomatoes", "sugar", "vegetable broth", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until the tomatoes have fully broken down and taste sweet rather than raw, about 4 hours (or high for 2 hours).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 5, "step": "Blend the soup smooth with an immersion blender directly in the insert, then stir in the remaining broth and the cream.", "ingredients": ["vegetable broth", "heavy cream"], "equipment": ["immersion blender"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Cover and cook on low for 15 more minutes to heat the cream through gently — added at the end, it won't have a chance to break over a long cook.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 15 },
+      { "number": 7, "step": "While the soup finishes, butter one side of each bread slice and layer two slices of cheddar between the unbuttered sides for each sandwich.", "ingredients": ["bread", "cheddar cheese", "butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 8, "step": "Toast the sandwiches in a skillet over medium heat, buttered side down, until deep golden and the cheese is melting, about 3 minutes per side.", "ingredients": [], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 9, "step": "Slice the sandwiches on the diagonal and serve alongside bowls of the hot soup for dunking.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000126,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, melt 2 tablespoons of the butter, and cook the onion until soft, about 5 minutes.", "ingredients": ["butter", "onion"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Add the garlic and cook for 30 seconds, just until fragrant.", "ingredients": ["garlic"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the crushed tomatoes, the remaining broth, and the sugar, season with salt and pepper, and scrape the bottom well — any stuck bits can trigger a scorch warning once the pot pressurizes.", "ingredients": ["crushed tomatoes", "vegetable broth", "sugar", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and pressure cook on high for 5 minutes, allowing about 10 minutes for the pot to come up to pressure first.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 15 },
+      { "number": 5, "step": "Quick release the pressure, keeping your hands and face clear of the steam, then open the lid once the pin drops.", "ingredients": [], "equipment": [], "lengthMinutes": 2 },
+      { "number": 6, "step": "Turn the pot off, blend the soup smooth with an immersion blender directly in the pot, then stir in the cream and let it warm on the keep-warm setting — the gentle heat won't scald it the way a hard boil would.", "ingredients": ["heavy cream"], "equipment": ["immersion blender"], "lengthMinutes": 3 },
+      { "number": 7, "step": "While the soup pressurizes, butter one side of each bread slice and layer two slices of cheddar between the unbuttered sides for each sandwich.", "ingredients": ["bread", "cheddar cheese", "butter"], "equipment": [], "lengthMinutes": null },
+      { "number": 8, "step": "Toast the sandwiches in a skillet over medium heat, buttered side down, until deep golden and the cheese is melting, about 3 minutes per side.", "ingredients": [], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 9, "step": "Slice the sandwiches on the diagonal and ladle the soup into bowls to serve together for dunking.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000127,
+    "device": "crockpot",
+    "readyInMinutes": 450,
+    "steps": [
+      { "number": 1, "step": "Combine the olive oil, onion, carrots, celery, garlic, zucchini, diced tomatoes, vegetable broth, kidney beans, italian seasoning, and salt and pepper directly in the slow cooker — no need to soften anything first, the long cook does that work for you.", "ingredients": ["olive oil", "onion", "carrots", "celery", "garlic", "zucchini", "diced tomatoes", "vegetable broth", "kidney beans", "italian seasoning", "salt and pepper"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 2, "step": "Cover and cook on low until the vegetables are fork-tender and the broth tastes deeply savory, about 7 hours (or high for 3 hours 30 minutes).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 420 },
+      { "number": 3, "step": "About 20 minutes before serving, stir in the pasta and switch the cooker to high — added earlier, the pasta would turn to mush over such a long, slow cook.", "ingredients": ["small pasta"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook until the pasta is just tender, about 20 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 20 },
+      { "number": 5, "step": "Turn off the heat, stir in the spinach, and let it wilt in the residual warmth, about 3 minutes.", "ingredients": ["spinach"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 6, "step": "Taste, adjust the seasoning, and ladle into bowls to serve hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000127,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, warm the olive oil, and cook the onion, carrots, and celery until softened, about 5 minutes.", "ingredients": ["olive oil", "onion", "carrots", "celery"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir in the garlic and zucchini and cook for 1 minute, until fragrant.", "ingredients": ["garlic", "zucchini"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the diced tomatoes, vegetable broth, kidney beans, and italian seasoning, season with salt and pepper, and scrape the bottom of the pot well.", "ingredients": ["diced tomatoes", "vegetable broth", "kidney beans", "italian seasoning", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and pressure cook on high for 3 minutes, allowing about 10 minutes for the pot to come up to pressure, then quick release.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 13 },
+      { "number": 5, "step": "Switch the pot to sauté, stir in the pasta, and cook uncovered, stirring occasionally, until just tender, about 8 minutes — cooking pasta under pressure would turn it to mush, so it finishes here instead.", "ingredients": ["small pasta"], "equipment": [], "lengthMinutes": 8 },
+      { "number": 6, "step": "Turn off the pot, stir in the spinach, and let it wilt in the residual heat, about 2 minutes.", "ingredients": ["spinach"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 7, "step": "Taste, adjust the seasoning, and serve hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000128,
+    "device": "crockpot",
+    "readyInMinutes": 390,
+    "steps": [
+      { "number": 1, "step": "Combine the olive oil, onion, garlic, chili powder, cumin, diced tomatoes, chicken broth, chicken breasts, and salt and pepper in the slow cooker — no need to sauté first, the long cook blooms the spices and softens the onion.", "ingredients": ["olive oil", "onion", "garlic", "chili powder", "cumin", "diced tomatoes", "chicken broth", "chicken breasts", "salt and pepper"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 2, "step": "Cover and cook on low until the chicken shreds easily with a fork, about 6 hours (or high for 3 hours).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 360 },
+      { "number": 3, "step": "Lift the chicken onto a cutting board, shred it with two forks, and return it to the pot.", "ingredients": [], "equipment": ["cutting board"], "lengthMinutes": null },
+      { "number": 4, "step": "Stir in the black beans and corn, cover, and cook on high for 15 minutes — they're already cooked, so this is just to warm them through.", "ingredients": ["black beans", "corn"], "equipment": ["slow cooker"], "lengthMinutes": 15 },
+      { "number": 5, "step": "Meanwhile, spread the tortilla strips on a baking sheet and bake or air-fry at 400°F until crisp, about 8 minutes.", "ingredients": ["tortillas"], "equipment": ["baking sheet"], "lengthMinutes": 8 },
+      { "number": 6, "step": "Ladle the soup into bowls, top with the crispy tortilla strips, and serve with lime wedges for squeezing.", "ingredients": ["lime"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000128,
+    "device": "instantpot",
+    "readyInMinutes": 55,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, warm the olive oil, and cook the onion until soft, about 5 minutes.", "ingredients": ["olive oil", "onion"], "equipment": ["pressure cooker"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Stir in the garlic, chili powder, and cumin and cook for 1 minute, until toasty-smelling.", "ingredients": ["garlic", "chili powder", "cumin"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the diced tomatoes, chicken broth, chicken breasts, and salt and pepper, and scrape the bottom of the pot to loosen any stuck bits.", "ingredients": ["diced tomatoes", "chicken broth", "chicken breasts", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and pressure cook on high for 10 minutes, allowing about 12 minutes for the pot to build pressure first.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 22 },
+      { "number": 5, "step": "Let the pressure release naturally for 10 minutes, then quick release the rest — resting the chicken under natural pressure keeps it from turning stringy.", "ingredients": [], "equipment": [], "lengthMinutes": 10 },
+      { "number": 6, "step": "Lift the chicken out, shred it with two forks, and return it to the pot.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Stir in the black beans and corn and use the sauté setting to warm everything through, about 4 minutes.", "ingredients": ["black beans", "corn"], "equipment": [], "lengthMinutes": 4 },
+      { "number": 8, "step": "Meanwhile, spread the tortilla strips on a baking sheet and bake or air-fry at 400°F until crisp, about 8 minutes.", "ingredients": ["tortillas"], "equipment": ["baking sheet"], "lengthMinutes": 8 },
+      { "number": 9, "step": "Ladle the soup into bowls, top with the crispy tortilla strips, and serve with lime wedges.", "ingredients": ["lime"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000129,
+    "device": "crockpot",
+    "readyInMinutes": 270,
+    "steps": [
+      { "number": 1, "step": "Melt the butter in a skillet over medium heat and cook the onion until soft, about 4 minutes.", "ingredients": ["butter", "onion"], "equipment": ["skillet"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Whisk in the flour and cook for 1 minute to make a roux, then whisk in a splash of the chicken broth to loosen it — building the roux on the stovetop first keeps the soup from turning grainy under gentle slow heat.", "ingredients": ["flour", "chicken broth"], "equipment": ["whisk"], "lengthMinutes": 1 },
+      { "number": 3, "step": "Transfer the roux to the slow cooker, add the remaining chicken broth, the broccoli, and the carrots, and season with salt and pepper.", "ingredients": ["chicken broth", "broccoli florets", "carrots", "salt and pepper"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until the broccoli is very tender, about 4 hours (or high for 2 hours).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 5, "step": "Stir in the milk and the cheddar cheese a handful at a time, cover, and cook on low for 20 more minutes until fully melted — added at the end so the dairy doesn't break over a long cook.", "ingredients": ["milk", "cheddar cheese"], "equipment": ["slow cooker"], "lengthMinutes": 20 },
+      { "number": 6, "step": "For a smoother soup, blend part of it right in the insert with an immersion blender; for a chunkier one, leave it as is.", "ingredients": [], "equipment": ["immersion blender"], "lengthMinutes": null },
+      { "number": 7, "step": "Taste, adjust the seasoning, and serve hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000129,
+    "device": "instantpot",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, melt the butter, and cook the onion until soft, about 4 minutes.", "ingredients": ["butter", "onion"], "equipment": ["pressure cooker"], "lengthMinutes": 4 },
+      { "number": 2, "step": "Whisk in the flour and cook for 1 minute, then slowly whisk in the chicken broth until smooth with no lumps.", "ingredients": ["flour", "chicken broth"], "equipment": ["whisk"], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the broccoli and carrots and season with salt and pepper.", "ingredients": ["broccoli florets", "carrots", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and pressure cook on high for 1 minute, allowing about 8 minutes for the pot to build pressure — broccoli cooks fast, so a short pressure time keeps it from turning to mush.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 9 },
+      { "number": 5, "step": "Quick release the pressure right away to stop the broccoli from overcooking and losing its color.", "ingredients": [], "equipment": [], "lengthMinutes": 2 },
+      { "number": 6, "step": "With the pot off, stir in the milk and the cheddar cheese a handful at a time until melted and glossy — off heat, the cheese melts smoothly instead of breaking.", "ingredients": ["milk", "cheddar cheese"], "equipment": [], "lengthMinutes": 3 },
+      { "number": 7, "step": "For a smoother soup, blend part of it with an immersion blender; for a chunkier one, leave it as is.", "ingredients": [], "equipment": ["immersion blender"], "lengthMinutes": null },
+      { "number": 8, "step": "Taste, adjust the seasoning, and serve hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000130,
+    "device": "crockpot",
+    "readyInMinutes": 570,
+    "steps": [
+      { "number": 1, "step": "Melt the butter and olive oil in a skillet over medium heat, add the onions and sugar, and stir to coat — starting them in a hot pan with a little fat jumpstarts browning that a slow cooker alone can't reach.", "ingredients": ["butter", "olive oil", "onions", "sugar"], "equipment": ["skillet"], "lengthMinutes": 2 },
+      { "number": 2, "step": "Transfer the onions to the slow cooker and cook on low with the lid propped slightly ajar (a wooden spoon handle works well) until deeply golden brown and jammy, about 8 hours — the small gap lets steam escape so the onions caramelize instead of just steaming.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 480 },
+      { "number": 3, "step": "Stir in the garlic and flour, close the lid fully, and cook on low for 10 more minutes.", "ingredients": ["garlic", "flour"], "equipment": ["slow cooker"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Stir in the wine, beef broth, and thyme, season with salt and pepper, and cook on low for 1 more hour so the flavors meld.", "ingredients": ["dry white wine", "beef broth", "thyme", "salt and pepper"], "equipment": [], "lengthMinutes": 60 },
+      { "number": 5, "step": "Remove the thyme sprigs.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Toast the baguette slices in the oven at 400°F until dry and lightly golden, about 8 minutes — a slow cooker can't toast or broil, so the bread and cheese still finish in the oven.", "ingredients": ["baguette"], "equipment": ["oven"], "lengthMinutes": 8 },
+      { "number": 7, "step": "Ladle the soup into oven-safe bowls, float one or two toasted baguette slices on top of each, and pile on the gruyere.", "ingredients": ["gruyere cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 8, "step": "Set the bowls on a baking sheet and broil until the cheese is melted and bubbling with brown spots, about 3 minutes — watch closely so it doesn't burn.", "ingredients": [], "equipment": ["baking sheet", "oven"], "lengthMinutes": 3 },
+      { "number": 9, "step": "Let the bowls cool for a minute before serving, since the cheese and broth will be very hot.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000131,
+    "device": "crockpot",
+    "readyInMinutes": 390,
+    "steps": [
+      { "number": 1, "step": "Melt the butter in a skillet over medium heat and cook the leeks until soft and bright, about 6 minutes — softening them on the stovetop first keeps their flavor clean instead of turning oniony over a long slow cook.", "ingredients": ["butter", "leeks"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Stir in the garlic and cook for 30 seconds, just until fragrant, then transfer everything to the slow cooker.", "ingredients": ["garlic"], "equipment": ["slow cooker"], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the potatoes, vegetable broth, and bay leaf to the slow cooker, and season with salt and pepper.", "ingredients": ["potatoes", "vegetable broth", "bay leaf", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low until the potatoes are fork-tender, about 6 hours (or high for 3 hours).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 360 },
+      { "number": 5, "step": "Remove the bay leaf, then blend the soup smooth directly in the insert with an immersion blender.", "ingredients": [], "equipment": ["immersion blender"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Stir in the cream, cover, and warm on low for 10 more minutes without letting it boil — added at the end, it won't have a chance to separate over a long cook.", "ingredients": ["heavy cream"], "equipment": ["slow cooker"], "lengthMinutes": 10 },
+      { "number": 7, "step": "Taste, adjust the seasoning, ladle into bowls, and scatter the chives over the top.", "ingredients": ["chives"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000131,
+    "device": "instantpot",
+    "readyInMinutes": 35,
+    "steps": [
+      { "number": 1, "step": "Set the pressure cooker to sauté, melt the butter, and cook the leeks until soft and bright, about 6 minutes.", "ingredients": ["butter", "leeks"], "equipment": ["pressure cooker"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Stir in the garlic and cook for 30 seconds, just until fragrant.", "ingredients": ["garlic"], "equipment": [], "lengthMinutes": 1 },
+      { "number": 3, "step": "Add the potatoes, vegetable broth, and bay leaf, and season with salt and pepper.", "ingredients": ["potatoes", "vegetable broth", "bay leaf", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Lock the lid and pressure cook on high for 8 minutes, allowing about 10 minutes for the pot to build pressure, then quick release.", "ingredients": [], "equipment": ["pressure cooker"], "lengthMinutes": 18 },
+      { "number": 5, "step": "Remove the bay leaf, turn the pot off, and blend the soup smooth directly in the pot with an immersion blender.", "ingredients": [], "equipment": ["immersion blender"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Stir in the cream and warm it through on the sauté setting for a minute or two, without letting it boil.", "ingredients": ["heavy cream"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 7, "step": "Taste, adjust the seasoning, ladle into bowls, and scatter the chives over the top.", "ingredients": ["chives"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000132,
+    "device": "airfryer",
+    "readyInMinutes": 55,
+    "steps": [
+      { "number": 1, "step": "Pulse the drained chickpeas, onion, and garlic in a food processor until the mixture looks like coarse sand — don't puree it smooth or the falafel will turn dense.", "ingredients": ["dried chickpeas", "onion", "garlic"], "equipment": ["food processor"], "lengthMinutes": 3 },
+      { "number": 2, "step": "Add the parsley, cilantro, cumin, and coriander and pulse again until finely chopped and evenly distributed.", "ingredients": ["parsley", "cilantro", "cumin", "coriander"], "equipment": ["food processor"], "lengthMinutes": 2 },
+      { "number": 3, "step": "Transfer to a bowl, stir in the flour and baking powder, cover, and chill in the fridge for 30 minutes to help the mixture hold together.", "ingredients": ["flour", "baking powder"], "equipment": [], "lengthMinutes": 30 },
+      { "number": 4, "step": "Shape the chilled mixture into small, slightly flattened patties, about 2 tablespoons each — flatter shapes get more surface contact with the hot air than round balls.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Preheat the air fryer to 375°F, then brush the basket and the patties lightly with the vegetable oil — you'll only need a couple tablespoons, not the full amount used for deep frying.", "ingredients": ["vegetable oil"], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 6, "step": "Arrange the patties in a single layer with space between them and air fry until deep golden and crisp, flipping once halfway, about 12 minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 12 },
+      { "number": 7, "step": "Warm the flatbreads briefly in a dry skillet or microwave until soft and pliable.", "ingredients": ["flatbreads"], "equipment": ["skillet"], "lengthMinutes": 1 },
+      { "number": 8, "step": "Fill each flatbread with falafel, cucumber, and tomatoes, then drizzle generously with tahini sauce before rolling up to serve.", "ingredients": ["cucumber", "tomatoes", "tahini sauce"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000134,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      { "number": 1, "step": "In a bowl, gently mix the ground turkey, breadcrumbs, onion, worcestershire sauce, egg, garlic powder, salt, and pepper until just combined — overmixing makes tough burgers.", "ingredients": ["ground turkey", "breadcrumbs", "onion", "worcestershire sauce", "egg", "garlic powder", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Divide into 4 patties, pressing a shallow dimple in the center of each so they cook up flat instead of doming.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Preheat the air fryer to 375°F and brush the basket lightly with the olive oil — lean turkey is more prone to sticking than fattier ground beef.", "ingredients": ["olive oil"], "equipment": ["air fryer basket"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Arrange the patties in the basket without touching and air fry for 8 minutes, then flip.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 8 },
+      { "number": 5, "step": "Cook the second side until the center reaches 165°F on a meat thermometer, about 7 more minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 7 },
+      { "number": 6, "step": "Let the patties rest on a plate for 2 minutes so the juices settle back in.", "ingredients": [], "equipment": [], "lengthMinutes": 2 },
+      { "number": 7, "step": "Toast the burger buns in the air fryer basket for the last minute if you like, then build each burger with lettuce, tomato, and a patty.", "ingredients": ["burger buns", "lettuce", "tomato"], "equipment": ["air fryer basket"], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000134,
+    "device": "griddle",
+    "readyInMinutes": 20,
+    "steps": [
+      { "number": 1, "step": "In a bowl, gently mix the ground turkey, breadcrumbs, onion, worcestershire sauce, egg, garlic powder, salt, and pepper until just combined — overmixing makes tough burgers.", "ingredients": ["ground turkey", "breadcrumbs", "onion", "worcestershire sauce", "egg", "garlic powder", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Divide into 4 patties, pressing a shallow dimple in the center of each so they cook up flat.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Heat the olive oil on the griddle over medium heat until shimmering — a griddle's flat, even surface holds a steadier temperature across several patties than a curved skillet.", "ingredients": ["olive oil"], "equipment": ["griddle"], "lengthMinutes": 2 },
+      { "number": 4, "step": "Cook the patties undisturbed until deeply golden and easy to release, about 5 minutes, then flip.", "ingredients": [], "equipment": [], "lengthMinutes": 5 },
+      { "number": 5, "step": "Cook the second side until the center reaches 165°F on a meat thermometer, about 5 more minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "Let the patties rest on a plate for 2 minutes so the juices settle back in.", "ingredients": [], "equipment": [], "lengthMinutes": 2 },
+      { "number": 7, "step": "In the last minute, toast the burger buns cut-side down right on the griddle alongside the patties, then build each burger with lettuce, tomato, and a patty.", "ingredients": ["burger buns", "lettuce", "tomato"], "equipment": ["griddle"], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000134,
+    "device": "grill",
+    "readyInMinutes": 30,
+    "steps": [
+      { "number": 1, "step": "In a bowl, gently mix the ground turkey, breadcrumbs, onion, worcestershire sauce, egg, garlic powder, salt, and pepper until just combined — overmixing makes tough burgers.", "ingredients": ["ground turkey", "breadcrumbs", "onion", "worcestershire sauce", "egg", "garlic powder", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 2, "step": "Divide into 4 patties, pressing a shallow dimple in the center of each so they stay flat instead of puffing up on the grill.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Preheat the grill to medium-high and rub the grates with a paper towel dipped in the olive oil — lean turkey sticks to grates more than fattier ground beef, so a well-oiled grate matters here.", "ingredients": ["olive oil"], "equipment": ["grill"], "lengthMinutes": 10 },
+      { "number": 4, "step": "Grill the patties with the lid down, undisturbed, for 6 minutes — a closed lid traps heat around the patties like a mini oven, cooking them through evenly without constant flipping.", "ingredients": [], "equipment": ["grill"], "lengthMinutes": 6 },
+      { "number": 5, "step": "Flip and grill the second side until the center reaches 165°F on a meat thermometer, about 6 more minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 6 },
+      { "number": 6, "step": "Move the patties to a plate and tent loosely with foil to rest for 3 minutes — outdoor heat escapes fast, so tenting keeps them warm.", "ingredients": [], "equipment": [], "lengthMinutes": 3 },
+      { "number": 7, "step": "In the last minute, toast the burger buns cut-side down directly on the grill grates, then build each burger with lettuce, tomato, and a patty.", "ingredients": ["burger buns", "lettuce", "tomato"], "equipment": ["grill"], "lengthMinutes": 1 }
+    ]
+  },
+  {
+    "recipeId": 9000136,
+    "device": "airfryer",
+    "readyInMinutes": 65,
+    "steps": [
+      { "number": 1, "step": "Pat the chicken wings very dry with paper towels — the drier they are, the crispier they'll get.", "ingredients": ["chicken wings"], "equipment": ["paper towels"], "lengthMinutes": null },
+      { "number": 2, "step": "In a bowl, toss the wings with the baking powder, garlic powder, paprika, and salt until evenly coated.", "ingredients": ["baking powder", "garlic powder", "paprika", "salt"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 3, "step": "Let the wings sit uncovered on a plate in the fridge for 15 minutes to dry the skin further — this matters even more in an air fryer, where extra moisture turns to steam fast in the small basket.", "ingredients": [], "equipment": [], "lengthMinutes": 15 },
+      { "number": 4, "step": "Preheat the air fryer to 380°F.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 5, "step": "Arrange half the wings in a single layer in the basket without touching — crowding traps steam and keeps them from crisping.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry for 12 minutes, flip, and cook until deep golden and crackling, about 10 more minutes.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 22 },
+      { "number": 7, "step": "Repeat with the second batch of wings, another 20 to 22 minutes, since a single air fryer basket won't hold them all at once.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 22 },
+      { "number": 8, "step": "While the wings cook, whisk the hot sauce and melted butter together in a bowl.", "ingredients": ["hot sauce", "butter"], "equipment": ["bowl", "whisk"], "lengthMinutes": null },
+      { "number": 9, "step": "As soon as each batch comes out of the air fryer, toss the wings in the hot sauce mixture until fully coated and glossy.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 10, "step": "Serve immediately while hot and crackling.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000141,
+    "device": "airfryer",
+    "readyInMinutes": 15,
+    "steps": [
+      { "number": 1, "step": "Brush the baguette slices lightly with 3 tablespoons of the olive oil.", "ingredients": ["baguette", "olive oil"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Preheat the air fryer to 375°F.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 3, "step": "Arrange the slices in a single layer in the basket, in two batches if needed, and air fry until golden and crisp at the edges, about 4 minutes — air fryers toast bread much faster than an oven, so watch closely.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 4 },
+      { "number": 4, "step": "While the bread toasts, combine the tomatoes, minced garlic, basil, balsamic vinegar, and the remaining olive oil in a bowl, and season with salt and pepper.", "ingredients": ["tomatoes", "garlic", "basil", "balsamic vinegar", "olive oil", "salt and pepper"], "equipment": ["bowl"], "lengthMinutes": null },
+      { "number": 5, "step": "Let the tomato mixture sit for 5 minutes so the flavors meld while the last batch of bread finishes.", "ingredients": [], "equipment": [], "lengthMinutes": 5 },
+      { "number": 6, "step": "As soon as the toasts come out, rub the top of each one with the whole garlic clove for a light garlic flavor.", "ingredients": ["garlic"], "equipment": [], "lengthMinutes": null },
+      { "number": 7, "step": "Spoon the tomato mixture generously onto each toast just before serving so they stay crisp.", "ingredients": [], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000142,
+    "device": "airfryer",
+    "readyInMinutes": 22,
+    "steps": [
+      { "number": 1, "step": "Brown the ground beef in a skillet over medium heat, breaking it up with a spoon, until no pink remains, about 6 minutes.", "ingredients": ["ground beef"], "equipment": ["skillet"], "lengthMinutes": 6 },
+      { "number": 2, "step": "Stir in the taco seasoning and a splash of water, then simmer for 2 minutes until the meat is well coated.", "ingredients": ["taco seasoning"], "equipment": [], "lengthMinutes": 2 },
+      { "number": 3, "step": "Preheat the air fryer to 350°F.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Line the basket with a perforated parchment liner and add a single, shallow layer of tortilla chips — nachos need to stay shallow in an air fryer, or the top melts before the bottom warms through.", "ingredients": ["tortilla chips"], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 5, "step": "Scatter the beef, cheddar cheese, and black beans evenly over the chips.", "ingredients": ["cheddar cheese", "black beans"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry until the cheese is fully melted and bubbling, about 4 minutes, checking at 3 since air fryers run hot and chips near the top can scorch fast.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 4 },
+      { "number": 7, "step": "Repeat in batches with the remaining chips and toppings — a single basket won't hold a full sheet-pan's worth at once.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 4 },
+      { "number": 8, "step": "Top with the tomato, jalapeno, dollops of sour cream, and green onions, then serve immediately while hot.", "ingredients": ["tomato", "jalapeno", "sour cream", "green onions"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000143,
+    "device": "crockpot",
+    "readyInMinutes": 135,
+    "steps": [
+      { "number": 1, "step": "Cut the cream cheese into cubes so it melts faster and more evenly once it's in the slow cooker.", "ingredients": ["cream cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 2, "step": "Combine the spinach, artichoke hearts, cubed cream cheese, sour cream, and mayonnaise in the slow cooker insert.", "ingredients": ["frozen spinach", "artichoke hearts", "cream cheese", "sour cream", "mayonnaise"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 3, "step": "Stir in the garlic, parmesan cheese, and half of the mozzarella cheese, and season with salt and pepper.", "ingredients": ["garlic", "parmesan cheese", "mozzarella cheese", "salt and pepper"], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Cover and cook on low, stirring once halfway through, until fully melted and hot throughout, about 2 hours — no oven preheat needed, and the low heat won't scorch the cheese the way a hot oven can.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 120 },
+      { "number": 5, "step": "Sprinkle the remaining mozzarella over the top, cover, and cook for 10 more minutes until melted.", "ingredients": ["mozzarella cheese"], "equipment": ["slow cooker"], "lengthMinutes": 10 },
+      { "number": 6, "step": "Switch to the warm setting once it's ready — this is the real advantage of a slow cooker dip, staying hot and party-ready for hours without drying out.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 7, "step": "Serve warm with crackers, straight from the insert.", "ingredients": ["crackers"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000144,
+    "device": "airfryer",
+    "readyInMinutes": 22,
+    "steps": [
+      { "number": 1, "step": "Unroll the crescent dough onto a cutting board, separate along the perforations into triangles, and cut each triangle lengthwise into 3 thin strips.", "ingredients": ["crescent roll dough"], "equipment": ["cutting board"], "lengthMinutes": null },
+      { "number": 2, "step": "Wrap a strip of dough around each cocktail sausage in a spiral, tucking the ends underneath to hold it in place.", "ingredients": ["cocktail sausages"], "equipment": [], "lengthMinutes": null },
+      { "number": 3, "step": "Preheat the air fryer to 350°F.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 4, "step": "Arrange the wrapped sausages in a single layer in the basket, leaving space between each one — the dough puffs as it cooks, and pieces that touch will fuse together.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": null },
+      { "number": 5, "step": "Brush each one with the beaten egg and sprinkle with sesame seeds if using.", "ingredients": ["egg", "sesame seeds"], "equipment": [], "lengthMinutes": null },
+      { "number": 6, "step": "Air fry until puffed and deep golden, about 7 minutes, checking at 6 since the dough can go from golden to too dark quickly.", "ingredients": [], "equipment": ["air fryer"], "lengthMinutes": 7 },
+      { "number": 7, "step": "Repeat with the remaining batches — a basket typically holds about half a batch at a time, so plan on cooking in two rounds.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 7 },
+      { "number": 8, "step": "Let them cool for a minute or two, then serve warm with yellow mustard for dipping.", "ingredients": ["yellow mustard"], "equipment": [], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000147,
+    "device": "airfryer",
+    "readyInMinutes": 95,
+    "steps": [
+      { "number": 1, "step": "Stir the warm water and sugar together in a bowl, sprinkle the yeast over the top, and let it sit until foamy, about 5 minutes.", "ingredients": ["warm water", "sugar", "active dry yeast"], "equipment": ["bowl"], "lengthMinutes": 5 },
+      { "number": 2, "step": "Add the flour, kosher salt, and melted butter, then mix and knead until you have a smooth, elastic dough, about 6 minutes.", "ingredients": ["flour", "kosher salt", "butter"], "equipment": ["stand mixer"], "lengthMinutes": 6 },
+      { "number": 3, "step": "Shape the dough into a ball, place it in an oiled bowl, cover, and let it rise in a warm spot until doubled, about 40 minutes.", "ingredients": [], "equipment": [], "lengthMinutes": 40 },
+      { "number": 4, "step": "Divide the dough into 8 pieces, roll each into a rope about 24 inches, and twist into a pretzel shape.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Bring a pot of water to a boil and stir in the baking soda carefully, since it will fizz — this step still happens on the stovetop, since it's the chemistry that gives pretzels their chewy crust, not something an air fryer can replace.", "ingredients": ["baking soda"], "equipment": ["pot"], "lengthMinutes": 5 },
+      { "number": 6, "step": "Boil each pretzel for 20 seconds per side, then use a slotted spoon to transfer it to a tray.", "ingredients": [], "equipment": ["slotted spoon"], "lengthMinutes": 5 },
+      { "number": 7, "step": "Preheat the air fryer to 350°F, brush each pretzel with the beaten egg, and sprinkle generously with the pretzel salt.", "ingredients": ["egg", "pretzel salt"], "equipment": ["air fryer"], "lengthMinutes": 3 },
+      { "number": 8, "step": "Arrange 2 to 3 pretzels at a time in the basket without touching and air fry until deeply golden, about 6 minutes — air fryers run hotter and more concentrated than an oven, so watch closely.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 6 },
+      { "number": 9, "step": "Repeat in batches until all the pretzels are cooked, about 18 more minutes total.", "ingredients": [], "equipment": ["air fryer basket"], "lengthMinutes": 18 },
+      { "number": 10, "step": "Cool the pretzels for a few minutes on a wire rack before serving warm.", "ingredients": [], "equipment": ["wire rack"], "lengthMinutes": null }
+    ]
+  },
+  {
+    "recipeId": 9000148,
+    "device": "crockpot",
+    "readyInMinutes": 280,
+    "steps": [
+      { "number": 1, "step": "Combine the chicken breasts and chicken broth in the slow cooker.", "ingredients": ["chicken breasts", "chicken broth"], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 2, "step": "Cover and cook on low until the chicken shreds easily with a fork, about 4 hours (or high for 2 hours).", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 240 },
+      { "number": 3, "step": "Lift the chicken out, shred it with two forks, and pour off most of the broth — a slow cooker doesn't reduce liquid the way a stovetop simmer does, so draining the extra keeps the dip from turning watery.", "ingredients": [], "equipment": [], "lengthMinutes": null },
+      { "number": 4, "step": "Return the chicken to the pot and add the cream cheese, hot sauce, ranch dressing, and half of the cheddar cheese.", "ingredients": ["cream cheese", "hot sauce", "ranch dressing", "cheddar cheese"], "equipment": [], "lengthMinutes": null },
+      { "number": 5, "step": "Cover and cook on low for 20 more minutes, stirring once, until the cream cheese is fully melted and smooth.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": 20 },
+      { "number": 6, "step": "Sprinkle the remaining cheddar cheese on top, cover, and cook for 10 more minutes until melted.", "ingredients": ["cheddar cheese"], "equipment": ["slow cooker"], "lengthMinutes": 10 },
+      { "number": 7, "step": "Switch to the warm setting — the dip stays hot for serving all party long without drying out the way an oven-baked version would.", "ingredients": [], "equipment": ["slow cooker"], "lengthMinutes": null },
+      { "number": 8, "step": "Garnish with the green onions and serve with celery sticks for dipping.", "ingredients": ["green onions", "celery sticks"], "equipment": [], "lengthMinutes": null }
+    ]
+  }
+]

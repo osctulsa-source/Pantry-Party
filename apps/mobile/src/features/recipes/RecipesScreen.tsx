@@ -110,6 +110,7 @@ import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
+import { getVariantDeviceIds } from '../../data/curated/curatedVariants';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -816,8 +817,9 @@ function CookThis({
   }, [recipes, items, now]);
 
   // "Cooking with": tonight's-device boost + badge. Keyword detection over
-  // title + per-step equipment, memoized per fetched page. Empty selection
-  // (or "Anything") short-circuits to an empty map — ranking unchanged.
+  // title + per-step equipment, unioned with curated device-variant
+  // availability, memoized per fetched page. Empty selection (or "Anything")
+  // short-circuits to an empty map — ranking unchanged.
   const deviceByRecipe = useMemo(() => {
     const map = new Map<number, { boost: number; badge: string | null }>();
     if (tonightDevices.length === 0) return map;
@@ -826,6 +828,9 @@ function CookThis({
         r.title,
         r.instructions.flatMap((g) => g.steps.flatMap((s) => s.equipment)),
       );
+      // A curated recipe that CONVERTS to a device counts as a match too —
+      // the detail screen will open on that device's variant.
+      for (const d of getVariantDeviceIds(r.id)) detected.add(d);
       const boost = scoreDeviceBoost(tonightDevices, detected);
       if (boost > 0) map.set(r.id, { boost, badge: formatDeviceBadge(tonightDevices, detected) });
     }
