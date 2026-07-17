@@ -618,6 +618,15 @@ export function PantryScreen() {
           >
             <X size={18} color={tokens.color.inkMuted} />
           </Pressable>
+          <Pressable
+            onPress={() => setAddMenuOpen(true)}
+            style={[styles.searchAdd, { backgroundColor: zoneTheme.accent }]}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Add items to your pantry"
+          >
+            <Plus size={16} color={zoneTheme.onAccent} />
+          </Pressable>
         </View>
       ) : (
         <Pressable
@@ -1053,6 +1062,12 @@ const styles = StyleSheet.create({
   // The close X needs a real tap target (44pt with hitSlop) — a bare 15px icon
   // at the top of the screen missed most taps.
   searchClose: { padding: tokens.space(1.5), margin: -tokens.space(1.5) },
+  // Negative vertical margin keeps the band the same height as without the +.
+  searchAdd: {
+    borderRadius: 999,
+    padding: tokens.space(1.5),
+    marginVertical: -tokens.space(1),
+  },
   selectBar: {
     flexDirection: 'row',
     alignItems: 'center',
