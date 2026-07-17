@@ -7,15 +7,19 @@
  * proxied lookup on the promoted backend with a paid fallback DB.
  */
 
+import { categoryFromOffTags } from '@breadbox/core';
+
 export interface OffProduct {
   name: string | null;
   brand: string | null;
   /** OFF's free-text package size ("500 g", "12 ct") — display only in v1. */
   quantityText: string | null;
   imageUrl: string | null;
+  /** App category resolved from OFF categories_tags; null when unmapped. */
+  category: string | null;
 }
 
-const FIELDS = 'product_name,brands,quantity,image_front_small_url';
+const FIELDS = 'product_name,brands,quantity,image_front_small_url,categories_tags';
 
 export async function lookupBarcode(barcode: string, timeoutMs = 6000): Promise<OffProduct | null> {
   const controller = new AbortController();
@@ -36,6 +40,7 @@ export async function lookupBarcode(barcode: string, timeoutMs = 6000): Promise<
         brands?: string;
         quantity?: string;
         image_front_small_url?: string;
+        categories_tags?: string[];
       };
     };
     if (json.status !== 1 || !json.product) return null;
@@ -47,6 +52,7 @@ export async function lookupBarcode(barcode: string, timeoutMs = 6000): Promise<
       brand,
       quantityText: p.quantity?.trim() || null,
       imageUrl: p.image_front_small_url ?? null,
+      category: categoryFromOffTags(p.categories_tags ?? []),
     };
   } catch {
     return null; // timeout / offline / parse — caller falls back to manual

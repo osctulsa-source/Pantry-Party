@@ -37,6 +37,8 @@ export interface ScanBasketItem {
   /** OFF free-text size ("500 g") — display only. */
   sizeText: string | null;
   imageUrl: string | null;
+  /** App category from OFF categories_tags; null for OCR/QR rows and OFF misses. */
+  category: string | null;
   qty: number;
 }
 

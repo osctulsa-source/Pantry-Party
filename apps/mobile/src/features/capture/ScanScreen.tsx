@@ -193,6 +193,7 @@ export function ScanScreen() {
             brand: null,
             sizeText: null,
             imageUrl: null,
+            category: null,
             qty: 1,
           },
         ];
@@ -218,6 +219,7 @@ export function ScanScreen() {
           brand: household.brand,
           quantityText: off?.quantityText ?? null,
           imageUrl: off?.imageUrl ?? null,
+          category: off?.category ?? null,
         }
       : off;
     void recordScan(activeHouseholdId, code, product?.name != null);
@@ -244,6 +246,7 @@ export function ScanScreen() {
           brand: product?.brand ?? null,
           sizeText: product?.quantityText ?? null,
           imageUrl: product?.imageUrl ?? null,
+          category: product?.category ?? null,
           qty: 1,
         },
       ];
@@ -347,7 +350,9 @@ export function ScanScreen() {
       // Infer where the food naturally lives, then estimate expiry AT that
       // location — storing milk as "pantry" while estimating with a fridge
       // duration is how scanned items used to get wildly wrong dates.
-      const location = suggestStorageLocation(trimmed) ?? 'pantry';
+      // OFF's category (when the barcode resolved) sharpens both guesses.
+      const category = phase.product?.category ?? undefined;
+      const location = suggestStorageLocation(trimmed, category) ?? 'pantry';
       await addOrMergePantryItem({
         householdId: activeHouseholdId,
         userId,
@@ -355,8 +360,9 @@ export function ScanScreen() {
         brand: brand.trim() || null,
         barcode: isRetailBarcode(phase.barcode) ? phase.barcode : null,
         quantity: 1,
+        category: category ?? null,
         location,
-        expiresIso: suggestExpiryISO({ name: trimmed, location }),
+        expiresIso: suggestExpiryISO({ name: trimmed, category, location }),
         source: target === 'qr' ? 'manual' : 'barcode',
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -398,8 +404,10 @@ export function ScanScreen() {
     try {
       for (const b of addable) {
         const nm = b.name.trim();
-        // Same location-consistent estimate as the single-item confirm path.
-        const location = suggestStorageLocation(nm) ?? 'pantry';
+        // Same location-consistent estimate as the single-item confirm path;
+        // OFF's category (when present) sharpens location + expiry.
+        const category = b.category ?? undefined;
+        const location = suggestStorageLocation(nm, category) ?? 'pantry';
         await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
@@ -407,8 +415,9 @@ export function ScanScreen() {
           brand: b.brand?.trim() || null,
           barcode: isRetailBarcode(b.barcode) ? b.barcode : null,
           quantity: b.qty,
+          category: category ?? null,
           location,
-          expiresIso: suggestExpiryISO({ name: nm, location }),
+          expiresIso: suggestExpiryISO({ name: nm, category, location }),
           source: basketSource(b.barcode),
         });
       }
