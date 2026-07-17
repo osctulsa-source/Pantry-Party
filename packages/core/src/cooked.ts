@@ -30,7 +30,7 @@ export interface CookCandidate {
   matchedIngredient: string;
 }
 
-export type CookAction = 'use-up' | 'use-some' | 'keep';
+export type CookAction = 'use-up' | 'use-some' | 'use-a-bit' | 'keep';
 
 /**
  * Words too generic to signal a food match on their own — descriptors and
@@ -140,4 +140,21 @@ export function defaultCookAction(quantity: number): Exclude<CookAction, 'keep'>
  */
 export function decrementedQuantity(quantity: number): number {
   return Math.max(1, quantity - 1);
+}
+
+/**
+ * One step down the Full → ¾ → ½ → ¼ ladder (the same values the pantry
+ * row's manual fill bar uses). Floors at ¼ — "used up" is the honest path to
+ * empty, this never implies zero. Undefined (fill tracking is opt-in; never
+ * set) behaves as Full, matching the pantry row's display convention.
+ *
+ * Deliberately does NOT wrap back to Full the way the pantry row's own
+ * tap-to-cycle does — that's a manual "I refilled it" reset; cooking a
+ * recipe should never accidentally reset an item to full.
+ */
+export function steppedFillLevel(current: number | undefined): number {
+  const level = current ?? 1;
+  if (level > 0.75) return 0.75;
+  if (level > 0.5) return 0.5;
+  return 0.25;
 }

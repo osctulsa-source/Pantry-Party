@@ -10,6 +10,8 @@ export interface CookedSheetItemRow {
   quantity: number;
   matched: boolean;
   matchedIngredient?: string;
+  /** For the cook sheet's "Used a little" action — undefined when never tracked. */
+  fillLevel: number | undefined;
 }
 
 const FALLBACK_CAP = 8;
@@ -24,13 +26,17 @@ export function buildCookedSheetItems(
     pantry.map((i) => ({ id: i.id, name: i.name, quantity: i.quantity })),
   );
   if (matches.length > 0) {
-    return matches.map((m) => ({
-      itemId: m.itemId,
-      itemName: m.itemName,
-      quantity: m.quantity,
-      matched: true,
-      matchedIngredient: m.matchedIngredient,
-    }));
+    return matches.map((m) => {
+      const source = pantry.find((p) => p.id === m.itemId);
+      return {
+        itemId: m.itemId,
+        itemName: m.itemName,
+        quantity: m.quantity,
+        matched: true,
+        matchedIngredient: m.matchedIngredient,
+        fillLevel: source?.fillLevel,
+      };
+    });
   }
 
   return pantry
@@ -46,5 +52,6 @@ export function buildCookedSheetItems(
       itemName: i.name,
       quantity: i.quantity,
       matched: false,
+      fillLevel: i.fillLevel,
     }));
 }
