@@ -3,6 +3,7 @@ import {
   KITCHEN_TIPS,
   TIP_CATEGORY_META,
   TIP_CATEGORY_ORDER,
+  tipOfTheDay,
 } from './tips';
 
 describe('kitchen tips library', () => {
@@ -34,5 +35,30 @@ describe('kitchen tips library', () => {
       expect(tip.body.trim().length).toBeGreaterThan(0);
       expect(tip.body.length).toBeLessThanOrEqual(500);
     }
+  });
+});
+
+describe('tipOfTheDay', () => {
+  it('is deterministic for a given date', () => {
+    expect(tipOfTheDay('2026-07-17')).toEqual(tipOfTheDay('2026-07-17'));
+    expect(tipOfTheDay('2026-07-17T09:30:00.000Z')).toEqual(tipOfTheDay('2026-07-17T23:59:00.000Z'));
+  });
+
+  it('varies across a 30-day window (multiple tips and categories)', () => {
+    const seen = new Set<string>();
+    const cats = new Set<string>();
+    for (let d = 1; d <= 30; d++) {
+      const tip = tipOfTheDay(`2026-06-${String(d).padStart(2, '0')}`);
+      seen.add(tip.id);
+      cats.add(tip.category);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(10);
+    expect(cats.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('never throws, even on odd input', () => {
+    expect(() => tipOfTheDay('')).not.toThrow();
+    expect(() => tipOfTheDay('not-a-date')).not.toThrow();
+    expect(KITCHEN_TIPS).toContainEqual(tipOfTheDay(''));
   });
 });

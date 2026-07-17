@@ -139,3 +139,17 @@ export const KITCHEN_TIPS: Tip[] = [
   { id: 'ge-7', category: 'general', body: 'Build a small acid shelf: red wine vinegar, rice vinegar, sherry vinegar, and a lemon or two. Different acids brighten different dishes — rice vinegar for gentle, sherry for deep and nutty — and a finishing splash wakes up more dishes than more salt does.' },
   { id: 'ge-8', category: 'general', body: 'Cook once, eat twice. Doubling rice, roasted vegetables, or a pot of beans costs five extra minutes tonight and saves thirty tomorrow — tomorrow\'s fried rice, grain bowl, or soup is already half-made. Leftover components beat leftover meals.' },
 ];
+
+/**
+ * Deterministic daily pick: hash the YYYY-MM-DD prefix (djb2) into the tip
+ * list. Same date → same tip on every device; consecutive dates scatter
+ * across the library. Time-of-day and timezone suffixes are ignored.
+ */
+export function tipOfTheDay(dateISO: string): Tip {
+  const day = dateISO.slice(0, 10);
+  let h = 5381;
+  for (let i = 0; i < day.length; i++) {
+    h = (h * 33 + day.charCodeAt(i)) >>> 0;
+  }
+  return KITCHEN_TIPS[h % KITCHEN_TIPS.length];
+}
