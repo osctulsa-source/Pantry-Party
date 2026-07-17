@@ -16,6 +16,8 @@
  * Audio session: ambient + mix-with-others — people cook to podcasts; we never
  * duck or interrupt them, and we respect the silent switch.
  */
+/* eslint-disable @typescript-eslint/no-require-imports -- Metro resolves static
+   assets via require(), and expo-audio must be required lazily (OTA safety). */
 import * as Haptics from 'expo-haptics';
 
 import { getFeedbackPrefs } from './feedbackPrefs';
@@ -37,7 +39,6 @@ function ensureAudio(): Partial<Record<SoundName, AudioPlayerLike>> | null {
   if (players === 'unavailable') return null;
   if (players) return players;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const audio = require('expo-audio') as typeof import('expo-audio');
     void audio.setAudioModeAsync({
       playsInSilentMode: false,
