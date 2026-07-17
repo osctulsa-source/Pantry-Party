@@ -10,3 +10,4 @@ export const APP_URL_SCHEME = 'pantryparty';
 
 export const EXPIRING_WIDGET_URL = `${APP_URL_SCHEME}://expiring`;
 export const SHOPPING_WIDGET_URL = `${APP_URL_SCHEME}://shopping`;
+export const COOK_ACTIVITY_URL = `${APP_URL_SCHEME}://cook`;
