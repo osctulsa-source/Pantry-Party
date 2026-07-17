@@ -15,6 +15,13 @@ describe('getPantryZone', () => {
     expect(getPantryZone({ name: 'Tea', category: undefined })).toBe('drinks');
   });
 
+  it('routes branded sodas with no stored category to drinks (scanned items)', () => {
+    // Scanned products store category = null when name inference misses;
+    // brand names must still land in the drinks zone.
+    expect(getPantryZone({ name: 'Diet Pepsi', category: undefined })).toBe('drinks');
+    expect(getPantryZone({ name: 'Mountain Dew', category: undefined })).toBe('drinks');
+  });
+
   it('does not put pantry compounds in fresh even if category was stale', () => {
     // Persisted category can be wrong from older inference; name wins.
     expect(getPantryZone({ name: 'Vegetable oil', category: 'produce' })).toBe('shelfStable');
