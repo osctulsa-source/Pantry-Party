@@ -692,6 +692,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           recipeId={recipe.id}
           recipeTitle={recipe.title}
           items={sheetItems}
+          pantryItems={items}
           householdId={activeHouseholdId}
           onClose={() => setCooking(false)}
           onDone={onCookDone}

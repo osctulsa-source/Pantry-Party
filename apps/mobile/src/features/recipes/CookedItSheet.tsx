@@ -31,10 +31,17 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-import { decrementedQuantity, defaultCookAction, steppedFillLevel, type CookAction } from '@breadbox/core';
+import {
+  decrementedQuantity,
+  defaultCookAction,
+  steppedFillLevel,
+  type CookAction,
+  type PantryItem,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import { recordCookEvent } from './cookLog';
+import { AddCookExtraSheet } from './AddCookExtraSheet';
 
 export interface CookedSheetItem {
   itemId: string;
@@ -51,6 +58,7 @@ export function CookedItSheet({
   recipeId,
   recipeTitle,
   items,
+  pantryItems,
   householdId,
   onClose,
   onDone,
@@ -58,6 +66,7 @@ export function CookedItSheet({
   recipeId: number;
   recipeTitle: string;
   items: CookedSheetItem[];
+  pantryItems: PantryItem[];
   householdId: string | null;
   onClose: () => void;
   onDone: (updatedCount: number) => void;
@@ -69,19 +78,37 @@ export function CookedItSheet({
     }
     return initial;
   });
+  const [extras, setExtras] = useState<CookedSheetItem[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const allRows = [...items, ...extras];
   const actionFor = (itemId: string): CookAction => actions[itemId] ?? 'keep';
-  const updateCount = items.filter((i) => actionFor(i.itemId) !== 'keep').length;
+  const updateCount = allRows.filter((i) => actionFor(i.itemId) !== 'keep').length;
 
   function setAction(itemId: string, action: CookAction) {
     setActions((prev) => ({ ...prev, [itemId]: action }));
   }
 
+  const alreadyShownIds = new Set(allRows.map((i) => i.itemId));
+
+  function onPickExtra(pantryItem: PantryItem) {
+    const row: CookedSheetItem = {
+      itemId: pantryItem.id,
+      itemName: pantryItem.name,
+      quantity: pantryItem.quantity,
+      matched: false,
+      fillLevel: pantryItem.fillLevel,
+    };
+    setExtras((prev) => [...prev, row]);
+    setActions((prev) => ({ ...prev, [row.itemId]: defaultCookAction(row.quantity) }));
+    setPickerOpen(false);
+  }
+
   async function onConfirm() {
     if (submitting) return;
-    const updates = items
+    const updates = allRows
       .map((item) => ({ item, action: actionFor(item.itemId) }))
       .filter((u) => u.action !== 'keep');
     setError(null);
@@ -134,7 +161,8 @@ export function CookedItSheet({
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <>
+      <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Close" />
         <View style={styles.card}>
@@ -150,11 +178,11 @@ export function CookedItSheet({
                 : "We couldn't match ingredients automatically — nothing urgent in your pantry to update."}
           </Text>
 
-          {items.length === 0 ? (
+          {allRows.length === 0 ? (
             <Text style={styles.emptyTxt}>Nothing in your pantry to update.</Text>
           ) : (
             <ScrollView style={styles.rows} showsVerticalScrollIndicator={false}>
-              {items.map((item) => {
+              {allRows.map((item) => {
                 const action = actionFor(item.itemId);
                 return (
                   <View key={item.itemId} style={styles.row}>
@@ -199,6 +227,15 @@ export function CookedItSheet({
             </ScrollView>
           )}
 
+          <Pressable
+            onPress={() => setPickerOpen(true)}
+            style={styles.addExtraRow}
+            accessibilityRole="button"
+            accessibilityLabel="Add something else you used"
+          >
+            <Text style={styles.addExtraTxt}>+ Add something else you used</Text>
+          </Pressable>
+
           {error && <Text style={styles.error}>{error}</Text>}
 
           <Pressable
@@ -221,7 +258,16 @@ export function CookedItSheet({
           </Pressable>
         </View>
       </View>
-    </Modal>
+      </Modal>
+      {pickerOpen && (
+        <AddCookExtraSheet
+          pantryItems={pantryItems}
+          alreadyShownIds={alreadyShownIds}
+          onPick={onPickExtra}
+          onClose={() => setPickerOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -327,6 +373,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: tokens.color.inkMuted,
     paddingVertical: tokens.space(4),
+  },
+  addExtraRow: {
+    paddingVertical: tokens.space(3),
+    alignItems: 'center',
+  },
+  addExtraTxt: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 14,
+    color: tokens.color.accent,
   },
   error: {
     marginTop: tokens.space(3),
