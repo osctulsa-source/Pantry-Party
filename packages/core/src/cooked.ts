@@ -30,7 +30,7 @@ export interface CookCandidate {
   matchedIngredient: string;
 }
 
-export type CookAction = 'use-up' | 'use-some' | 'keep';
+export type CookAction = 'use-up' | 'use-some' | 'use-a-bit' | 'keep';
 
 /**
  * Words too generic to signal a food match on their own — descriptors and

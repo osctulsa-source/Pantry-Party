@@ -31,7 +31,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-import { decrementedQuantity, defaultCookAction, type CookAction } from '@breadbox/core';
+import { decrementedQuantity, defaultCookAction, steppedFillLevel, type CookAction } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
 import { recordCookEvent } from './cookLog';
@@ -43,6 +43,8 @@ export interface CookedSheetItem {
   /** True when core's matcher linked this item to a recipe ingredient. */
   matched: boolean;
   matchedIngredient?: string;
+  /** For "Used a little" — undefined when the item never tracked fill level. */
+  fillLevel: number | undefined;
 }
 
 export function CookedItSheet({
@@ -93,6 +95,15 @@ export function CookedItSheet({
             if (u.action === 'use-up') {
               // Tombstone — identical to a manual delete from Edit Item.
               await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
+                now,
+                u.item.itemId,
+              ]);
+            } else if (u.action === 'use-a-bit') {
+              // Nudge the fill bar down one notch — the same primitive the
+              // pantry row's manual tap uses, but floored (never wraps back
+              // to full) so cooking can't accidentally "refill" an item.
+              await tx.execute('UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?', [
+                steppedFillLevel(u.item.fillLevel),
                 now,
                 u.item.itemId,
               ]);
@@ -171,6 +182,11 @@ export function CookedItSheet({
                           onPress={() => setAction(item.itemId, 'use-some')}
                         />
                       )}
+                      <Choice
+                        label="Used a little"
+                        selected={action === 'use-a-bit'}
+                        onPress={() => setAction(item.itemId, 'use-a-bit')}
+                      />
                       <Choice
                         label="Kept"
                         selected={action === 'keep'}
