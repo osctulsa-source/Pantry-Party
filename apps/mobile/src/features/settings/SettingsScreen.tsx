@@ -18,8 +18,9 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import * as Haptics from 'expo-haptics';
+import { BookOpen, CalendarCheck, Clock, Flame, LayoutGrid, Lightbulb, Store, Users } from 'lucide-react-native';
 
-import { suggestDateRepairs } from '@breadbox/core';
+import { suggestDateRepairs, tipOfTheDay } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { BRAND } from '../../theme/brand';
 import { Body, Button, Caption, Input, ListRow, Screen } from '../../components/ui';
@@ -78,6 +79,9 @@ export function SettingsScreen() {
       ).length,
     [items],
   );
+
+  // Same deterministic pick as the Tips screen's featured card.
+  const dailyTip = useMemo(() => tipOfTheDay(new Date().toISOString()), []);
 
   // Seed the field once the synced name loads (the reactive query may resolve
   // after first render); editing thereafter is local until blur/submit saves.
@@ -162,22 +166,73 @@ export function SettingsScreen() {
             </Body>
           </View>
 
-          <ListRow
-            label="Your impact"
-            value={insights.streakDays > 0 ? `🔥 ${insights.streakDays}d` : undefined}
-            onPress={() => navigation.navigate('Insights')}
-          />
-          <ListRow label="Collections" onPress={() => navigation.navigate('Collections')} />
-          <ListRow label="Cookbook" onPress={() => navigation.navigate('Cookbook')} />
-          <ListRow label="History" onPress={() => navigation.navigate('History')} />
-          <ListRow label="Your stores" onPress={() => navigation.navigate('FavoriteStores')} />
-          <ListRow
-            label="Review expiry dates"
-            value={repairCount > 0 ? `${repairCount} to fix` : undefined}
-            onPress={() => navigation.navigate('ReviewDates')}
-          />
-          <ListRow label="Household" onPress={() => navigation.navigate('Household')} />
-          <ListRow label="Kitchen tips" onPress={() => navigation.navigate('Tips')} />
+          <View style={styles.section}>
+            <Caption>Explore</Caption>
+            <View style={styles.rowGroup}>
+              <ListRow
+                icon={<Flame size={16} color={tokens.color.inkMuted} />}
+                label="Your impact"
+                value={insights.streakDays > 0 ? `🔥 ${insights.streakDays}d` : undefined}
+                onPress={() => navigation.navigate('Insights')}
+              />
+              <ListRow
+                icon={<LayoutGrid size={16} color={tokens.color.inkMuted} />}
+                label="Collections"
+                onPress={() => navigation.navigate('Collections')}
+              />
+              <ListRow
+                icon={<BookOpen size={16} color={tokens.color.inkMuted} />}
+                label="Cookbook"
+                onPress={() => navigation.navigate('Cookbook')}
+              />
+              <ListRow
+                icon={<Clock size={16} color={tokens.color.inkMuted} />}
+                label="History"
+                onPress={() => navigation.navigate('History')}
+              />
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Caption>Manage</Caption>
+            <View style={styles.rowGroup}>
+              <ListRow
+                icon={<Store size={16} color={tokens.color.inkMuted} />}
+                label="Your stores"
+                onPress={() => navigation.navigate('FavoriteStores')}
+              />
+              <ListRow
+                icon={<CalendarCheck size={16} color={tokens.color.inkMuted} />}
+                label="Review expiry dates"
+                value={repairCount > 0 ? `${repairCount} to fix` : undefined}
+                onPress={() => navigation.navigate('ReviewDates')}
+              />
+              <ListRow
+                icon={<Users size={16} color={tokens.color.inkMuted} />}
+                label="Household"
+                onPress={() => navigation.navigate('Household')}
+              />
+            </View>
+          </View>
+
+          {/* Tip of the day teaser — same deterministic pick as the Tips screen. */}
+          <Pressable
+            onPress={() => navigation.navigate('Tips')}
+            style={({ pressed }) => [styles.tipTeaser, pressed && styles.tipTeaserPressed]}
+            accessibilityRole="button"
+            accessibilityLabel={`Tip of the day: ${dailyTip.body}`}
+          >
+            <View style={styles.tipTeaserIcon}>
+              <Lightbulb size={16} color={tokens.color.accent} />
+            </View>
+            <View style={styles.tipTeaserBody}>
+              <Text style={styles.tipTeaserCaption}>Tip of the day</Text>
+              <Text style={styles.tipTeaserText} numberOfLines={1} ellipsizeMode="tail">
+                {dailyTip.body}
+              </Text>
+            </View>
+            <Text style={styles.tipTeaserChevron}>›</Text>
+          </Pressable>
         </View>
 
         <View style={styles.bottomGroup}>
@@ -222,6 +277,34 @@ const styles = StyleSheet.create({
     // Breathing room when the list is long enough to sit directly above it.
     paddingTop: tokens.space(6),
   },
+  rowGroup: { gap: tokens.space(2), marginTop: tokens.space(1) },
+  tipTeaser: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(3),
+    backgroundColor: tokens.color.accentSoft,
+    borderRadius: tokens.radius.md,
+    padding: tokens.space(4),
+  },
+  tipTeaserPressed: { opacity: 0.7 },
+  tipTeaserIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 999,
+    backgroundColor: tokens.color.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tipTeaserBody: { flex: 1, gap: 2 },
+  tipTeaserCaption: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: tokens.color.accent,
+  },
+  tipTeaserText: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.ink },
+  tipTeaserChevron: { fontFamily: tokens.font.body.regular, fontSize: 22, color: tokens.color.inkMuted },
   deleteRow: {
     alignItems: 'center',
     paddingVertical: tokens.space(3),
