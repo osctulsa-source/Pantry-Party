@@ -58,6 +58,32 @@ export const STAPLE_GROUPS: Array<{ title: string; items: Staple[] }> = [
     ],
   },
   {
+    title: 'Fruits',
+    items: [
+      { name: 'Apple', category: 'produce', location: 'pantry' },
+      { name: 'Banana', category: 'produce', location: 'pantry' },
+      { name: 'Lemon', category: 'produce', location: 'pantry' },
+      { name: 'Orange', category: 'produce', location: 'pantry' },
+      { name: 'Grapes', category: 'produce', location: 'fridge' },
+      { name: 'Strawberries', category: 'produce', location: 'fridge' },
+      { name: 'Avocado', category: 'produce', location: 'pantry' },
+      { name: 'Lime', category: 'produce', location: 'pantry' },
+    ],
+  },
+  {
+    title: 'Vegetables',
+    items: [
+      { name: 'Onion', category: 'produce', location: 'pantry' },
+      { name: 'Garlic', category: 'produce', location: 'pantry' },
+      { name: 'Potato', category: 'produce', location: 'pantry' },
+      { name: 'Carrot', category: 'produce', location: 'fridge' },
+      { name: 'Tomato', category: 'produce', location: 'pantry' },
+      { name: 'Bell pepper', category: 'produce', location: 'fridge' },
+      { name: 'Broccoli', category: 'produce', location: 'fridge' },
+      { name: 'Lettuce', category: 'produce', location: 'fridge' },
+    ],
+  },
+  {
     title: 'Drinks',
     items: [
       { name: 'Water', category: 'beverage', location: 'pantry', noExpiry: true },
