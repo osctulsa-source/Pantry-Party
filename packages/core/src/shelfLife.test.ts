@@ -30,6 +30,23 @@ describe('categorizeByName', () => {
     expect(categorizeByName('Vegetables')).toBe('produce');
   });
 
+  it('routes branded sodas and sports drinks to beverage (the Diet Pepsi bug)', () => {
+    expect(categorizeByName('Diet Pepsi')).toBe('beverage');
+    expect(categorizeByName('Coke Zero')).toBe('beverage');
+    expect(categorizeByName('Dr Pepper')).toBe('beverage');
+    expect(categorizeByName('Dr. Pepper')).toBe('beverage');
+    expect(categorizeByName('Mountain Dew')).toBe('beverage');
+    expect(categorizeByName('Sprite')).toBe('beverage');
+    expect(categorizeByName('Gatorade Frost')).toBe('beverage');
+    expect(categorizeByName('Red Bull')).toBe('beverage');
+    expect(categorizeByName('7UP')).toBe('beverage');
+    expect(categorizeByName('7 Up')).toBe('beverage');
+    expect(categorizeByName('Ginger ale')).toBe('beverage');
+    // Brand words must not over-match unrelated foods.
+    expect(categorizeByName('Artichoke hearts')).not.toBe('beverage');
+    expect(categorizeByName('Black pepper')).toBe('pantry');
+  });
+
   it('does not treat baking soda as a beverage', () => {
     expect(categorizeByName('Baking soda')).toBe('pantry');
     expect(categorizeByName('Baking powder')).toBe('pantry');

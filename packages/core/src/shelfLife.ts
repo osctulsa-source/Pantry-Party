@@ -25,6 +25,10 @@ const NAME_CATEGORY_RULES: Array<[RegExp, string]> = [
   [/\bbaking\s+(soda|powder)\b/, 'pantry'],
   // (?<!baking\s) keeps a bare "soda" as a drink without re-catching baking soda.
   [/\b(juice|(?<!baking\s)soda|beer|wine|kombucha|cola|lemonade|drink|beverage|tea|coffee|water|seltzer|sparkling)\b/, 'beverage'],
+  // Branded drinks carry no generic drink word ("Diet Pepsi") — barcode scans
+  // store the product name verbatim, so the classifier must know the big
+  // brands or scanned sodas fall through to null and the shelf-stable zone.
+  [/\b(pepsi|coke|coca.?cola|sprite|fanta|dr\.?\s?pepper|mountain\s+dew|gatorade|powerade|red\s?bull|monster\s+energy|7\s?up|ginger\s+ale|root\s+beer)\b/, 'beverage'],
   [/\b(frozen|ice cream|freezer)\b/, 'frozen'],
   // Pantry compounds before produce: "vegetable oil", "canned tomatoes", "avocado oil".
   [/\b(flour|sugar|salt|rice|pasta|oil|sauce|ketchup|mustard|mayo|vinegar|honey|oats|cereal|bean|beans|canned|stock|broth|spice|pepper|baking|yeast|peanut|jam|pantry|dry)\b/, 'pantry'],
