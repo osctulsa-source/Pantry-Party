@@ -14,6 +14,7 @@ export type PantryFoodName =
   | 'oliveoilbottle' | 'oiljug' | 'soybottle' | 'ketchupbottle' | 'mustardbottle' | 'mayojar' | 'hotsaucebottle' | 'vinegarflask' | 'honeypot'
   | 'ricebowl' | 'spaghetti' | 'oatcanister' | 'tomatocan' | 'beancan' | 'stockcarton' | 'peppergrinder'
   | 'waterglass' | 'fizzybottle' | 'juicecarton' | 'coffeemug' | 'teacup' | 'sodacan' | 'milkjug' | 'butterdish' | 'wheat' | 'peanut' | 'shrimp'
+  | 'banana' | 'orange' | 'strawberry' | 'avocadohalf' | 'lime' | 'onion' | 'garlic' | 'potato' | 'broccoli' | 'lettuce'
   | 'stove' | 'oven' | 'crockpot' | 'airfryer' | 'grill' | 'griddle' | 'instantpot' | 'sheetpan' | 'microwave' | 'nocook';
 
 export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode> = {
@@ -330,6 +331,92 @@ export const PANTRY_GLYPHS: Record<PantryFoodName, (c: Paint) => React.ReactNode
       <Circle cx={32} cy={16} r={1.4} fill={cut} />
     </>
   ),
+  // ---- produce (Quick Add fruits & vegetables) -----------------------------
+  // Curved crescent with a ridge line and a stem nub.
+  banana: ({ body, cut }) => (
+    <>
+      <Path d="M13 18 Q14 34 30 36 Q37 37 38 31 Q37 33 30 32 Q17 30 16 17 Q16 14 14 14 Q12 14 13 18 Z" fill={body} />
+      <Path d="M18 22 Q21 30 28 33" fill="none" stroke={cut} strokeWidth={2} />
+    </>
+  ),
+  // Round body, navel dimple, single leaf.
+  orange: ({ body, cut, leaf }) => (
+    <>
+      <Circle cx={24} cy={27} r={11} fill={body} />
+      <Circle cx={24} cy={22} r={1.6} fill={cut} />
+      <Path d="M25 15 C29 11 34 12 34 12 C34 16 30 18 26 17 Z" fill={leaf} />
+    </>
+  ),
+  // Tapered berry, seed dots, leafy cap.
+  strawberry: ({ body, cut, leaf }) => (
+    <>
+      <Path d="M14 22 Q14 18 24 18 Q34 18 34 22 Q34 32 24 38 Q14 32 14 22 Z" fill={body} />
+      <Circle cx={20} cy={25} r={1.3} fill={cut} />
+      <Circle cx={28} cy={25} r={1.3} fill={cut} />
+      <Circle cx={24} cy={30} r={1.3} fill={cut} />
+      <Path d="M24 18 L19 13 L23 15 L24 11 L25 15 L29 13 Z" fill={leaf} />
+    </>
+  ),
+  // Halved avocado: teardrop shell, round pit.
+  avocadohalf: ({ body, cut }) => (
+    <>
+      <Path d="M24 10 Q29 16 32 22 Q36 30 30 35 Q24 39 18 35 Q12 30 16 22 Q19 16 24 10 Z" fill={body} />
+      <Circle cx={24} cy={28} r={5} fill={cut} />
+    </>
+  ),
+  // Citrus round with wedge segment lines.
+  lime: ({ body, cut }) => (
+    <>
+      <Circle cx={24} cy={25} r={11} fill={body} />
+      <Path d="M24 25 V16 M24 25 L32 21 M24 25 L32 30 M24 25 L24 34 M24 25 L16 30 M24 25 L16 21" fill="none" stroke={cut} strokeWidth={2} />
+    </>
+  ),
+  // Bulb with layer curves and a sprout.
+  onion: ({ body, cut, leaf }) => (
+    <>
+      <Path d="M24 17 Q35 22 35 30 Q35 38 24 38 Q13 38 13 30 Q13 22 24 17 Z" fill={body} />
+      <Path d="M20 20 Q17 27 19 35" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M28 20 Q31 27 29 35" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M24 17 V11 M24 14 L20 9 M24 14 L28 9" fill="none" stroke={leaf} />
+    </>
+  ),
+  // Plump head with clove divisions and a papery tip.
+  garlic: ({ body, cut }) => (
+    <>
+      <Path d="M24 14 Q26 19 30 22 Q36 27 33 34 Q30 39 24 39 Q18 39 15 34 Q12 27 18 22 Q22 19 24 14 Z" fill={body} />
+      <Path d="M24 22 V39" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M19 25 Q17 32 20 38" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M29 25 Q31 32 28 38" fill="none" stroke={cut} strokeWidth={2} />
+    </>
+  ),
+  // Lumpy oval with eye dots.
+  potato: ({ body, cut }) => (
+    <>
+      <Path d="M13 27 Q12 19 20 18 Q26 15 32 19 Q38 23 35 30 Q33 37 25 37 Q15 37 13 27 Z" fill={body} />
+      <Circle cx={20} cy={25} r={1.4} fill={cut} />
+      <Circle cx={28} cy={23} r={1.2} fill={cut} />
+      <Circle cx={26} cy={31} r={1.4} fill={cut} />
+    </>
+  ),
+  // Cloud of florets on a stout stem.
+  broccoli: ({ body, cut }) => (
+    <>
+      <Path d="M21 27 h6 l1 12 h-8 Z" fill={body} />
+      <Path d="M12 21 Q12 14 19 14 Q21 9 27 10 Q33 9 34 15 Q39 17 37 23 Q35 28 29 27 L19 27 Q13 27 12 21 Z" fill={body} />
+      <Circle cx={19} cy={19} r={1.4} fill={cut} />
+      <Circle cx={26} cy={16} r={1.4} fill={cut} />
+      <Circle cx={31} cy={21} r={1.4} fill={cut} />
+    </>
+  ),
+  // Layered head, outer leaves swooping up.
+  lettuce: ({ body, cut }) => (
+    <>
+      <Path d="M12 30 Q10 20 19 17 Q24 12 30 16 Q38 17 36 27 Q36 35 24 36 Q13 36 12 30 Z" fill={body} />
+      <Path d="M18 21 Q16 27 18 34" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M24 18 Q23 26 24 36" fill="none" stroke={cut} strokeWidth={2} />
+      <Path d="M30 20 Q32 27 30 34" fill="none" stroke={cut} strokeWidth={2} />
+    </>
+  ),
   // ---- appliances (cook-device tiles) — no leaf, ever ----------------------
   // Frying pan: top-down disc + long handle, sizzle ticks inside.
   stove: ({ body, cut }) => (
@@ -437,6 +524,8 @@ export const PANTRY_TONE: Record<PantryFoodName, BrandTone> = {
   waterglass: 'blue', fizzybottle: 'spruce', juicecarton: 'terracotta', coffeemug: 'cocoa',
   teacup: 'fern', sodacan: 'plum', milkjug: 'blue', butterdish: 'ochre',
   wheat: 'ochre', peanut: 'cocoa', shrimp: 'brick',
+  banana: 'ochre', orange: 'terracotta', strawberry: 'brick', avocadohalf: 'olive', lime: 'fern',
+  onion: 'plum', garlic: 'blue', potato: 'cocoa', broccoli: 'fern', lettuce: 'olive',
   stove: 'spruce', oven: 'cocoa', crockpot: 'brick', airfryer: 'plum', grill: 'fern',
   griddle: 'ochre', instantpot: 'blue', sheetpan: 'terracotta', microwave: 'blue', nocook: 'cocoa',
 } as const;
