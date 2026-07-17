@@ -360,7 +360,7 @@ function UndiscoveredSection({ reduce, pantryItems }: { reduce: boolean; pantryI
             {withinReach.length > 0 ? (
               withinReach.slice(0, 2).map((match) => (
                 <View key={match.recipe.id} style={styles.rchip}>
-                  <Text style={styles.rchipText}>
+                  <Text style={styles.rchipText} numberOfLines={1} ellipsizeMode="tail">
                     {match.recipe.title} (need {match.missing.length})
                   </Text>
                 </View>
@@ -577,8 +577,8 @@ const styles = StyleSheet.create({
   cookBody: { flex: 1 },
   cookTitle: { fontFamily: tokens.font.display.semibold, fontSize: 15, color: tokens.color.ink, marginBottom: 2 },
   cookText: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.ink, opacity: 0.82, lineHeight: 18 },
-  cookChips: { flexDirection: 'row', gap: tokens.space(2), marginTop: tokens.space(2) },
-  rchip: { backgroundColor: tokens.color.surface, borderRadius: 999, paddingHorizontal: tokens.space(3), paddingVertical: tokens.space(1) },
+  cookChips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2), marginTop: tokens.space(2) },
+  rchip: { backgroundColor: tokens.color.surface, borderRadius: 999, paddingHorizontal: tokens.space(3), paddingVertical: tokens.space(1), flexShrink: 1, maxWidth: '100%' },
   rchipText: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent, letterSpacing: 1 },
 
   mysteryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(3) },
