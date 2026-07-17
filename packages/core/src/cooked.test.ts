@@ -5,6 +5,7 @@ import {
   matchCookedItems,
   normalizeFoodTokens,
   singularizeToken,
+  steppedFillLevel,
 } from './cooked.ts';
 
 describe('singularizeToken', () => {
@@ -103,5 +104,21 @@ describe('decrementedQuantity', () => {
     expect(decrementedQuantity(2)).toBe(1);
     expect(decrementedQuantity(1.5)).toBe(1);
     expect(decrementedQuantity(1)).toBe(1);
+  });
+});
+
+describe('steppedFillLevel', () => {
+  it('steps down one notch: Full → ¾ → ½ → ¼', () => {
+    expect(steppedFillLevel(1)).toBe(0.75);
+    expect(steppedFillLevel(0.75)).toBe(0.5);
+    expect(steppedFillLevel(0.5)).toBe(0.25);
+  });
+
+  it('floors at ¼ — never implies zero, never wraps back to full', () => {
+    expect(steppedFillLevel(0.25)).toBe(0.25);
+  });
+
+  it('treats undefined (never tracked) as Full, one step down', () => {
+    expect(steppedFillLevel(undefined)).toBe(0.75);
   });
 });
