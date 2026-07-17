@@ -1098,6 +1098,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(3.5),
     borderRadius: 999,
     overflow: 'hidden',
+    // Without this, a re-layout elsewhere on screen (e.g. expanding a big
+    // Still-good section) can leave the horizontal ScrollView's measured
+    // width stale on next render, and RN compresses/overlaps these flex
+    // children into it instead of keeping their natural pill width and
+    // letting the row scroll. flexShrink: 0 makes each chip's size purely
+    // intrinsic (label + padding), independent of the scroll container's
+    // measured width.
+    flexShrink: 0,
   },
   // Explicit lineHeight + includeFontPadding: Nunito Sans clips vertically on
   // iOS/Android without them — invisible on the soft chip fill, obvious once a
