@@ -1093,6 +1093,7 @@ function CookThis({
           recipeId={cooking.id}
           recipeTitle={cooking.title}
           items={sheetItems}
+          pantryItems={items}
           householdId={householdId}
           onClose={() => setCooking(null)}
           onDone={(n) => onCookDone(cooking, n)}
