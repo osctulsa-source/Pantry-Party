@@ -151,5 +151,7 @@ export function tipOfTheDay(dateISO: string): Tip {
   for (let i = 0; i < day.length; i++) {
     h = (h * 33 + day.charCodeAt(i)) >>> 0;
   }
-  return KITCHEN_TIPS[h % KITCHEN_TIPS.length];
+  // Modulo keeps the index in [0, length); the assertion satisfies
+  // noUncheckedIndexedAccess in consumers.
+  return KITCHEN_TIPS[h % KITCHEN_TIPS.length]!;
 }
