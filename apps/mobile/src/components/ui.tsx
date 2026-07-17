@@ -132,14 +132,17 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-export function ListRow({ label, value, onPress }: { label: string; value?: string; onPress?: () => void }) {
+export function ListRow({ label, value, icon, onPress }: { label: string; value?: string; icon?: React.ReactNode; onPress?: () => void }) {
   return (
     <Pressable
       onPress={onPress}
       disabled={!onPress}
       style={({ pressed }) => [styles.listRow, pressed && onPress ? styles.listRowPressed : null]}
     >
-      <Text style={styles.listRowLabel}>{label}</Text>
+      <View style={styles.listRowLeft}>
+        {icon ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{icon}</View> : null}
+        <Text style={styles.listRowLabel}>{label}</Text>
+      </View>
       <View style={styles.listRowRight}>
         {value ? <Text style={styles.listRowValue}>{value}</Text> : null}
         {onPress ? <Text style={styles.listRowChevron}>›</Text> : null}
@@ -196,6 +199,7 @@ const styles = StyleSheet.create({
   },
   listRowPressed: { opacity: 0.7 },
   listRowLabel: { fontFamily: tokens.font.body.semibold, fontSize: 16, color: tokens.color.ink },
+  listRowLeft: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(3), flexShrink: 1 },
   listRowRight: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
   listRowValue: { fontFamily: tokens.font.body.regular, fontSize: 14, color: tokens.color.inkMuted },
   listRowChevron: { fontFamily: tokens.font.body.regular, fontSize: 22, color: tokens.color.inkMuted },
