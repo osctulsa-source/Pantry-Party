@@ -1,16 +1,16 @@
 /**
- * CookSkeleton — loading placeholder for the Cook tab body (the hero recipe
- * card). The header / meal chips / controls stay live above it; this stands in
- * for the card while Spoonacular responds, instead of a bare spinner.
+ * CookSkeleton — loading placeholder for the Cook tab feed (a stack of recipe
+ * cards). The header / meal chips / controls stay live above it; this stands
+ * in for the feed while Spoonacular responds, instead of a bare spinner.
  */
 import { StyleSheet, View } from 'react-native';
 
 import { tokens } from '../../theme/tokens';
 import { Skeleton } from '../../components/Skeleton';
 
-export function CookSkeleton() {
+function SkeletonCard() {
   return (
-    <View style={styles.wrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+    <View style={styles.card}>
       <Skeleton style={styles.image} />
       <Skeleton style={styles.title} />
       <Skeleton style={styles.match} />
@@ -24,8 +24,18 @@ export function CookSkeleton() {
   );
 }
 
+export function CookSkeleton() {
+  return (
+    <View style={styles.wrap} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <SkeletonCard />
+      <SkeletonCard />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: tokens.space(6), paddingTop: tokens.space(2) },
+  card: { marginBottom: tokens.space(6) },
   image: { width: '100%', height: 170, borderRadius: tokens.radius.lg },
   title: { width: '70%', height: 20, borderRadius: 8, marginTop: tokens.space(3) },
   match: { width: '45%', height: 12, borderRadius: 6, marginTop: tokens.space(2) },
