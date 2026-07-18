@@ -38,6 +38,7 @@ import {
   categorizeByName,
   COOKING_DEVICES,
   detectDevices,
+  detectUncoveredStaples,
   suggestSubstitutes,
   titleCaseIngredient,
   type CookingDevice,
@@ -367,6 +368,19 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     return out;
   }, [effectiveInstructions]);
 
+  // Staples (rice, pasta, quinoa, couscous) that are used but never mentioned
+  // in a single step — the recipe assumes you already know how to cook them.
+  // `recipe.ingredients` is stable across device variants; `stepList` already
+  // reflects whichever instruction set (variant/backfill/payload) is on screen.
+  const uncoveredStaples = useMemo(
+    () =>
+      detectUncoveredStaples(
+        recipe.ingredients.map((i) => i.name),
+        stepList.flatMap((s) => [s.step, ...s.ingredients]),
+      ),
+    [recipe.ingredients, stepList],
+  );
+
   const displayMinutes = activeVariant ? activeVariant.readyInMinutes : recipe.readyInMinutes;
   const summary = recipe.summary ? shortSummary(recipe.summary) : '';
   const hasSteps = effectiveInstructions.some((g) => g.steps.length > 0);
@@ -524,6 +538,25 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
                   : `Add ${recipe.missedIngredientCount} missing to list`}
               </Text>
             </Pressable>
+          )}
+
+          {uncoveredStaples.length > 0 && (
+            <View style={styles.stapleCard}>
+              <View style={styles.stapleHead}>
+                <Utensils size={16} color={tokens.color.accent} />
+                <Text style={styles.stapleHeadTxt}>
+                  {uncoveredStaples.length === 1
+                    ? `Heads up — this recipe doesn't say how to cook the ${uncoveredStaples[0]?.label.toLowerCase()}:`
+                    : "Heads up — this recipe doesn't say how to cook a couple of staples:"}
+                </Text>
+              </View>
+              {uncoveredStaples.map((s) => (
+                <View key={s.id} style={styles.stapleItem}>
+                  {uncoveredStaples.length > 1 && <Text style={styles.stapleLabel}>{s.label}</Text>}
+                  <Text style={styles.stapleText}>{s.instructions}</Text>
+                </View>
+              ))}
+            </View>
           )}
 
           <Text style={styles.sectionHead}>Steps</Text>
@@ -892,6 +925,20 @@ const styles = StyleSheet.create({
   },
   secondaryBtnDone: { borderColor: tokens.color.accentSoft, backgroundColor: tokens.color.accentSoft },
   secondaryBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.accent },
+  stapleCard: {
+    marginTop: tokens.space(4),
+    padding: tokens.space(4),
+    borderRadius: tokens.radius.lg,
+    backgroundColor: tokens.color.surfaceAlt,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+    gap: tokens.space(3),
+  },
+  stapleHead: { flexDirection: 'row', alignItems: 'center', gap: tokens.space(2) },
+  stapleHeadTxt: { flex: 1, fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.ink, lineHeight: 18 },
+  stapleItem: { gap: 2 },
+  stapleLabel: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.accent },
+  stapleText: { fontFamily: tokens.font.body.regular, fontSize: 13, color: tokens.color.inkMuted, lineHeight: 18 },
   deviceRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

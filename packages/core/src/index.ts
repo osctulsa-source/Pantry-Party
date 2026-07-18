@@ -27,6 +27,7 @@ export * from "./receiptStoreHints.ts";
 export * from "./pantryZones.ts";
 export * from "./offCategory.ts";
 export * from "./substitutions.ts";
+export * from "./staples.ts";
 export * from "./useItUp.ts";
 export * from "./cookingDevice.ts";
 export * from "./tips.ts";
