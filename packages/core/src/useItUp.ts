@@ -18,12 +18,25 @@ import { normalizeFoodTokens } from "./cooked.ts";
 export interface UrgentMatch {
   /** Pantry item's display name (as stored). */
   itemName: string;
-  /** Whole days until expiry (floor). Negative when already expired. */
+  /** Calendar days until expiry (UTC). Negative when already expired. */
   daysLeft: number;
   status: "expired" | "warning" | "soon";
 }
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+/**
+ * Whole calendar days (UTC) from now's day to the expiry's day. Counts on the
+ * same UTC basis as the stored UTC-midnight `expiresAt` and getExpiryStatus, so
+ * the "Use it up" badge's day count matches the pantry expiry pill instead of
+ * drifting by the fractional part of the current day — an item expiring
+ * tomorrow reads "1 day left" here AND "Expires tomorrow" on the pantry row,
+ * never "expires today" on one screen and "tomorrow" on the other.
+ */
+function calendarDaysUntil(expiry: Date, now: Date): number {
+  const startOfUtcDay = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  return Math.round((startOfUtcDay(expiry) - startOfUtcDay(now)) / MS_PER_DAY);
+}
 
 /** One recipe can't run away from the taste signal on urgency alone. */
 const SCORE_CAP = 6;
@@ -68,7 +81,7 @@ export function scoreUseItUp(
     if (!item.expiresAt) continue;
     const expiry = new Date(item.expiresAt);
     if (Number.isNaN(expiry.getTime())) continue;
-    const daysLeft = Math.floor((expiry.getTime() - now.getTime()) / MS_PER_DAY);
+    const daysLeft = calendarDaysUntil(expiry, now);
     const weight = urgencyWeight(daysLeft);
     if (weight === 0) continue;
     if (!normalizeFoodTokens(item.name).some((t) => ingredientTokens.has(t))) continue;
