@@ -61,6 +61,7 @@ import type { RecipeInstructionGroup } from '../../data/spoonacular/types';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { getDeviceVariants, pickDefaultDevice } from '../../data/curated/curatedVariants';
 import { useTonightDevices } from './useTonightDevices';
+import { formatAmount } from './scaleServings';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -95,40 +96,6 @@ function hasIngredient(usedLc: string[], ingredientName: string): boolean {
   const n = ingredientName.toLowerCase();
   if (n.length === 0) return false;
   return usedLc.some((u) => u.length > 0 && (n.includes(u) || u.includes(n)));
-}
-
-/**
- * A friendly amount chip — "1½ cups", "2 tbsp", "¾" — so the food name can
- * lead the row and the fractions stay glanceable off to the side. Decimal
- * fractions map to the familiar unicode glyphs; null when there's no amount.
- */
-const FRACTIONS: Array<[number, string]> = [
-  [0.25, '¼'],
-  [0.33, '⅓'],
-  [0.5, '½'],
-  [0.67, '⅔'],
-  [0.75, '¾'],
-];
-function formatAmount(amount: number | null, unit: string): string | null {
-  if (amount === null || amount <= 0) return unit.trim() || null;
-  const whole = Math.floor(amount);
-  const frac = amount - whole;
-  let fracGlyph = '';
-  for (const [v, glyph] of FRACTIONS) {
-    if (Math.abs(frac - v) < 0.05) {
-      fracGlyph = glyph;
-      break;
-    }
-  }
-  const num = fracGlyph
-    ? whole > 0
-      ? `${whole}${fracGlyph}`
-      : fracGlyph
-    : Number.isInteger(amount)
-      ? `${amount}`
-      : `${Math.round(amount * 100) / 100}`;
-  const u = unit.trim();
-  return u ? `${num} ${u}` : num;
 }
 
 function Tag({ label }: { label: string }) {
