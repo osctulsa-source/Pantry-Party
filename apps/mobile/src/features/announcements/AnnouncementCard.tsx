@@ -42,7 +42,8 @@ export function AnnouncementCard({
 
   const meta = () => {
     if (isRun && announcement.departs_at) {
-      return `Heads out around ${formatDepartureLabel(announcement.departs_at)}${announcement.store_hint ? ` · ${announcement.store_hint}` : ''}`;
+      const time = `Heads out around ${formatDepartureLabel(announcement.departs_at)}`;
+      return announcement.message ? `${time} · ${announcement.message}` : time;
     }
     if (!isRun && announcement.recipe_title) {
       return `Making ${announcement.recipe_title}`;
@@ -67,7 +68,7 @@ export function AnnouncementCard({
       accessibilityRole="button"
       accessibilityLabel={
         isRun
-          ? `Shopping run${announcement.store_hint ? ` to ${announcement.store_hint}` : ''}`
+          ? `Shopping run${announcement.message ? `: ${announcement.message}` : ''}`
           : `Cooking ${announcement.recipe_title ?? ''}`
       }
     >
