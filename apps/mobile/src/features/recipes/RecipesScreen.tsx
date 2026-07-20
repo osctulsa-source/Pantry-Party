@@ -112,6 +112,7 @@ import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
 import { track } from '../../observability/analytics';
+import { CuratedBrowse } from './CuratedBrowse';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { getVariantDeviceIds } from '../../data/curated/curatedVariants';
 import type { TabParamList } from '../../navigation/MainTabs';
@@ -549,22 +550,20 @@ export function RecipesScreen() {
         </View>
       )}
 
-      {recipeState.kind === 'empty' && (
+      {recipeState.kind === 'empty' && recipeState.reason === 'no-pantry' && (
+        <CuratedBrowse meal={meal} onAddToPantry={() => navigation.navigate('QuickAdd')} />
+      )}
+
+      {recipeState.kind === 'empty' && recipeState.reason !== 'no-pantry' && (
         <View style={styles.center}>
           <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
           <Text style={styles.errorTitle}>
-            {recipeState.reason === 'no-pantry'
-              ? 'Your pantry is the menu'
-              : recipeState.reason === 'all-excluded'
-                ? "Everything's on the bench"
-                : "That's everything we found"}
+            {recipeState.reason === 'all-excluded' ? "Everything's on the bench" : "That's everything we found"}
           </Text>
           <Text style={styles.helper}>
-            {recipeState.reason === 'no-pantry'
-              ? "Add what's in your fridge and we'll figure out dinner."
-              : recipeState.reason === 'all-excluded'
-                ? "You excluded all your ingredients — bring some back or hit Reset."
-                : "Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration."}
+            {recipeState.reason === 'all-excluded'
+              ? "You excluded all your ingredients — bring some back or hit Reset."
+              : 'Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration.'}
           </Text>
           {canReset && (
             <Pressable style={styles.resetBtn} onPress={reset}>
