@@ -40,3 +40,52 @@ export function formatAmount(amount: number | null, unit: string): string | null
   const u = unit.trim();
   return u ? `${num} ${u}` : num;
 }
+
+/** Nearest-quarter snap used for scaled amounts, matching the fraction glyphs above. */
+function snapToQuarter(value: number): number {
+  return Math.round(value * 4) / 4;
+}
+
+// Matches a leading numeric/fraction token at the start of an `original`
+// string: digits, decimal points, a slash (for "1/2"), unicode fraction
+// glyphs, and the whitespace that follows — e.g. "1 lb", "1½ cups", "¾ cup".
+const LEADING_NUMBER = /^[\d.\/½⅓⅔¼¾]+\s*/;
+
+/** Strips a leading unit token (matching `unit`, tolerating a trailing "s") from the front of `text`. */
+function stripLeadingUnit(text: string, unit: string): string {
+  const u = unit.trim();
+  if (!u) return text;
+  const match = new RegExp(`^${u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?\\s*`, 'i').exec(text);
+  return match !== null ? text.slice(match[0].length) : text;
+}
+
+/**
+ * Scales a recipe's ingredient list from one serving count to another.
+ * Returns the same array reference (identity) when there's nothing to do,
+ * so callers can memoize on the result safely.
+ */
+export function scaleIngredients(
+  ingredients: RecipeIngredient[],
+  fromServings: number,
+  toServings: number,
+): RecipeIngredient[] {
+  if (fromServings <= 0 || fromServings === toServings) return ingredients;
+  const ratio = toServings / fromServings;
+
+  return ingredients.map((ing) => {
+    if (ing.amount === null) return ing;
+
+    const rawScaled = ing.amount * ratio;
+    const snapped = snapToQuarter(rawScaled);
+    const newAmount = snapped > 0 ? snapped : 0.25;
+
+    const formatted = formatAmount(newAmount, ing.unit);
+    const leadingMatch = LEADING_NUMBER.exec(ing.original);
+    const newOriginal =
+      leadingMatch !== null
+        ? `${formatted ?? ''} ${stripLeadingUnit(ing.original.slice(leadingMatch[0].length), ing.unit)}`.trim()
+        : `${formatted ?? ''} ${ing.name}`.trim();
+
+    return { ...ing, amount: newAmount, original: newOriginal };
+  });
+}
