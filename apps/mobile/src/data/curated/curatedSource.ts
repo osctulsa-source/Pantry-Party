@@ -96,3 +96,37 @@ export function searchCurated(
   );
   return scored.slice(offset, offset + number);
 }
+
+export interface CuratedBrowseOptions {
+  /** Meal filter; omit for any. */
+  type?: MealType;
+  /** Max results (default 10). */
+  number?: number;
+  /** Page through the list. */
+  offset?: number;
+}
+
+/**
+ * Zero-input browse: the curated set listed WITHOUT a pantry to match against —
+ * the empty/skipped-pantry payoff so the Cook tab is never a blank wall. No
+ * pantry means no used/missed counts (all zeroed), so callers must render these
+ * with a browse-style card, NOT the pantry-match card (which would read
+ * "Uses 0 of 0"). Ordered quickest-first so the fastest wins lead.
+ */
+export function browseCurated(opts: CuratedBrowseOptions = {}): SpoonacularRecipe[] {
+  const { type, number = 10, offset = 0 } = opts;
+  const list: SpoonacularRecipe[] = CURATED.filter((r) => !type || r.mealType === type).map((r) => ({
+    ...r,
+    likes: 0,
+    usedIngredientNames: [],
+    missedIngredientNames: [],
+    usedIngredientCount: 0,
+    missedIngredientCount: 0,
+  }));
+  list.sort((a, b) => {
+    const at = a.readyInMinutes ?? Number.POSITIVE_INFINITY;
+    const bt = b.readyInMinutes ?? Number.POSITIVE_INFINITY;
+    return at - bt || a.title.localeCompare(b.title);
+  });
+  return list.slice(offset, offset + number);
+}
