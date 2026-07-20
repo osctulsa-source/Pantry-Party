@@ -1,17 +1,17 @@
 # Pantry Party curated recipe database
 
-**248 original recipes** (`curated.recipes.json`), easy → medium, owned by the
+**288 original recipes** (`curated.recipes.json`), easy → medium, owned by the
 project — no external recipe API required to serve them. Includes a lazy-kitchen
 batch (crockpot, Instant Pot, air fryer, sheet pan, microwave, no-cook) so the
 Cook tab's device picker has real house recipes to boost.
 
 | | |
 |---|---|
-| Recipes | 248 (ids `9000001`–`9000248`, contiguous) |
-| Meal types | 40 breakfast · 148 main course · 33 dessert · 27 snack |
-| Difficulty | 198 easy · 50 medium |
-| Dietary | 138 vegetarian · 42 vegan · 124 gluten-free (as written) |
-| Steps | 1,607 authored steps (avg 6.5/recipe), each with per-step ingredients / equipment / duration |
+| Recipes | 288 (ids `9000001`–`9000288`, contiguous) |
+| Meal types | 44 breakfast · 174 main course · 39 dessert · 31 snack |
+| Difficulty | 222 easy · 66 medium |
+| Dietary | 159 vegetarian · 58 vegan · 156 gluten-free (as written) |
+| Steps | 1,870 authored steps (avg 6.5/recipe), each with per-step ingredients / equipment / duration |
 
 ## Provenance & licensing (why this is clean)
 
@@ -42,7 +42,7 @@ authoring; the image pass fills hosted URLs).
 
 **Id space:** `9000001+` — far above Spoonacular's id range, so anything keyed
 on `recipe.id` (favorites, prefs, cook history) can never collide. New batches
-continue from `9000249`.
+continue from `9000289`.
 
 ## Validation
 
