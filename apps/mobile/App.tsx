@@ -102,7 +102,7 @@ const linking: LinkingOptions<RootStackParamList> = {
   },
 };
 
-function AppStack() {
+function AppStack({ landOnCook }: { landOnCook: boolean }) {
   // Keep the home/lock-screen widgets in sync with the live pantry and
   // shopping list while the user is in the authenticated tree (iOS-only,
   // best-effort — see useExpiringWidget / useShoppingWidget).
@@ -121,7 +121,12 @@ function AppStack() {
         },
       }}
     >
-      <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="MainTabs"
+        component={MainTabs}
+        options={{ headerShown: false }}
+        initialParams={landOnCook ? { screen: 'CookTab' } : undefined}
+      />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan' }} />
       <Stack.Screen name="BulkPaste" component={BulkPasteScreen} options={{ title: 'Paste a list' }} />
@@ -176,6 +181,11 @@ function AppRoot() {
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const { needsOnboarding, loading: onboardingLoading, complete } = useOnboarding(userId);
 
+  // After onboarding, land a user who SEEDED staples straight on the Cook tab
+  // (their first match is the payoff); a user who skipped lands on Pantry as
+  // before. Consumed as MainTabs' initial nested route in AppStack.
+  const [landOnCook, setLandOnCook] = useState(false);
+
   useEffect(() => {
     if (!userId) return;
     void registerPushToken(userId);
@@ -204,10 +214,17 @@ function AppRoot() {
   }
 
   if (needsOnboarding) {
-    return <OnboardingScreen onDone={complete} />;
+    return (
+      <OnboardingScreen
+        onDone={({ seededPantry }) => {
+          setLandOnCook(seededPantry);
+          void complete();
+        }}
+      />
+    );
   }
 
-  return <AppStack />;
+  return <AppStack landOnCook={landOnCook} />;
 }
 
 export default function App() {

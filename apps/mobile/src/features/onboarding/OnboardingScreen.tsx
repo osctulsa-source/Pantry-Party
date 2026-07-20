@@ -27,9 +27,10 @@ import { addPantryItem } from '../pantry/addPantryItem';
 import { QuickAddStaples } from '../pantry/QuickAddStaples';
 import type { Staple } from '../pantry/staples';
 import { useTasteProfile } from '../recipes/useTasteProfile';
+import { track } from '../../observability/analytics';
 import { DietStep, type DietSelection } from './DietStep';
 
-export function OnboardingScreen({ onDone }: { onDone: () => void }) {
+export function OnboardingScreen({ onDone }: { onDone: (result: { seededPantry: boolean }) => void }) {
   const { state } = useAuth();
   const { activeHouseholdId } = useActiveHousehold();
   const [added, setAdded] = useState<string[]>([]);
@@ -41,6 +42,10 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
 
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const householdReady = userId !== null && activeHouseholdId !== null;
+
+  useEffect(() => {
+    void track('onboarding_started');
+  }, []);
 
   // Persist step-1 answers once the profile for THIS household has actually
   // loaded. Gate on loadedFor === activeHouseholdId (not the bare `loaded`
@@ -127,8 +132,12 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
     setFinishing(true);
   }
   useEffect(() => {
-    if (finishing && pendingStaples.length === 0 && !flushing) onDone();
-  }, [finishing, pendingStaples, flushing, onDone]);
+    if (finishing && pendingStaples.length === 0 && !flushing) {
+      // count === 0 means the user skipped seeding — a first-class funnel signal.
+      void track('staples_seeded', { count: added.length });
+      onDone({ seededPantry: added.length > 0 });
+    }
+  }, [finishing, pendingStaples, flushing, onDone, added.length]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>

@@ -111,6 +111,8 @@ import { buildCookedSheetItems } from './buildCookedSheetItems';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
+import { track } from '../../observability/analytics';
+import { CuratedBrowse } from './CuratedBrowse';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { getVariantDeviceIds } from '../../data/curated/curatedVariants';
 import type { TabParamList } from '../../navigation/MainTabs';
@@ -236,6 +238,7 @@ export function RecipesScreen() {
   const loadMoreOffsetRef = useRef(0);
   const loadMoreCuratedOffsetRef = useRef(0);
   const seenIdsRef = useRef<Set<number>>(new Set());
+  const firstMatchLoggedRef = useRef(false);
 
   const excludedKey = excluded.join('|');
 
@@ -377,6 +380,16 @@ export function RecipesScreen() {
     const t = setTimeout(() => setSavedToast(null), 3000);
     return () => clearTimeout(t);
   }, [savedToast]);
+
+  // Fire once per screen lifetime when the pantry first yields matches — the
+  // funnel's payoff event. `ok` only ever means pantry-matched results; the
+  // zero-input browse renders under the `empty` branch, not here.
+  useEffect(() => {
+    if (recipeState.kind === 'ok' && !firstMatchLoggedRef.current) {
+      firstMatchLoggedRef.current = true;
+      void track('first_match_shown', { count: recipeState.recipes.length });
+    }
+  }, [recipeState]);
 
   function changeMeal(m: MealChoice) {
     userPickedMeal.current = true;
@@ -537,22 +550,20 @@ export function RecipesScreen() {
         </View>
       )}
 
-      {recipeState.kind === 'empty' && (
+      {recipeState.kind === 'empty' && recipeState.reason === 'no-pantry' && (
+        <CuratedBrowse meal={meal} onAddToPantry={() => navigation.navigate('QuickAdd')} />
+      )}
+
+      {recipeState.kind === 'empty' && recipeState.reason !== 'no-pantry' && (
         <View style={styles.center}>
           <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
           <Text style={styles.errorTitle}>
-            {recipeState.reason === 'no-pantry'
-              ? 'Your pantry is the menu'
-              : recipeState.reason === 'all-excluded'
-                ? "Everything's on the bench"
-                : "That's everything we found"}
+            {recipeState.reason === 'all-excluded' ? "Everything's on the bench" : "That's everything we found"}
           </Text>
           <Text style={styles.helper}>
-            {recipeState.reason === 'no-pantry'
-              ? "Add what's in your fridge and we'll figure out dinner."
-              : recipeState.reason === 'all-excluded'
-                ? "You excluded all your ingredients — bring some back or hit Reset."
-                : "Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration."}
+            {recipeState.reason === 'all-excluded'
+              ? "You excluded all your ingredients — bring some back or hit Reset."
+              : 'Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration.'}
           </Text>
           {canReset && (
             <Pressable style={styles.resetBtn} onPress={reset}>
@@ -998,6 +1009,7 @@ function CookThis({
   }
   function onOpen(r: SpoonacularRecipe) {
     record(r.title, 'open');
+    void track('recipe_opened', { id: r.id });
     navigation.navigate('RecipeDetail', { recipe: r });
   }
   function onCooked(r: SpoonacularRecipe) {
@@ -1007,6 +1019,7 @@ function CookThis({
     // Cooking a recipe is the strongest preference signal we collect.
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     record(r.title, 'like');
+    void track('cook_this_confirmed', { id: r.id, itemsUpdated: updatedCount });
     setCooking(null);
     onCookComplete(updatedCount);
   }
