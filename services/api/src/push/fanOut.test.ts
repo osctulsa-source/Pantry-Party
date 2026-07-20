@@ -34,7 +34,7 @@ const row = {
   household_id: 'h1',
   kind: 'shopping_run' as const,
   created_by: 'user-1',
-  store_hint: 'Kroger',
+  message: 'Grabbing Kroger',
   departs_at: new Date(Date.now() + 1_800_000).toISOString(), // 30 min from now
 };
 
@@ -51,6 +51,7 @@ describe('fanOutAnnouncement', () => {
     expect(sent).toHaveLength(1);
     expect(sent[0].to).toBe('ExponentPushToken[abc]');
     expect(sent[0].title).toContain('Sam');
+    expect(sent[0].body).toBe('Grabbing Kroger');
   });
 
   it('tombstones tokens reported DeviceNotRegistered', async () => {
