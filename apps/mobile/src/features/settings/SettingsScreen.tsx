@@ -30,6 +30,13 @@ import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useDisplayName } from '../household/useDisplayName';
 import { useInsights } from '../insights/useInsights';
 import { getNotifyHour, setNotifyHour, NOTIFY_HOUR_OPTIONS } from '../expiry/notificationPrefs';
+import { feedback } from '../../feedback/feedback';
+import {
+  type FeedbackPrefs,
+  getFeedbackPrefs,
+  hydrateFeedbackPrefs,
+  setFeedbackPref,
+} from '../../feedback/feedbackPrefs';
 import { usePantryItems } from '../pantry/usePantryItems';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
@@ -63,6 +70,8 @@ export function SettingsScreen() {
   const [nameDraft, setNameDraft] = useState('');
   // Reminder-time preference (device-local; see notificationPrefs).
   const [notifyHour, setNotifyHourState] = useState<number | null>(null);
+  // Sound/haptic toggles (device-local; see feedbackPrefs).
+  const [fbPrefs, setFbPrefs] = useState<FeedbackPrefs>(getFeedbackPrefs());
 
   // Badge for the date-repair row: how many items today's inference would
   // correct (see ReviewDatesScreen). Zero once the user has applied repairs.
@@ -91,7 +100,15 @@ export function SettingsScreen() {
 
   useEffect(() => {
     getNotifyHour().then(setNotifyHourState);
+    void hydrateFeedbackPrefs().then(setFbPrefs);
   }, []);
+
+  function onToggleFeedback(key: keyof FeedbackPrefs) {
+    const next = !fbPrefs[key];
+    setFbPrefs((p) => ({ ...p, [key]: next }));
+    void setFeedbackPref(key, next);
+    if (next) feedback.tick(); // audible/tactile confirmation of turning it ON
+  }
 
   function onPickHour(hour: number) {
     Haptics.selectionAsync().catch(() => {});
@@ -163,6 +180,36 @@ export function SettingsScreen() {
             </View>
             <Body tone="muted" size={12}>
               One calm daily digest, only when something needs using.
+            </Body>
+          </View>
+
+          <View style={styles.section}>
+            <Caption>Feedback</Caption>
+            <View style={styles.hourChips}>
+              {(
+                [
+                  { key: 'sounds', label: 'Sounds' },
+                  { key: 'haptics', label: 'Haptics' },
+                ] as const
+              ).map((opt) => {
+                const on = fbPrefs[opt.key];
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => onToggleFeedback(opt.key)}
+                    style={[styles.hourChip, on && styles.hourChipOn]}
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: on }}
+                    accessibilityLabel={`${opt.label} ${on ? 'on' : 'off'}`}
+                  >
+                    <Text style={[styles.hourChipTxt, on && styles.hourChipTxtOn]}>{opt.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Body tone="muted" size={12}>
+              Gentle taps and chimes as you cook and check things off. Sounds never interrupt your
+              music.
             </Body>
           </View>
 

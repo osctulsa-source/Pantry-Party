@@ -155,6 +155,14 @@ commit hash).
 - **Prefer `scripts/publish-ota.sh "msg"`** over the raw command — it enforces
   the clean-tree + APP_VARIANT guardrails above and uploads Sentry sourcemaps
   when credentials are set.
+- **expo-audio (added 2026-07-17, cook-feedback branch):** adding it changed the
+  fingerprint (`3b1e5369…` → `b64a20d5…`), so once it's on main, OTA publishes
+  will NOT reach builds made before it — cut a new TestFlight build after
+  merging. Until users are on that build, the feedback layer is intentionally
+  haptics-only: `src/feedback/feedback.ts` lazy-requires expo-audio in a
+  try/catch, so older binaries degrade silently instead of crashing. The cook
+  Live Activity does NOT need the new build — its layout ships in the JS bundle
+  and renders via the widget extension already present in current builds.
 
 ### Sentry in production — current state & how to turn it on
 
