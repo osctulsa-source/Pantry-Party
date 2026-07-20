@@ -89,6 +89,10 @@ export function RefineSheet({
     try {
       await onAdd({ name, brand: trimmedBrand || null, quantity });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    } catch {
+      // The parent owns error surfacing; don't let a rejected onAdd become an
+      // unhandled rejection here. The finally still clears busy so the sheet
+      // stays interactive for a retry.
     } finally {
       setBusy(false);
     }
