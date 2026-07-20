@@ -10,6 +10,19 @@ build landed on device on **2026-07-06** (App Store Connect app
 > `eas.json`. A TestFlight build therefore talks to the **live** managed stack —
 > make sure the production profile points at prod, not localhost.
 
+## Pre-QA backend checklist
+
+Some features depend on **live backend config** that ships separately from the
+app binary — if it's not set, the feature looks broken to testers even though
+the code is correct. Verify before handing a build to QA:
+
+- [ ] **Password reset** — the Supabase **"Reset Password" email template**
+  (Authentication → Email Templates) must include `{{ .Token }}`, or testers
+  get a magic **link** instead of the 6-digit **code** the app asks for, and
+  the reset flow dead-ends. The app sends the code via `resetPasswordForEmail`
+  and verifies it with `verifyOtp({ type: 'recovery' })`
+  (`src/features/auth/ForgotPasswordScreen.tsx`). See PR #203.
+
 ## Which path do I need? (decide first)
 
 | You changed… | Ship it via |
