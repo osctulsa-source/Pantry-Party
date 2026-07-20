@@ -1,7 +1,7 @@
 /**
  * Curated "house recipes" — Pantry Party's own bundled recipe database.
  *
- * 248 original recipes (authoring source of truth: data/recipes/ at the repo
+ * 288 original recipes (authoring source of truth: data/recipes/ at the repo
  * root — SPEC.md + validator live there; THIS json is the bundle copy. When a
  * new batch is authored, update BOTH copies). All text is original work
  * ("Pantry Party Kitchen"); ids start at 9000001, far above Spoonacular's id
