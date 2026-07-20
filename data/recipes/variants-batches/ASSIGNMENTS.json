@@ -1176,5 +1176,242 @@
       "title": "Egg Fried Rice",
       "device": "griddle"
     }
+  ],
+  [
+    {
+      "recipeId": 9000210,
+      "title": "Thai Coconut Curry with Tofu and Vegetables",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000210,
+      "title": "Thai Coconut Curry with Tofu and Vegetables",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000211,
+      "title": "Vietnamese Lemongrass Chicken Noodle Bowl",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000211,
+      "title": "Vietnamese Lemongrass Chicken Noodle Bowl",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000212,
+      "title": "Chicken Teriyaki",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000212,
+      "title": "Chicken Teriyaki",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000213,
+      "title": "Vegetable Bibimbap",
+      "device": "sheetpan"
+    },
+    {
+      "recipeId": 9000214,
+      "title": "Pork Souvlaki Bowls",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000214,
+      "title": "Pork Souvlaki Bowls",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000215,
+      "title": "Greek Lemon Chicken and Rice Soup",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000215,
+      "title": "Greek Lemon Chicken and Rice Soup",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000216,
+      "title": "Chicken Shawarma Bowls",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000216,
+      "title": "Chicken Shawarma Bowls",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000217,
+      "title": "Beef Kofta with Yogurt Sauce",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000217,
+      "title": "Beef Kofta with Yogurt Sauce",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000219,
+      "title": "Cajun Chicken and Sausage Jambalaya",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000219,
+      "title": "Cajun Chicken and Sausage Jambalaya",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000220,
+      "title": "Red Beans and Rice",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000220,
+      "title": "Red Beans and Rice",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000221,
+      "title": "Jamaican Jerk Chicken",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000221,
+      "title": "Jamaican Jerk Chicken",
+      "device": "oven"
+    },
+    {
+      "recipeId": 9000222,
+      "title": "Filipino Chicken Adobo",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000222,
+      "title": "Filipino Chicken Adobo",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000223,
+      "title": "Moroccan Chicken Tagine",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000223,
+      "title": "Moroccan Chicken Tagine",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000226,
+      "title": "Red Lentil Dal",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000226,
+      "title": "Red Lentil Dal",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000227,
+      "title": "White Bean and Kale Stew",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000227,
+      "title": "White Bean and Kale Stew",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000228,
+      "title": "Chicken and Dumplings",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000228,
+      "title": "Chicken and Dumplings",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000229,
+      "title": "Salisbury Steak",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000230,
+      "title": "Southwest Stuffed Sweet Potatoes",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000230,
+      "title": "Southwest Stuffed Sweet Potatoes",
+      "device": "microwave"
+    },
+    {
+      "recipeId": 9000236,
+      "title": "Savory Rice Porridge",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000236,
+      "title": "Savory Rice Porridge",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000237,
+      "title": "Peach Cobbler",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000238,
+      "title": "Classic Flan",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000239,
+      "title": "Cinnamon Rice Pudding",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000239,
+      "title": "Cinnamon Rice Pudding",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000240,
+      "title": "Mango Sticky Rice",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000242,
+      "title": "Coconut Macaroons",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000243,
+      "title": "Crispy Roasted Chickpeas",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000246,
+      "title": "Mexican Street Corn",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000246,
+      "title": "Mexican Street Corn",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000248,
+      "title": "Baba Ganoush",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000248,
+      "title": "Baba Ganoush",
+      "device": "grill"
+    }
   ]
 ]
