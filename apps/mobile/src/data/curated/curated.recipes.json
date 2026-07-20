@@ -36400,5 +36400,5981 @@
         ]
       }
     ]
+  },
+  {
+    "id": 9000249,
+    "title": "Chicken Katsu",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 30,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Golden, shatteringly crisp panko-crusted chicken cutlets, sliced and served over rice with cabbage and a tangy drizzle. Japanese comfort at its best.",
+    "ingredients": [
+      {
+        "name": "chicken breast",
+        "original": "1.5 lb chicken breast",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "salt and pepper",
+        "original": "salt and pepper to taste",
+        "amount": null,
+        "unit": ""
+      },
+      {
+        "name": "flour",
+        "original": "1/2 cup all-purpose flour",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "eggs",
+        "original": "2 large eggs, beaten",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "panko",
+        "original": "1 1/2 cups panko breadcrumbs",
+        "amount": 1.5,
+        "unit": "cup"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1/2 cup vegetable oil, for frying",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "tonkatsu sauce",
+        "original": "1/4 cup tonkatsu sauce",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "cabbage",
+        "original": "2 cups shredded cabbage",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice, for serving",
+        "amount": 4,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Slice each chicken breast horizontally into thinner cutlets and season them with salt and pepper.",
+            "ingredients": [
+              "chicken breast",
+              "salt and pepper"
+            ],
+            "equipment": [
+              "cutting board"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Set up three shallow bowls: one with the flour, one with the beaten eggs, and one with the panko.",
+            "ingredients": [
+              "flour",
+              "eggs",
+              "panko"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Coat each cutlet in flour, then egg, then press it firmly into the panko so the crumbs stick.",
+            "ingredients": [
+              "chicken breast",
+              "flour",
+              "eggs",
+              "panko"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Heat about half an inch of vegetable oil in a large skillet over medium-high until it shimmers.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "Fry the cutlets until deep golden and cooked through to 165°F, about 4 minutes per side.",
+            "ingredients": [
+              "chicken breast"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 6,
+            "step": "Move the cutlets to a paper-towel-lined plate to drain.",
+            "ingredients": [],
+            "equipment": [
+              "paper towels"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Slice the cutlets into strips and serve over rice with the shredded cabbage and a drizzle of tonkatsu sauce.",
+            "ingredients": [
+              "chicken breast",
+              "rice",
+              "cabbage",
+              "tonkatsu sauce"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000250,
+    "title": "Gyudon",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Tender simmered beef and sweet onion in a savory-sweet broth, spooned over rice and topped with a soft egg. Tokyo's favorite fast dinner.",
+    "ingredients": [
+      {
+        "name": "beef",
+        "original": "1 lb thinly sliced beef (sirloin or ribeye)",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, thinly sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "dashi",
+        "original": "1 cup dashi (or beef broth)",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "soy sauce",
+        "original": "3 tbsp soy sauce",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "mirin",
+        "original": "2 tbsp mirin",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sugar",
+        "original": "1 tbsp sugar",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "ginger",
+        "original": "1 tsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "eggs",
+        "original": "4 large eggs",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "sesame seeds",
+        "original": "1 tbsp sesame seeds",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice",
+        "amount": 4,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Bring the dashi, soy sauce, mirin, sugar, and ginger to a gentle simmer in a large skillet.",
+            "ingredients": [
+              "dashi",
+              "soy sauce",
+              "mirin",
+              "sugar",
+              "ginger"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 2,
+            "step": "Add the sliced onion and cook until softened and translucent, about 5 minutes.",
+            "ingredients": [
+              "onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Add the thinly sliced beef, separating the pieces, and simmer until cooked through with no pink remaining, about 5 minutes.",
+            "ingredients": [
+              "beef"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 4,
+            "step": "Crack the eggs over the top, cover, and cook until the whites are just set but the yolks are still soft, about 3 minutes.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 5,
+            "step": "Spoon the beef, onion, and broth over bowls of warm rice.",
+            "ingredients": [
+              "beef",
+              "onion",
+              "rice"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Finish each bowl with a sprinkle of sesame seeds.",
+            "ingredients": [
+              "sesame seeds"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000251,
+    "title": "Yakisoba Noodles",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Chewy noodles tossed with pork, crisp cabbage, and a tangy-sweet sauce, straight from the wok. The Japanese street-food favorite in 25 minutes.",
+    "ingredients": [
+      {
+        "name": "noodles",
+        "original": "2 packs yakisoba or ramen noodles",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "pork",
+        "original": "8 oz thinly sliced pork",
+        "amount": 8,
+        "unit": "oz"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "cabbage",
+        "original": "3 cups shredded cabbage",
+        "amount": 3,
+        "unit": "cup"
+      },
+      {
+        "name": "carrot",
+        "original": "1 carrot, cut into thin strips",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "bell pepper",
+        "original": "1 bell pepper, sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "yakisoba sauce",
+        "original": "1/4 cup yakisoba sauce",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "sesame seeds",
+        "original": "1 tbsp sesame seeds",
+        "amount": 1,
+        "unit": "tbsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Cook the noodles according to the package, then drain and set them aside.",
+            "ingredients": [
+              "noodles"
+            ],
+            "equipment": [
+              "pot"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Heat the vegetable oil in a large skillet or wok over high heat.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Add the pork and stir-fry until browned and cooked through with no pink, about 4 minutes.",
+            "ingredients": [
+              "pork"
+            ],
+            "equipment": [],
+            "lengthMinutes": 4
+          },
+          {
+            "number": 4,
+            "step": "Add the onion, cabbage, carrot, and bell pepper and stir-fry until crisp-tender, about 5 minutes.",
+            "ingredients": [
+              "onion",
+              "cabbage",
+              "carrot",
+              "bell pepper"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 5,
+            "step": "Add the drained noodles and yakisoba sauce and toss until everything is coated and heated through.",
+            "ingredients": [
+              "noodles",
+              "yakisoba sauce"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 6,
+            "step": "Scatter the sesame seeds over the top and serve.",
+            "ingredients": [
+              "sesame seeds"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000252,
+    "title": "Miso-Glazed Salmon",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Sweet-savory miso caramelizes into a glossy, blistered glaze on tender salmon. A restaurant-worthy dinner that broils in under ten minutes.",
+    "ingredients": [
+      {
+        "name": "salmon",
+        "original": "4 salmon fillets",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "miso",
+        "original": "3 tbsp white miso",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "mirin",
+        "original": "2 tbsp mirin",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sugar",
+        "original": "1 tbsp sugar",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice vinegar",
+        "original": "1 tsp rice vinegar",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "green onion",
+        "original": "2 green onions, sliced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "sesame seeds",
+        "original": "1 tbsp sesame seeds",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice, for serving",
+        "amount": 4,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Whisk the miso, mirin, sugar, and rice vinegar into a smooth glaze.",
+            "ingredients": [
+              "miso",
+              "mirin",
+              "sugar",
+              "rice vinegar"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Pat the salmon dry and set it skin-side down on a foil-lined baking sheet.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [
+              "baking sheet"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Brush half the glaze over the salmon fillets.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Broil until the glaze caramelizes and the salmon flakes easily and reaches 145°F, about 8 minutes.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 5,
+            "step": "Brush the salmon with the remaining glaze.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Serve over cooked rice, topped with the green onion and sesame seeds.",
+            "ingredients": [
+              "cooked rice",
+              "green onion",
+              "sesame seeds"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000253,
+    "title": "Chicken Pho",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "vietnamese"
+    ],
+    "readyInMinutes": 60,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "A fragrant, ginger-and-star-anise broth over rice noodles and tender shredded chicken, piled high with fresh herbs. The bowl worth simmering for.",
+    "ingredients": [
+      {
+        "name": "chicken thighs",
+        "original": "1.5 lb bone-in chicken thighs",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "yellow onion",
+        "original": "1 yellow onion, halved",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "2-inch piece ginger, halved",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "star anise",
+        "original": "3 star anise pods",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "cinnamon",
+        "original": "1 cinnamon stick",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "fish sauce",
+        "original": "3 tbsp fish sauce",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "chicken broth",
+        "original": "8 cups chicken broth",
+        "amount": 8,
+        "unit": "cup"
+      },
+      {
+        "name": "rice noodles",
+        "original": "10 oz flat rice noodles",
+        "amount": 10,
+        "unit": "oz"
+      },
+      {
+        "name": "bean sprouts",
+        "original": "2 cups bean sprouts",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "green onion",
+        "original": "3 green onions, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "cilantro",
+        "original": "1/2 cup fresh cilantro",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "lime",
+        "original": "1 lime, cut into wedges",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Char the yellow onion and ginger under a broiler or in a dry pan until blackened in spots, about 5 minutes — this smoky step gives pho its deep aroma.",
+            "ingredients": [
+              "yellow onion",
+              "ginger"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Add the charred onion and ginger to a large pot with the chicken broth, star anise, cinnamon, and fish sauce.",
+            "ingredients": [
+              "yellow onion",
+              "ginger",
+              "chicken broth",
+              "star anise",
+              "cinnamon",
+              "fish sauce"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Add the chicken thighs and bring to a gentle simmer.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Simmer until the chicken is cooked through to 165°F and the broth is fragrant, about 25 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 25
+          },
+          {
+            "number": 5,
+            "step": "Lift out the chicken, shred it, and strain the broth to remove the aromatics.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Soak or cook the rice noodles according to the package, then divide them among bowls.",
+            "ingredients": [
+              "rice noodles"
+            ],
+            "equipment": [
+              "pot"
+            ],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 7,
+            "step": "Top the noodles with shredded chicken and ladle the hot broth over the top.",
+            "ingredients": [
+              "rice noodles",
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 8,
+            "step": "Serve with bean sprouts, green onion, cilantro, and lime wedges to add at the table.",
+            "ingredients": [
+              "bean sprouts",
+              "green onion",
+              "cilantro",
+              "lime"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000254,
+    "title": "Vietnamese Caramel Salmon",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "vietnamese"
+    ],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Salmon simmered in a deep amber caramel sharpened with fish sauce and ginger — sweet, savory, and glossy. A weeknight Vietnamese classic over rice.",
+    "ingredients": [
+      {
+        "name": "salmon",
+        "original": "4 salmon fillets",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "sugar",
+        "original": "1/4 cup sugar",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "fish sauce",
+        "original": "3 tbsp fish sauce",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "shallot",
+        "original": "1 shallot, thinly sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "black pepper",
+        "original": "1/2 tsp black pepper",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "green onion",
+        "original": "2 green onions, sliced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice, for serving",
+        "amount": 4,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "In a wide skillet, melt the sugar with 2 tablespoons water over medium heat, swirling, until it turns amber, about 5 minutes.",
+            "ingredients": [
+              "sugar"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Carefully add the fish sauce, garlic, shallot, and ginger (it will bubble up) and stir for 1 minute.",
+            "ingredients": [
+              "fish sauce",
+              "garlic",
+              "shallot",
+              "ginger"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Nestle the salmon fillets into the caramel and spoon the sauce over them.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Cover and simmer gently, basting once, until the salmon flakes easily and reaches 145°F, about 8 minutes.",
+            "ingredients": [
+              "salmon"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 5,
+            "step": "Season with the black pepper.",
+            "ingredients": [
+              "black pepper"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Spoon over rice and scatter the green onion on top.",
+            "ingredients": [
+              "rice",
+              "green onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000255,
+    "title": "Bo Kho",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "vietnamese"
+    ],
+    "readyInMinutes": 150,
+    "servings": 6,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Beef slow-braised with lemongrass, star anise, and cinnamon until meltingly tender, in a fragrant broth built for dipping. Vietnam's answer to pot roast.",
+    "ingredients": [
+      {
+        "name": "beef chuck",
+        "original": "2 lb beef chuck, cut into cubes",
+        "amount": 2,
+        "unit": "lb"
+      },
+      {
+        "name": "fish sauce",
+        "original": "3 tbsp fish sauce",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "4 cloves garlic, minced",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "lemongrass",
+        "original": "2 stalks lemongrass, bruised",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "tomato paste",
+        "original": "2 tbsp tomato paste",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "star anise",
+        "original": "2 star anise pods",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "cinnamon",
+        "original": "1 cinnamon stick",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "carrot",
+        "original": "3 carrots, cut into chunks",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "beef broth",
+        "original": "4 cups beef broth",
+        "amount": 4,
+        "unit": "cup"
+      },
+      {
+        "name": "bay leaf",
+        "original": "1 bay leaf",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Toss the beef chuck with the fish sauce and let it sit while you prep, about 15 minutes.",
+            "ingredients": [
+              "beef chuck",
+              "fish sauce"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 2,
+            "step": "Heat a large pot over medium-high and brown the beef on all sides, about 6 minutes.",
+            "ingredients": [
+              "beef chuck"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 3,
+            "step": "Add the onion, garlic, ginger, and lemongrass and cook until fragrant, about 3 minutes.",
+            "ingredients": [
+              "onion",
+              "garlic",
+              "ginger",
+              "lemongrass"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Stir in the tomato paste, star anise, and cinnamon and cook for 1 minute.",
+            "ingredients": [
+              "tomato paste",
+              "star anise",
+              "cinnamon"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 5,
+            "step": "Pour in the beef broth, add the bay leaf, and bring to a boil.",
+            "ingredients": [
+              "beef broth",
+              "bay leaf"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Lower the heat, cover, and simmer until the beef is fork-tender, about 90 minutes.",
+            "ingredients": [
+              "beef chuck"
+            ],
+            "equipment": [],
+            "lengthMinutes": 90
+          },
+          {
+            "number": 7,
+            "step": "Add the carrot and simmer uncovered until tender and the broth has thickened slightly, about 20 minutes.",
+            "ingredients": [
+              "carrot"
+            ],
+            "equipment": [],
+            "lengthMinutes": 20
+          },
+          {
+            "number": 8,
+            "step": "Remove the bay leaf, star anise, and lemongrass before serving.",
+            "ingredients": [
+              "bay leaf",
+              "star anise",
+              "lemongrass"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000256,
+    "title": "Tofu Vermicelli Bowl",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "vietnamese"
+    ],
+    "readyInMinutes": 30,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Crispy golden tofu over cool rice noodles with crunchy vegetables, fresh herbs, and a bright tamari-lime dressing. Fresh, filling, and fully plant-based.",
+    "ingredients": [
+      {
+        "name": "firm tofu",
+        "original": "1 block (14 oz) firm tofu",
+        "amount": 14,
+        "unit": "oz"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice vermicelli",
+        "original": "8 oz rice vermicelli noodles",
+        "amount": 8,
+        "unit": "oz"
+      },
+      {
+        "name": "cucumber",
+        "original": "1 cucumber, cut into thin strips",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "carrot",
+        "original": "1 carrot, shredded",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "lettuce",
+        "original": "2 cups shredded lettuce",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "mint",
+        "original": "1/2 cup fresh mint leaves",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "tamari",
+        "original": "3 tbsp gluten-free tamari",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "lime",
+        "original": "2 limes, juiced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "maple syrup",
+        "original": "1 tbsp maple syrup",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "2 cloves garlic, minced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "peanuts",
+        "original": "1/4 cup roasted peanuts, chopped",
+        "amount": 0.25,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Press the tofu to remove excess water, then cut it into cubes.",
+            "ingredients": [
+              "firm tofu"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Cook the rice vermicelli according to the package, rinse under cool water, and drain.",
+            "ingredients": [
+              "rice vermicelli"
+            ],
+            "equipment": [
+              "pot"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Heat the vegetable oil in a skillet and pan-fry the tofu until golden and crisp on several sides, about 8 minutes.",
+            "ingredients": [
+              "vegetable oil",
+              "firm tofu"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 4,
+            "step": "Whisk the tamari, lime juice, maple syrup, and garlic into a dressing.",
+            "ingredients": [
+              "tamari",
+              "lime",
+              "maple syrup",
+              "garlic"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Divide the noodles among bowls and top with the cucumber, carrot, lettuce, and mint.",
+            "ingredients": [
+              "rice vermicelli",
+              "cucumber",
+              "carrot",
+              "lettuce",
+              "mint"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Add the crispy tofu and spoon the dressing over the top.",
+            "ingredients": [
+              "firm tofu"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Finish with the chopped peanuts.",
+            "ingredients": [
+              "peanuts"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000257,
+    "title": "Lomo Saltado",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 35,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Peru's iconic stir-fry — seared beef, onion, and tomato in a tangy soy-splashed sauce, tossed with crispy fries and served over rice.",
+    "ingredients": [
+      {
+        "name": "beef sirloin",
+        "original": "1.5 lb beef sirloin, cut into strips",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "red onion",
+        "original": "1 red onion, sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "tomato",
+        "original": "2 tomatoes, cut into wedges",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "aji amarillo",
+        "original": "1 tbsp aji amarillo paste",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "soy sauce",
+        "original": "3 tbsp soy sauce",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "oyster sauce",
+        "original": "1 tbsp oyster sauce",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "red wine vinegar",
+        "original": "2 tbsp red wine vinegar",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "french fries",
+        "original": "4 cups frozen french fries",
+        "amount": 4,
+        "unit": "cup"
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice, for serving",
+        "amount": 4,
+        "unit": "cup"
+      },
+      {
+        "name": "cilantro",
+        "original": "1/4 cup chopped fresh cilantro",
+        "amount": 0.25,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Bake or fry the french fries until golden and crisp, then keep them warm.",
+            "ingredients": [
+              "french fries"
+            ],
+            "equipment": [
+              "oven"
+            ],
+            "lengthMinutes": 18
+          },
+          {
+            "number": 2,
+            "step": "Heat the vegetable oil in a large skillet or wok over high heat until nearly smoking.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Add the beef sirloin in a single layer and sear, without stirring, until browned, about 3 minutes, then toss and cook 1 minute more.",
+            "ingredients": [
+              "beef sirloin"
+            ],
+            "equipment": [],
+            "lengthMinutes": 4
+          },
+          {
+            "number": 4,
+            "step": "Add the red onion, tomato, garlic, and aji amarillo and stir-fry until just softened but still bright, about 3 minutes.",
+            "ingredients": [
+              "red onion",
+              "tomato",
+              "garlic",
+              "aji amarillo"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 5,
+            "step": "Pour in the soy sauce, oyster sauce, and red wine vinegar and toss for 1 minute, scraping up the browned bits.",
+            "ingredients": [
+              "soy sauce",
+              "oyster sauce",
+              "red wine vinegar"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 6,
+            "step": "Fold in the warm french fries so they soak up the sauce.",
+            "ingredients": [
+              "french fries"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Scatter cilantro over the top and serve with rice alongside.",
+            "ingredients": [
+              "cilantro",
+              "rice"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000258,
+    "title": "Peruvian Roast Chicken with Green Sauce",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 90,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Juicy, spice-rubbed roast chicken with crackly skin, served with the addictive creamy-spicy green sauce Peru is famous for. You will want extra.",
+    "ingredients": [
+      {
+        "name": "chicken thighs",
+        "original": "2.5 lb bone-in chicken thighs",
+        "amount": 2.5,
+        "unit": "lb"
+      },
+      {
+        "name": "garlic",
+        "original": "4 cloves garlic, minced",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "lime",
+        "original": "2 limes, juiced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "cumin",
+        "original": "1 tbsp ground cumin",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "paprika",
+        "original": "1 tbsp paprika",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "oregano",
+        "original": "1 tsp dried oregano",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "olive oil",
+        "original": "2 tbsp olive oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "mayonnaise",
+        "original": "1/2 cup mayonnaise",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "cilantro",
+        "original": "1 cup fresh cilantro",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "jalapeno",
+        "original": "1 jalapeno, seeded",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Stir the garlic, the juice of one lime, cumin, paprika, oregano, olive oil, and salt into a marinade.",
+            "ingredients": [
+              "garlic",
+              "lime",
+              "cumin",
+              "paprika",
+              "oregano",
+              "olive oil",
+              "salt"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Coat the chicken thighs in the marinade and let them sit for 20 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 20
+          },
+          {
+            "number": 3,
+            "step": "Heat the oven to 425°F.",
+            "ingredients": [],
+            "equipment": [
+              "oven"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Arrange the chicken skin-side up on a baking sheet and roast until the skin is deep golden and the chicken reaches 165°F, about 40 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [
+              "baking sheet"
+            ],
+            "lengthMinutes": 40
+          },
+          {
+            "number": 5,
+            "step": "While it roasts, blend the mayonnaise, cilantro, jalapeno, remaining garlic, and the juice of the second lime into a smooth green sauce.",
+            "ingredients": [
+              "mayonnaise",
+              "cilantro",
+              "jalapeno",
+              "garlic",
+              "lime"
+            ],
+            "equipment": [
+              "blender"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Rest the chicken for 5 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 7,
+            "step": "Serve the chicken with the green sauce for spooning or dipping.",
+            "ingredients": [
+              "chicken thighs",
+              "mayonnaise"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000259,
+    "title": "Quinoa and Vegetable Stew",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 35,
+    "servings": 6,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "A hearty Andean pot of fluffy quinoa, potato, and corn in a gently spiced tomato broth. Wholesome, filling, and quietly satisfying.",
+    "ingredients": [
+      {
+        "name": "olive oil",
+        "original": "2 tbsp olive oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "aji amarillo",
+        "original": "1 tbsp aji amarillo paste",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "cumin",
+        "original": "1 tsp ground cumin",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "quinoa",
+        "original": "1 cup quinoa, rinsed",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "tomato",
+        "original": "2 tomatoes, diced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "potato",
+        "original": "2 potatoes, cubed",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "vegetable broth",
+        "original": "5 cups vegetable broth",
+        "amount": 5,
+        "unit": "cup"
+      },
+      {
+        "name": "corn",
+        "original": "1 cup corn kernels",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "peas",
+        "original": "1 cup peas",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "cilantro",
+        "original": "1/4 cup chopped fresh cilantro",
+        "amount": 0.25,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the olive oil in a large pot over medium heat and cook the onion until softened, about 5 minutes.",
+            "ingredients": [
+              "olive oil",
+              "onion"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Add the garlic, aji amarillo, and cumin and stir until fragrant, about 1 minute.",
+            "ingredients": [
+              "garlic",
+              "aji amarillo",
+              "cumin"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Add the quinoa and stir to toast it lightly, about 1 minute.",
+            "ingredients": [
+              "quinoa"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 4,
+            "step": "Add the tomato, potato, and vegetable broth and bring to a boil.",
+            "ingredients": [
+              "tomato",
+              "potato",
+              "vegetable broth"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 5,
+            "step": "Lower the heat and simmer until the quinoa is tender and the potato is cooked through, about 18 minutes.",
+            "ingredients": [
+              "quinoa",
+              "potato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 18
+          },
+          {
+            "number": 6,
+            "step": "Stir in the corn and peas and cook until heated through, about 3 minutes.",
+            "ingredients": [
+              "corn",
+              "peas"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 7,
+            "step": "Scatter the cilantro over the top and serve.",
+            "ingredients": [
+              "cilantro"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000260,
+    "title": "Aji de Gallina",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 40,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Shredded chicken in a luxuriously creamy, gently spicy walnut-and-aji sauce over rice. A beloved Peruvian comfort dish with quiet warmth.",
+    "ingredients": [
+      {
+        "name": "chicken breast",
+        "original": "1 lb chicken breast",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "chicken broth",
+        "original": "3 cups chicken broth",
+        "amount": 3,
+        "unit": "cup"
+      },
+      {
+        "name": "bread",
+        "original": "2 slices white bread",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "milk",
+        "original": "1/2 cup milk",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "walnuts",
+        "original": "1/3 cup walnuts",
+        "amount": 0.33,
+        "unit": "cup"
+      },
+      {
+        "name": "parmesan",
+        "original": "1/4 cup grated parmesan",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "aji amarillo",
+        "original": "3 tbsp aji amarillo paste",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice",
+        "original": "4 cups cooked rice, for serving",
+        "amount": 4,
+        "unit": "cup"
+      },
+      {
+        "name": "eggs",
+        "original": "2 hard-boiled eggs, sliced",
+        "amount": 2,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Simmer the chicken breast in the chicken broth until cooked through to 165°F, about 15 minutes, then shred it and save the broth.",
+            "ingredients": [
+              "chicken breast",
+              "chicken broth"
+            ],
+            "equipment": [
+              "pot"
+            ],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 2,
+            "step": "Soak the bread in the milk until soft, about 5 minutes.",
+            "ingredients": [
+              "bread",
+              "milk"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Heat the vegetable oil in a skillet and cook the onion and garlic until soft, about 5 minutes.",
+            "ingredients": [
+              "vegetable oil",
+              "onion",
+              "garlic"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 4,
+            "step": "Stir in the aji amarillo and cook for 1 minute.",
+            "ingredients": [
+              "aji amarillo"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 5,
+            "step": "Blend the soaked bread, walnuts, and a splash of the reserved broth until smooth, then stir it into the skillet.",
+            "ingredients": [
+              "bread",
+              "walnuts",
+              "chicken broth"
+            ],
+            "equipment": [
+              "blender"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 6,
+            "step": "Add the shredded chicken and parmesan and stir until the sauce is thick and creamy, loosening with more broth if needed.",
+            "ingredients": [
+              "chicken breast",
+              "parmesan",
+              "chicken broth"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 7,
+            "step": "Serve over rice, topped with the sliced hard-boiled eggs.",
+            "ingredients": [
+              "rice",
+              "eggs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000261,
+    "title": "Jollof Rice",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 50,
+    "servings": 6,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "West Africa's beloved one-pot rice, simmered in a smoky, deeply spiced tomato-pepper base until every grain is stained red and fragrant.",
+    "ingredients": [
+      {
+        "name": "bell pepper",
+        "original": "1 red bell pepper, chopped",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "crushed tomatoes",
+        "original": "1 can (14.5 oz) crushed tomatoes",
+        "amount": 14.5,
+        "unit": "oz"
+      },
+      {
+        "name": "scotch bonnet",
+        "original": "1 scotch bonnet pepper, seeded",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1/4 cup vegetable oil",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "tomato paste",
+        "original": "3 tbsp tomato paste",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice",
+        "original": "2 cups long-grain rice, rinsed",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "thyme",
+        "original": "1 tsp dried thyme",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "bay leaf",
+        "original": "1 bay leaf",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "vegetable broth",
+        "original": "2 1/2 cups vegetable broth",
+        "amount": 2.5,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Blend the bell pepper, crushed tomatoes, and scotch bonnet into a smooth base.",
+            "ingredients": [
+              "bell pepper",
+              "crushed tomatoes",
+              "scotch bonnet"
+            ],
+            "equipment": [
+              "blender"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat the vegetable oil in a large pot and cook the onion until soft, about 5 minutes.",
+            "ingredients": [
+              "vegetable oil",
+              "onion"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Stir in the garlic, ginger, and tomato paste and cook until darkened, about 3 minutes.",
+            "ingredients": [
+              "garlic",
+              "ginger",
+              "tomato paste"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Pour in the blended pepper base and cook, stirring often, until thick and deep red, about 10 minutes.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 5,
+            "step": "Add the rice, thyme, bay leaf, and vegetable broth and stir once.",
+            "ingredients": [
+              "rice",
+              "thyme",
+              "bay leaf",
+              "vegetable broth"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 6,
+            "step": "Cover and cook on low, without stirring, until the rice is tender and has absorbed the liquid, about 25 minutes.",
+            "ingredients": [
+              "rice"
+            ],
+            "equipment": [],
+            "lengthMinutes": 25
+          },
+          {
+            "number": 7,
+            "step": "Remove the bay leaf, fluff with a fork, and serve.",
+            "ingredients": [
+              "bay leaf"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000262,
+    "title": "Senegalese Yassa Chicken",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 45,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Senegal's tangy classic: chicken braised with a mountain of golden onions, sharp mustard, and bright lemon until jammy and rich.",
+    "ingredients": [
+      {
+        "name": "chicken thighs",
+        "original": "2 lb bone-in chicken thighs",
+        "amount": 2,
+        "unit": "lb"
+      },
+      {
+        "name": "onion",
+        "original": "3 onions, thinly sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "dijon mustard",
+        "original": "3 tbsp dijon mustard",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "lemon",
+        "original": "2 lemons, juiced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "4 cloves garlic, minced",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "olive oil",
+        "original": "3 tbsp olive oil",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "bay leaf",
+        "original": "1 bay leaf",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "chicken broth",
+        "original": "1 cup chicken broth",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "salt and pepper",
+        "original": "salt and pepper to taste",
+        "amount": null,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Stir the dijon mustard, lemon juice, garlic, and half the olive oil into a marinade.",
+            "ingredients": [
+              "dijon mustard",
+              "lemon",
+              "garlic",
+              "olive oil"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Coat the chicken thighs in the marinade and let them sit for 10 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 3,
+            "step": "Heat the remaining olive oil in a large skillet and brown the chicken on both sides, about 6 minutes, then set it aside.",
+            "ingredients": [
+              "olive oil",
+              "chicken thighs"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 4,
+            "step": "Add the sliced onion to the pan and cook, stirring, until very soft and golden, about 10 minutes.",
+            "ingredients": [
+              "onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 5,
+            "step": "Return the chicken with any marinade, add the bay leaf and chicken broth, and bring to a simmer.",
+            "ingredients": [
+              "chicken thighs",
+              "bay leaf",
+              "chicken broth"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Cover and simmer until the chicken reaches 165°F and the onions turn jammy, about 15 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 7,
+            "step": "Remove the bay leaf, season with salt and pepper, and serve over rice if you like.",
+            "ingredients": [
+              "bay leaf",
+              "salt and pepper"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000263,
+    "title": "Suya Beef Skewers",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 30,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Smoky, peanut-crusted West African beef skewers with a fiery spice rub, charred fast over high heat. Serve with sliced onion and plenty of napkins.",
+    "ingredients": [
+      {
+        "name": "beef sirloin",
+        "original": "1.5 lb beef sirloin, cut into strips",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "peanuts",
+        "original": "1/2 cup roasted peanuts",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "paprika",
+        "original": "1 tbsp paprika",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "cayenne",
+        "original": "1 tsp cayenne",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "garlic powder",
+        "original": "1 tsp garlic powder",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "ginger",
+        "original": "1 tsp ground ginger",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, sliced, for serving",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Grind the peanuts into a coarse powder and mix with the paprika, cayenne, garlic powder, ginger, and salt to make a suya spice.",
+            "ingredients": [
+              "peanuts",
+              "paprika",
+              "cayenne",
+              "garlic powder",
+              "ginger",
+              "salt"
+            ],
+            "equipment": [
+              "food processor"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Toss the beef sirloin strips with the vegetable oil, then coat them well in most of the suya spice.",
+            "ingredients": [
+              "beef sirloin",
+              "vegetable oil"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Let the beef marinate for 15 minutes.",
+            "ingredients": [
+              "beef sirloin"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 4,
+            "step": "Thread the beef onto skewers.",
+            "ingredients": [
+              "beef sirloin"
+            ],
+            "equipment": [
+              "skewers"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Heat a grill or grill pan to high and cook the skewers, turning, until charred at the edges and cooked to your liking, about 8 minutes.",
+            "ingredients": [
+              "beef sirloin"
+            ],
+            "equipment": [
+              "grill"
+            ],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 6,
+            "step": "Sprinkle with the remaining suya spice and serve with the sliced onion.",
+            "ingredients": [
+              "onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000264,
+    "title": "Doro Wat",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 75,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Ethiopia's national dish: chicken slow-simmered in a rich, fiery berbere-and-onion sauce, finished with soft eggs. Deep, warming, and worth the wait.",
+    "ingredients": [
+      {
+        "name": "onion",
+        "original": "2 onions, finely diced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "butter",
+        "original": "3 tbsp butter",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "4 cloves garlic, minced",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "berbere",
+        "original": "3 tbsp berbere spice blend",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "tomato paste",
+        "original": "2 tbsp tomato paste",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "chicken thighs",
+        "original": "2 lb bone-in chicken thighs",
+        "amount": 2,
+        "unit": "lb"
+      },
+      {
+        "name": "chicken broth",
+        "original": "2 cups chicken broth",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "eggs",
+        "original": "4 hard-boiled eggs, peeled",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "lemon",
+        "original": "1 lemon, juiced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Cook the finely diced onion in a dry pot over medium heat, stirring, until very soft and reduced, about 10 minutes — this slow-cooked onion is the backbone of the stew.",
+            "ingredients": [
+              "onion"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 2,
+            "step": "Add the butter, garlic, and ginger and cook until fragrant, about 2 minutes.",
+            "ingredients": [
+              "butter",
+              "garlic",
+              "ginger"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 3,
+            "step": "Stir in the berbere and tomato paste and cook until deep red and thick, about 3 minutes.",
+            "ingredients": [
+              "berbere",
+              "tomato paste"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Add the chicken thighs and turn to coat them in the paste.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Pour in the chicken broth and bring to a simmer.",
+            "ingredients": [
+              "chicken broth"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Cover and simmer until the chicken is very tender and reaches 165°F, about 35 minutes.",
+            "ingredients": [
+              "chicken thighs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 35
+          },
+          {
+            "number": 7,
+            "step": "Nestle in the hard-boiled eggs to warm through, then finish with the lemon juice and salt.",
+            "ingredients": [
+              "eggs",
+              "lemon",
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000265,
+    "title": "Ethiopian Cabbage and Potato",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 35,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "A golden, turmeric-stained tangle of cabbage, potato, and carrot, gently spiced and slow-cooked until sweet and tender. Simple, cozy, and vegan.",
+    "ingredients": [
+      {
+        "name": "olive oil",
+        "original": "3 tbsp olive oil",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "turmeric",
+        "original": "1 tsp ground turmeric",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "cumin",
+        "original": "1 tsp ground cumin",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "carrot",
+        "original": "3 carrots, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "potato",
+        "original": "3 potatoes, cubed",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "cabbage",
+        "original": "1/2 head cabbage, shredded",
+        "amount": 0.5,
+        "unit": ""
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the olive oil in a large skillet over medium heat and cook the onion until soft, about 5 minutes.",
+            "ingredients": [
+              "olive oil",
+              "onion"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Add the garlic, ginger, turmeric, and cumin and stir until fragrant, about 1 minute.",
+            "ingredients": [
+              "garlic",
+              "ginger",
+              "turmeric",
+              "cumin"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Add the carrot and potato and toss to coat them in the spices.",
+            "ingredients": [
+              "carrot",
+              "potato"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Cover and cook, stirring now and then, until the potato is nearly tender, about 15 minutes.",
+            "ingredients": [
+              "potato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 5,
+            "step": "Add the cabbage and cook, covered, until everything is tender, about 8 minutes.",
+            "ingredients": [
+              "cabbage"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 6,
+            "step": "Season with the salt and serve.",
+            "ingredients": [
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000266,
+    "title": "Shrimp and Grits",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "american"
+    ],
+    "readyInMinutes": 40,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Plump Cajun-spiced shrimp over a bowl of buttery, cheesy grits. A Lowcountry classic that turns pantry staples into something special.",
+    "ingredients": [
+      {
+        "name": "grits",
+        "original": "1 cup stone-ground grits",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "water",
+        "original": "2 cups water",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "milk",
+        "original": "2 cups milk",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "butter",
+        "original": "3 tbsp butter",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "cheddar cheese",
+        "original": "1 cup shredded cheddar cheese",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "shrimp",
+        "original": "1 lb large shrimp, peeled and deveined",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "cajun seasoning",
+        "original": "1 tbsp cajun seasoning",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "2 cloves garlic, minced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "green onion",
+        "original": "3 green onions, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "lemon",
+        "original": "1 lemon, juiced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Bring the water, milk, and salt to a boil in a saucepan.",
+            "ingredients": [
+              "water",
+              "milk",
+              "salt"
+            ],
+            "equipment": [
+              "saucepan"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 2,
+            "step": "Whisk in the grits and simmer, stirring often, until thick and creamy, about 15 minutes.",
+            "ingredients": [
+              "grits"
+            ],
+            "equipment": [
+              "whisk"
+            ],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 3,
+            "step": "Stir the butter and cheddar cheese into the grits until smooth, then keep warm.",
+            "ingredients": [
+              "butter",
+              "cheddar cheese"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Toss the shrimp with the cajun seasoning.",
+            "ingredients": [
+              "shrimp",
+              "cajun seasoning"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Melt a little more butter in a skillet over medium-high heat and cook the garlic for 30 seconds.",
+            "ingredients": [
+              "butter",
+              "garlic"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 6,
+            "step": "Add the shrimp and cook until pink and opaque and cooked to 145°F, about 3 minutes.",
+            "ingredients": [
+              "shrimp"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 7,
+            "step": "Squeeze in the lemon and stir.",
+            "ingredients": [
+              "lemon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 8,
+            "step": "Spoon the shrimp over the creamy grits and scatter green onion on top.",
+            "ingredients": [
+              "shrimp",
+              "grits",
+              "green onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000267,
+    "title": "Carne Asada",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "mexican"
+    ],
+    "readyInMinutes": 45,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Citrus-and-garlic marinated steak grilled fast and hot, then sliced thin for tacos, bowls, or plates. Smoky, juicy, and built for a crowd.",
+    "ingredients": [
+      {
+        "name": "skirt steak",
+        "original": "1.5 lb skirt steak",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "lime",
+        "original": "2 limes, juiced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "orange",
+        "original": "1 orange, juiced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "4 cloves garlic, minced",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "cilantro",
+        "original": "1/2 cup chopped fresh cilantro",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "cumin",
+        "original": "1 tsp ground cumin",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "olive oil",
+        "original": "3 tbsp olive oil",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "jalapeno",
+        "original": "1 jalapeno, minced",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Whisk the lime juice, orange juice, garlic, half the cilantro, cumin, olive oil, salt, and jalapeno into a marinade.",
+            "ingredients": [
+              "lime",
+              "orange",
+              "garlic",
+              "cilantro",
+              "cumin",
+              "olive oil",
+              "salt",
+              "jalapeno"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Pour the marinade over the skirt steak and marinate at least 20 minutes.",
+            "ingredients": [
+              "skirt steak"
+            ],
+            "equipment": [],
+            "lengthMinutes": 20
+          },
+          {
+            "number": 3,
+            "step": "Heat a grill or grill pan to high.",
+            "ingredients": [],
+            "equipment": [
+              "grill"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Grill the steak, turning once, until charred outside and cooked to 145°F for medium, about 8 minutes.",
+            "ingredients": [
+              "skirt steak"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 5,
+            "step": "Rest the steak for 5 minutes — this keeps the juices in when you slice.",
+            "ingredients": [
+              "skirt steak"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 6,
+            "step": "Slice the steak thinly against the grain.",
+            "ingredients": [
+              "skirt steak"
+            ],
+            "equipment": [
+              "cutting board"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Scatter the remaining cilantro over the top and serve with lime wedges.",
+            "ingredients": [
+              "cilantro",
+              "lime"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000268,
+    "title": "Coconut Fish Curry",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "indian"
+    ],
+    "readyInMinutes": 30,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Flaky white fish poached in a silky, golden coconut broth spiced with mustard seed and curry leaf. A soothing South Indian curry, ready in half an hour.",
+    "ingredients": [
+      {
+        "name": "white fish",
+        "original": "1.5 lb white fish fillets (cod or tilapia), cut into chunks",
+        "amount": 1.5,
+        "unit": "lb"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "mustard seeds",
+        "original": "1 tsp mustard seeds",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "curry leaves",
+        "original": "10 fresh curry leaves",
+        "amount": 10,
+        "unit": ""
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "turmeric",
+        "original": "1/2 tsp ground turmeric",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "chili powder",
+        "original": "1 tsp chili powder",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "tomato",
+        "original": "1 tomato, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "coconut milk",
+        "original": "1 can (13.5 oz) coconut milk",
+        "amount": 13.5,
+        "unit": "oz"
+      },
+      {
+        "name": "lime",
+        "original": "1 lime, juiced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "salt",
+        "original": "1 tsp salt",
+        "amount": 1,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the vegetable oil in a large skillet and add the mustard seeds; when they pop, add the curry leaves.",
+            "ingredients": [
+              "vegetable oil",
+              "mustard seeds",
+              "curry leaves"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 2,
+            "step": "Add the onion and cook until soft and golden, about 5 minutes.",
+            "ingredients": [
+              "onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Stir in the garlic, ginger, turmeric, and chili powder and cook for 1 minute.",
+            "ingredients": [
+              "garlic",
+              "ginger",
+              "turmeric",
+              "chili powder"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 4,
+            "step": "Add the tomato and cook until it breaks down, about 3 minutes.",
+            "ingredients": [
+              "tomato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 5,
+            "step": "Pour in the coconut milk and bring to a gentle simmer.",
+            "ingredients": [
+              "coconut milk"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Nestle in the white fish and simmer gently until it flakes easily and reaches 145°F, about 8 minutes.",
+            "ingredients": [
+              "white fish"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 7,
+            "step": "Finish with the lime juice and salt to taste.",
+            "ingredients": [
+              "lime",
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000269,
+    "title": "Stuffed Poblano Peppers",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "main course",
+    "cuisines": [
+      "mexican"
+    ],
+    "readyInMinutes": 55,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Roasted poblanos stuffed with cheesy beans, corn, and rice, then baked until molten. A cozy vegetarian dinner with mild, smoky heat.",
+    "ingredients": [
+      {
+        "name": "poblano peppers",
+        "original": "4 poblano peppers",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "olive oil",
+        "original": "1 tbsp olive oil",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "2 cloves garlic, minced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "black beans",
+        "original": "1 can (15 oz) black beans, drained",
+        "amount": 15,
+        "unit": "oz"
+      },
+      {
+        "name": "corn",
+        "original": "1 cup corn kernels",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "rice",
+        "original": "1 1/2 cups cooked rice",
+        "amount": 1.5,
+        "unit": "cup"
+      },
+      {
+        "name": "tomato",
+        "original": "1 tomato, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "cumin",
+        "original": "1 tsp ground cumin",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "chili powder",
+        "original": "1 tsp chili powder",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "cheddar cheese",
+        "original": "1 1/2 cups shredded cheddar cheese",
+        "amount": 1.5,
+        "unit": "cup"
+      },
+      {
+        "name": "cilantro",
+        "original": "1/4 cup chopped fresh cilantro",
+        "amount": 0.25,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the oven to 400°F and roast the poblano peppers on a baking sheet until the skins blister, about 12 minutes, turning once.",
+            "ingredients": [
+              "poblano peppers"
+            ],
+            "equipment": [
+              "baking sheet"
+            ],
+            "lengthMinutes": 12
+          },
+          {
+            "number": 2,
+            "step": "Let the peppers cool slightly, then cut a slit in each and gently scoop out the seeds.",
+            "ingredients": [
+              "poblano peppers"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Heat the olive oil in a skillet and cook the onion until soft, about 4 minutes.",
+            "ingredients": [
+              "olive oil",
+              "onion"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 4
+          },
+          {
+            "number": 4,
+            "step": "Add the garlic, cumin, and chili powder and stir until fragrant, about 1 minute.",
+            "ingredients": [
+              "garlic",
+              "cumin",
+              "chili powder"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 5,
+            "step": "Stir in the black beans, corn, rice, and tomato and cook until warmed through, about 3 minutes.",
+            "ingredients": [
+              "black beans",
+              "corn",
+              "rice",
+              "tomato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Stir half the cheddar cheese into the filling, then spoon it into the peppers.",
+            "ingredients": [
+              "cheddar cheese",
+              "poblano peppers"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Top with the remaining cheese and bake until melted and bubbling, about 15 minutes.",
+            "ingredients": [
+              "cheddar cheese"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 8,
+            "step": "Scatter cilantro over the top before serving.",
+            "ingredients": [
+              "cilantro"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000270,
+    "title": "Cauliflower Fried Rice",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "asian"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "All the savory, garlicky comfort of fried rice, made light with riced cauliflower. A fast, gluten-free take that works as a side or a plant-based main.",
+    "ingredients": [
+      {
+        "name": "cauliflower",
+        "original": "1 head cauliflower",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "2 tbsp vegetable oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "carrot",
+        "original": "1 carrot, finely diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "peas",
+        "original": "1 cup peas",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "green onion",
+        "original": "3 green onions, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "garlic",
+        "original": "2 cloves garlic, minced",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "tamari",
+        "original": "3 tbsp gluten-free tamari",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sesame oil",
+        "original": "1 tbsp sesame oil",
+        "amount": 1,
+        "unit": "tbsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Pulse the cauliflower in a food processor into rice-sized pieces.",
+            "ingredients": [
+              "cauliflower"
+            ],
+            "equipment": [
+              "food processor"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat the vegetable oil in a large skillet or wok over high heat.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Add the carrot and cook until just tender, about 3 minutes.",
+            "ingredients": [
+              "carrot"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Add the garlic and ginger and stir until fragrant, about 30 seconds.",
+            "ingredients": [
+              "garlic",
+              "ginger"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 5,
+            "step": "Add the cauliflower and peas and stir-fry until the cauliflower is tender but not mushy, about 5 minutes.",
+            "ingredients": [
+              "cauliflower",
+              "peas"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 6,
+            "step": "Pour in the tamari and sesame oil and toss to coat.",
+            "ingredients": [
+              "tamari",
+              "sesame oil"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 7,
+            "step": "Scatter the green onion over the top and serve.",
+            "ingredients": [
+              "green onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000271,
+    "title": "Cobb Salad",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "american"
+    ],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "The composed American classic: rows of chicken, bacon, egg, avocado, and blue cheese over crisp lettuce with a sharp vinaigrette. A meal-sized salad.",
+    "ingredients": [
+      {
+        "name": "lettuce",
+        "original": "1 head romaine lettuce, chopped",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "chicken breast",
+        "original": "1 lb chicken breast",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "bacon",
+        "original": "4 slices bacon",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "eggs",
+        "original": "3 hard-boiled eggs, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "avocado",
+        "original": "1 avocado, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "blue cheese",
+        "original": "1/2 cup crumbled blue cheese",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "cherry tomatoes",
+        "original": "1 cup cherry tomatoes, halved",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "red wine vinegar",
+        "original": "3 tbsp red wine vinegar",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "olive oil",
+        "original": "1/4 cup olive oil",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "salt and pepper",
+        "original": "salt and pepper to taste",
+        "amount": null,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Season the chicken breast with salt and pepper, then cook in a skillet over medium heat until cooked through to 165°F, about 12 minutes, and slice.",
+            "ingredients": [
+              "chicken breast",
+              "salt and pepper"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 12
+          },
+          {
+            "number": 2,
+            "step": "Cook the bacon in the same skillet until crisp, then crumble it.",
+            "ingredients": [
+              "bacon"
+            ],
+            "equipment": [],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 3,
+            "step": "Whisk the red wine vinegar, olive oil, and a pinch of salt and pepper into a dressing.",
+            "ingredients": [
+              "red wine vinegar",
+              "olive oil",
+              "salt and pepper"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Spread the lettuce across a large platter.",
+            "ingredients": [
+              "lettuce"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Arrange the chicken, bacon, eggs, avocado, blue cheese, and cherry tomatoes in rows over the top.",
+            "ingredients": [
+              "chicken breast",
+              "bacon",
+              "eggs",
+              "avocado",
+              "blue cheese",
+              "cherry tomatoes"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Drizzle the dressing over the salad just before serving.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000272,
+    "title": "Baked Cod with Tomatoes",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "mediterranean"
+    ],
+    "readyInMinutes": 30,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Cod baked right in a jumble of blistered tomatoes, olives, and capers until flaky and bright. An easy, one-dish Mediterranean dinner.",
+    "ingredients": [
+      {
+        "name": "cod",
+        "original": "4 cod fillets",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "cherry tomatoes",
+        "original": "2 cups cherry tomatoes",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "olives",
+        "original": "1/2 cup kalamata olives",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "capers",
+        "original": "2 tbsp capers",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, sliced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "olive oil",
+        "original": "3 tbsp olive oil",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "lemon",
+        "original": "1 lemon, juiced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "oregano",
+        "original": "1 tsp dried oregano",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "salt and pepper",
+        "original": "salt and pepper to taste",
+        "amount": null,
+        "unit": ""
+      },
+      {
+        "name": "parsley",
+        "original": "2 tbsp chopped fresh parsley",
+        "amount": 2,
+        "unit": "tbsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the oven to 400°F.",
+            "ingredients": [],
+            "equipment": [
+              "oven"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Toss the cherry tomatoes, olives, capers, garlic, and olive oil in a baking dish and roast for 10 minutes.",
+            "ingredients": [
+              "cherry tomatoes",
+              "olives",
+              "capers",
+              "garlic",
+              "olive oil"
+            ],
+            "equipment": [
+              "baking dish"
+            ],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 3,
+            "step": "Pat the cod dry and season it with salt and pepper and the oregano.",
+            "ingredients": [
+              "cod",
+              "salt and pepper",
+              "oregano"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Nestle the cod into the tomatoes and spoon some of the juices over the top.",
+            "ingredients": [
+              "cod"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Bake until the cod flakes easily and reaches 145°F, about 12 minutes.",
+            "ingredients": [
+              "cod"
+            ],
+            "equipment": [],
+            "lengthMinutes": 12
+          },
+          {
+            "number": 6,
+            "step": "Finish with a squeeze of lemon and a scatter of parsley.",
+            "ingredients": [
+              "lemon",
+              "parsley"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000273,
+    "title": "Egg Roll in a Bowl",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "asian"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": false,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "All the savory, gingery filling of an egg roll — browned pork and crisp cabbage — in a fast, gluten-free skillet. No wrapper, no frying.",
+    "ingredients": [
+      {
+        "name": "sesame oil",
+        "original": "1 tbsp sesame oil",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "ground pork",
+        "original": "1 lb ground pork",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "ginger",
+        "original": "1 tbsp grated fresh ginger",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "cabbage",
+        "original": "6 cups shredded cabbage",
+        "amount": 6,
+        "unit": "cup"
+      },
+      {
+        "name": "carrot",
+        "original": "2 carrots, shredded",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "tamari",
+        "original": "3 tbsp gluten-free tamari",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "rice vinegar",
+        "original": "1 tbsp rice vinegar",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "green onion",
+        "original": "3 green onions, sliced",
+        "amount": 3,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the sesame oil in a large skillet over medium-high heat.",
+            "ingredients": [
+              "sesame oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 2,
+            "step": "Add the ground pork and cook, breaking it up, until browned and cooked through to 160°F, about 6 minutes.",
+            "ingredients": [
+              "ground pork"
+            ],
+            "equipment": [],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 3,
+            "step": "Add the garlic and ginger and stir until fragrant, about 30 seconds.",
+            "ingredients": [
+              "garlic",
+              "ginger"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 4,
+            "step": "Add the cabbage and carrot and stir-fry until wilted but still a little crisp, about 5 minutes.",
+            "ingredients": [
+              "cabbage",
+              "carrot"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 5,
+            "step": "Stir in the tamari and rice vinegar and toss to coat.",
+            "ingredients": [
+              "tamari",
+              "rice vinegar"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 6,
+            "step": "Scatter the green onion over the top and serve.",
+            "ingredients": [
+              "green onion"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000274,
+    "title": "Zucchini Noodles with Marinara",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "main course",
+    "cuisines": [
+      "italian"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Fresh zucchini ribbons tossed in a quick, garlicky marinara — light, gluten-free, and ready before pasta water would even boil.",
+    "ingredients": [
+      {
+        "name": "zucchini",
+        "original": "4 zucchini",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "olive oil",
+        "original": "2 tbsp olive oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "garlic",
+        "original": "3 cloves garlic, minced",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "crushed tomatoes",
+        "original": "1 can (28 oz) crushed tomatoes",
+        "amount": 28,
+        "unit": "oz"
+      },
+      {
+        "name": "tomato paste",
+        "original": "1 tbsp tomato paste",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "basil",
+        "original": "1/4 cup chopped fresh basil",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "oregano",
+        "original": "1 tsp dried oregano",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "red pepper flakes",
+        "original": "1/4 tsp red pepper flakes",
+        "amount": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Spiralize or peel the zucchini into long, noodle-like strands.",
+            "ingredients": [
+              "zucchini"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat the olive oil in a skillet over medium heat and cook the garlic until fragrant, about 30 seconds.",
+            "ingredients": [
+              "olive oil",
+              "garlic"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Stir in the crushed tomatoes, tomato paste, oregano, and red pepper flakes and simmer until thickened, about 10 minutes.",
+            "ingredients": [
+              "crushed tomatoes",
+              "tomato paste",
+              "oregano",
+              "red pepper flakes"
+            ],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 4,
+            "step": "Season the sauce with the salt and stir in the basil.",
+            "ingredients": [
+              "salt",
+              "basil"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Add the zucchini noodles and toss just until warmed and barely tender, about 2 minutes — any longer and they turn watery.",
+            "ingredients": [
+              "zucchini"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 6,
+            "step": "Serve right away, while the noodles still have some bite.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000275,
+    "title": "Chilaquiles",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "breakfast",
+    "cuisines": [
+      "mexican"
+    ],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Crisp tortilla chips simmered in salsa until just softened, piled with a fried egg, cotija, and onion. The Mexican breakfast built to use up chips.",
+    "ingredients": [
+      {
+        "name": "corn tortillas",
+        "original": "10 corn tortillas",
+        "amount": 10,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1/4 cup vegetable oil",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "salsa",
+        "original": "2 cups salsa",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "eggs",
+        "original": "4 large eggs",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "cotija cheese",
+        "original": "1/2 cup crumbled cotija cheese",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "onion",
+        "original": "1/2 onion, diced",
+        "amount": 0.5,
+        "unit": ""
+      },
+      {
+        "name": "cilantro",
+        "original": "1/4 cup chopped fresh cilantro",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Cut the corn tortillas into wedges.",
+            "ingredients": [
+              "corn tortillas"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat the vegetable oil in a large skillet and fry the tortilla wedges until crisp and golden, about 5 minutes, then drain on paper towels.",
+            "ingredients": [
+              "vegetable oil",
+              "corn tortillas"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 3,
+            "step": "Pour the salsa into the skillet and bring it to a simmer.",
+            "ingredients": [
+              "salsa"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Add the crisp tortillas and toss just until they start to soften at the edges but still hold some crunch.",
+            "ingredients": [
+              "corn tortillas"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "In a separate pan, fry the eggs to your liking.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Season the chilaquiles with the salt and divide among plates.",
+            "ingredients": [
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Top with a fried egg, crumbled cotija cheese, diced onion, and cilantro.",
+            "ingredients": [
+              "eggs",
+              "cotija cheese",
+              "onion",
+              "cilantro"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000276,
+    "title": "Tamagoyaki",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "breakfast",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 15,
+    "servings": 2,
+    "vegetarian": true,
+    "vegan": false,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Japan's sweet-savory rolled omelette, cooked in thin layers and rolled into a tender, striped log. A patient little breakfast worth the technique.",
+    "ingredients": [
+      {
+        "name": "eggs",
+        "original": "4 large eggs",
+        "amount": 4,
+        "unit": ""
+      },
+      {
+        "name": "mirin",
+        "original": "1 tbsp mirin",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sugar",
+        "original": "1 tsp sugar",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "salt",
+        "original": "1/4 tsp salt",
+        "amount": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1 tbsp vegetable oil",
+        "amount": 1,
+        "unit": "tbsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Whisk the eggs, mirin, sugar, and salt together until fully blended.",
+            "ingredients": [
+              "eggs",
+              "mirin",
+              "sugar",
+              "salt"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Lightly coat a nonstick skillet with the vegetable oil and heat over medium.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 3,
+            "step": "Pour in a thin layer of egg and tilt the pan to coat the bottom.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "When the egg is just set on top, roll it to one side of the pan with a spatula.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [
+              "spatula"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "Oil the empty part of the pan, pour in another thin layer, and lift the roll so the new egg flows underneath.",
+            "ingredients": [
+              "eggs",
+              "vegetable oil"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "When set, roll it back over the first layer to build a thicker log.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 7,
+            "step": "Repeat with the remaining egg, then slide out and slice into thick pieces.",
+            "ingredients": [
+              "eggs"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000277,
+    "title": "Quinoa Breakfast Porridge",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "breakfast",
+    "cuisines": [],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Nutty quinoa simmered in cinnamon-spiced plant milk until creamy, then topped with fruit. A warm, protein-rich start that isn't oatmeal.",
+    "ingredients": [
+      {
+        "name": "quinoa",
+        "original": "1 cup quinoa",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "plant milk",
+        "original": "3 cups almond or oat milk",
+        "amount": 3,
+        "unit": "cup"
+      },
+      {
+        "name": "cinnamon",
+        "original": "1 tsp ground cinnamon",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "maple syrup",
+        "original": "3 tbsp maple syrup",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "vanilla extract",
+        "original": "1 tsp vanilla extract",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "banana",
+        "original": "1 banana, sliced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "berries",
+        "original": "1 cup mixed berries",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "salt",
+        "original": "a pinch of salt",
+        "amount": null,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Rinse the quinoa well under cool water.",
+            "ingredients": [
+              "quinoa"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Combine the quinoa, plant milk, cinnamon, and a pinch of salt in a saucepan and bring to a simmer.",
+            "ingredients": [
+              "quinoa",
+              "plant milk",
+              "cinnamon",
+              "salt"
+            ],
+            "equipment": [
+              "saucepan"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 3,
+            "step": "Cover and cook on low until the quinoa is tender and the liquid is mostly absorbed, about 15 minutes.",
+            "ingredients": [
+              "quinoa"
+            ],
+            "equipment": [],
+            "lengthMinutes": 15
+          },
+          {
+            "number": 4,
+            "step": "Stir in the maple syrup and vanilla extract.",
+            "ingredients": [
+              "maple syrup",
+              "vanilla extract"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Spoon into bowls and top with sliced banana and berries.",
+            "ingredients": [
+              "banana",
+              "berries"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000278,
+    "title": "Sweet Potato and Black Bean Hash",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "breakfast",
+    "cuisines": [],
+    "readyInMinutes": 25,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Crispy-edged sweet potato with peppers and black beans, warmly spiced and finished with cilantro. A hearty vegan breakfast skillet worth waking for.",
+    "ingredients": [
+      {
+        "name": "olive oil",
+        "original": "2 tbsp olive oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sweet potato",
+        "original": "2 sweet potatoes, cubed small",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "onion",
+        "original": "1 onion, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "bell pepper",
+        "original": "1 bell pepper, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "black beans",
+        "original": "1 can (15 oz) black beans, drained",
+        "amount": 15,
+        "unit": "oz"
+      },
+      {
+        "name": "cumin",
+        "original": "1 tsp ground cumin",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "paprika",
+        "original": "1 tsp paprika",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "cilantro",
+        "original": "1/4 cup chopped fresh cilantro",
+        "amount": 0.25,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the olive oil in a large skillet over medium heat.",
+            "ingredients": [
+              "olive oil"
+            ],
+            "equipment": [
+              "large skillet"
+            ],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 2,
+            "step": "Add the sweet potato and cook, stirring now and then, until it starts to soften and brown, about 10 minutes.",
+            "ingredients": [
+              "sweet potato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 3,
+            "step": "Add the onion and bell pepper and cook until softened, about 5 minutes.",
+            "ingredients": [
+              "onion",
+              "bell pepper"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 4,
+            "step": "Stir in the cumin and paprika and cook until fragrant, about 1 minute.",
+            "ingredients": [
+              "cumin",
+              "paprika"
+            ],
+            "equipment": [],
+            "lengthMinutes": 1
+          },
+          {
+            "number": 5,
+            "step": "Add the black beans and cook until warmed through and the sweet potato is tender, about 3 minutes.",
+            "ingredients": [
+              "black beans",
+              "sweet potato"
+            ],
+            "equipment": [],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 6,
+            "step": "Season with the salt and scatter cilantro over the top.",
+            "ingredients": [
+              "salt",
+              "cilantro"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000279,
+    "title": "Onigiri",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "snack",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Pillowy hand-pressed rice triangles with a savory spinach center, wrapped in nori. The Japanese lunchbox staple — portable, tidy, and satisfying.",
+    "ingredients": [
+      {
+        "name": "rice",
+        "original": "3 cups cooked short-grain rice",
+        "amount": 3,
+        "unit": "cup"
+      },
+      {
+        "name": "spinach",
+        "original": "2 cups fresh spinach",
+        "amount": 2,
+        "unit": "cup"
+      },
+      {
+        "name": "tamari",
+        "original": "1 tbsp gluten-free tamari",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "sesame seeds",
+        "original": "1 tbsp sesame seeds",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "nori",
+        "original": "2 sheets nori, cut into strips",
+        "amount": 2,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Cook the short-grain rice and let it cool just until you can handle it — warm, sticky rice holds together best.",
+            "ingredients": [
+              "rice"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Wilt the spinach in a pan, squeeze it dry, and toss with the tamari and sesame seeds for a filling.",
+            "ingredients": [
+              "spinach",
+              "tamari",
+              "sesame seeds"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 3,
+            "step": "Wet your hands and rub them with a little salt to keep the rice from sticking.",
+            "ingredients": [
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Scoop a handful of rice, press a dimple in the center, and add a little spinach filling.",
+            "ingredients": [
+              "rice",
+              "spinach"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Cup the rice around the filling and press it into a firm triangle or ball.",
+            "ingredients": [
+              "rice"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Wrap a strip of nori around the base of each onigiri.",
+            "ingredients": [
+              "nori"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000280,
+    "title": "Fried Plantains",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "snack",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 15,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Sweet, ripe plantains fried until caramelized and golden, then salted while hot. A quick West African snack that's crisp outside and custardy within.",
+    "ingredients": [
+      {
+        "name": "plantain",
+        "original": "3 ripe plantains",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1/4 cup vegetable oil",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Peel the ripe plantains and slice them on a diagonal about half an inch thick.",
+            "ingredients": [
+              "plantain"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat about a quarter inch of vegetable oil in a skillet over medium heat.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 3,
+            "step": "Fry the plantain slices until deep golden on the bottom, about 2 minutes, then flip them.",
+            "ingredients": [
+              "plantain"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 4,
+            "step": "Cook the other side until golden and caramelized at the edges, about 2 minutes more.",
+            "ingredients": [
+              "plantain"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "Drain on paper towels and sprinkle with salt while warm.",
+            "ingredients": [
+              "salt"
+            ],
+            "equipment": [
+              "paper towels"
+            ],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000281,
+    "title": "Edamame with Sea Salt",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "snack",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 10,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Boiled soybean pods tossed with flaky sea salt — the effortless, protein-packed snack you squeeze straight from the pod. Ready in ten minutes.",
+    "ingredients": [
+      {
+        "name": "edamame",
+        "original": "1 lb frozen edamame in pods",
+        "amount": 1,
+        "unit": "lb"
+      },
+      {
+        "name": "sea salt",
+        "original": "1 tbsp flaky sea salt",
+        "amount": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "water",
+        "original": "4 cups water",
+        "amount": 4,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Bring the water to a rolling boil in a pot and add a generous pinch of the sea salt.",
+            "ingredients": [
+              "water",
+              "sea salt"
+            ],
+            "equipment": [
+              "pot"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 2,
+            "step": "Add the frozen edamame pods and boil until bright green and heated through, about 4 minutes.",
+            "ingredients": [
+              "edamame"
+            ],
+            "equipment": [],
+            "lengthMinutes": 4
+          },
+          {
+            "number": 3,
+            "step": "Drain the edamame well.",
+            "ingredients": [
+              "edamame"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Toss with a good sprinkle of sea salt and serve warm, squeezing the beans from the pods.",
+            "ingredients": [
+              "sea salt",
+              "edamame"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000282,
+    "title": "Plantain Chips",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "snack",
+    "cuisines": [
+      "african"
+    ],
+    "readyInMinutes": 20,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Thin rounds of green plantain fried until shatteringly crisp and salted while hot. A crunchy, naturally gluten-free stand-in for potato chips.",
+    "ingredients": [
+      {
+        "name": "plantain",
+        "original": "2 green (unripe) plantains",
+        "amount": 2,
+        "unit": ""
+      },
+      {
+        "name": "vegetable oil",
+        "original": "1/2 cup vegetable oil",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "salt",
+        "original": "1/2 tsp salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Peel the plantains and slice them into very thin rounds, ideally with a mandoline.",
+            "ingredients": [
+              "plantain"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Heat about half an inch of vegetable oil in a skillet over medium-high heat.",
+            "ingredients": [
+              "vegetable oil"
+            ],
+            "equipment": [
+              "skillet"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 3,
+            "step": "Fry the plantain rounds in batches until crisp and pale gold, about 3 minutes per batch.",
+            "ingredients": [
+              "plantain"
+            ],
+            "equipment": [],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 4,
+            "step": "Drain the chips on paper towels.",
+            "ingredients": [],
+            "equipment": [
+              "paper towels"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Sprinkle with salt while still hot and let cool to crisp up.",
+            "ingredients": [
+              "salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000283,
+    "title": "Mochi",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "dessert",
+    "cuisines": [
+      "japanese"
+    ],
+    "readyInMinutes": 45,
+    "servings": 12,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Soft, chewy, pillowy rice-flour mochi wrapped around sweet red bean paste. A no-bake Japanese treat made surprisingly easy in the microwave.",
+    "ingredients": [
+      {
+        "name": "glutinous rice flour",
+        "original": "1 cup glutinous rice flour",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "sugar",
+        "original": "1/4 cup sugar",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "water",
+        "original": "3/4 cup water",
+        "amount": 0.75,
+        "unit": "cup"
+      },
+      {
+        "name": "cornstarch",
+        "original": "1/4 cup cornstarch, for dusting",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "red bean paste",
+        "original": "1/2 cup sweet red bean paste",
+        "amount": 0.5,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Whisk the glutinous rice flour, sugar, and water in a microwave-safe bowl until smooth.",
+            "ingredients": [
+              "glutinous rice flour",
+              "sugar",
+              "water"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Cover and microwave in 1-minute bursts, stirring between each, until the mixture turns thick, glossy, and stretchy, about 3 minutes total.",
+            "ingredients": [],
+            "equipment": [
+              "microwave"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 3,
+            "step": "Dust a work surface generously with the cornstarch so the dough will not stick.",
+            "ingredients": [
+              "cornstarch"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Turn the hot dough onto the cornstarch and let it cool just until you can handle it.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 5
+          },
+          {
+            "number": 5,
+            "step": "Divide the dough into small pieces and flatten each into a disk.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Place a spoonful of red bean paste in the center and pinch the dough closed around it.",
+            "ingredients": [
+              "red bean paste"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Roll each mochi gently in more cornstarch and set it pinch-side down to seal.",
+            "ingredients": [
+              "cornstarch"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000284,
+    "title": "Tres Leches Cake",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "dessert",
+    "cuisines": [
+      "mexican"
+    ],
+    "readyInMinutes": 180,
+    "servings": 12,
+    "vegetarian": true,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "A tender sponge soaked in three milks until lusciously custardy, crowned with softly whipped cream. The iconic Latin celebration cake.",
+    "ingredients": [
+      {
+        "name": "flour",
+        "original": "1 1/2 cups all-purpose flour",
+        "amount": 1.5,
+        "unit": "cup"
+      },
+      {
+        "name": "baking powder",
+        "original": "1 tsp baking powder",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "salt",
+        "original": "1/4 tsp salt",
+        "amount": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "eggs",
+        "original": "5 large eggs",
+        "amount": 5,
+        "unit": ""
+      },
+      {
+        "name": "sugar",
+        "original": "1 cup sugar",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "vanilla extract",
+        "original": "2 tsp vanilla extract",
+        "amount": 2,
+        "unit": "tsp"
+      },
+      {
+        "name": "evaporated milk",
+        "original": "1 can (12 oz) evaporated milk",
+        "amount": 12,
+        "unit": "oz"
+      },
+      {
+        "name": "sweetened condensed milk",
+        "original": "1 can (14 oz) sweetened condensed milk",
+        "amount": 14,
+        "unit": "oz"
+      },
+      {
+        "name": "whole milk",
+        "original": "1 cup whole milk",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "heavy cream",
+        "original": "1 1/2 cups heavy cream",
+        "amount": 1.5,
+        "unit": "cup"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Heat the oven to 350°F and grease a 9x13 baking dish.",
+            "ingredients": [],
+            "equipment": [
+              "baking dish"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Whisk the flour, baking powder, and salt together in a bowl.",
+            "ingredients": [
+              "flour",
+              "baking powder",
+              "salt"
+            ],
+            "equipment": [
+              "bowl",
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "In a separate bowl, beat the eggs with the sugar until pale and fluffy, then stir in half the vanilla extract.",
+            "ingredients": [
+              "eggs",
+              "sugar",
+              "vanilla extract"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 4,
+            "step": "Fold the dry ingredients into the egg mixture just until combined, then pour into the baking dish.",
+            "ingredients": [
+              "flour"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Bake until a toothpick comes out clean, about 25 minutes, then let it cool.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 25
+          },
+          {
+            "number": 6,
+            "step": "Whisk the evaporated milk, sweetened condensed milk, and whole milk together.",
+            "ingredients": [
+              "evaporated milk",
+              "sweetened condensed milk",
+              "whole milk"
+            ],
+            "equipment": [
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 7,
+            "step": "Poke holes all over the cooled cake and slowly pour the milk mixture over so it soaks in.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 8,
+            "step": "Refrigerate until the cake is fully soaked and chilled, at least 2 hours.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 120
+          },
+          {
+            "number": 9,
+            "step": "Whip the heavy cream with the remaining vanilla extract and spread it over the top before serving.",
+            "ingredients": [
+              "heavy cream",
+              "vanilla extract"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000285,
+    "title": "Grilled Pineapple with Cinnamon",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "dessert",
+    "cuisines": [],
+    "readyInMinutes": 15,
+    "servings": 4,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Juicy pineapple caramelized on the grill with cinnamon sugar and a squeeze of lime. A five-ingredient dessert that tastes like summer.",
+    "ingredients": [
+      {
+        "name": "pineapple",
+        "original": "1 pineapple, peeled and cored",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "brown sugar",
+        "original": "3 tbsp brown sugar",
+        "amount": 3,
+        "unit": "tbsp"
+      },
+      {
+        "name": "cinnamon",
+        "original": "1 tsp ground cinnamon",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "coconut oil",
+        "original": "2 tbsp melted coconut oil",
+        "amount": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "lime",
+        "original": "1 lime",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Cut the pineapple into thick spears or rings.",
+            "ingredients": [
+              "pineapple"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Stir the brown sugar and cinnamon together.",
+            "ingredients": [
+              "brown sugar",
+              "cinnamon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Brush the pineapple with the melted coconut oil and sprinkle with the cinnamon sugar.",
+            "ingredients": [
+              "pineapple",
+              "coconut oil",
+              "cinnamon"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Heat a grill or grill pan to medium-high.",
+            "ingredients": [],
+            "equipment": [
+              "grill"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "Grill the pineapple, turning once, until caramelized with deep grill marks, about 6 minutes.",
+            "ingredients": [
+              "pineapple"
+            ],
+            "equipment": [],
+            "lengthMinutes": 6
+          },
+          {
+            "number": 6,
+            "step": "Finish with a squeeze of lime and serve warm.",
+            "ingredients": [
+              "lime"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000286,
+    "title": "Alfajores",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "dessert",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 60,
+    "servings": 12,
+    "vegetarian": true,
+    "vegan": false,
+    "glutenFree": false,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Delicate, melt-in-your-mouth shortbread cookies sandwiched with dulce de leche and dusted in powdered sugar. A treasured Latin American treat.",
+    "ingredients": [
+      {
+        "name": "flour",
+        "original": "1 cup all-purpose flour",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "cornstarch",
+        "original": "1 cup cornstarch",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "butter",
+        "original": "3/4 cup butter, softened",
+        "amount": 0.75,
+        "unit": "cup"
+      },
+      {
+        "name": "granulated sugar",
+        "original": "1/2 cup granulated sugar",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "egg yolks",
+        "original": "3 egg yolks",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "vanilla extract",
+        "original": "1 tsp vanilla extract",
+        "amount": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "dulce de leche",
+        "original": "1 cup dulce de leche",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "powdered sugar",
+        "original": "1/4 cup powdered sugar, for dusting",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "salt",
+        "original": "1/4 tsp salt",
+        "amount": 0.25,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Beat the butter and granulated sugar together until light and fluffy.",
+            "ingredients": [
+              "butter",
+              "granulated sugar"
+            ],
+            "equipment": [
+              "bowl",
+              "mixer"
+            ],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 2,
+            "step": "Beat in the egg yolks and vanilla extract.",
+            "ingredients": [
+              "egg yolks",
+              "vanilla extract"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Whisk the flour, cornstarch, and salt together, then stir into the butter mixture to form a soft dough.",
+            "ingredients": [
+              "flour",
+              "cornstarch",
+              "salt"
+            ],
+            "equipment": [
+              "whisk"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Chill the dough for 20 minutes, then roll it out and cut into small rounds.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 20
+          },
+          {
+            "number": 5,
+            "step": "Heat the oven to 350°F and bake the rounds on a lined baking sheet until set but still pale, about 12 minutes.",
+            "ingredients": [],
+            "equipment": [
+              "baking sheet"
+            ],
+            "lengthMinutes": 12
+          },
+          {
+            "number": 6,
+            "step": "Let the cookies cool completely.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 10
+          },
+          {
+            "number": 7,
+            "step": "Sandwich a spoonful of dulce de leche between two cookies.",
+            "ingredients": [
+              "dulce de leche"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 8,
+            "step": "Dust the tops with powdered sugar.",
+            "ingredients": [
+              "powdered sugar"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000287,
+    "title": "Mazamorra Morada",
+    "image": "",
+    "difficulty": "medium",
+    "mealType": "dessert",
+    "cuisines": [
+      "peruvian"
+    ],
+    "readyInMinutes": 45,
+    "servings": 6,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Peru's deep-purple pudding, simmered from purple corn with pineapple, apple, and warm spices, then thickened to a spoonable set. Striking and comforting.",
+    "ingredients": [
+      {
+        "name": "purple corn",
+        "original": "8 oz dried purple corn",
+        "amount": 8,
+        "unit": "oz"
+      },
+      {
+        "name": "water",
+        "original": "8 cups water",
+        "amount": 8,
+        "unit": "cup"
+      },
+      {
+        "name": "pineapple",
+        "original": "1 cup diced pineapple",
+        "amount": 1,
+        "unit": "cup"
+      },
+      {
+        "name": "green apple",
+        "original": "1 green apple, diced",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "sugar",
+        "original": "1/2 cup sugar",
+        "amount": 0.5,
+        "unit": "cup"
+      },
+      {
+        "name": "cinnamon",
+        "original": "1 cinnamon stick",
+        "amount": 1,
+        "unit": ""
+      },
+      {
+        "name": "cloves",
+        "original": "3 whole cloves",
+        "amount": 3,
+        "unit": ""
+      },
+      {
+        "name": "cornstarch",
+        "original": "1/4 cup cornstarch",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "lime",
+        "original": "1 lime, juiced",
+        "amount": 1,
+        "unit": ""
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Simmer the purple corn in the water with the cinnamon and cloves until the water turns deep purple, about 30 minutes.",
+            "ingredients": [
+              "purple corn",
+              "water",
+              "cinnamon",
+              "cloves"
+            ],
+            "equipment": [
+              "large pot"
+            ],
+            "lengthMinutes": 30
+          },
+          {
+            "number": 2,
+            "step": "Strain out the corn and spices, returning the purple liquid to the pot.",
+            "ingredients": [
+              "purple corn"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 3,
+            "step": "Add the pineapple, green apple, and sugar and simmer until the fruit softens, about 8 minutes.",
+            "ingredients": [
+              "pineapple",
+              "green apple",
+              "sugar"
+            ],
+            "equipment": [],
+            "lengthMinutes": 8
+          },
+          {
+            "number": 4,
+            "step": "Stir the cornstarch with a splash of cold water, then stir it in until the mixture thickens to a loose pudding, about 2 minutes.",
+            "ingredients": [
+              "cornstarch"
+            ],
+            "equipment": [],
+            "lengthMinutes": 2
+          },
+          {
+            "number": 5,
+            "step": "Stir in a squeeze of lime.",
+            "ingredients": [
+              "lime"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Spoon into cups and chill; it thickens more as it cools.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 9000288,
+    "title": "Dark Chocolate Bark",
+    "image": "",
+    "difficulty": "easy",
+    "mealType": "dessert",
+    "cuisines": [],
+    "readyInMinutes": 40,
+    "servings": 8,
+    "vegetarian": true,
+    "vegan": true,
+    "glutenFree": true,
+    "healthScore": null,
+    "sourceUrl": "",
+    "sourceName": "Pantry Party Kitchen",
+    "summary": "Melted dark chocolate strewn with almonds, tart cranberries, and pumpkin seeds, then snapped into rugged shards. A no-bake, five-ingredient crowd-pleaser.",
+    "ingredients": [
+      {
+        "name": "dark chocolate",
+        "original": "12 oz dark chocolate, chopped",
+        "amount": 12,
+        "unit": "oz"
+      },
+      {
+        "name": "almonds",
+        "original": "1/3 cup chopped almonds",
+        "amount": 0.33,
+        "unit": "cup"
+      },
+      {
+        "name": "dried cranberries",
+        "original": "1/3 cup dried cranberries",
+        "amount": 0.33,
+        "unit": "cup"
+      },
+      {
+        "name": "pumpkin seeds",
+        "original": "1/4 cup pumpkin seeds",
+        "amount": 0.25,
+        "unit": "cup"
+      },
+      {
+        "name": "sea salt",
+        "original": "1/2 tsp flaky sea salt",
+        "amount": 0.5,
+        "unit": "tsp"
+      }
+    ],
+    "instructions": [
+      {
+        "name": "",
+        "steps": [
+          {
+            "number": 1,
+            "step": "Line a baking sheet with parchment paper.",
+            "ingredients": [],
+            "equipment": [
+              "baking sheet",
+              "parchment paper"
+            ],
+            "lengthMinutes": null
+          },
+          {
+            "number": 2,
+            "step": "Melt the dark chocolate gently in a heatproof bowl set over barely simmering water, stirring until smooth.",
+            "ingredients": [
+              "dark chocolate"
+            ],
+            "equipment": [
+              "bowl"
+            ],
+            "lengthMinutes": 3
+          },
+          {
+            "number": 3,
+            "step": "Pour the melted chocolate onto the parchment and spread it into an even, thin layer.",
+            "ingredients": [
+              "dark chocolate"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 4,
+            "step": "Scatter the almonds, dried cranberries, and pumpkin seeds evenly over the top.",
+            "ingredients": [
+              "almonds",
+              "dried cranberries",
+              "pumpkin seeds"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 5,
+            "step": "Sprinkle lightly with the sea salt.",
+            "ingredients": [
+              "sea salt"
+            ],
+            "equipment": [],
+            "lengthMinutes": null
+          },
+          {
+            "number": 6,
+            "step": "Chill until firm, about 30 minutes, then break into rugged shards.",
+            "ingredients": [],
+            "equipment": [],
+            "lengthMinutes": 30
+          }
+        ]
+      }
+    ]
   }
 ]
