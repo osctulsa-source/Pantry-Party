@@ -18,6 +18,16 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
+  // Sends a recovery email containing a 6-digit OTP code.
+  requestPasswordReset: (email: string) => Promise<{ error?: string }>;
+  // Verifies the emailed OTP (type 'recovery') and then sets the new password.
+  // On success Supabase establishes a session, so AuthContext flips to
+  // 'authenticated' and the app drops the user straight into the pantry.
+  confirmPasswordReset: (
+    email: string,
+    token: string,
+    newPassword: string,
+  ) => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -83,8 +93,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const requestPasswordReset: AuthContextValue['requestPasswordReset'] = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return error ? { error: error.message } : {};
+  };
+
+  const confirmPasswordReset: AuthContextValue['confirmPasswordReset'] = async (
+    email,
+    token,
+    newPassword,
+  ) => {
+    // Exchange the emailed OTP for a recovery session...
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery',
+    });
+    if (verifyError) return { error: verifyError.message };
+    // ...then set the new password on the now-authenticated user.
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    return updateError ? { error: updateError.message } : {};
+  };
+
   return (
-    <AuthContext.Provider value={{ state, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{ state, signIn, signUp, signOut, requestPasswordReset, confirmPasswordReset }}
+    >
       {children}
     </AuthContext.Provider>
   );
