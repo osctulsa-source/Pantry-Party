@@ -1,0 +1,2019 @@
+[
+  {
+    "recipeId": 9000249,
+    "device": "airfryer",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Slice the chicken breast into thin cutlets and season them with salt and pepper.",
+        "ingredients": [
+          "chicken breast",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "cutting board"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Coat each cutlet in flour, then egg, then panko, pressing so the crumbs stick.",
+        "ingredients": [
+          "chicken breast",
+          "flour",
+          "eggs",
+          "panko"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 390°F for about 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Spray or brush the breaded cutlets with the vegetable oil so the crumbs brown — an air fryer needs far less oil than the skillet version.",
+        "ingredients": [
+          "chicken breast",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Air fry, flipping once, until deep golden and cooked through to 165°F, about 12 minutes.",
+        "ingredients": [
+          "chicken breast"
+        ],
+        "equipment": [],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 6,
+        "step": "Slice and serve over rice with the cabbage and a drizzle of tonkatsu sauce.",
+        "ingredients": [
+          "chicken breast",
+          "rice",
+          "cabbage",
+          "tonkatsu sauce"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000249,
+    "device": "oven",
+    "readyInMinutes": 35,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Slice the chicken breast into thin cutlets and season them with salt and pepper.",
+        "ingredients": [
+          "chicken breast",
+          "salt and pepper"
+        ],
+        "equipment": [
+          "cutting board"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toast the panko in a dry skillet until golden — the trick to a crisp baked katsu without frying.",
+        "ingredients": [
+          "panko"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Coat each cutlet in flour, then egg, then the toasted panko.",
+        "ingredients": [
+          "chicken breast",
+          "flour",
+          "eggs",
+          "panko"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Heat the oven to 425°F and set the cutlets on a baking sheet, drizzled with a little vegetable oil.",
+        "ingredients": [
+          "chicken breast",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "baking sheet"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Bake until golden and cooked through to 165°F, about 18 minutes.",
+        "ingredients": [
+          "chicken breast"
+        ],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 6,
+        "step": "Slice and serve over rice with the cabbage and a drizzle of tonkatsu sauce.",
+        "ingredients": [
+          "chicken breast",
+          "rice",
+          "cabbage",
+          "tonkatsu sauce"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000252,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the miso, mirin, sugar, and rice vinegar into a smooth glaze.",
+        "ingredients": [
+          "miso",
+          "mirin",
+          "sugar",
+          "rice vinegar"
+        ],
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Preheat the air fryer to 380°F for 3 minutes and line the basket with a piece of foil.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Brush the salmon with half the glaze and set it in the basket.",
+        "ingredients": [
+          "salmon"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Air fry until the salmon flakes easily and reaches 145°F, about 9 minutes.",
+        "ingredients": [
+          "salmon"
+        ],
+        "equipment": [],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 5,
+        "step": "Brush with the remaining glaze.",
+        "ingredients": [
+          "salmon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Serve over cooked rice with the green onion and sesame seeds.",
+        "ingredients": [
+          "cooked rice",
+          "green onion",
+          "sesame seeds"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000252,
+    "device": "grill",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the miso, mirin, sugar, and rice vinegar into a smooth glaze.",
+        "ingredients": [
+          "miso",
+          "mirin",
+          "sugar",
+          "rice vinegar"
+        ],
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Heat a grill to medium and oil the grates well so the fish will not stick.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Brush the salmon with half the glaze and grill skin-side down, covered, until it flakes and reaches 145°F, about 8 minutes.",
+        "ingredients": [
+          "salmon"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 4,
+        "step": "Brush with the remaining glaze during the last minute.",
+        "ingredients": [
+          "salmon"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Serve over cooked rice with the green onion and sesame seeds.",
+        "ingredients": [
+          "cooked rice",
+          "green onion",
+          "sesame seeds"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000253,
+    "device": "crockpot",
+    "readyInMinutes": 390,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Char the yellow onion and ginger under a broiler until blackened in spots.",
+        "ingredients": [
+          "yellow onion",
+          "ginger"
+        ],
+        "equipment": [
+          "broiler"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add them to the slow cooker with the chicken broth, star anise, cinnamon, fish sauce, and chicken thighs.",
+        "ingredients": [
+          "yellow onion",
+          "ginger",
+          "chicken broth",
+          "star anise",
+          "cinnamon",
+          "fish sauce",
+          "chicken thighs"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Cover and cook on low until the broth is deeply fragrant and the chicken is tender, about 6 hours.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 4,
+        "step": "Lift out the chicken, shred it, and strain the broth.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cook the rice noodles according to the package and divide them among bowls.",
+        "ingredients": [
+          "rice noodles"
+        ],
+        "equipment": [
+          "pot"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Top with shredded chicken and ladle the hot broth over the top.",
+        "ingredients": [
+          "rice noodles",
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Serve with bean sprouts, green onion, cilantro, and lime.",
+        "ingredients": [
+          "bean sprouts",
+          "green onion",
+          "cilantro",
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000253,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Char the yellow onion and ginger under a broiler until blackened in spots.",
+        "ingredients": [
+          "yellow onion",
+          "ginger"
+        ],
+        "equipment": [
+          "broiler"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 2,
+        "step": "Add the charred onion and ginger to the pressure cooker with the chicken broth, star anise, cinnamon, fish sauce, and chicken thighs.",
+        "ingredients": [
+          "yellow onion",
+          "ginger",
+          "chicken broth",
+          "star anise",
+          "cinnamon",
+          "fish sauce",
+          "chicken thighs"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Lock the lid, seal, and cook on high pressure for 15 minutes, then quick-release — pressure pulls the aromatic depth from the broth in a fraction of the stovetop time.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 4,
+        "step": "Lift out the chicken, shred it, and strain the broth.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Cook the rice noodles according to the package and divide them among bowls.",
+        "ingredients": [
+          "rice noodles"
+        ],
+        "equipment": [
+          "pot"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 6,
+        "step": "Top with shredded chicken and ladle the hot broth over the top.",
+        "ingredients": [
+          "rice noodles",
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Serve with bean sprouts, green onion, cilantro, and lime.",
+        "ingredients": [
+          "bean sprouts",
+          "green onion",
+          "cilantro",
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000255,
+    "device": "crockpot",
+    "readyInMinutes": 500,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the beef chuck with the fish sauce.",
+        "ingredients": [
+          "beef chuck",
+          "fish sauce"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Brown the beef in a skillet, then transfer it to the slow cooker.",
+        "ingredients": [
+          "beef chuck"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 3,
+        "step": "Add the onion, garlic, ginger, lemongrass, tomato paste, star anise, cinnamon, carrot, beef broth, and bay leaf.",
+        "ingredients": [
+          "onion",
+          "garlic",
+          "ginger",
+          "lemongrass",
+          "tomato paste",
+          "star anise",
+          "cinnamon",
+          "carrot",
+          "beef broth",
+          "bay leaf"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low until the beef is fork-tender, about 8 hours.",
+        "ingredients": [
+          "beef chuck"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 480
+      },
+      {
+        "number": 5,
+        "step": "Remove the bay leaf, star anise, and lemongrass before serving.",
+        "ingredients": [
+          "bay leaf",
+          "star anise",
+          "lemongrass"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000255,
+    "device": "instantpot",
+    "readyInMinutes": 70,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the beef chuck with the fish sauce.",
+        "ingredients": [
+          "beef chuck",
+          "fish sauce"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Press sauté and brown the beef in the pressure cooker.",
+        "ingredients": [
+          "beef chuck"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 3,
+        "step": "Add the onion, garlic, ginger, and lemongrass and cook for 2 minutes.",
+        "ingredients": [
+          "onion",
+          "garlic",
+          "ginger",
+          "lemongrass"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 4,
+        "step": "Stir in the tomato paste, star anise, and cinnamon, then add the carrot, beef broth, and bay leaf.",
+        "ingredients": [
+          "tomato paste",
+          "star anise",
+          "cinnamon",
+          "carrot",
+          "beef broth",
+          "bay leaf"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 5,
+        "step": "Lock the lid, seal, and cook on high pressure for 35 minutes, then let the pressure release naturally for 10 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 45
+      },
+      {
+        "number": 6,
+        "step": "Remove the bay leaf, star anise, and lemongrass before serving.",
+        "ingredients": [
+          "bay leaf",
+          "star anise",
+          "lemongrass"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000256,
+    "device": "airfryer",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Press the tofu, cut it into cubes, and toss with a little vegetable oil.",
+        "ingredients": [
+          "firm tofu",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Preheat the air fryer to 400°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Air fry the tofu, shaking once, until golden and crisp on all sides, about 12 minutes — crispier than pan-frying and nearly hands-off.",
+        "ingredients": [
+          "firm tofu"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 4,
+        "step": "Cook the rice vermicelli according to the package, rinse, and drain.",
+        "ingredients": [
+          "rice vermicelli"
+        ],
+        "equipment": [
+          "pot"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 5,
+        "step": "Whisk the tamari, lime juice, maple syrup, and garlic into a dressing.",
+        "ingredients": [
+          "tamari",
+          "lime",
+          "maple syrup",
+          "garlic"
+        ],
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Divide the noodles among bowls and top with the cucumber, carrot, lettuce, and mint.",
+        "ingredients": [
+          "rice vermicelli",
+          "cucumber",
+          "carrot",
+          "lettuce",
+          "mint"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 7,
+        "step": "Add the crispy tofu, spoon the dressing over, and finish with peanuts.",
+        "ingredients": [
+          "firm tofu",
+          "peanuts"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000258,
+    "device": "airfryer",
+    "readyInMinutes": 50,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Stir the garlic, the juice of one lime, cumin, paprika, oregano, olive oil, and salt into a marinade.",
+        "ingredients": [
+          "garlic",
+          "lime",
+          "cumin",
+          "paprika",
+          "oregano",
+          "olive oil",
+          "salt"
+        ],
+        "equipment": [
+          "bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Coat the chicken thighs and marinate for 20 minutes.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 380°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Air fry the chicken skin-side up, turning once, until the skin is crisp and it reaches 165°F, about 18 minutes.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 18
+      },
+      {
+        "number": 5,
+        "step": "Blend the mayonnaise, cilantro, jalapeno, the remaining garlic, and the juice of the second lime into a green sauce.",
+        "ingredients": [
+          "mayonnaise",
+          "cilantro",
+          "jalapeno",
+          "garlic",
+          "lime"
+        ],
+        "equipment": [
+          "blender"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Serve the chicken with the green sauce.",
+        "ingredients": [
+          "chicken thighs",
+          "mayonnaise"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000258,
+    "device": "grill",
+    "readyInMinutes": 50,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Stir the garlic, the juice of one lime, cumin, paprika, oregano, olive oil, and salt into a marinade.",
+        "ingredients": [
+          "garlic",
+          "lime",
+          "cumin",
+          "paprika",
+          "oregano",
+          "olive oil",
+          "salt"
+        ],
+        "equipment": [
+          "bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Coat the chicken thighs and marinate for 20 minutes.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 3,
+        "step": "Heat a grill to medium and oil the grates.",
+        "ingredients": [],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Grill the chicken, turning, until charred and cooked through to 165°F, about 14 minutes.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [
+          "grill"
+        ],
+        "lengthMinutes": 14
+      },
+      {
+        "number": 5,
+        "step": "Blend the mayonnaise, cilantro, jalapeno, the remaining garlic, and the juice of the second lime into a green sauce.",
+        "ingredients": [
+          "mayonnaise",
+          "cilantro",
+          "jalapeno",
+          "garlic",
+          "lime"
+        ],
+        "equipment": [
+          "blender"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Rest the chicken a few minutes, then serve with the green sauce.",
+        "ingredients": [
+          "chicken thighs",
+          "mayonnaise"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000259,
+    "device": "crockpot",
+    "readyInMinutes": 320,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Add the olive oil, onion, garlic, aji amarillo, cumin, quinoa, tomato, potato, and vegetable broth to the slow cooker.",
+        "ingredients": [
+          "olive oil",
+          "onion",
+          "garlic",
+          "aji amarillo",
+          "cumin",
+          "quinoa",
+          "tomato",
+          "potato",
+          "vegetable broth"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Cover and cook on low until the quinoa and potato are tender, about 5 hours.",
+        "ingredients": [
+          "quinoa",
+          "potato"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 300
+      },
+      {
+        "number": 3,
+        "step": "Stir in the corn and peas and cook on high for 10 minutes.",
+        "ingredients": [
+          "corn",
+          "peas"
+        ],
+        "equipment": [],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 4,
+        "step": "Scatter the cilantro over the top and serve.",
+        "ingredients": [
+          "cilantro"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000259,
+    "device": "instantpot",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Press sauté and warm the olive oil, then cook the onion until soft, about 4 minutes.",
+        "ingredients": [
+          "olive oil",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 2,
+        "step": "Add the garlic, aji amarillo, and cumin and stir for 1 minute.",
+        "ingredients": [
+          "garlic",
+          "aji amarillo",
+          "cumin"
+        ],
+        "equipment": [],
+        "lengthMinutes": 1
+      },
+      {
+        "number": 3,
+        "step": "Add the quinoa, tomato, potato, and vegetable broth.",
+        "ingredients": [
+          "quinoa",
+          "tomato",
+          "potato",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid, seal, and cook on high pressure for 8 minutes, then quick-release.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 5,
+        "step": "Press sauté, stir in the corn and peas, and simmer for 2 minutes.",
+        "ingredients": [
+          "corn",
+          "peas"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 6,
+        "step": "Scatter the cilantro over the top and serve.",
+        "ingredients": [
+          "cilantro"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000261,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Blend the bell pepper, crushed tomatoes, and scotch bonnet into a smooth base.",
+        "ingredients": [
+          "bell pepper",
+          "crushed tomatoes",
+          "scotch bonnet"
+        ],
+        "equipment": [
+          "blender"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Press sauté, warm the vegetable oil, and cook the onion until soft, about 4 minutes.",
+        "ingredients": [
+          "vegetable oil",
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 3,
+        "step": "Stir in the garlic, ginger, and tomato paste and cook for 2 minutes.",
+        "ingredients": [
+          "garlic",
+          "ginger",
+          "tomato paste"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 4,
+        "step": "Add the blended base and cook until slightly reduced, about 5 minutes.",
+        "ingredients": [],
+        "equipment": [],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 5,
+        "step": "Stir in the rice, thyme, bay leaf, and vegetable broth.",
+        "ingredients": [
+          "rice",
+          "thyme",
+          "bay leaf",
+          "vegetable broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 6,
+        "step": "Lock the lid, seal, and cook on high pressure for 6 minutes, then let the pressure release naturally for 10 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 16
+      },
+      {
+        "number": 7,
+        "step": "Remove the bay leaf and fluff the rice.",
+        "ingredients": [
+          "bay leaf",
+          "rice"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000262,
+    "device": "crockpot",
+    "readyInMinutes": 380,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Brown the chicken thighs in the olive oil in a skillet, then transfer them to the slow cooker.",
+        "ingredients": [
+          "chicken thighs",
+          "olive oil"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Add the sliced onion, dijon mustard, lemon juice, garlic, bay leaf, and chicken broth.",
+        "ingredients": [
+          "onion",
+          "dijon mustard",
+          "lemon",
+          "garlic",
+          "bay leaf",
+          "chicken broth"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Cover and cook on low until the chicken is tender and the onions are jammy, about 6 hours.",
+        "ingredients": [
+          "chicken thighs",
+          "onion"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 4,
+        "step": "Remove the bay leaf and season with salt and pepper.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000262,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Press sauté and brown the chicken thighs in the olive oil, then set them aside.",
+        "ingredients": [
+          "chicken thighs",
+          "olive oil"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 2,
+        "step": "Cook the onion until soft and golden, about 8 minutes.",
+        "ingredients": [
+          "onion"
+        ],
+        "equipment": [],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 3,
+        "step": "Return the chicken and add the dijon mustard, lemon juice, garlic, bay leaf, and chicken broth.",
+        "ingredients": [
+          "chicken thighs",
+          "dijon mustard",
+          "lemon",
+          "garlic",
+          "bay leaf",
+          "chicken broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid, seal, and cook on high pressure for 12 minutes, then quick-release.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 5,
+        "step": "Remove the bay leaf and season with salt and pepper.",
+        "ingredients": [
+          "bay leaf",
+          "salt and pepper"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000263,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Grind the peanuts and mix with the paprika, cayenne, garlic powder, ginger, and salt for a suya spice.",
+        "ingredients": [
+          "peanuts",
+          "paprika",
+          "cayenne",
+          "garlic powder",
+          "ginger",
+          "salt"
+        ],
+        "equipment": [
+          "food processor"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the beef sirloin with the vegetable oil and most of the spice.",
+        "ingredients": [
+          "beef sirloin",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 400°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Air fry the beef in a single layer, shaking once, until browned and cooked to your liking, about 9 minutes.",
+        "ingredients": [
+          "beef sirloin"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 9
+      },
+      {
+        "number": 5,
+        "step": "Sprinkle with the remaining suya spice and serve with the sliced onion.",
+        "ingredients": [
+          "onion"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000263,
+    "device": "oven",
+    "readyInMinutes": 30,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Grind the peanuts and mix with the paprika, cayenne, garlic powder, ginger, and salt for a suya spice.",
+        "ingredients": [
+          "peanuts",
+          "paprika",
+          "cayenne",
+          "garlic powder",
+          "ginger",
+          "salt"
+        ],
+        "equipment": [
+          "food processor"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the beef sirloin with the vegetable oil and most of the spice, then thread onto skewers.",
+        "ingredients": [
+          "beef sirloin",
+          "vegetable oil"
+        ],
+        "equipment": [
+          "skewers"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Heat the oven to 450°F and set a rack over a baking sheet.",
+        "ingredients": [],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Roast the skewers, turning once, until charred at the edges and cooked to your liking, about 12 minutes.",
+        "ingredients": [
+          "beef sirloin"
+        ],
+        "equipment": [
+          "baking sheet"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 5,
+        "step": "Sprinkle with the remaining suya spice and serve with the sliced onion.",
+        "ingredients": [
+          "onion"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000264,
+    "device": "crockpot",
+    "readyInMinutes": 400,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cook the onion in a dry skillet until soft and reduced, then transfer it to the slow cooker.",
+        "ingredients": [
+          "onion"
+        ],
+        "equipment": [
+          "skillet"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 2,
+        "step": "Add the butter, garlic, ginger, berbere, and tomato paste and stir into the onion.",
+        "ingredients": [
+          "butter",
+          "garlic",
+          "ginger",
+          "berbere",
+          "tomato paste"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Nestle in the chicken thighs and pour over the chicken broth.",
+        "ingredients": [
+          "chicken thighs",
+          "chicken broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Cover and cook on low until the chicken is very tender, about 6 hours.",
+        "ingredients": [
+          "chicken thighs"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 5,
+        "step": "Add the hard-boiled eggs for the last 20 minutes to warm through.",
+        "ingredients": [
+          "eggs"
+        ],
+        "equipment": [],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 6,
+        "step": "Finish with the lemon juice and salt.",
+        "ingredients": [
+          "lemon",
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000264,
+    "device": "instantpot",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Press sauté and cook the onion until soft and reduced, about 8 minutes.",
+        "ingredients": [
+          "onion"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 2,
+        "step": "Add the butter, garlic, ginger, berbere, and tomato paste and stir for 2 minutes.",
+        "ingredients": [
+          "butter",
+          "garlic",
+          "ginger",
+          "berbere",
+          "tomato paste"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 3,
+        "step": "Add the chicken thighs and chicken broth.",
+        "ingredients": [
+          "chicken thighs",
+          "chicken broth"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Lock the lid, seal, and cook on high pressure for 15 minutes, then quick-release.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 15
+      },
+      {
+        "number": 5,
+        "step": "Stir in the hard-boiled eggs to warm through, then finish with the lemon juice and salt.",
+        "ingredients": [
+          "eggs",
+          "lemon",
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": 3
+      }
+    ]
+  },
+  {
+    "recipeId": 9000267,
+    "device": "stove",
+    "readyInMinutes": 45,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Whisk the lime juice, orange juice, garlic, half the cilantro, cumin, olive oil, salt, and jalapeno into a marinade.",
+        "ingredients": [
+          "lime",
+          "orange",
+          "garlic",
+          "cilantro",
+          "cumin",
+          "olive oil",
+          "salt",
+          "jalapeno"
+        ],
+        "equipment": [
+          "bowl",
+          "whisk"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Marinate the skirt steak for at least 20 minutes.",
+        "ingredients": [
+          "skirt steak"
+        ],
+        "equipment": [],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 3,
+        "step": "Heat a cast-iron skillet over high heat until smoking — a screaming-hot pan gives the same char as a grill, indoors.",
+        "ingredients": [],
+        "equipment": [
+          "cast-iron skillet"
+        ],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 4,
+        "step": "Sear the steak, turning once, until crusted outside and cooked to 145°F for medium, about 8 minutes.",
+        "ingredients": [
+          "skirt steak"
+        ],
+        "equipment": [],
+        "lengthMinutes": 8
+      },
+      {
+        "number": 5,
+        "step": "Rest for 5 minutes, then slice thinly against the grain.",
+        "ingredients": [
+          "skirt steak"
+        ],
+        "equipment": [
+          "cutting board"
+        ],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 6,
+        "step": "Scatter the remaining cilantro over the top and serve with lime.",
+        "ingredients": [
+          "cilantro",
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000272,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Toss the cherry tomatoes, olives, capers, garlic, and olive oil together.",
+        "ingredients": [
+          "cherry tomatoes",
+          "olives",
+          "capers",
+          "garlic",
+          "olive oil"
+        ],
+        "equipment": [
+          "bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Preheat the air fryer to 380°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 3,
+        "step": "Season the cod with salt and pepper and the oregano and set it in the basket with the tomato mixture around it.",
+        "ingredients": [
+          "cod",
+          "salt and pepper",
+          "oregano"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Air fry until the cod flakes easily and reaches 145°F and the tomatoes burst, about 10 minutes.",
+        "ingredients": [
+          "cod",
+          "cherry tomatoes"
+        ],
+        "equipment": [],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 5,
+        "step": "Finish with a squeeze of lemon and a scatter of parsley.",
+        "ingredients": [
+          "lemon",
+          "parsley"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000277,
+    "device": "crockpot",
+    "readyInMinutes": 375,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Grease the slow cooker insert and add the quinoa, plant milk, cinnamon, and a pinch of salt.",
+        "ingredients": [
+          "quinoa",
+          "plant milk",
+          "cinnamon",
+          "salt"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Cover and cook on low until the quinoa is tender and creamy, about 6 hours — perfect to wake up to.",
+        "ingredients": [
+          "quinoa"
+        ],
+        "equipment": [
+          "slow cooker"
+        ],
+        "lengthMinutes": 360
+      },
+      {
+        "number": 3,
+        "step": "Stir in the maple syrup and vanilla extract.",
+        "ingredients": [
+          "maple syrup",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Top with sliced banana and berries.",
+        "ingredients": [
+          "banana",
+          "berries"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000277,
+    "device": "instantpot",
+    "readyInMinutes": 25,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Rinse the quinoa and add it to the pressure cooker with the plant milk, cinnamon, and a pinch of salt.",
+        "ingredients": [
+          "quinoa",
+          "plant milk",
+          "cinnamon",
+          "salt"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Lock the lid, seal, and cook on high pressure for 2 minutes, then let the pressure release naturally for 10 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 3,
+        "step": "Stir in the maple syrup and vanilla extract.",
+        "ingredients": [
+          "maple syrup",
+          "vanilla extract"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Spoon into bowls and top with sliced banana and berries.",
+        "ingredients": [
+          "banana",
+          "berries"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000278,
+    "device": "sheetpan",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Heat the oven to 425°F and line a sheet pan with parchment paper.",
+        "ingredients": [],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the sweet potato, onion, and bell pepper with the olive oil, cumin, paprika, and salt on the pan.",
+        "ingredients": [
+          "sweet potato",
+          "onion",
+          "bell pepper",
+          "olive oil",
+          "cumin",
+          "paprika",
+          "salt"
+        ],
+        "equipment": [
+          "sheet pan"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Roast until the sweet potato is tender and browned at the edges, about 25 minutes, stirring once — the oven crisps more surface than a skillet.",
+        "ingredients": [
+          "sweet potato"
+        ],
+        "equipment": [
+          "oven"
+        ],
+        "lengthMinutes": 25
+      },
+      {
+        "number": 4,
+        "step": "Add the black beans and roast for 5 minutes more to warm through.",
+        "ingredients": [
+          "black beans"
+        ],
+        "equipment": [],
+        "lengthMinutes": 5
+      },
+      {
+        "number": 5,
+        "step": "Scatter cilantro over the top and serve.",
+        "ingredients": [
+          "cilantro"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000280,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Peel the ripe plantains and slice them on a diagonal about half an inch thick.",
+        "ingredients": [
+          "plantain"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the slices with the vegetable oil.",
+        "ingredients": [
+          "plantain",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 375°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Air fry, flipping once, until golden and caramelized, about 10 minutes.",
+        "ingredients": [
+          "plantain"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 5,
+        "step": "Sprinkle with salt while warm.",
+        "ingredients": [
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000281,
+    "device": "microwave",
+    "readyInMinutes": 8,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Place the frozen edamame pods in a microwave-safe bowl with the water.",
+        "ingredients": [
+          "edamame",
+          "water"
+        ],
+        "equipment": [
+          "microwave-safe bowl"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Cover and microwave on high until bright green and hot, about 4 minutes.",
+        "ingredients": [
+          "edamame"
+        ],
+        "equipment": [
+          "microwave"
+        ],
+        "lengthMinutes": 4
+      },
+      {
+        "number": 3,
+        "step": "Drain the edamame pods well.",
+        "ingredients": [
+          "edamame"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Toss with the sea salt and serve warm.",
+        "ingredients": [
+          "sea salt",
+          "edamame"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000282,
+    "device": "airfryer",
+    "readyInMinutes": 25,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Peel the green plantains and slice them into very thin rounds.",
+        "ingredients": [
+          "plantain"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Toss the rounds with the vegetable oil.",
+        "ingredients": [
+          "plantain",
+          "vegetable oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 360°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Air fry in a single layer, shaking often, until crisp and pale gold, about 12 minutes.",
+        "ingredients": [
+          "plantain"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 12
+      },
+      {
+        "number": 5,
+        "step": "Sprinkle with salt while hot and let cool to crisp up.",
+        "ingredients": [
+          "salt"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000285,
+    "device": "airfryer",
+    "readyInMinutes": 20,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Cut the pineapple into thick spears or rings.",
+        "ingredients": [
+          "pineapple"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Stir the brown sugar and cinnamon together, then brush the pineapple with the melted coconut oil and coat it with the cinnamon sugar.",
+        "ingredients": [
+          "brown sugar",
+          "cinnamon",
+          "pineapple",
+          "coconut oil"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 3,
+        "step": "Preheat the air fryer to 400°F for 3 minutes.",
+        "ingredients": [],
+        "equipment": [
+          "air fryer"
+        ],
+        "lengthMinutes": 3
+      },
+      {
+        "number": 4,
+        "step": "Air fry, turning once, until caramelized and golden at the edges, about 10 minutes.",
+        "ingredients": [
+          "pineapple"
+        ],
+        "equipment": [
+          "air fryer basket"
+        ],
+        "lengthMinutes": 10
+      },
+      {
+        "number": 5,
+        "step": "Finish with a squeeze of lime.",
+        "ingredients": [
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  },
+  {
+    "recipeId": 9000287,
+    "device": "instantpot",
+    "readyInMinutes": 40,
+    "steps": [
+      {
+        "number": 1,
+        "step": "Add the purple corn, water, cinnamon, and cloves to the pressure cooker.",
+        "ingredients": [
+          "purple corn",
+          "water",
+          "cinnamon",
+          "cloves"
+        ],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": null
+      },
+      {
+        "number": 2,
+        "step": "Lock the lid, seal, and cook on high pressure for 20 minutes, then quick-release — pressure pulls the deep purple color from the corn far faster than simmering.",
+        "ingredients": [],
+        "equipment": [
+          "pressure cooker"
+        ],
+        "lengthMinutes": 20
+      },
+      {
+        "number": 3,
+        "step": "Strain out the corn and spices, returning the purple liquid to the pot.",
+        "ingredients": [
+          "purple corn"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      },
+      {
+        "number": 4,
+        "step": "Press sauté, add the pineapple, green apple, and sugar, and simmer until the fruit softens, about 6 minutes.",
+        "ingredients": [
+          "pineapple",
+          "green apple",
+          "sugar"
+        ],
+        "equipment": [],
+        "lengthMinutes": 6
+      },
+      {
+        "number": 5,
+        "step": "Stir the cornstarch with a splash of cold water, then stir it in until thickened, about 2 minutes.",
+        "ingredients": [
+          "cornstarch"
+        ],
+        "equipment": [],
+        "lengthMinutes": 2
+      },
+      {
+        "number": 6,
+        "step": "Stir in a squeeze of lime, then spoon into cups to chill.",
+        "ingredients": [
+          "lime"
+        ],
+        "equipment": [],
+        "lengthMinutes": null
+      }
+    ]
+  }
+]

@@ -1413,5 +1413,157 @@
       "title": "Baba Ganoush",
       "device": "grill"
     }
+  ],
+  [
+    {
+      "recipeId": 9000249,
+      "title": "Chicken Katsu",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000249,
+      "title": "Chicken Katsu",
+      "device": "oven"
+    },
+    {
+      "recipeId": 9000252,
+      "title": "Miso-Glazed Salmon",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000252,
+      "title": "Miso-Glazed Salmon",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000253,
+      "title": "Chicken Pho",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000253,
+      "title": "Chicken Pho",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000255,
+      "title": "Bo Kho",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000255,
+      "title": "Bo Kho",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000256,
+      "title": "Tofu Vermicelli Bowl",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000258,
+      "title": "Peruvian Roast Chicken with Green Sauce",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000258,
+      "title": "Peruvian Roast Chicken with Green Sauce",
+      "device": "grill"
+    },
+    {
+      "recipeId": 9000259,
+      "title": "Quinoa and Vegetable Stew",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000259,
+      "title": "Quinoa and Vegetable Stew",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000261,
+      "title": "Jollof Rice",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000262,
+      "title": "Senegalese Yassa Chicken",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000262,
+      "title": "Senegalese Yassa Chicken",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000263,
+      "title": "Suya Beef Skewers",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000263,
+      "title": "Suya Beef Skewers",
+      "device": "oven"
+    },
+    {
+      "recipeId": 9000264,
+      "title": "Doro Wat",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000264,
+      "title": "Doro Wat",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000267,
+      "title": "Carne Asada",
+      "device": "stove"
+    },
+    {
+      "recipeId": 9000272,
+      "title": "Baked Cod with Tomatoes",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000277,
+      "title": "Quinoa Breakfast Porridge",
+      "device": "crockpot"
+    },
+    {
+      "recipeId": 9000277,
+      "title": "Quinoa Breakfast Porridge",
+      "device": "instantpot"
+    },
+    {
+      "recipeId": 9000278,
+      "title": "Sweet Potato and Black Bean Hash",
+      "device": "sheetpan"
+    },
+    {
+      "recipeId": 9000280,
+      "title": "Fried Plantains",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000281,
+      "title": "Edamame with Sea Salt",
+      "device": "microwave"
+    },
+    {
+      "recipeId": 9000282,
+      "title": "Plantain Chips",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000285,
+      "title": "Grilled Pineapple with Cinnamon",
+      "device": "airfryer"
+    },
+    {
+      "recipeId": 9000287,
+      "title": "Mazamorra Morada",
+      "device": "instantpot"
+    }
   ]
 ]

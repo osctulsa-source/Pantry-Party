@@ -4214,5 +4214,685 @@
       "grill": "convert",
       "griddle": "skip"
     }
+  },
+  {
+    "recipeId": 9000249,
+    "title": "Chicken Katsu",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "convert",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000250,
+    "title": "Gyudon",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000251,
+    "title": "Yakisoba Noodles",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000252,
+    "title": "Miso-Glazed Salmon",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "native",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "convert",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000253,
+    "title": "Chicken Pho",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000254,
+    "title": "Vietnamese Caramel Salmon",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000255,
+    "title": "Bo Kho",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000256,
+    "title": "Tofu Vermicelli Bowl",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000257,
+    "title": "Lomo Saltado",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "native",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000258,
+    "title": "Peruvian Roast Chicken with Green Sauce",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "native",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "native",
+      "grill": "convert",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000259,
+    "title": "Quinoa and Vegetable Stew",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000260,
+    "title": "Aji de Gallina",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000261,
+    "title": "Jollof Rice",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000262,
+    "title": "Senegalese Yassa Chicken",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000263,
+    "title": "Suya Beef Skewers",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "convert",
+      "grill": "native",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000264,
+    "title": "Doro Wat",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000265,
+    "title": "Ethiopian Cabbage and Potato",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000266,
+    "title": "Shrimp and Grits",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000267,
+    "title": "Carne Asada",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "convert",
+      "oven": "skip",
+      "grill": "native",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000268,
+    "title": "Coconut Fish Curry",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000269,
+    "title": "Stuffed Poblano Peppers",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "native",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000270,
+    "title": "Cauliflower Fried Rice",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000271,
+    "title": "Cobb Salad",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000272,
+    "title": "Baked Cod with Tomatoes",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "native",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000273,
+    "title": "Egg Roll in a Bowl",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000274,
+    "title": "Zucchini Noodles with Marinara",
+    "mealType": "main course",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000275,
+    "title": "Chilaquiles",
+    "mealType": "breakfast",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000276,
+    "title": "Tamagoyaki",
+    "mealType": "breakfast",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000277,
+    "title": "Quinoa Breakfast Porridge",
+    "mealType": "breakfast",
+    "devices": {
+      "crockpot": "convert",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000278,
+    "title": "Sweet Potato and Black Bean Hash",
+    "mealType": "breakfast",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "convert",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000279,
+    "title": "Onigiri",
+    "mealType": "snack",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000280,
+    "title": "Fried Plantains",
+    "mealType": "snack",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000281,
+    "title": "Edamame with Sea Salt",
+    "mealType": "snack",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "convert",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000282,
+    "title": "Plantain Chips",
+    "mealType": "snack",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "native",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000283,
+    "title": "Mochi",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "native",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000284,
+    "title": "Tres Leches Cake",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "native",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000285,
+    "title": "Grilled Pineapple with Cinnamon",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "convert",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "native",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000286,
+    "title": "Alfajores",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "native",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000287,
+    "title": "Mazamorra Morada",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "convert",
+      "airfryer": "skip",
+      "sheetpan": "skip",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
+  },
+  {
+    "recipeId": 9000288,
+    "title": "Dark Chocolate Bark",
+    "mealType": "dessert",
+    "devices": {
+      "crockpot": "skip",
+      "instantpot": "skip",
+      "airfryer": "skip",
+      "sheetpan": "native",
+      "microwave": "skip",
+      "nocook": "skip",
+      "stove": "skip",
+      "oven": "skip",
+      "grill": "skip",
+      "griddle": "skip"
+    }
   }
 ]
