@@ -68,6 +68,15 @@ export function SignInScreen() {
 
           <Button title="Sign in" onPress={onSubmit} loading={submitting} style={styles.submit} />
 
+          <Pressable
+            style={styles.forgotLink}
+            onPress={() => navigation.navigate('ForgotPassword')}
+          >
+            <Body tone="accent" weight="medium" size={14}>
+              Forgot password?
+            </Body>
+          </Pressable>
+
           <Pressable style={styles.footerLink} onPress={() => navigation.navigate('SignUp')}>
             <Body tone="accent" weight="medium" size={14}>
               Need an account? Create one
@@ -87,5 +96,6 @@ const styles = StyleSheet.create({
   inputGap: { marginTop: tokens.space(3) },
   error: { marginTop: tokens.space(3) },
   submit: { marginTop: tokens.space(4) },
+  forgotLink: { marginTop: tokens.space(4), alignItems: 'center' },
   footerLink: { marginTop: tokens.space(5), alignItems: 'center' },
 });

@@ -40,6 +40,7 @@ import { ActiveHouseholdProvider } from './src/features/household/ActiveHousehol
 import { AuthProvider, useAuth } from './src/features/auth/AuthContext';
 import { SignInScreen } from './src/features/auth/SignInScreen';
 import { SignUpScreen } from './src/features/auth/SignUpScreen';
+import { ForgotPasswordScreen } from './src/features/auth/ForgotPasswordScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
 import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
@@ -76,6 +77,7 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   SignIn: undefined;
   SignUp: undefined;
+  ForgotPassword: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -164,6 +166,7 @@ function AuthStack() {
     <AuthStackNav.Navigator initialRouteName="SignIn" screenOptions={{ headerShown: false }}>
       <AuthStackNav.Screen name="SignIn" component={SignInScreen} />
       <AuthStackNav.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStackNav.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </AuthStackNav.Navigator>
   );
 }
