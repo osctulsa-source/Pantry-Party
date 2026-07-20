@@ -61,6 +61,7 @@ import type { RecipeInstructionGroup } from '../../data/spoonacular/types';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { getDeviceVariants, pickDefaultDevice } from '../../data/curated/curatedVariants';
 import { useTonightDevices } from './useTonightDevices';
+import { formatAmount, scaleIngredients } from './scaleServings';
 import type { RootStackParamList } from '../../../App';
 
 const HERO_H = 280;
@@ -95,40 +96,6 @@ function hasIngredient(usedLc: string[], ingredientName: string): boolean {
   const n = ingredientName.toLowerCase();
   if (n.length === 0) return false;
   return usedLc.some((u) => u.length > 0 && (n.includes(u) || u.includes(n)));
-}
-
-/**
- * A friendly amount chip — "1½ cups", "2 tbsp", "¾" — so the food name can
- * lead the row and the fractions stay glanceable off to the side. Decimal
- * fractions map to the familiar unicode glyphs; null when there's no amount.
- */
-const FRACTIONS: Array<[number, string]> = [
-  [0.25, '¼'],
-  [0.33, '⅓'],
-  [0.5, '½'],
-  [0.67, '⅔'],
-  [0.75, '¾'],
-];
-function formatAmount(amount: number | null, unit: string): string | null {
-  if (amount === null || amount <= 0) return unit.trim() || null;
-  const whole = Math.floor(amount);
-  const frac = amount - whole;
-  let fracGlyph = '';
-  for (const [v, glyph] of FRACTIONS) {
-    if (Math.abs(frac - v) < 0.05) {
-      fracGlyph = glyph;
-      break;
-    }
-  }
-  const num = fracGlyph
-    ? whole > 0
-      ? `${whole}${fracGlyph}`
-      : fracGlyph
-    : Number.isInteger(amount)
-      ? `${amount}`
-      : `${Math.round(amount * 100) / 100}`;
-  const u = unit.trim();
-  return u ? `${num} ${u}` : num;
 }
 
 function Tag({ label }: { label: string }) {
@@ -203,6 +170,23 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   const [savedToast, setSavedToast] = useState<{ key: number } | null>(null);
   const [fetchedSteps, setFetchedSteps] = useState<RecipeInstructionGroup[] | null>(null);
   const [loadingSteps, setLoadingSteps] = useState(false);
+  // Screen-only serving count, scoped to this recipe view — resets whenever
+  // a different recipe is opened (see the effect below), never persisted.
+  const [servings, setServings] = useState(recipe.servings ?? 1);
+
+  useEffect(() => {
+    setServings(recipe.servings ?? 1);
+  }, [recipe.id, recipe.servings]);
+
+  const MIN_SERVINGS = 1;
+  const MAX_SERVINGS = 12;
+
+  function adjustServings(delta: number) {
+    const next = servings + delta;
+    if (next < MIN_SERVINGS || next > MAX_SERVINGS) return;
+    Haptics.selectionAsync().catch(() => {});
+    setServings(next);
+  }
 
   // Auto-dismiss the "Saved to Your Kitchen" toast.
   useEffect(() => {
@@ -234,14 +218,23 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
     [recipe.usedIngredientNames],
   );
 
+  // Display-only scaling: amounts shown in the ingredient list and (via
+  // effectiveRecipe below) Cook Mode's prep list + per-step chips. Pantry
+  // matching (hasIngredient) and the shopping-list add stay name-based and
+  // are unaffected by this — they never read `amount`.
+  const scaledIngredients = useMemo(
+    () => scaleIngredients(recipe.ingredients, recipe.servings ?? 1, servings),
+    [recipe.ingredients, recipe.servings, servings],
+  );
+
   // "You have X of Y" — the calm way into a long ingredient list. The bar
   // eases up to the level on mount (skipped under OS Reduce Motion).
   const reduceMotion = useReduceMotion();
   const haveCount = useMemo(
-    () => recipe.ingredients.filter((ing) => hasIngredient(usedLc, ing.name)).length,
-    [recipe.ingredients, usedLc],
+    () => scaledIngredients.filter((ing) => hasIngredient(usedLc, ing.name)).length,
+    [scaledIngredients, usedLc],
   );
-  const haveLevel = recipe.ingredients.length > 0 ? haveCount / recipe.ingredients.length : 0;
+  const haveLevel = scaledIngredients.length > 0 ? haveCount / scaledIngredients.length : 0;
   const haveAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(haveAnim, {
@@ -254,7 +247,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   // Curated pantry stand-ins for ingredients the user doesn't have — keyed by
   // the ingredient's lowercase name so the list rows can annotate in place.
   const swapsByIngredient = useMemo(() => {
-    const missingNames = recipe.ingredients
+    const missingNames = scaledIngredients
       .filter((ing) => !hasIngredient(usedLc, ing.name))
       .map((ing) => ing.name);
     const swaps = suggestSubstitutes(
@@ -262,7 +255,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
       items.map((i) => ({ id: i.id, name: i.name })),
     );
     return new Map(swaps.map((s) => [s.missingIngredient.toLowerCase(), s]));
-  }, [recipe.ingredients, usedLc, items]);
+  }, [scaledIngredients, usedLc, items]);
 
   // Same matching the Cook tab uses — never dump the whole pantry.
   const sheetItems = useMemo<CookedSheetItem[]>(
@@ -324,17 +317,20 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
   // Cook Mode reads recipe.instructions directly, so hand it whichever
   // instruction set is on screen (variant > backfill > payload).
   const effectiveRecipe = useMemo(() => {
+    const base =
+      recipe.instructions.length === 0 && fetchedSteps
+        ? { ...recipe, instructions: fetchedSteps }
+        : recipe;
+    const withScaledIngredients = { ...base, ingredients: scaledIngredients };
     if (activeVariant) {
       return {
-        ...recipe,
+        ...withScaledIngredients,
         instructions: [{ name: '', steps: activeVariant.steps }],
         readyInMinutes: activeVariant.readyInMinutes,
       };
     }
-    return recipe.instructions.length === 0 && fetchedSteps
-      ? { ...recipe, instructions: fetchedSteps }
-      : recipe;
-  }, [recipe, fetchedSteps, activeVariant]);
+    return withScaledIngredients;
+  }, [recipe, fetchedSteps, activeVariant, scaledIngredients]);
 
   // Flatten the grouped instructions into one ordered list with a stable key +
   // running number, so the timeline draws a continuous rail and the check-off
@@ -425,9 +421,29 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
                 </View>
               )}
               {recipe.servings !== null && (
-                <View style={styles.metaChip}>
+                <View style={styles.servingsStepper}>
                   <Users size={13} color={tokens.color.inkMuted} />
-                  <Text style={styles.metaTxt}>Serves {recipe.servings}</Text>
+                  <Pressable
+                    style={[styles.stepperBtn, servings <= MIN_SERVINGS && styles.stepperBtnDisabled]}
+                    onPress={() => adjustServings(-1)}
+                    disabled={servings <= MIN_SERVINGS}
+                    accessibilityRole="button"
+                    accessibilityLabel="Decrease servings"
+                  >
+                    <Text style={styles.stepperBtnTxt}>−</Text>
+                  </Pressable>
+                  <Text style={styles.metaTxt} accessibilityLabel={`Serves ${servings}`}>
+                    Serves {servings}
+                  </Text>
+                  <Pressable
+                    style={[styles.stepperBtn, servings >= MAX_SERVINGS && styles.stepperBtnDisabled]}
+                    onPress={() => adjustServings(1)}
+                    disabled={servings >= MAX_SERVINGS}
+                    accessibilityRole="button"
+                    accessibilityLabel="Increase servings"
+                  >
+                    <Text style={styles.stepperBtnTxt}>+</Text>
+                  </Pressable>
                 </View>
               )}
               {showHealth && (
@@ -451,13 +467,13 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
           {summary ? <Text style={styles.summary}>{summary}</Text> : null}
 
           <Text style={styles.sectionHead}>Ingredients</Text>
-          {recipe.ingredients.length > 0 ? (
+          {scaledIngredients.length > 0 ? (
             <>
               {/* At-a-glance: how much of this you can already make. */}
               <View style={styles.ingSummary}>
                 <Text style={styles.ingSummaryTxt}>
                   You have <Text style={styles.ingSummaryStrong}>{haveCount}</Text> of{' '}
-                  <Text style={styles.ingSummaryStrong}>{recipe.ingredients.length}</Text>
+                  <Text style={styles.ingSummaryStrong}>{scaledIngredients.length}</Text>
                 </Text>
                 <View style={styles.ingBarTrack}>
                   <Animated.View
@@ -474,7 +490,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
                 </View>
               </View>
               <View style={styles.ingList}>
-                {recipe.ingredients.map((ing, idx) => {
+                {scaledIngredients.map((ing, idx) => {
                   const have = hasIngredient(usedLc, ing.name);
                   const swap = have ? undefined : swapsByIngredient.get(ing.name.toLowerCase());
                   const amount = formatAmount(ing.amount, ing.unit);
@@ -857,6 +873,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(3),
     backgroundColor: tokens.color.surfaceAlt,
     borderRadius: 999,
+  },
+  servingsStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(2),
+    paddingVertical: tokens.space(1),
+    paddingHorizontal: tokens.space(2),
+    backgroundColor: tokens.color.surfaceAlt,
+    borderRadius: 999,
+  },
+  stepperBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: tokens.color.surface,
+  },
+  stepperBtnDisabled: {
+    opacity: 0.35,
+  },
+  stepperBtnTxt: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+    lineHeight: 15,
+    color: tokens.color.accent,
   },
   metaTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12.5, color: tokens.color.inkMuted },
   tagRow: { flexDirection: 'row', gap: tokens.space(2), marginBottom: tokens.space(3) },
