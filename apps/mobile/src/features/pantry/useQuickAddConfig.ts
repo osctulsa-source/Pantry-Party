@@ -20,6 +20,19 @@ export interface QuickAddConfig {
 const EMPTY: QuickAddConfig = { hiddenGroups: [], custom: [] };
 const storageKey = (userId: string) => `quickAddConfig:${userId}`;
 
+/**
+ * Coerce a parsed value into a valid config. A partial/corrupt stored blob
+ * (e.g. `{ "hiddenGroups": null }`) must never leave a non-array on the
+ * config — `toggleGroup`/`addCustom` call array methods on these fields.
+ */
+function sanitizeConfig(raw: unknown): QuickAddConfig {
+  const parsed = (raw ?? {}) as Partial<QuickAddConfig>;
+  return {
+    hiddenGroups: Array.isArray(parsed.hiddenGroups) ? parsed.hiddenGroups : [],
+    custom: Array.isArray(parsed.custom) ? parsed.custom : [],
+  };
+}
+
 export function useQuickAddConfig(userId: string | null) {
   const [config, setConfig] = useState<QuickAddConfig>(EMPTY);
 
@@ -33,7 +46,7 @@ export function useQuickAddConfig(userId: string | null) {
       .then((raw) => {
         if (cancelled) return;
         try {
-          setConfig(raw ? { ...EMPTY, ...(JSON.parse(raw) as Partial<QuickAddConfig>) } : EMPTY);
+          setConfig(raw ? sanitizeConfig(JSON.parse(raw)) : EMPTY);
         } catch {
           setConfig(EMPTY);
         }
