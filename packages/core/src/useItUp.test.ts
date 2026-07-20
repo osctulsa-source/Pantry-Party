@@ -11,13 +11,25 @@ function pantry(name: string, expiresAt?: string) {
 }
 
 describe("scoreUseItUp", () => {
-  it("scores 3 for an item expiring within a day", () => {
+  it("scores 3 for an item expiring within a day, counting calendar days", () => {
     const { score, urgentMatches } = scoreUseItUp(
       ["chicken breast"],
       [pantry("Chicken", "2026-07-11")],
       NOW,
     );
     expect(score).toBe(3);
+    // NOW is 2026-07-10 noon; a 2026-07-11 expiry is the NEXT calendar day, so
+    // daysLeft is 1 ("tomorrow"), matching the pantry pill — not 0, which the
+    // old fractional floor produced (12h < 1 day) and which read "expires today".
+    expect(urgentMatches).toEqual([{ itemName: "Chicken", daysLeft: 1, status: "warning" }]);
+  });
+
+  it("reports 0 calendar days only for an item expiring on today's date", () => {
+    const { urgentMatches } = scoreUseItUp(
+      ["chicken breast"],
+      [pantry("Chicken", "2026-07-10")],
+      NOW,
+    );
     expect(urgentMatches).toEqual([{ itemName: "Chicken", daysLeft: 0, status: "warning" }]);
   });
 

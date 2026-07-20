@@ -26,13 +26,16 @@ export function QtyStepper({
   max?: number;
 }) {
   const parsed = parseInt(value, 10);
-  const n = Number.isInteger(parsed) ? parsed : min;
+  const valid = Number.isInteger(parsed);
+  const n = valid ? parsed : min;
   const canDec = n > min;
   const canInc = n < max;
 
   function step(delta: number) {
-    const next = Math.min(max, Math.max(min, n + delta));
-    if (next === n && Number.isInteger(parsed)) return;
+    // From a blank/invalid field, either stepper resolves to `min` first
+    // (tapping + shouldn't skip straight to min+1).
+    const next = valid ? Math.min(max, Math.max(min, n + delta)) : min;
+    if (next === n && valid) return;
     Haptics.selectionAsync().catch(() => {});
     onChange(String(next));
   }

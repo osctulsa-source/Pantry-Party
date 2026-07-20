@@ -80,6 +80,27 @@ describe('scaleIngredients', () => {
     expect(scaled.original).toBe('¼ tsp red pepper flakes');
   });
 
+  it('regenerates a space-separated mixed number without stranding the fraction', () => {
+    const [scaled] = scaleIngredients(
+      [ing({ original: '1 1/2 cups flour', amount: 1.5, unit: 'cup', name: 'flour' })],
+      2,
+      4,
+    );
+    // 1.5 * (4/2) = 3 -> "3 cup" (normalized unit), and the "1/2" must NOT
+    // survive into the line (the bug produced "3 cup 1/2 cups flour").
+    expect(scaled.amount).toBe(3);
+    expect(scaled.original).toBe('3 cup flour');
+  });
+
+  it('handles a unicode mixed number ("1 ½") the same way', () => {
+    const [scaled] = scaleIngredients(
+      [ing({ original: '1 ½ cups sugar', amount: 1.5, unit: 'cup', name: 'sugar' })],
+      2,
+      4,
+    );
+    expect(scaled.original).toBe('3 cup sugar');
+  });
+
   it('passes through ingredients with a null amount unchanged', () => {
     const salt = ing({ name: 'salt', original: 'salt to taste', amount: null, unit: '' });
     const [scaled] = scaleIngredients([salt], 2, 8);
