@@ -49,7 +49,7 @@ function snapToQuarter(value: number): number {
 // Matches a leading numeric/fraction token at the start of an `original`
 // string: digits, decimal points, a slash (for "1/2"), unicode fraction
 // glyphs, and the whitespace that follows — e.g. "1 lb", "1½ cups", "¾ cup".
-const LEADING_NUMBER = /^[\d.\/½⅓⅔¼¾]+\s*/;
+const LEADING_NUMBER = /^[\d./½⅓⅔¼¾]+\s*/;
 
 /** Strips a leading unit token (matching `unit`, tolerating a trailing "s") from the front of `text`. */
 function stripLeadingUnit(text: string, unit: string): string {
