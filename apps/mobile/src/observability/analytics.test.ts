@@ -1,6 +1,10 @@
-jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
-);
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn().mockResolvedValue(null),
+    setItem: jest.fn().mockResolvedValue(undefined),
+  },
+}));
 jest.mock('expo-crypto', () => ({ randomUUID: () => 'test-uuid' }));
 
 // `mock`-prefixed so jest's mock-factory hoisting allows referencing it below.
