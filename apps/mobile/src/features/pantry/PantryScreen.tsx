@@ -221,16 +221,25 @@ function PantryZoneBar({
               {z.label}
             </Text>
             {count > 0 && (
-              <Text
+              <View
                 style={[
-                  styles.zoneChipCount,
-                  { color: chipTheme.accent },
-                  selected && { color: chipTheme.onAccent, opacity: 0.85 },
+                  styles.zoneChipCountBadge,
+                  { backgroundColor: chipTheme.accent },
+                  selected && { backgroundColor: chipTheme.onAccent },
                 ]}
-                allowFontScaling={false}
               >
-                {count}
-              </Text>
+                <Text
+                  style={[
+                    styles.zoneChipCountTxt,
+                    { color: chipTheme.onAccent },
+                    selected && { color: chipTheme.accent },
+                  ]}
+                  allowFontScaling={false}
+                  numberOfLines={1}
+                >
+                  {count > 99 ? '99+' : count}
+                </Text>
+              </View>
             )}
           </Pressable>
         );
@@ -1119,11 +1128,22 @@ const styles = StyleSheet.create({
   // Give it generous headroom + a little vertical padding so the frame fully
   // contains the glyph on every device.
   zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 22, paddingVertical: 2 },
-  zoneChipCount: {
+  // Fixed-height circular badge (not inline text) so double/triple-digit
+  // counts widen the badge symmetrically via minWidth + centered text,
+  // instead of the bare number pushing the whole chip lopsided.
+  zoneChipCountBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 999,
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zoneChipCountTxt: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
-    lineHeight: 20,
-    paddingVertical: 2,
+    lineHeight: 14,
+    textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },
   scroll: { paddingBottom: tokens.space(10) },
