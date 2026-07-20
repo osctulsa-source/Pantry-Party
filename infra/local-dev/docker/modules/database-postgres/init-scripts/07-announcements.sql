@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS announcements (
   status                   TEXT         NOT NULL DEFAULT 'active',
   departs_at               TIMESTAMPTZ,
   store_hint               TEXT,
+  message                  TEXT,
   recipe_id                TEXT,
   recipe_title             TEXT,
   image                    TEXT,

@@ -31,7 +31,7 @@ export function AnnounceRunSheet({
   onClose: () => void;
 }) {
   const [window, setWindow] = useState<RunWindowId>('30min');
-  const [storeHint, setStoreHint] = useState('');
+  const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
   async function onSubmit() {
@@ -43,7 +43,7 @@ export function AnnounceRunSheet({
         householdId,
         userId,
         window,
-        storeHint: storeHint.trim() || undefined,
+        message: message.trim() || undefined,
       });
       onDone(id);
     } catch {
@@ -83,12 +83,13 @@ export function AnnounceRunSheet({
           </View>
           <TextInput
             style={styles.input}
-            placeholder="Store (optional) — e.g., Kroger"
+            placeholder="Add a note (optional) — e.g., Grabbing Kroger, need anything?"
             placeholderTextColor={tokens.color.inkMuted}
-            value={storeHint}
-            onChangeText={setStoreHint}
-            maxLength={80}
-            autoCorrect={false}
+            value={message}
+            onChangeText={setMessage}
+            maxLength={120}
+            autoCorrect
+            multiline
             returnKeyType="done"
           />
           <Pressable

@@ -26,7 +26,7 @@ interface AnnouncementRow {
   household_id: string;
   kind: AnnouncementKind;
   created_by: string;
-  store_hint?: string | null;
+  message?: string | null;
   departs_at?: string | null;
   recipe_title?: string | null;
   recipe_id?: string | null;
@@ -66,7 +66,7 @@ export async function fanOutAnnouncement(row: AnnouncementRow, deps: FanOutDeps)
   const body = announcementPushBody(
     {
       kind: row.kind,
-      storeHint: row.store_hint ?? undefined,
+      message: row.message ?? undefined,
       departsAt: row.departs_at ?? undefined,
       recipeTitle: row.recipe_title ?? undefined,
     },

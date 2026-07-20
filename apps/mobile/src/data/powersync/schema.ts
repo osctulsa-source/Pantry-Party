@@ -104,6 +104,7 @@ const announcements = new Table({
   status: column.text,
   departs_at: column.text,
   store_hint: column.text,
+  message: column.text,
   recipe_id: column.text,
   recipe_title: column.text,
   image: column.text,
@@ -242,6 +243,7 @@ export interface AnnouncementRow {
   status: string;
   departs_at: string | null;
   store_hint: string | null;
+  message: string | null;
   recipe_id: string | null;
   recipe_title: string | null;
   image: string | null;

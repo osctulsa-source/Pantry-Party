@@ -24,7 +24,7 @@ describe("Announcement", () => {
     createdAt: "2026-07-10T12:00:00.000Z",
     status: "active" as const,
     departsAt: "2026-07-10T17:00:00.000Z",
-    storeHint: "Kroger",
+    message: "Grabbing Kroger",
     updatedAt: Date.now(),
     deleted: false,
   };
@@ -122,18 +122,34 @@ describe("recipientUserIds", () => {
 });
 
 describe("announcementPushBody", () => {
-  it("writes shopping-run copy with the sender name and store", () => {
+  it("writes shopping-run copy using the sender's custom message", () => {
     const msg = announcementPushBody(
       {
         kind: "shopping_run",
-        storeHint: "Kroger",
+        message: "Grabbing Kroger, need anything for tacos?",
         departsAt: "2026-07-10T17:00:00.000Z",
       },
       "Sam",
     );
     expect(msg.title).toBe("Sam is heading to the store");
-    expect(msg.body).toContain("Kroger");
-    expect(msg.body).toContain("Add anything you need");
+    expect(msg.body).toBe("Grabbing Kroger, need anything for tacos?");
+  });
+
+  it("falls back to the default body when no message is given", () => {
+    const msg = announcementPushBody(
+      { kind: "shopping_run", departsAt: "2026-07-10T17:00:00.000Z" },
+      "Sam",
+    );
+    expect(msg.title).toBe("Sam is heading to the store");
+    expect(msg.body).toBe("Add anything you need to the list.");
+  });
+
+  it("falls back to the default body when the message is blank", () => {
+    const msg = announcementPushBody(
+      { kind: "shopping_run", message: "   ", departsAt: "2026-07-10T17:00:00.000Z" },
+      "Sam",
+    );
+    expect(msg.body).toBe("Add anything you need to the list.");
   });
 
   it("writes cooking copy with sender and recipe", () => {

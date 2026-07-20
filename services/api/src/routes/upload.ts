@@ -123,7 +123,7 @@ const ALLOWED_COLUMNS: Record<string, readonly string[]> = {
     'created_at',
     'status',
     'departs_at',
-    'store_hint',
+    'message',
     'recipe_id',
     'recipe_title',
     'image',

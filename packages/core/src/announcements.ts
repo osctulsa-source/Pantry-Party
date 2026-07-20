@@ -32,7 +32,7 @@ export const Announcement = z.object({
 
   // shopping_run only
   departsAt: z.string().datetime().optional(),
-  storeHint: z.string().max(80).optional(),
+  message: z.string().max(120).optional(),
 
   // cooking only
   recipeId: z.string().optional(),
@@ -114,17 +114,17 @@ export interface PushBody {
 export function announcementPushBody(
   a: {
     kind: AnnouncementKind;
-    storeHint?: string;
+    message?: string;
     departsAt?: string;
     recipeTitle?: string;
   },
   senderName: string,
 ): PushBody {
   if (a.kind === "shopping_run") {
-    const where = a.storeHint ? ` to ${a.storeHint}` : "";
+    const trimmed = a.message?.trim();
     return {
       title: `${senderName} is heading to the store`,
-      body: `Shopping run${where}. Add anything you need to the list.`,
+      body: trimmed ? trimmed : "Add anything you need to the list.",
     };
   }
   const what = a.recipeTitle ? `: ${a.recipeTitle}` : "";

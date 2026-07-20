@@ -12,14 +12,14 @@ export async function announceRun(opts: {
   householdId: string;
   userId: string;
   window: RunWindowId;
-  storeHint?: string;
+  message?: string;
 }): Promise<string> {
   const db = getPowerSync();
   const id = Crypto.randomUUID();
   const now = new Date();
   await db.execute(
     `INSERT INTO announcements
-       (id, household_id, kind, created_by, created_at, status, departs_at, store_hint, updated_at, deleted)
+       (id, household_id, kind, created_by, created_at, status, departs_at, message, updated_at, deleted)
      VALUES (?, ?, 'shopping_run', ?, ?, 'active', ?, ?, ?, ?)`,
     [
       id,
@@ -27,7 +27,7 @@ export async function announceRun(opts: {
       opts.userId,
       now.toISOString(),
       windowToDepartsAt(opts.window, now),
-      opts.storeHint ?? null,
+      opts.message ?? null,
       Date.now(),
       0,
     ],
