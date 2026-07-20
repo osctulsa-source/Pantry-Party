@@ -13,7 +13,7 @@
  * isn't silently ignored. (The reactive ActiveHouseholdContext fills it in
  * without a relaunch.)
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -57,32 +57,78 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
     setDietSaved(true);
   }, [step, dietSaved, profileLoadedFor, activeHouseholdId, dietSel, profile, saveProfile]);
 
-  async function onAdd(staple: Staple) {
-    if (!userId || !activeHouseholdId || added.includes(staple.name)) return;
-    try {
-      await addPantryItem({
-        householdId: activeHouseholdId,
-        userId,
-        name: staple.name,
-        quantity: 1,
-        category: staple.category,
-        location: staple.location,
-        expiresIso: staple.noExpiry
-          ? null
-          : suggestExpiryISO({ name: staple.name, category: staple.category, location: staple.location }),
-        source: 'manual',
-      });
+  // Staples the user tapped before the household finished resolving. We can't
+  // insert them yet (no householdId), but we must NOT drop the tap — on a
+  // brand-new sign-up the household is created async, so the first taps land
+  // during that race and used to be silent no-ops (empty pantry + tiles that
+  // "wouldn't select"). We buffer them and flush once the household resolves.
+  const [pendingStaples, setPendingStaples] = useState<Staple[]>([]);
+  const insertStaple = useCallback(
+    async (staple: Staple, householdId: string) => {
+      try {
+        await addPantryItem({
+          householdId,
+          userId: userId as string,
+          name: staple.name,
+          quantity: 1,
+          category: staple.category,
+          location: staple.location,
+          expiresIso: staple.noExpiry
+            ? null
+            : suggestExpiryISO({ name: staple.name, category: staple.category, location: staple.location }),
+          source: 'manual',
+        });
+        setAdded((prev) => (prev.includes(staple.name) ? prev : [...prev, staple.name]));
+      } catch {
+        // Swallow during onboarding — a single failed staple shouldn't block setup.
+      }
+    },
+    [userId],
+  );
+
+  function onAdd(staple: Staple) {
+    if (!userId || added.includes(staple.name) || pendingStaples.some((s) => s.name === staple.name)) return;
+    if (!activeHouseholdId) {
+      // Household not ready yet — show the tile as selected immediately (so the
+      // tap registers visibly) and queue the real insert for when it resolves.
       setAdded((prev) => [...prev, staple.name]);
-    } catch {
-      // Swallow during onboarding — a single failed staple shouldn't block setup.
+      setPendingStaples((prev) => [...prev, staple]);
+      return;
     }
+    void insertStaple(staple, activeHouseholdId);
   }
 
+  // Flush queued staples the instant the household resolves. `flushing` is state
+  // (not a ref) so its false→true→false transitions re-render and re-run the
+  // finish effect below; the ref mirror guards against a double-flush within a
+  // single async batch.
+  const [flushing, setFlushing] = useState(false);
+  const flushingRef = useRef(false);
+  useEffect(() => {
+    if (!activeHouseholdId || pendingStaples.length === 0 || flushingRef.current) return;
+    flushingRef.current = true;
+    setFlushing(true);
+    const batch = pendingStaples;
+    setPendingStaples([]);
+    void (async () => {
+      for (const staple of batch) {
+        await insertStaple(staple, activeHouseholdId);
+      }
+      flushingRef.current = false;
+      setFlushing(false);
+    })();
+  }, [activeHouseholdId, pendingStaples, insertStaple]);
+
+  // Tapping Continue while staples are still queued (household hasn't resolved)
+  // must not drop them. Enter a "finishing" state that blocks the buttons; the
+  // effect below calls onDone() only once the queue has drained.
   function finish() {
     if (finishing) return;
     setFinishing(true);
-    onDone();
   }
+  useEffect(() => {
+    if (finishing && pendingStaples.length === 0 && !flushing) onDone();
+  }, [finishing, pendingStaples, flushing, onDone]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>
@@ -112,7 +158,11 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
           <View style={styles.footer}>
             <Pressable style={styles.cta} onPress={finish} disabled={finishing}>
               <Text style={styles.ctaText}>
-                {added.length > 0 ? `Added ${added.length} — continue` : 'Continue'}
+                {finishing && pendingStaples.length > 0
+                  ? 'Finishing up…'
+                  : added.length > 0
+                    ? `Added ${added.length} — continue`
+                    : 'Continue'}
               </Text>
             </Pressable>
             {added.length === 0 && (
