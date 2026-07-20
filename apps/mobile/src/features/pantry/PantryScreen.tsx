@@ -826,12 +826,15 @@ function StatusCard({
               <Text style={[styles.cookBtnTxt, { color: zoneTheme.onAccent }]}>Cook these</Text>
             </Pressable>
           )}
-          {collapsible &&
-            (collapsed ? (
+          {collapsible ? (
+            collapsed ? (
               <ChevronRight size={16} color={accent} accessibilityLabel="Expand" />
             ) : (
               <ChevronDown size={16} color={accent} accessibilityLabel="Collapse" />
-            ))}
+            )
+          ) : (
+            onHeaderPress && <ChevronRight size={16} color={accent} accessibilityLabel="View all" />
+          )}
         </View>
       </Pressable>
       {children}
