@@ -111,6 +111,7 @@ import { buildCookedSheetItems } from './buildCookedSheetItems';
 import { CookSuccessBurst } from './CookSuccessBurst';
 import { CookSkeleton } from './CookSkeleton';
 import { CURATED_SOURCE_NAME, searchCurated } from '../../data/curated/curatedSource';
+import { track } from '../../observability/analytics';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import { getVariantDeviceIds } from '../../data/curated/curatedVariants';
 import type { TabParamList } from '../../navigation/MainTabs';
@@ -236,6 +237,7 @@ export function RecipesScreen() {
   const loadMoreOffsetRef = useRef(0);
   const loadMoreCuratedOffsetRef = useRef(0);
   const seenIdsRef = useRef<Set<number>>(new Set());
+  const firstMatchLoggedRef = useRef(false);
 
   const excludedKey = excluded.join('|');
 
@@ -377,6 +379,16 @@ export function RecipesScreen() {
     const t = setTimeout(() => setSavedToast(null), 3000);
     return () => clearTimeout(t);
   }, [savedToast]);
+
+  // Fire once per screen lifetime when the pantry first yields matches — the
+  // funnel's payoff event. `ok` only ever means pantry-matched results; the
+  // zero-input browse renders under the `empty` branch, not here.
+  useEffect(() => {
+    if (recipeState.kind === 'ok' && !firstMatchLoggedRef.current) {
+      firstMatchLoggedRef.current = true;
+      void track('first_match_shown', { count: recipeState.recipes.length });
+    }
+  }, [recipeState]);
 
   function changeMeal(m: MealChoice) {
     userPickedMeal.current = true;
@@ -998,6 +1010,7 @@ function CookThis({
   }
   function onOpen(r: SpoonacularRecipe) {
     record(r.title, 'open');
+    void track('recipe_opened', { id: r.id });
     navigation.navigate('RecipeDetail', { recipe: r });
   }
   function onCooked(r: SpoonacularRecipe) {
@@ -1007,6 +1020,7 @@ function CookThis({
     // Cooking a recipe is the strongest preference signal we collect.
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     record(r.title, 'like');
+    void track('cook_this_confirmed', { id: r.id, itemsUpdated: updatedCount });
     setCooking(null);
     onCookComplete(updatedCount);
   }
