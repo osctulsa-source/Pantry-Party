@@ -18,7 +18,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import * as Haptics from 'expo-haptics';
-import { BookOpen, CalendarCheck, Clock, Flame, LayoutGrid, Lightbulb, Store, Users } from 'lucide-react-native';
+import { BookOpen, CalendarCheck, Clock, Flame, LayoutGrid, Lightbulb, Store, Users, Wrench } from 'lucide-react-native';
 
 import { suggestDateRepairs, tipOfTheDay } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -258,6 +258,20 @@ export function SettingsScreen() {
                 icon={<Users size={16} color={tokens.color.inkMuted} />}
                 label="Household"
                 onPress={() => navigation.navigate('Household')}
+              />
+            </View>
+          </View>
+
+          {/* Preview of the App Elements kit. Shown in TestFlight builds so
+              testers can reach it; re-gate behind __DEV__ before a public App
+              Store release. */}
+          <View style={styles.section}>
+            <Caption>Developer</Caption>
+            <View style={styles.rowGroup}>
+              <ListRow
+                icon={<Wrench size={16} color={tokens.color.inkMuted} />}
+                label="Design elements"
+                onPress={() => navigation.navigate('DesignElements')}
               />
             </View>
           </View>
