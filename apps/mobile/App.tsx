@@ -50,6 +50,7 @@ import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
 import { useShoppingWidget } from './src/features/widget/useShoppingWidget';
 import { FavoriteStoresScreen } from './src/features/settings/FavoriteStoresScreen';
 import { TipsScreen } from './src/features/tips/TipsScreen';
+import { DesignElementsScreen } from './src/features/dev/DesignElementsScreen';
 import { registerPushToken } from './src/features/announcements/registerPushToken';
 import { attachAnnouncementResponder } from './src/features/announcements/pushResponder';
 import { PostHogAppProvider, screenPostHog } from './src/observability/posthog';
@@ -76,6 +77,7 @@ export type RootStackParamList = {
   JoinHousehold: { code?: string } | undefined;
   FavoriteStores: undefined;
   Tips: undefined;
+  DesignElements: undefined;
 };
 
 export type AuthStackParamList = {
@@ -165,6 +167,14 @@ function AppStack({ landOnCook }: { landOnCook: boolean }) {
         name="Tips"
         component={TipsScreen}
         options={{ title: 'Kitchen tips' }}
+      />
+      {/* Reachable in TestFlight (production channel) so testers can preview the
+          App Elements kit. Re-gate behind __DEV__ before any PUBLIC App Store
+          release — see Settings → Developer. */}
+      <Stack.Screen
+        name="DesignElements"
+        component={DesignElementsScreen}
+        options={{ title: 'Design elements' }}
       />
     </Stack.Navigator>
   );
