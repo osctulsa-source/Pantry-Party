@@ -30,9 +30,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   Modal,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -418,27 +421,110 @@ export function RecipesScreen() {
   const activeFilters = (healthy ? 1 : 0) + (easy ? 1 : 0) + (readyNow ? 1 : 0);
   const canReset = excluded.length > 0 || offset > 0;
 
+  // Collapsing header: the title/meal-chips/filters block slides up and out as
+  // the recipe feed scrolls down (and back in on scroll-up), giving the feed
+  // more room. Transform-only (translateY), so this stays on the native driver
+  // for smooth scroll-linked motion — no react-native-reanimated dependency
+  // needed. The header is measured via onLayout (its height is dynamic: meal
+  // chips wrap, the device row and ingredient panel show/hide) and the content
+  // below it gets a matching paddingTop so nothing starts out hidden behind it.
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const clampedScroll = useMemo(
+    () => Animated.diffClamp(scrollY, 0, Math.max(headerHeight, 1)),
+    [scrollY, headerHeight],
+  );
+  const headerTranslateY = useMemo(
+    () =>
+      clampedScroll.interpolate({
+        inputRange: [0, Math.max(headerHeight, 1)],
+        outputRange: [0, -Math.max(headerHeight, 1)],
+        extrapolate: 'clamp',
+      }),
+    [clampedScroll, headerHeight],
+  );
+  const handleFeedScroll = useMemo(
+    () =>
+      Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+        useNativeDriver: true,
+      }),
+    [scrollY],
+  );
+
+  // Tonight's-device prompt — rendered as part of the FEED's scrollable header
+  // (passed into CookThis below), not as a fixed block above it. It used to
+  // sit outside the FlatList entirely, which meant on a short screen its
+  // "Show me recipes" confirm button could land below the fold with nothing
+  // scrollable to reach it.
+  const deviceCardNode =
+    recipeState.kind === 'ok' && tonight.loaded && !tonight.answered ? (
+      <View style={styles.deviceCard}>
+        <View style={styles.deviceCardHead}>
+          <Text style={styles.deviceCardTitle}>What are you cooking with {mealtimeLabel(hour)}?</Text>
+          <Pressable
+            hitSlop={8}
+            onPress={tonight.dismiss}
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss — show everything"
+          >
+            <X size={16} color={tokens.color.inkMuted} />
+          </Pressable>
+        </View>
+        <View style={styles.deviceCardGrid}>
+          {COOKING_DEVICES.map((d) => {
+            const on = pendingDevices.includes(d.id);
+            return (
+              <View key={d.id} style={styles.deviceCell}>
+                <BrandTile
+                  glyph={deviceGlyph(d.id)}
+                  label={d.label}
+                  selected={on}
+                  onPress={() =>
+                    setPendingDevices((prev) => (prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id]))
+                  }
+                />
+              </View>
+            );
+          })}
+        </View>
+        <View style={styles.deviceCardActions}>
+          <Pressable onPress={tonight.dismiss} hitSlop={6} accessibilityRole="button">
+            <Text style={styles.deviceCardSkip}>Anything goes</Text>
+          </Pressable>
+          {pendingDevices.length > 0 && (
+            <Pressable style={styles.deviceCardGo} onPress={() => tonight.setDevices(pendingDevices)} accessibilityRole="button">
+              <Text style={styles.deviceCardGoTxt}>Show me recipes</Text>
+            </Pressable>
+          )}
+        </View>
+      </View>
+    ) : null;
+
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
-      <ScreenHeader
-        title="Cook"
-        subtitle={`Cook this · ${mealtimeLabel(hour)}`}
-        watermark="spoon"
-        watermarkTone="spruce"
-        right={
-          <Pressable
-            onPress={() => navigation.navigate('Favorites')}
-            hitSlop={8}
-            style={styles.kitchenBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Your Kitchen — saved recipes and your taste"
-          >
-            <Heart size={14} color={tokens.color.accent} fill={tokens.color.accent} />
-            <Text style={styles.kitchenBtnTxt}>Your Kitchen</Text>
-          </Pressable>
-        }
-      />
-      <View style={styles.headerPad}>
+      <Animated.View
+        style={[styles.collapsingHeader, { transform: [{ translateY: headerTranslateY }] }]}
+        onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+      >
+        <ScreenHeader
+          title="Cook"
+          subtitle={`Cook this · ${mealtimeLabel(hour)}`}
+          watermark="spoon"
+          watermarkTone="spruce"
+          right={
+            <Pressable
+              onPress={() => navigation.navigate('Favorites')}
+              hitSlop={8}
+              style={styles.kitchenBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Your Kitchen — saved recipes and your taste"
+            >
+              <Heart size={14} color={tokens.color.accent} fill={tokens.color.accent} />
+              <Text style={styles.kitchenBtnTxt}>Your Kitchen</Text>
+            </Pressable>
+          }
+        />
+        <View style={styles.headerPad}>
         <View style={styles.chips}>
           {MEALS.map((m) => {
             const selected = m.value === meal;
@@ -536,116 +622,70 @@ export function RecipesScreen() {
             </ScrollView>
           </View>
         )}
-      </View>
-
-      {cooked && <CookSuccessBurst key={cooked.key} itemCount={cooked.count} />}
-
-      {recipeState.kind === 'loading' && <CookSkeleton />}
-
-      {recipeState.kind === 'error' && (
-        <View style={styles.center}>
-          <CookErrorArt />
-          <Text style={styles.errorTitle}>Couldn't load recipes</Text>
-          <Text style={styles.helper}>{recipeState.message}</Text>
         </View>
-      )}
+      </Animated.View>
 
-      {recipeState.kind === 'empty' && recipeState.reason === 'no-pantry' && (
-        <CuratedBrowse meal={meal} onAddToPantry={() => navigation.navigate('QuickAdd')} />
-      )}
+      <View style={[styles.belowHeader, { paddingTop: headerHeight }]}>
+        {cooked && <CookSuccessBurst key={cooked.key} itemCount={cooked.count} />}
 
-      {recipeState.kind === 'empty' && recipeState.reason !== 'no-pantry' && (
-        <View style={styles.center}>
-          <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
-          <Text style={styles.errorTitle}>
-            {recipeState.reason === 'all-excluded' ? "Everything's on the bench" : "That's everything we found"}
-          </Text>
-          <Text style={styles.helper}>
-            {recipeState.reason === 'all-excluded'
-              ? "You excluded all your ingredients — bring some back or hit Reset."
-              : 'Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration.'}
-          </Text>
-          {canReset && (
-            <Pressable style={styles.resetBtn} onPress={reset}>
-              <Text style={styles.resetBtnTxt}>Reset</Text>
-            </Pressable>
-          )}
-        </View>
-      )}
+        {recipeState.kind === 'loading' && <CookSkeleton />}
 
-      {recipeState.kind === 'ok' && tonight.loaded && !tonight.answered && (
-        <View style={styles.deviceCard}>
-          <View style={styles.deviceCardHead}>
-            <Text style={styles.deviceCardTitle}>
-              What are you cooking with {mealtimeLabel(hour)}?
+        {recipeState.kind === 'error' && (
+          <View style={styles.center}>
+            <CookErrorArt />
+            <Text style={styles.errorTitle}>Couldn't load recipes</Text>
+            <Text style={styles.helper}>{recipeState.message}</Text>
+          </View>
+        )}
+
+        {recipeState.kind === 'empty' && recipeState.reason === 'no-pantry' && (
+          <CuratedBrowse meal={meal} onAddToPantry={() => navigation.navigate('QuickAdd')} />
+        )}
+
+        {recipeState.kind === 'empty' && recipeState.reason !== 'no-pantry' && (
+          <View style={styles.center}>
+            <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
+            <Text style={styles.errorTitle}>
+              {recipeState.reason === 'all-excluded' ? "Everything's on the bench" : "That's everything we found"}
             </Text>
-            <Pressable
-              hitSlop={8}
-              onPress={tonight.dismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Dismiss — show everything"
-            >
-              <X size={16} color={tokens.color.inkMuted} />
-            </Pressable>
-          </View>
-          <View style={styles.deviceCardGrid}>
-            {COOKING_DEVICES.map((d) => {
-              const on = pendingDevices.includes(d.id);
-              return (
-                <View key={d.id} style={styles.deviceCell}>
-                  <BrandTile
-                    glyph={deviceGlyph(d.id)}
-                    label={d.label}
-                    selected={on}
-                    onPress={() =>
-                      setPendingDevices((prev) =>
-                        prev.includes(d.id) ? prev.filter((x) => x !== d.id) : [...prev, d.id],
-                      )
-                    }
-                  />
-                </View>
-              );
-            })}
-          </View>
-          <View style={styles.deviceCardActions}>
-            <Pressable onPress={tonight.dismiss} hitSlop={6} accessibilityRole="button">
-              <Text style={styles.deviceCardSkip}>Anything goes</Text>
-            </Pressable>
-            {pendingDevices.length > 0 && (
-              <Pressable
-                style={styles.deviceCardGo}
-                onPress={() => tonight.setDevices(pendingDevices)}
-                accessibilityRole="button"
-              >
-                <Text style={styles.deviceCardGoTxt}>Show me recipes</Text>
+            <Text style={styles.helper}>
+              {recipeState.reason === 'all-excluded'
+                ? "You excluded all your ingredients — bring some back or hit Reset."
+                : 'Try a different meal type, bring back an ingredient, or hit Refresh for new inspiration.'}
+            </Text>
+            {canReset && (
+              <Pressable style={styles.resetBtn} onPress={reset}>
+                <Text style={styles.resetBtnTxt}>Reset</Text>
               </Pressable>
             )}
           </View>
-        </View>
-      )}
+        )}
 
-      {recipeState.kind === 'ok' && (
-        <CookThis
-          recipes={recipeState.recipes}
-          items={activeItems}
-          prefs={prefs}
-          record={record}
-          householdId={activeHouseholdId}
-          userId={userId}
-          healthy={healthy}
-          easy={easy}
-          readyNow={readyNow}
-          focusUseItUp={focusUseItUp}
-          focusIngredient={focusIngredient}
-          onConsumeFocus={onConsumeFocus}
-          onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
-          onSaved={(title) => setSavedToast({ title, key: Date.now() })}
-          tonightDevices={tonight.devices}
-          loadMore={loadMore}
-          hasMore={hasMore}
-          loadingMore={loadingMore}
-        />
-      )}
+        {recipeState.kind === 'ok' && (
+          <CookThis
+            recipes={recipeState.recipes}
+            items={activeItems}
+            prefs={prefs}
+            record={record}
+            householdId={activeHouseholdId}
+            userId={userId}
+            healthy={healthy}
+            easy={easy}
+            readyNow={readyNow}
+            focusUseItUp={focusUseItUp}
+            focusIngredient={focusIngredient}
+            onConsumeFocus={onConsumeFocus}
+            onCookComplete={(n) => setCooked(n > 0 ? { count: n, key: Date.now() } : null)}
+            onSaved={(title) => setSavedToast({ title, key: Date.now() })}
+            tonightDevices={tonight.devices}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            loadingMore={loadingMore}
+            deviceCard={deviceCardNode}
+            onScroll={handleFeedScroll}
+          />
+        )}
+      </View>
 
       <Modal visible={filtersOpen} transparent animationType="fade" onRequestClose={() => setFiltersOpen(false)}>
         <Pressable style={styles.sheetBackdrop} onPress={() => setFiltersOpen(false)}>
@@ -765,6 +805,8 @@ function CookThis({
   loadMore,
   hasMore,
   loadingMore,
+  deviceCard,
+  onScroll,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -784,6 +826,8 @@ function CookThis({
   loadMore: () => void;
   hasMore: boolean;
   loadingMore: boolean;
+  deviceCard: ReactNode;
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, isFavorited, toggleFavorite } = useFavorites();
@@ -1048,6 +1092,7 @@ function CookThis({
         )}
         ListHeaderComponent={
           <>
+            {deviceCard}
             {reason && (
               <View style={styles.reasonPad}>
                 <Text style={[styles.reason, { color: reasonColor }]}>{reason}</Text>
@@ -1077,6 +1122,8 @@ function CookThis({
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       />
@@ -1324,6 +1371,15 @@ const styles = StyleSheet.create({
     marginBottom: tokens.space(2),
     textAlign: 'center',
   },
+  collapsingHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: tokens.color.surface,
+  },
+  belowHeader: { flex: 1 },
   headerPad: { paddingHorizontal: tokens.space(6), paddingTop: 0, paddingBottom: tokens.space(3) },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
   chip: { paddingVertical: tokens.space(2), paddingHorizontal: tokens.space(3), borderRadius: 999, backgroundColor: tokens.color.surfaceAlt },
