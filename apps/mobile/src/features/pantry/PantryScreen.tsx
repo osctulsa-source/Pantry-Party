@@ -21,7 +21,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Alert,
-  Animated,
   LayoutAnimation,
   Modal,
   Pressable,
@@ -71,6 +70,15 @@ import { useInsights } from '../insights/useInsights';
 import { PantrySearchEmptyArt } from '../../components/illustrations/PantrySearchEmptyArt';
 import { addToShoppingList } from '../shopping/addToShoppingList';
 import { PantryListSkeleton } from './PantryListSkeleton';
+import {
+  EmptyPantryMotion,
+  ExpiringSoonAlert,
+  SproutRefresh,
+  StreakMilestone,
+  SyncBeacon,
+  UsedUpMotion,
+  type SyncBeaconState,
+} from '../../motion';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
@@ -134,38 +142,16 @@ function fillLabel(level: number): string {
 }
 
 /**
- * Live sync indicator: PowerSync status → one calm, label-free dot in the
- * header (a gentle opacity pulse while data is in flight, still otherwise).
- * State stays exposed to assistive tech via the accessibility label.
+ * Live sync indicator: PowerSync status → SyncBeacon (cream breath offline,
+ * forest snap on reconnect). State stays exposed via accessibility label.
  */
 function SyncDot() {
   const status = useStatus();
   const syncing = status.dataFlowStatus.uploading || status.dataFlowStatus.downloading;
-  const color = status.connected
-    ? syncing
-      ? tokens.semantic.expiry.warning
-      : tokens.color.success
-    : tokens.color.inkMuted;
-  const label = status.connected ? (syncing ? 'Syncing' : 'Synced') : 'Offline';
-  const pulse = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    if (!syncing) {
-      pulse.stopAnimation();
-      pulse.setValue(1);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 0.35, duration: 600, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1, duration: 600, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [syncing, pulse]);
+  const state: SyncBeaconState = !status.connected ? 'offline' : syncing ? 'syncing' : 'online';
   return (
-    <View style={styles.syncWrap} accessibilityLabel={`Sync status: ${label}`}>
-      <Animated.View style={[styles.syncDot, { backgroundColor: color, opacity: pulse }]} />
+    <View style={styles.syncWrap}>
+      <SyncBeacon state={state} />
     </View>
   );
 }
@@ -295,7 +281,17 @@ export function PantryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   function onRefresh() {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 400);
+    setTimeout(() => setRefreshing(false), 1100);
+  }
+
+  // Brief exit animation before tombstoning (UsedUpMotion).
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+  function beginResolve(ids: string[], kind: 'used' | 'remove') {
+    if (busy || ids.length === 0 || exitingIds.size > 0) return;
+    setExitingIds(new Set(ids));
+    setTimeout(() => {
+      void resolveItems(ids, kind).finally(() => setExitingIds(new Set()));
+    }, 420);
   }
 
   // Fresh is the only collapsible card (usually the longest).
@@ -539,10 +535,11 @@ export function PantryScreen() {
               : navigation.navigate('EditItem', { itemId: group.representative.id })
           }
           onLongPress={() => toggleSelectGroup(ids)}
-          onResolve={(kind) => resolveItems(ids, kind)}
+          onResolve={(kind) => beginResolve(ids, kind)}
           onCycleFill={(target) => cycleFill(target)}
           onAddToList={(target) => void addLowToList(target)}
           isListed={group.items.some((i) => listed.has(i.id))}
+          exiting={ids.some((id) => exitingIds.has(id))}
         />
       );
     });
@@ -567,8 +564,11 @@ export function PantryScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`${insights.streakDays} day streak — tap for details`}
               >
-                <Text style={styles.streakFlame}>🔥</Text>
-                <Text style={styles.streakTxt}>{insights.streakDays}</Text>
+                <StreakMilestone
+                  days={insights.streakDays}
+                  play={[7, 14, 30].includes(insights.streakDays)}
+                  compact
+                />
               </Pressable>
             )}
             {hasAny && (
@@ -591,10 +591,10 @@ export function PantryScreen() {
       {selecting ? (
         <View style={styles.selectBar}>
           <Text style={styles.selectCount}>{selected.size} selected</Text>
-          <Pressable onPress={() => resolveItems([...selected], 'used')} disabled={busy} hitSlop={6}>
+          <Pressable onPress={() => beginResolve([...selected], 'used')} disabled={busy} hitSlop={6}>
             <Text style={styles.selectUsed}>✓ Used</Text>
           </Pressable>
-          <Pressable onPress={() => resolveItems([...selected], 'remove')} disabled={busy} hitSlop={6}>
+          <Pressable onPress={() => beginResolve([...selected], 'remove')} disabled={busy} hitSlop={6}>
             <Text style={styles.selectRemove}>Remove</Text>
           </Pressable>
           <Pressable onPress={() => setSelected(new Set())} disabled={busy} hitSlop={6}>
@@ -650,7 +650,7 @@ export function PantryScreen() {
       )}
 
       {!hasAny ? (
-        <PantryEmpty onAdd={() => navigation.navigate('AddItem')} />
+        <EmptyPantryMotion onAdd={() => navigation.navigate('AddItem')} />
       ) : (
         <>
           <PantryZoneBar zone={zone} zoneCounts={zoneCounts} onSelect={setZone} />
@@ -683,35 +683,53 @@ export function PantryScreen() {
             <ScrollView
               contentContainerStyle={styles.scroll}
               showsVerticalScrollIndicator={false}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={zoneTheme.accent} />}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="transparent"
+                  colors={['transparent']}
+                />
+              }
             >
+          {refreshing ? (
+            <View style={styles.refreshSprout}>
+              <SproutRefresh refreshing />
+            </View>
+          ) : null}
           {grouped.expired.count > 0 && (
-            <StatusCard
-              status="expired"
-              count={grouped.expired.count}
-              zoneTheme={zoneTheme}
-              onHeaderPress={() => navigation.navigate('ExpiringSoon')}
-              onCook={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                navigation.navigate('CookTab', { focus: 'useItUp' });
-              }}
-            >
-              {renderRows(grouped.expired.groups)}
-            </StatusCard>
+            <>
+              <ExpiringSoonAlert count={grouped.expired.count} urgency="expired" style={styles.expiryAlert} />
+              <StatusCard
+                status="expired"
+                count={grouped.expired.count}
+                zoneTheme={zoneTheme}
+                onHeaderPress={() => navigation.navigate('ExpiringSoon')}
+                onCook={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                  navigation.navigate('CookTab', { focus: 'useItUp' });
+                }}
+              >
+                {renderRows(grouped.expired.groups)}
+              </StatusCard>
+            </>
           )}
           {grouped.warning.count > 0 && (
-            <StatusCard
-              status="warning"
-              count={grouped.warning.count}
-              zoneTheme={zoneTheme}
-              onHeaderPress={() => navigation.navigate('ExpiringSoon')}
-              onCook={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                navigation.navigate('CookTab', { focus: 'useItUp' });
-              }}
-            >
-              {renderRows(grouped.warning.groups)}
-            </StatusCard>
+            <>
+              <ExpiringSoonAlert count={grouped.warning.count} urgency="warning" style={styles.expiryAlert} />
+              <StatusCard
+                status="warning"
+                count={grouped.warning.count}
+                zoneTheme={zoneTheme}
+                onHeaderPress={() => navigation.navigate('ExpiringSoon')}
+                onCook={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                  navigation.navigate('CookTab', { focus: 'useItUp' });
+                }}
+              >
+                {renderRows(grouped.warning.groups)}
+              </StatusCard>
+            </>
           )}
           {grouped.fresh.count > 0 && (
             <StatusCard
@@ -886,6 +904,7 @@ function PantryGroupRow({
   onCycleFill,
   onAddToList,
   isListed,
+  exiting = false,
 }: {
   group: PantryItemGroup;
   now: Date;
@@ -900,6 +919,7 @@ function PantryGroupRow({
   onCycleFill: (item: PantryItem) => void;
   onAddToList: (item: PantryItem) => void;
   isListed: boolean;
+  exiting?: boolean;
 }) {
   const rep = group.representative;
   const status = getExpiryStatus(rep, now);
@@ -915,8 +935,9 @@ function PantryGroupRow({
   const showPips =
     (rep.unit == null || rep.unit === 'ct') && Number.isInteger(qty) && qty >= 2 && qty <= 12;
   return (
+    <UsedUpMotion exiting={exiting}>
     <Swipeable
-      enabled={swipeEnabled}
+      enabled={swipeEnabled && !exiting}
       overshootRight={false}
       renderRightActions={() => (
         <View style={styles.swipeActions}>
@@ -1017,18 +1038,7 @@ function PantryGroupRow({
         {status !== 'fresh' && expiryText !== undefined && <ExpiryPill status={status} label={expiryText} />}
       </Pressable>
     </Swipeable>
-  );
-}
-
-function PantryEmpty({ onAdd }: { onAdd: () => void }) {
-  return (
-    <View style={styles.emptyWrap}>
-      <Text style={styles.emptyTitle}>Fresh start</Text>
-      <Text style={styles.emptySub}>Scan a barcode, snap a receipt, or add something by hand — we'll handle the rest.</Text>
-      <Pressable style={styles.emptyBtn} onPress={onAdd}>
-        <Text style={styles.emptyBtnText}>Let's stock up</Text>
-      </Pressable>
-    </View>
+    </UsedUpMotion>
   );
 }
 
@@ -1043,11 +1053,10 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.accentSoft,
     borderRadius: 999,
   },
-  streakFlame: { fontSize: 12 },
-  streakTxt: { fontFamily: tokens.font.body.semibold, fontSize: 12, color: tokens.color.accent, fontVariant: ['tabular-nums'] },
   iconBtn: { padding: 2 },
   syncWrap: { alignItems: 'center', justifyContent: 'center' },
-  syncDot: { width: 10, height: 10, borderRadius: 999 },
+  refreshSprout: { alignItems: 'center', paddingVertical: tokens.space(2) },
+  expiryAlert: { marginBottom: tokens.space(2), marginHorizontal: tokens.space(1) },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',

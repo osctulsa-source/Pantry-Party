@@ -27,7 +27,7 @@
  * selection haptic, and cards/buttons have pressed feedback. Also completes the
  * Phase 3 on-accent sweep (invite button text: color.surface -> color.onAccent).
  */
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
@@ -185,7 +185,9 @@ export function HouseholdScreen() {
             Members of {activeHousehold?.name ?? '...'}
           </Text>
           {membersLoading ? (
-            <ActivityIndicator color={tokens.color.accent} style={styles.membersLoading} />
+            <View style={styles.membersLoading}>
+              <BrandLoader variant="dots" size={28} />
+            </View>
           ) : (
             <FlatList
               data={members}

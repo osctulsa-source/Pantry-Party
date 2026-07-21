@@ -12,7 +12,6 @@
  * back from the count until named.
  */
 import {
-  ActivityIndicator,
   Image,
   Modal,
   Pressable,
@@ -26,6 +25,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Minus, Plus, X } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 
 export interface ScanBasketItem {
   /** Stable row key (barcode + capture time). */
@@ -175,7 +175,7 @@ export function ScanReviewSheet({
               accessibilityLabel={`Add ${addable} items to pantry`}
             >
               {busy ? (
-                <ActivityIndicator color={tokens.color.onAccent} />
+                <BrandLoader variant="dots" size={22} />
               ) : (
                 <Text style={styles.ctaTxt}>{addable === 0 ? 'Name an item to add' : `Add ${addable} to pantry`}</Text>
               )}

@@ -21,7 +21,6 @@
  */
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Modal,
   Pressable,
   ScrollView,
@@ -39,6 +38,7 @@ import {
   type PantryItem,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { getPowerSync } from '../../data/powersync/db';
 import { recordCookEvent } from './cookLog';
 import { AddCookExtraSheet } from './AddCookExtraSheet';
@@ -244,7 +244,7 @@ export function CookedItSheet({
             disabled={submitting}
           >
             {submitting ? (
-              <ActivityIndicator color={tokens.color.onAccent} />
+              <BrandLoader variant="dots" size={22} />
             ) : (
               <Text style={styles.confirmTxt}>
                 {updateCount > 0

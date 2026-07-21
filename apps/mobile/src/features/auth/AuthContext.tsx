@@ -6,6 +6,7 @@ import {
   disconnectAndClearPowerSync,
   getPowerSync,
 } from '../../data/powersync/db';
+import { capturePostHog, identifyPostHog, resetPostHog } from '../../observability/posthog';
 import { ensureDefaultHousehold } from '../household/ensureDefaultHousehold';
 
 export type AuthState =
@@ -60,12 +61,22 @@ function syncPowerSyncWithSession(session: Session | null): void {
   }
 }
 
+/** Identify with user id only (no email/PII); reset on sign-out. */
+function syncPostHogWithSession(session: Session | null): void {
+  if (session) {
+    identifyPostHog(session.user.id);
+  } else {
+    resetPostHog();
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: 'loading' });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       syncPowerSyncWithSession(session);
+      syncPostHogWithSession(session);
       setState(session ? { status: 'authenticated', session } : { status: 'unauthenticated' });
     });
 
@@ -73,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       syncPowerSyncWithSession(session);
+      syncPostHogWithSession(session);
       setState(session ? { status: 'authenticated', session } : { status: 'unauthenticated' });
     });
 
@@ -81,11 +93,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn: AuthContextValue['signIn'] = async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) capturePostHog('user_signed_in', { method: 'password' });
     return error ? { error: error.message } : {};
   };
 
   const signUp: AuthContextValue['signUp'] = async (email, password) => {
     const { error } = await supabase.auth.signUp({ email, password });
+    if (!error) capturePostHog('user_signed_up', { method: 'password' });
     return error ? { error: error.message } : {};
   };
 

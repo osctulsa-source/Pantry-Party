@@ -22,7 +22,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   Pressable,
   StyleSheet,
@@ -40,6 +39,9 @@ import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-reac
 
 import { suggestExpiryISO, suggestStorageLocation, type CaptureSource } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
+import { BrandLoading } from '../../components/BrandLoading';
+import { BarcodeScanSuccess, ReceiptScanLoader } from '../../motion';
 import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
@@ -103,6 +105,13 @@ export function ScanScreen() {
   // basket-mode state
   const [basket, setBasket] = useState<ScanBasketItem[]>([]);
   const [lastAdded, setLastAdded] = useState<string | null>(null);
+  const [scanFlash, setScanFlash] = useState(false);
+  useEffect(() => {
+    if (!lastAdded) return;
+    setScanFlash(true);
+    const t = setTimeout(() => setScanFlash(false), 900);
+    return () => clearTimeout(t);
+  }, [lastAdded]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [addingAll, setAddingAll] = useState(false);
 
@@ -432,7 +441,7 @@ export function ScanScreen() {
     return (
       <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
         <View style={styles.center}>
-          <ActivityIndicator color={tokens.color.accent} />
+          <BrandLoading variant="dots" size={40} />
         </View>
       </SafeAreaView>
     );
@@ -476,6 +485,12 @@ export function ScanScreen() {
           onCameraReady={() => setCameraReady(true)}
         />
         <View style={[styles.viewfinder, struggling && styles.viewfinderStruggling]} pointerEvents="none" />
+        {ocrBusy ? (
+          <View style={styles.motionOverlay} pointerEvents="none">
+            <ReceiptScanLoader label="Reading your receipt…" />
+          </View>
+        ) : null}
+        <BarcodeScanSuccess active={scanFlash} label={lastAdded ? `Got it — ${lastAdded}` : 'Got it!'} />
         {struggling && phase.kind === 'scanning' && (
           <View style={styles.struggleChip} pointerEvents="none">
             <Text style={styles.struggleChipTxt}>Fill the frame — close and steady</Text>
@@ -588,7 +603,7 @@ export function ScanScreen() {
               accessibilityLabel="Read text from camera"
             >
               {ocrBusy ? (
-                <ActivityIndicator color={tokens.color.onAccent} />
+                <Text style={styles.captureBtnTxt}>Reading…</Text>
               ) : (
                 <Text style={styles.captureBtnTxt}>Read text</Text>
               )}
@@ -643,7 +658,7 @@ export function ScanScreen() {
 
         {phase.kind === 'looking' && (
           <View style={styles.lookupRow}>
-            <ActivityIndicator color={tokens.color.accent} />
+            <BrandLoader variant="dots" size={28} />
             <Text style={styles.hint}>
               {lookupSlow ? 'Still looking — slow connection…' : 'Looking that up...'}
             </Text>
@@ -702,7 +717,7 @@ export function ScanScreen() {
               accessibilityLabel="Add scanned item to pantry"
             >
               {busy ? (
-                <ActivityIndicator color={tokens.color.onAccent} />
+                <BrandLoader variant="dots" size={22} />
               ) : (
                 <Text style={styles.addBtnTxt}>Add this</Text>
               )}
@@ -776,6 +791,13 @@ const styles = StyleSheet.create({
   permBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
   cameraWrap: { flex: 1, backgroundColor: '#000' },
   camera: { flex: 1 },
+  motionOverlay: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    zIndex: 15,
+  },
   viewfinder: {
     position: 'absolute',
     top: '28%',

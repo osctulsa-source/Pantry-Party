@@ -9,7 +9,6 @@
  */
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -24,6 +23,7 @@ import * as Haptics from 'expo-haptics';
 
 import { suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
@@ -111,7 +111,7 @@ export function BulkPasteScreen() {
           accessibilityLabel={`Add ${names.length} items to pantry`}
         >
           {busy ? (
-            <ActivityIndicator color={tokens.color.onAccent} />
+            <BrandLoader variant="dots" size={22} />
           ) : (
             <Text style={styles.addBtnTxt}>
               {names.length === 0

@@ -9,9 +9,8 @@
  * All data is on-device (AsyncStorage event logs) via the useInsights hook;
  * no network, no backend, no sync. Crumb-styled, dark mode safe.
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -23,9 +22,10 @@ import { tokens } from '../../theme/tokens';
 import { InsightsEmptyArt } from '../../components/illustrations/InsightsEmptyArt';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useInsights } from './useInsights';
-import { readExpiryEvents, type ExpiryEvent } from '../pantry/expiryEvents';
-import { readCookEvents, type CookEvent } from '../recipes/cookLog';
+import { readExpiryEvents } from '../pantry/expiryEvents';
+import { readCookEvents } from '../recipes/cookLog';
 import { BrandLoader, BrandOrnament } from '../../components/BrandDecor';
+import { StreakMilestone } from '../../motion';
 
 interface ActivityRow {
   id: string;
@@ -59,25 +59,6 @@ function colorFor(kind: ActivityRow['kind']): string {
     case 'tossed': return tokens.semantic.expiry.expired;
     case 'cook': return tokens.color.accent;
   }
-}
-
-/** Animated counter that rolls from 0 to `target` on mount. */
-function CountUp({ target }: { target: number }) {
-  const anim = useRef(new Animated.Value(0)).current;
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    anim.setValue(0);
-    Animated.timing(anim, {
-      toValue: target,
-      duration: Math.min(800, target * 80),
-      useNativeDriver: false, // we need JS-side listener for the display
-    }).start();
-    const id = anim.addListener(({ value }) => setDisplay(Math.round(value)));
-    return () => anim.removeListener(id);
-  }, [target, anim]);
-
-  return <Text style={styles.heroNumber}>{display}</Text>;
 }
 
 export function InsightsScreen() {
@@ -140,11 +121,7 @@ export function InsightsScreen() {
             </View>
             {/* Hero streak card */}
             <View style={styles.heroCard}>
-              <Text style={styles.heroFlame}>🔥</Text>
-              <CountUp target={insights.streakDays} />
-              <Text style={styles.heroLabel}>
-                {insights.streakDays === 1 ? 'day without wasting food' : 'days without wasting food'}
-              </Text>
+              <StreakMilestone days={insights.streakDays} play />
               {insights.bestStreak > insights.streakDays && (
                 <Text style={styles.heroBest}>Your record: {insights.bestStreak} days 🏆</Text>
               )}

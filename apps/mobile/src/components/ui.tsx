@@ -9,7 +9,6 @@
  */
 import { type ReactNode } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
@@ -23,6 +22,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { tokens } from '../theme/tokens';
+import { BrandLoader } from './BrandDecor';
 
 type Edge = 'top' | 'right' | 'bottom' | 'left';
 
@@ -120,7 +120,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? tokens.color.onAccent : tokens.color.accent} />
+        <BrandLoader variant="dots" size={22} />
       ) : (
         <Text style={[styles.btnText, isPrimary ? styles.btnTextPrimary : styles.btnTextSecondary]}>{title}</Text>
       )}

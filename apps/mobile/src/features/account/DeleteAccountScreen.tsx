@@ -12,7 +12,6 @@
  */
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -26,9 +25,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { supabase } from '../../data/supabase/client';
+import { capturePostHog } from '../../observability/posthog';
 
 const CONFIRM_WORD = 'DELETE';
 
@@ -83,6 +84,7 @@ export function DeleteAccountScreen() {
         await AsyncStorage.multiRemove(keys).catch(() => {});
       }
 
+      capturePostHog('account_deleted');
       // Sign out — the auth state flip unmounts everything.
       await signOut();
     } catch (e: unknown) {
@@ -143,7 +145,7 @@ export function DeleteAccountScreen() {
             accessibilityLabel="Delete my account permanently"
           >
             {deleting ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <BrandLoader variant="dots" size={22} />
             ) : (
               <Text style={styles.deleteBtnText}>Delete my account</Text>
             )}

@@ -17,7 +17,6 @@
  */
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -41,6 +40,7 @@ import {
   type StorageLocation,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { addPantryItem } from './addPantryItem';
@@ -50,6 +50,7 @@ import { SuggestChips } from './SuggestChips';
 import { UnitPicker } from './UnitPicker';
 import { useLearnedBrands } from './useLearnedBrands';
 import { QtyStepper } from './QtyStepper';
+import { capturePostHog } from '../../observability/posthog';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_NAME_LENGTH = 100;
@@ -139,6 +140,12 @@ export function AddItemScreen() {
         location,
         expiresIso: effectiveDays === null ? null : addDaysUTC(new Date(), effectiveDays).toISOString(),
         source: 'manual',
+      });
+      capturePostHog('pantry_item_added', {
+        source: 'manual',
+        location,
+        quantity: parsedQty,
+        has_expiry: effectiveDays !== null,
       });
       feedback.pop();
       navigation.goBack();
@@ -243,7 +250,7 @@ export function AddItemScreen() {
             disabled={!formValid || submitting}
           >
             {submitting ? (
-              <ActivityIndicator color={tokens.color.onAccent} />
+              <BrandLoader variant="dots" size={22} />
             ) : (
               <Text style={styles.submitText}>Add to pantry</Text>
             )}

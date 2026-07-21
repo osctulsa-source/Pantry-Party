@@ -1,5 +1,6 @@
 // gesture-handler must be the first import (Android requirement).
 import 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
 import { registerRootComponent } from 'expo';
 

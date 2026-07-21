@@ -3,8 +3,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { Bitter_400Regular, Bitter_600SemiBold, Bitter_700Bold } from '@expo-google-fonts/bitter';
 import { NunitoSans_400Regular, NunitoSans_600SemiBold, NunitoSans_700Bold } from '@expo-google-fonts/nunito-sans';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   NavigationContainer,
   type LinkingOptions,
@@ -43,12 +43,16 @@ import { SignUpScreen } from './src/features/auth/SignUpScreen';
 import { ForgotPasswordScreen } from './src/features/auth/ForgotPasswordScreen';
 import { OnboardingScreen } from './src/features/onboarding/OnboardingScreen';
 import { useOnboarding } from './src/features/onboarding/useOnboarding';
+import { BrandLoadingScreen } from './src/components/BrandLoading';
+import { WelcomeBeat } from './src/components/WelcomeBeat';
+import { FirstRunReveal } from './src/motion/FirstRunReveal';
 import { useExpiringWidget } from './src/features/widget/useExpiringWidget';
 import { useShoppingWidget } from './src/features/widget/useShoppingWidget';
 import { FavoriteStoresScreen } from './src/features/settings/FavoriteStoresScreen';
 import { TipsScreen } from './src/features/tips/TipsScreen';
 import { registerPushToken } from './src/features/announcements/registerPushToken';
 import { attachAnnouncementResponder } from './src/features/announcements/pushResponder';
+import { PostHogAppProvider, screenPostHog } from './src/observability/posthog';
 import type { SpoonacularRecipe } from './src/data/spoonacular/types';
 
 export type RootStackParamList = {
@@ -185,20 +189,24 @@ function AppRoot() {
   // (their first match is the payoff); a user who skipped lands on Pantry as
   // before. Consumed as MainTabs' initial nested route in AppStack.
   const [landOnCook, setLandOnCook] = useState(false);
+  // Soft terracotta welcome beat once per sign-on (resets on sign-out).
+  const [welcomeDone, setWelcomeDone] = useState(false);
+  // First-run glyph stagger plays once before the welcome splash.
+  const [firstRevealDone, setFirstRevealDone] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setWelcomeDone(false);
+      setFirstRevealDone(false);
+      return;
+    }
     void registerPushToken(userId);
     const sub = attachAnnouncementResponder();
     return () => sub.remove();
   }, [userId]);
 
   if (state.status === 'loading') {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={tokens.color.accent} />
-      </View>
-    );
+    return <BrandLoadingScreen message="Loading your pantry…" />;
   }
 
   if (state.status !== 'authenticated') {
@@ -206,11 +214,15 @@ function AppRoot() {
   }
 
   if (onboardingLoading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={tokens.color.accent} />
-      </View>
-    );
+    return <BrandLoadingScreen message="Loading your pantry…" />;
+  }
+
+  if (needsOnboarding && !firstRevealDone) {
+    return <FirstRunReveal onDone={() => setFirstRevealDone(true)} />;
+  }
+
+  if (!welcomeDone) {
+    return <WelcomeBeat onDone={() => setWelcomeDone(true)} />;
   }
 
   if (needsOnboarding) {
@@ -238,6 +250,7 @@ export default function App() {
   });
   const [db, setDb] = useState<PowerSyncDatabase | null>(null);
   const [syncError, setSyncError] = useState<Error | null>(null);
+  const routeNameRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     setupPowerSync()
@@ -247,6 +260,14 @@ export default function App() {
         console.error('PowerSync setup failed:', err);
         setSyncError(err);
       });
+  }, []);
+
+  const trackScreen = useCallback(() => {
+    const current = navigationRef.getCurrentRoute()?.name;
+    if (current && current !== routeNameRef.current) {
+      screenPostHog(current);
+      routeNameRef.current = current;
+    }
   }, []);
 
   if (syncError) {
@@ -260,11 +281,7 @@ export default function App() {
   }
 
   if (!fontsLoaded || !db) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator color={tokens.color.accent} />
-      </View>
-    );
+    return <BrandLoadingScreen message="Loading your pantry…" />;
   }
 
   return (
@@ -274,8 +291,15 @@ export default function App() {
       <PowerSyncContext.Provider value={db}>
         <AuthProvider>
           <ActiveHouseholdProvider>
-            <NavigationContainer ref={navigationRef} linking={linking}>
-              <AppRoot />
+            <NavigationContainer
+              ref={navigationRef}
+              linking={linking}
+              onReady={trackScreen}
+              onStateChange={trackScreen}
+            >
+              <PostHogAppProvider>
+                <AppRoot />
+              </PostHogAppProvider>
             </NavigationContainer>
           </ActiveHouseholdProvider>
         </AuthProvider>
@@ -292,5 +316,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: tokens.color.surface,
+    paddingHorizontal: 24,
   },
 });

@@ -31,7 +31,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -48,9 +47,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
 import { BrandMark } from '../../components/BrandMark';
+import { BrandLoader } from '../../components/BrandDecor';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from './ActiveHouseholdContext';
 import { acceptInvite, type AcceptInviteError } from '../../data/api/householdClient';
+import { capturePostHog } from '../../observability/posthog';
 import type { RootStackParamList } from '../../../App';
 
 type JoinHouseholdNav = NativeStackNavigationProp<RootStackParamList, 'JoinHousehold'>;
@@ -130,6 +131,7 @@ export function JoinHouseholdScreen() {
       // Set the newly-joined household as active before navigating away — the
       // user explicitly chose this one, so it should be what they see next.
       setActiveHouseholdId(response.household_id);
+      capturePostHog('household_joined', { source: route.params?.code ? 'deep_link' : 'manual_code' });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setJoined(true);
       setTimeout(() => navigation.goBack(), 1400);
@@ -188,7 +190,7 @@ export function JoinHouseholdScreen() {
               disabled={!canSubmit}
             >
               {submitting ? (
-                <ActivityIndicator color={tokens.color.onAccent} />
+                <BrandLoader variant="dots" size={22} />
               ) : (
                 <Text style={styles.submitText}>Join</Text>
               )}

@@ -109,6 +109,8 @@ module.exports = {
         },
       ],
       '@sentry/react-native',
+      'expo-localization',
+      'posthog-react-native/expo',
       [
         'expo-widgets',
         {

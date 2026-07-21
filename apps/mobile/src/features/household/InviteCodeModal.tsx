@@ -26,7 +26,6 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   Share,
   StyleSheet,
@@ -44,6 +43,7 @@ import { useAuth } from '../auth/AuthContext';
 import { generateInvite, type InviteResponse } from '../../data/api/householdClient';
 import { buildInviteShareMessage } from './inviteLink';
 import { BrandMark } from '../../components/BrandMark';
+import { BrandLoading } from '../../components/BrandLoading';
 import type { RootStackParamList } from '../../../App';
 
 type InviteCodeModalNav = NativeStackNavigationProp<RootStackParamList, 'InviteCodeModal'>;
@@ -109,8 +109,7 @@ export function InviteCodeModal() {
           <Text style={styles.eyebrow}>Invite a member</Text>
           {inviteState.status === 'loading' && (
             <View style={styles.statusBlock}>
-              <ActivityIndicator color={tokens.color.accent} />
-              <Text style={styles.caption}>Generating code...</Text>
+              <BrandLoading message="Generating code…" variant="dots" size={36} />
             </View>
           )}
 

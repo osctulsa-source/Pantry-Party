@@ -4,8 +4,11 @@
  * curated house recipes, each tapping through to RecipeDetail, above a CTA that
  * routes back into Quick Add so the user can stock up. Deliberately NOT the
  * pantry-match card (no used/missed counts exist here) — a lean browse card.
+ *
+ * Optional `listHeader` (Cook title + controls) scrolls away with the browse
+ * list — same behavior as the matched-recipe feed.
  */
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Clock, Plus, Users } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -21,9 +24,12 @@ import type { RootStackParamList } from '../../../App';
 export function CuratedBrowse({
   meal,
   onAddToPantry,
+  listHeader,
 }: {
   meal: MealType | 'any';
   onAddToPantry: () => void;
+  /** Cook chrome — scrolls with this list, not sticky above it. */
+  listHeader?: ReactNode;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const recipes = useMemo(
@@ -33,21 +39,25 @@ export function CuratedBrowse({
 
   return (
     <FlatList
+      style={styles.feed}
       data={recipes}
       keyExtractor={(r) => String(r.id)}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.scroll}
       ListHeaderComponent={
-        <View style={styles.head}>
-          <Text style={styles.title}>Nothing in your pantry yet</Text>
-          <Text style={styles.sub}>
-            Here's what the Pantry Party kitchen is cooking — add a few staples and we'll match
-            recipes to what you actually have.
-          </Text>
-          <Pressable style={styles.cta} onPress={onAddToPantry} accessibilityRole="button">
-            <Plus size={16} color={tokens.color.onAccent} />
-            <Text style={styles.ctaTxt}>Add to your pantry</Text>
-          </Pressable>
+        <View>
+          {listHeader}
+          <View style={styles.head}>
+            <Text style={styles.title}>Nothing in your pantry yet</Text>
+            <Text style={styles.sub}>
+              Here's what the Pantry Party kitchen is cooking — add a few staples and we'll match
+              recipes to what you actually have.
+            </Text>
+            <Pressable style={styles.cta} onPress={onAddToPantry} accessibilityRole="button">
+              <Plus size={16} color={tokens.color.onAccent} />
+              <Text style={styles.ctaTxt}>Add to your pantry</Text>
+            </Pressable>
+          </View>
         </View>
       }
       renderItem={({ item }) => (
@@ -90,8 +100,13 @@ function BrowseCard({ recipe, onOpen }: { recipe: SpoonacularRecipe; onOpen: () 
 }
 
 const styles = StyleSheet.create({
-  scroll: { padding: tokens.space(4), paddingBottom: tokens.space(8) },
-  head: { marginBottom: tokens.space(4) },
+  feed: { flex: 1 },
+  scroll: { paddingBottom: tokens.space(8) },
+  head: {
+    marginBottom: tokens.space(4),
+    paddingHorizontal: tokens.space(4),
+    paddingTop: tokens.space(2),
+  },
   title: {
     fontFamily: tokens.font.display.bold,
     fontSize: 22,
@@ -119,6 +134,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     gap: tokens.space(3),
+    marginHorizontal: tokens.space(4),
     marginBottom: tokens.space(3),
     backgroundColor: tokens.color.surface,
     borderRadius: tokens.radius.lg,

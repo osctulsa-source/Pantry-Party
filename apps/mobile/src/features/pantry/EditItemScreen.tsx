@@ -29,7 +29,6 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -356,7 +355,7 @@ export function EditItemScreen() {
             disabled={!formValid || submitting}
           >
             {submitting ? (
-              <ActivityIndicator color={tokens.color.onAccent} />
+              <BrandLoader variant="dots" size={22} />
             ) : (
               <Text style={styles.submitText}>Save changes</Text>
             )}

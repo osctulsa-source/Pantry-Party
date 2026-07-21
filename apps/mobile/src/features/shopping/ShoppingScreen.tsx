@@ -42,6 +42,7 @@ import { suggestExpiryISO, suggestStorageLocation, type ShoppingListItem } from 
 import { tokens } from '../../theme/tokens';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { BrandEmptyArt } from '../../components/BrandDecor';
+import { GroceryCheckOff } from '../../motion';
 import { getPowerSync } from '../../data/powersync/db';
 import { rowToShoppingListItem } from '../../data/powersync/mapShoppingRow';
 import type { ShoppingListItemRow } from '../../data/powersync/schema';
@@ -53,6 +54,7 @@ import { useActiveAnnouncements } from '../announcements/useActiveAnnouncements'
 import { AnnouncementCard } from '../announcements/AnnouncementCard';
 import { AnnounceRunSheet } from '../announcements/AnnounceRunSheet';
 import { activeRunId } from '../announcements/announceRun';
+import { capturePostHog } from '../../observability/posthog';
 
 const QUERY =
   'SELECT * FROM shopping_list_items WHERE deleted = 0 AND household_id = ? ' +
@@ -196,6 +198,11 @@ export function ShoppingScreen() {
         'UPDATE shopping_list_items SET deleted = 1, updated_at = ? WHERE id = ?',
         [Date.now(), item.id],
       );
+      capturePostHog('shopping_item_restocked', {
+        quantity: item.quantity,
+        location,
+        has_unit: item.unit !== null,
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e: unknown) {
       // The row swooshed away already — bring it back so a failed write never
@@ -413,55 +420,52 @@ export function ShoppingScreen() {
         }
         renderItem={({ item }) => {
           const departing = item.id === departingId;
+          const meta =
+            item.quantity !== 1 || item.unit || item.note
+              ? [
+                  item.quantity !== 1 ? `${item.quantity}` : '',
+                  item.unit ? ` ${item.unit}` : '',
+                  item.note
+                    ? `${item.quantity !== 1 || item.unit ? ' · ' : ''}${item.note}`
+                    : '',
+                ].join('')
+              : undefined;
           return (
             <Animated.View
               pointerEvents={departing ? 'none' : 'auto'}
               style={departing ? swooshStyle : undefined}
             >
-              <Pressable
-                onPress={() => toggleChecked(item)}
-                accessibilityRole="button"
-                accessibilityState={{ checked: item.checked }}
-                accessibilityLabel={`${item.name}${item.checked ? ', in the cart' : ''}`}
-                style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-              >
-                <View style={[styles.checkbox, item.checked && styles.checkboxOn]}>
-                  {item.checked && <Text style={styles.checkmark}>✓</Text>}
-                </View>
-                <View style={styles.rowMain}>
-                  <Text style={[styles.name, item.checked && styles.nameDone]} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  {(item.quantity !== 1 || item.unit || item.note) && (
-                    <Text style={styles.meta} numberOfLines={1}>
-                      {item.quantity !== 1 ? `${item.quantity}` : ''}
-                      {item.unit ? ` ${item.unit}` : ''}
-                      {item.note ? `${item.quantity !== 1 || item.unit ? ' · ' : ''}${item.note}` : ''}
-                    </Text>
-                  )}
-                </View>
-                {item.checked && (
-                  <Pressable
-                    onPress={() => onStockPress(item)}
-                    hitSlop={6}
-                    disabled={busy}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Move ${item.name} to pantry`}
-                    style={styles.pantryBtn}
-                  >
-                    <Text style={styles.pantryBtnTxt}>Stocked ✓</Text>
-                  </Pressable>
-                )}
-                <Pressable
-                  onPress={() => removeItem(item)}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Remove ${item.name} from the list`}
-                  style={styles.removeBtn}
-                >
-                  <X size={15} color={tokens.color.inkMuted} />
-                </Pressable>
-              </Pressable>
+              <GroceryCheckOff
+                checked={item.checked}
+                name={item.name}
+                meta={meta}
+                onToggle={() => void toggleChecked(item)}
+                trailing={
+                  <>
+                    {item.checked ? (
+                      <Pressable
+                        onPress={() => onStockPress(item)}
+                        hitSlop={6}
+                        disabled={busy}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Move ${item.name} to pantry`}
+                        style={styles.pantryBtn}
+                      >
+                        <Text style={styles.pantryBtnTxt}>Stocked ✓</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      onPress={() => removeItem(item)}
+                      hitSlop={8}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${item.name} from the list`}
+                      style={styles.removeBtn}
+                    >
+                      <X size={15} color={tokens.color.inkMuted} />
+                    </Pressable>
+                  </>
+                }
+              />
             </Animated.View>
           );
         }}

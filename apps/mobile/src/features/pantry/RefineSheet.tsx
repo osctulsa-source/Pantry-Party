@@ -21,7 +21,6 @@
  */
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -34,6 +33,7 @@ import * as Haptics from 'expo-haptics';
 
 import { guideFor, makeRefinedName, plainName } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { BrandLoader } from '../../components/BrandDecor';
 import { SuggestChips } from './SuggestChips';
 import { useLearnedBrands } from './useLearnedBrands';
 
@@ -172,7 +172,7 @@ export function RefineSheet({
             accessibilityLabel={`Add ${quantity} ${name}`}
           >
             {busy ? (
-              <ActivityIndicator color={tokens.color.onAccent} />
+              <BrandLoader variant="dots" size={22} />
             ) : (
               <Text style={styles.addBtnTxt}>
                 Add {quantity > 1 ? `${quantity} ` : ''}

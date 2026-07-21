@@ -18,7 +18,6 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   Image,
   Linking,
@@ -44,6 +43,7 @@ import {
   type CookingDevice,
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
+import { RecipeSavedHeart, SimmeringLoader } from '../../motion';
 import { CategoryIcon } from '../pantry/CategoryIcon';
 import { useReduceMotion } from '../../components/useReduceMotion';
 import { usePantryItems } from '../pantry/usePantryItems';
@@ -667,8 +667,7 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
             })
           ) : loadingSteps ? (
             <View style={styles.stepsLoading}>
-              <ActivityIndicator color={tokens.color.accent} />
-              <Text style={styles.muted}>Finding the steps…</Text>
+              <SimmeringLoader label="Finding the steps…" size={56} />
             </View>
           ) : (
             <Text style={styles.muted}>
@@ -721,20 +720,9 @@ export function RecipeDetailScreen({ route, navigation }: Props) {
         <ChevronLeft size={24} color={tokens.color.ink} />
       </Pressable>
 
-      <Pressable
-        style={[styles.saveBtn, { top: insets.top + tokens.space(2) }]}
-        onPress={() => void onToggleSave()}
-        accessibilityRole="button"
-        accessibilityState={{ selected: favorited }}
-        accessibilityLabel={favorited ? 'Saved to favorites' : 'Save to favorites'}
-        hitSlop={8}
-      >
-        <Heart
-          size={22}
-          color={favorited ? tokens.color.accent : tokens.color.ink}
-          fill={favorited ? tokens.color.accent : 'transparent'}
-        />
-      </Pressable>
+      <View style={[styles.saveBtn, { top: insets.top + tokens.space(2) }]}>
+        <RecipeSavedHeart saved={favorited} onToggle={() => void onToggleSave()} size={28} />
+      </View>
 
       {cooking && (
         <CookedItSheet
