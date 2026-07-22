@@ -12,7 +12,9 @@ include:
 services:
   powersync:
     restart: unless-stopped
-    image: journeyapps/powersync-service:latest
+    # Pinned for reproducible local dev (was :latest). Bumped via Dependabot
+    # (.github/dependabot.yml → docker). Keep in step with PowerSync Cloud.
+    image: journeyapps/powersync-service:1.21.0
     command: [ 'start', '-r', 'unified' ]
     env_file:
       - .env
