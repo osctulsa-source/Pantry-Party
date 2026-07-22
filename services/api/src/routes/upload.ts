@@ -502,7 +502,27 @@ export async function authorizePutWrite(
     );
   }
 
-  // All other household-scoped tables: the caller must belong to the household.
+  // All other household-scoped tables. A PUT is an upsert, so guard BOTH sides:
+  //
+  //  1. If a row with this id already exists, its household_id is immutable — the
+  //     upsert must not relocate it. Without this, a member of household A who
+  //     learns a row id in household B could PUT {id, household_id: A, ...} and
+  //     pull B's row into A (hijack/corruption). The PATCH path already guards
+  //     this by reading the target row; the PUT path must too. `table` is
+  //     allowlist-validated (KNOWN_TABLES), never raw input.
+  const rowId = values[columns.indexOf('id')];
+  const existingRow = await client.query<{ household_id: string }>(
+    `SELECT household_id FROM ${table} WHERE id = $1`,
+    [rowId],
+  );
+  if ((existingRow.rowCount ?? 0) > 0 && existingRow.rows[0]?.household_id !== householdId) {
+    throw new UploadError(
+      403,
+      `tenancy: cannot move ${table} row "${String(rowId)}" between households`,
+    );
+  }
+
+  //  2. The caller must belong to the (target == existing) household.
   const member = await client.query(
     'SELECT 1 FROM user_households WHERE user_id = $1 AND household_id = $2',
     [userId, householdId],

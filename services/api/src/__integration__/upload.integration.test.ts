@@ -183,6 +183,43 @@ describe('POST /sync/upload — write-side tenancy (P0-#2)', () => {
     expect(row.rowCount).toBe(0);
   });
 
+  it('rejects a PUT that relocates an existing row from another household into the caller’s', async () => {
+    // A row lives in B's household. A (a member of A only) knows its id and tries
+    // to pull it into A via the upsert. household_id is immutable — this must 403.
+    const rowId = '99999999-9999-9999-9999-999999999999';
+    await pool.query(
+      `INSERT INTO pantry_items (id, household_id, name, added_at, source, added_by, updated_at, deleted)
+       VALUES ($1, $2, 'B item', NOW(), 'manual', $3, 1, false)`,
+      [rowId, HH_B, USER_B],
+    );
+    const res = await upload(
+      {
+        crud: [
+          {
+            op: 'PUT',
+            type: 'pantry_items',
+            id: rowId,
+            data: {
+              household_id: HH_A, // pull it into A…
+              name: 'stolen',
+              added_at: '2026-01-01T00:00:00.000Z',
+              source: 'manual',
+              added_by: USER_A, // …as A (A's own JWT sub)
+              updated_at: 2,
+              deleted: false,
+            },
+          },
+        ],
+      },
+      USER_A,
+    );
+    expect(res.status).toBe(403);
+    expect(res.body.error).toMatch(/between households/i);
+    // The row is untouched — still B's.
+    const row = await pool.query('SELECT household_id, name FROM pantry_items WHERE id = $1', [rowId]);
+    expect(row.rows[0]).toMatchObject({ household_id: HH_B, name: 'B item' });
+  });
+
   it('rejects a households PUT overwriting another household the caller is not in', async () => {
     const res = await upload(
       { crud: [{ op: 'PUT', type: 'households', id: HH_A, data: { name: 'Hijacked', created_by: USER_B } }] },
