@@ -53,6 +53,7 @@ export interface ThemeTokens {
     warnSoft: string; // soft warning surface — the "Use soon" card tint (pairs with ink/warning text)
     success: string;
     warning: string;
+    highlight: string; // decorative gold — achievement/spark accents (Collections)
   };
   /**
    * Semantic tokens — meaning, not raw palette. Engineered colorblind-safe: each
@@ -129,6 +130,7 @@ export const crumbTokens: ThemeTokens = {
     warnSoft: '#F0E4CB',
     success: '#3F7A50',
     warning: '#875811',
+    highlight: '#E0B85A', // honey gold — Collections spark/achievement accents
   },
   semantic: {
     expiry: {
@@ -196,6 +198,7 @@ export const crumbDarkTokens: ThemeTokens = {
     warnSoft: '#2A2114',
     success: '#6FBE85',
     warning: '#E6B34D',
+    highlight: '#E7C46B', // honey gold, lifted for contrast on the dark surface
   },
   semantic: {
     expiry: {

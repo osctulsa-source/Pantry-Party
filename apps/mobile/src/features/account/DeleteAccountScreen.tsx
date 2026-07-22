@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   deleteBtnText: {
     fontFamily: tokens.font.body.semibold,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: tokens.color.onAccent,
   },
   reassurance: {
     marginTop: tokens.space(5),

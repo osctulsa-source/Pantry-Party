@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   silhouette: { opacity: 0.42 },
   qOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   qOverlayText: { fontFamily: tokens.font.display.bold, fontSize: 24, color: tokens.color.inkMuted },
-  spark: { position: 'absolute', top: -6, right: -8, fontSize: 15, color: '#E0B85A' },
+  spark: { position: 'absolute', top: -6, right: -8, fontSize: 15, color: tokens.color.highlight },
   qbox: {
     width: 44,
     height: 44,
@@ -676,10 +676,10 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: tokens.radius.md + 4,
-    backgroundColor: '#E0B85A',
+    backgroundColor: tokens.color.highlight,
   },
   emblemInSeason: {
-    borderColor: '#E0B85A',
+    borderColor: tokens.color.highlight,
     borderWidth: 1.5,
   },
 
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
   sigCard: {
     backgroundColor: tokens.color.accentSoft,
     borderWidth: 1.5,
-    borderColor: '#E0B85A',
+    borderColor: tokens.color.highlight,
     borderRadius: tokens.radius.md,
     padding: tokens.space(4),
     marginBottom: tokens.space(5),

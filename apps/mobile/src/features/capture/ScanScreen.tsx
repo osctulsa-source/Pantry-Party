@@ -821,7 +821,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(4),
     borderRadius: 999,
   },
-  struggleChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: '#FFFFFF' },
+  struggleChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
   torchBtn: {
     position: 'absolute',
     top: tokens.space(4),
@@ -842,7 +842,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: tokens.space(4),
     borderRadius: 999,
   },
-  addedChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: '#FFFFFF' },
+  addedChipTxt: { fontFamily: tokens.font.body.semibold, fontSize: 13, color: tokens.color.onAccent },
   panel: { paddingHorizontal: tokens.space(6), paddingVertical: tokens.space(4) },
   targetRow: {
     flexDirection: 'row',
