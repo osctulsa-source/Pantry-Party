@@ -91,3 +91,42 @@ jobs:
           PG_URI: postgres://postgres:postgres@localhost:5432/postgres
           API_JWKS_URI: https://example.com/jwks.json
         run: npm run test:integration -w services/api
+
+  migrations:
+    name: Migrations apply cleanly
+    runs-on: ubuntu-latest
+    # Runs the canonical ledger runner (infra/managed/migrate.sh) against a
+    # throwaway Postgres, so a broken or non-idempotent migration fails the
+    # build before it can reach production. Also asserts the runner is a no-op
+    # on a second pass (the ledger claim works).
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply migrations (fresh DB)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        run: sh infra/managed/migrate.sh
+
+      - name: Re-run is idempotent (ledger skips every file)
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        run: |
+          out="$(sh infra/managed/migrate.sh)"
+          echo "$out"
+          if echo "$out" | grep -q '==> apply'; then
+            echo "::error::migrate.sh re-applied a file on the second run — ledger is not idempotent"
+            exit 1
+          fi
