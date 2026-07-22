@@ -1,21 +1,31 @@
-# ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-#    Reason: PowerSync write path until backend architecture is decided.
-#    Tracking: docs/DECISIONS.md ADR-008.
+# Self-contained NestJS API image (ADR-009). Build context = services/api
+# (Railway: `railway up services/api --path-as-root`). The service imports no
+# workspace packages at runtime, so a services/api-scoped context + its own
+# committed package-lock.json give a reproducible `npm ci` without the monorepo.
 
-FROM node:20-alpine
-
+# ---- build: install ALL deps (incl. dev/types) and compile TS -> dist/ -------
+FROM node:20-alpine AS build
 WORKDIR /app
-
-# Copy only the API workspace's manifest first for layer caching.
-# This is the throwaway-quick path — production-grade builds would use
-# the monorepo lockfile + npm ci. For local-dev, npm install works.
-COPY package.json ./
-RUN npm install --no-audit --no-fund
-
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY tsconfig.json tsconfig.build.json ./
 COPY src ./src
-COPY tsconfig.json ./
+RUN npm run build
 
-ENV NODE_ENV=development
+# ---- prod-deps: runtime dependencies only (no dev/types) ---------------------
+FROM node:20-alpine AS prod-deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
+
+# ---- runtime: compiled output + prod deps, non-root, production --------------
+FROM node:20-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package.json ./
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+# node:20-alpine ships an unprivileged `node` user — run as it, never root.
+USER node
 EXPOSE 8090
-
-CMD ["npm", "start"]
+CMD ["node", "dist/main.js"]
