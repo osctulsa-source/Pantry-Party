@@ -1,111 +1,117 @@
 # Local development environment
 
-A Docker Compose stack that runs PowerSync + Postgres entirely on your machine. This is what the Phase 1 walking skeleton (and any day-to-day local development) runs against — no cloud accounts required, no monthly bills.
+This Docker Compose environment mirrors the production data path without using PowerSync
+Cloud, Railway, or the production database. Supabase is still used for Auth/JWKS identity.
 
-## Why this exists
+## Services
 
-ADR-003 chose PowerSync as the sync engine. ADR-007 defers the production Postgres hosting decision until deploy time. Until then, this stack carries every development workflow:
+| Service | Default host port | Responsibility |
+|---|---:|---|
+| `pg-db` | internal | Source-of-truth Postgres with the application schema |
+| `pg-storage` | internal | PowerSync's internal bucket/checkpoint storage |
+| `powersync` | `8080` | Local sync service using `service.yaml` and `sync-config.yaml` |
+| `api` | `8090` | NestJS API, including the legacy Express routers under migration |
 
-- Self-hosted PowerSync instance on :8080
-- Source Postgres (the database PowerSync replicates from)
-- Storage Postgres (PowerSync's internal bucket storage)
-- `init-scripts/` seeds the `pantry_items` table with the composite primary key the merge model relies on
+The source database baseline creates the ten PowerSync-published application tables plus
+the server-only `analytics_events` table. The PowerSync client syncs **10 tables across 4
+streams**; see `sync-config.yaml`.
 
-## Usage
-
-```sh
-cd infra/local-dev
-docker compose -f docker/docker-compose.yaml up -d           # start
-docker compose -f docker/docker-compose.yaml down            # stop
-docker compose -f docker/docker-compose.yaml down -v         # stop AND wipe volumes (re-run init scripts on next up)
-docker compose -f docker/docker-compose.yaml restart powersync   # reload service.yaml / docker/.env without rebuilding
-```
-
-Then point your local app at http://localhost:8080 (configured via env vars — see `apps/mobile/.env.example`).
+The local `pantry_items` schema intentionally matches current production behavior: one UUID
+row and `updated_at` last-write-wins. It does not yet implement the proposed per-device
+quantity contribution model (ADR-011).
 
 ## First-time setup
 
-1. Copy `docker/.env.example` → `docker/.env` and fill in `PS_SUPABASE_JWKS_URI` (see below).
-2. Copy `apps/mobile/.env.example` → `apps/mobile/.env.local` and fill in `EXPO_PUBLIC_SUPABASE_*`.
-3. `docker compose -f docker/docker-compose.yaml up -d`
+1. Copy `docker/.env.example` to `docker/.env`.
+2. Set `PS_SUPABASE_JWKS_URI` to your Supabase project's JWKS URL:
 
-## Authentication (Supabase JWT handoff)
-
-The mobile client signs in with Supabase, then forwards the resulting access token to PowerSync as the bearer credential (`apps/mobile/src/data/powersync/db.ts`). PowerSync validates the JWT against the Supabase project's JWKS endpoint (asymmetric ES256). The token's `sub` claim becomes `auth.user_id()` in `sync-config.yaml`, and the sync rules use it to filter pantry data per household membership.
-
-To configure:
-
-1. Find your Supabase project ref (the subdomain of `EXPO_PUBLIC_SUPABASE_URL` — e.g. `https://abcd1234.supabase.co` → `abcd1234`).
-2. In `docker/.env`, set:
+   ```text
+   https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
    ```
-   PS_SUPABASE_JWKS_URI=https://abcd1234.supabase.co/auth/v1/.well-known/jwks.json
-   ```
-3. `docker compose -f docker/docker-compose.yaml restart powersync` to pick up the change.
 
-If PowerSync logs report "audience mismatch" or "unsupported algorithm," paste a decoded session token at jwt.io and confirm `aud: authenticated` and `alg: ES256`. Don't iterate blindly on auth configs — paste `docker compose logs powersync --tail 50` and debug from there.
+3. Add the server-only Spoonacular and optional Sentry values in `docker/.env`.
+4. Copy `../../apps/mobile/.env.example` to `../../apps/mobile/.env.local` and provide the
+   Supabase URL/anon key. Keep the default local PowerSync and API URLs when the simulator
+   can reach the host as `localhost`.
+5. Start the stack:
 
-## Smoke test: per-user isolation
-
-On a single iOS simulator, sign in / sign out is enough to prove the sync filter.
-
-> **Note (PR #7.5):** On first sign-in the mobile client now auto-creates a default household + owner membership in **local SQLite** via `ensureDefaultHousehold()`. Until `uploadData()` ships in PR #8, those rows never reach Postgres — so for the server-driven sync filter to have anything to filter, you still need to INSERT a household / membership / pantry_items directly into Postgres for each test user. The locally-auto-created household coexists with the server-provisioned one; the screen shows both.
-
-1. Reset state: `docker compose -f docker/docker-compose.yaml down -v && up -d` (drops volumes so init scripts re-run cleanly).
-2. Launch the app. Sign in as user A.
-3. Get user A's Supabase user id (Supabase Dashboard → Authentication → Users, copy the `id` UUID).
-4. Direct Postgres insert (needed for the server-side filter to send data down — until PR #8 closes the loop via `uploadData()`):
    ```sh
-   docker compose -f docker/docker-compose.yaml exec pg-db psql -U postgres -d postgres -c "
-     INSERT INTO households (created_by) VALUES ('<user-a-uuid>') RETURNING id;
-   "
-   # Use the returned household_id below.
-   docker compose -f docker/docker-compose.yaml exec pg-db psql -U postgres -d postgres -c "
-     INSERT INTO user_households (user_id, household_id, role)
-     VALUES ('<user-a-uuid>', '<household-id>', 'owner');
-     INSERT INTO pantry_items (id, household_id, name, quantity, unit, location, added_at, source, added_by, updated_at)
-     VALUES (gen_random_uuid(), '<household-id>', 'Test eggs', 12, 'ct', 'fridge', NOW(), 'manual', 'smoke-test', (EXTRACT(EPOCH FROM NOW())*1000)::BIGINT);
-   "
+   docker compose -f docker/docker-compose.yaml up -d
    ```
-5. Pull-to-refresh in the app — 'Test eggs' should appear.
-6. Sign out. Local SQLite is wiped automatically (see `disconnectAndClearPowerSync` in `AuthContext`).
-7. Sign in as user B (different Supabase user). Pantry is empty. Isolation confirmed.
 
-## macOS dev setup gotcha — Docker file sharing
+The mobile client signs in with Supabase and forwards that access token to PowerSync and the
+API. The JWT `sub` becomes `auth.user_id()` in the sync rules.
 
-If your repo is checked out outside Docker Desktop's default shared paths
-(`/Users`, `/private`, `/tmp`), the bind mounts in `docker/docker-compose.yaml`
-silently present as empty directories inside the containers. Symptoms:
+## Daily commands
 
-- `pg-db` starts but `pantry_items` doesn't exist (init scripts never ran —
-  `/docker-entrypoint-initdb.d/` is empty inside the container).
-- `powersync` is stuck in a restart loop with `EISDIR: cannot read
-  /config/service.yaml` (the file mounts as an empty directory instead).
+```sh
+cd infra/local-dev
 
-**Fix:** Docker Desktop → Settings → Resources → File Sharing → under
-**Virtual file shares** (NOT "Synchronized file shares" — that's a paid
-feature you don't need) → click `+` → add the repo's parent path. For paths
-under `/Volumes/...`, adding `/Volumes` once covers all subdirectories.
-Apply & Restart, then `docker compose down -v && up -d` to reset volumes
-so init scripts re-run.
+docker compose -f docker/docker-compose.yaml up -d
+docker compose -f docker/docker-compose.yaml ps
+docker compose -f docker/docker-compose.yaml logs -f powersync api
+docker compose -f docker/docker-compose.yaml restart powersync
+docker compose -f docker/docker-compose.yaml down
 
-One-time per-machine setting. Not needed if your repo lives under `~/`
-(already shared by default). Not relevant on Linux / Windows hosts.
+# Destructive: remove local database volumes and rerun all init scripts next start
+docker compose -f docker/docker-compose.yaml down -v
+```
 
-## Port mapping note
+Health checks:
 
-The compose file separates host port (configurable via `PS_PORT` in `docker/.env`,
-default `8080`) from PowerSync's container-internal port (always `8080`). Avoid
-setting `PS_PORT=8081` — that's Expo Metro's default and they'll collide the
-moment you `npx expo start`.
+```sh
+curl http://localhost:8080/probes/liveness
+curl http://localhost:8090/health
+```
 
-## What's in here
+Avoid `PS_PORT=8081`; Expo Metro uses that port by default.
 
-- `service.yaml`, `sync-config.yaml`, `cli.yaml` — PowerSync instance config (what data to sync, how clients authenticate, etc.)
-- `docker/docker-compose.yaml` — the three-service stack
-- `docker/modules/database-postgres/init-scripts/` — DDL the source Postgres runs on first boot (`00-households`, `01-pantry-items`, `02-powersync-publication`)
-- `docker/modules/storage-postgres/init-scripts/` — DDL the storage Postgres runs on first boot
-- `docker/.env` — local-only config (gitignored — template at `docker/.env.example`). Contains the Supabase JWKS URI for client auth.
+## Schema lifecycle
 
-## When this gets replaced
+- `docker/modules/database-postgres/init-scripts/` is the current baseline for a fresh
+  Postgres volume.
+- `docker/modules/database-postgres/migrations/` evolves existing local and managed
+  databases through numbered, idempotent migrations.
+- `08-powersync-publication.sql` explicitly lists the ten published tables. It is not `FOR
+  ALL TABLES`; a new synced table requires deliberate publication and sync-rule changes.
+- `sync-config.yaml` is the source of truth for the four household/user-scoped streams and
+  is also deployed to PowerSync Cloud.
 
-When we're ready to deploy or invite external users, we revisit ADR-007 and pick a production Postgres host (Supabase, Neon, RDS, or stay on this stack at production scale). The app code doesn't change — only the connection target does.
+When changing replicated data, update the baseline, add a migration, update the PowerSync
+client schema, update the publication if a table is added, and update sync rules together.
+
+## Smoke test: upload, download, and isolation
+
+1. Start the stack and launch a development build of the mobile app.
+2. Sign in as user A. The app creates a default household locally; the PowerSync connector
+   uploads the household and membership through `/sync/upload`.
+3. Add an item while online and verify it appears in `pg-db`.
+4. Disable the device network, add another item, then restore connectivity. Verify the
+   queued write reaches Postgres and remains visible after an app restart.
+5. Sign out. The app disconnects and clears local PowerSync data.
+6. Sign in as user B. User A's household data must not appear.
+
+Useful database check:
+
+```sh
+docker compose -f docker/docker-compose.yaml exec pg-db \
+  psql -U "$PS_DATABASE_USER" -d "$PS_DATABASE_NAME" \
+  -c "SELECT id, household_id, name, updated_at FROM pantry_items WHERE deleted = FALSE;"
+```
+
+## Docker Desktop file sharing on macOS
+
+If the repository lives outside Docker Desktop's default shared paths, bind mounts may
+appear empty. Typical symptoms are missing tables or PowerSync treating mounted YAML files
+as directories.
+
+Add the repository's parent under Docker Desktop → Settings → Resources → File Sharing,
+restart Docker, then recreate volumes with `docker compose ... down -v` and `up -d`. This is
+not normally needed on Windows, Linux, or repositories under the macOS home directory.
+
+## Relationship to production
+
+Production is already resolved and deployed as Supabase Postgres/Auth + PowerSync Cloud +
+Railway (ADR-007). This local stack is the development equivalent, not a placeholder for an
+undecided host. See [`../managed/README.md`](../managed/README.md) for provisioning and
+verification details.

@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Legacy API behavior retained under the ADR-009 NestJS migration.
 
 // Wire-level tests for POST /recipes/search: auth, validation, rate limiting,
 // caching, upstream trimming, and failure hygiene. jose is module-mocked the

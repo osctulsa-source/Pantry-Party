@@ -1,7 +1,6 @@
 /**
  * Dependency-free TTL cache with LRU-flavored eviction. In-memory and
- * per-process — right-sized for the TEMPORARY upload-proxy (ADR-008); the
- * promoted backend gets a real cache.
+ * per-process; appropriate while the API runs as a small Railway service.
  *
  * Purpose here: recipe-search responses are cached 24h so repeat searches
  * (same pantry, same meal tab) stop spending Spoonacular quota — the free

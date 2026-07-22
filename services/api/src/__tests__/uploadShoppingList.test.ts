@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Legacy API behavior retained under the ADR-009 NestJS migration.
 
 // Wire tests for shopping_list_items joining the upload-proxy (August
 // shopping-list arc): PUT insert, PATCH check-off, and the per-table PATCH
