@@ -29,6 +29,11 @@ interface Bucket {
 /** Sweep threshold — when the key map grows past this, expired buckets are pruned. */
 const SWEEP_AT = 10_000;
 
+// ⚠ SINGLE-INSTANCE INVARIANT: state lives in this process's Map, so the quota
+// is per-replica. Running 2+ Railway replicas silently multiplies every limit.
+// The Railway service is deliberately pinned to replicas = 1 (see
+// infra/managed/README.md → "Scaling & single-instance invariants"). Raising the
+// replica count REQUIRES moving this (and TtlCache) to a shared store first.
 export class FixedWindowRateLimiter {
   private readonly buckets = new Map<string, Bucket>();
 

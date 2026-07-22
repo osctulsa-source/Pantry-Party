@@ -98,7 +98,8 @@ export async function fanOutAnnouncement(row: AnnouncementRow, deps: FanOutDeps)
 
 /**
  * Finds active runs due for their one batched runner ping and sends it. Idempotent
- * per row via runner_summary_sent_at (stamped after send). Called on an interval.
+ * per row via runner_summary_sent_at, which is claimed (stamped) BEFORE the send
+ * so overlapping ticks / multiple instances can't double-send. Called on an interval.
  */
 export async function sweepRunnerSummaries(deps: FanOutDeps, now: Date = new Date()): Promise<void> {
   const { pg, sender } = deps;
@@ -127,6 +128,17 @@ export async function sweepRunnerSummaries(deps: FanOutDeps, now: Date = new Dat
     );
     if (!due) continue;
 
+    // Claim the row BEFORE sending, atomically. Previously the stamp happened
+    // AFTER the send, so two API instances (or two overlapping ticks) could both
+    // read runner_summary_sent_at IS NULL, both send, and both stamp — a
+    // duplicate runner ping. The `AND runner_summary_sent_at IS NULL` predicate
+    // makes exactly one caller win (rowCount 1); everyone else gets 0 and skips.
+    const claim = await pg.query(
+      'UPDATE announcements SET runner_summary_sent_at = NOW() WHERE id = $1 AND runner_summary_sent_at IS NULL',
+      [c.id],
+    );
+    if (claim.rowCount !== 1) continue;
+
     const tokenRows = await pg.query(
       `SELECT token FROM push_tokens
        WHERE user_id = $1 AND deleted = FALSE AND announcements_enabled = TRUE`,
@@ -142,7 +154,6 @@ export async function sweepRunnerSummaries(deps: FanOutDeps, now: Date = new Dat
         })),
       );
     }
-    // Stamp regardless of token presence so we never re-sweep this run.
-    await pg.query('UPDATE announcements SET runner_summary_sent_at = NOW() WHERE id = $1', [c.id]);
+    // Already claimed above, so no trailing stamp — at-most-once is the point.
   }
 }
