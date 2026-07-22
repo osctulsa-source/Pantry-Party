@@ -66,9 +66,12 @@ export class AccountController {
       );
 
       // 3. Revoke any outstanding invites the user created (mark as used so
-      //    they can't be accepted after the account is gone).
+      //    they can't be accepted after the account is gone). `used_by` is a
+      //    UUID column (Supabase auth.users.id) with no sentinel value — a
+      //    non-UUID literal like 'deleted' fails uuid coercion at query-parse
+      //    time and 500s the whole cascade. used_at alone marks the code spent.
       await client.query(
-        "UPDATE household_invites SET used_at = NOW(), used_by = 'deleted' WHERE created_by = $1 AND used_at IS NULL",
+        'UPDATE household_invites SET used_at = NOW() WHERE created_by = $1 AND used_at IS NULL',
         [userId],
       );
 

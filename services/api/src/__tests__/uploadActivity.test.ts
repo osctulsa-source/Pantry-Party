@@ -76,7 +76,9 @@ afterEach(() => {
 
 describe('POST /sync/upload — activity_events', () => {
   it('accepts a PUT insert (cooked) with tenancy on added_by', async () => {
-    const { query } = mockClient([UPDATED]);
+    // MEMBER = the household-membership gate (authorizePutWrite) that now runs
+    // before every PUT upsert; UPDATED = the INSERT itself.
+    const { query } = mockClient([MEMBER, UPDATED]);
     const res = await request(buildApp())
       .post('/sync/upload')
       .set('Authorization', `Bearer test:${USER}`)
