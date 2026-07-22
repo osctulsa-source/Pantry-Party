@@ -4,12 +4,19 @@
  * DELETE /account: the store-gate requirement (App Store + Play). Cascade:
  *   1. Tombstone pantry_items where added_by = user
  *   2. Tombstone shopping_list_items where added_by = user
- *   3. Revoke household_invites created_by user (set used_at = NOW)
- *   4. Remove from user_households
- *   5. Orphan policy for owned households: if other members exist, transfer
+ *   3. Tombstone the user's attribution rows across the remaining household
+ *      tables (favorite_recipes, activity_events, announcements,
+ *      announcement_reactions) so no live row still attributes content to a
+ *      deleted account
+ *   4. Tombstone push_tokens where user_id = user — the sender filters
+ *      deleted = FALSE, so this is what actually stops a deleted user's devices
+ *      from receiving household pushes
+ *   5. Revoke household_invites created_by user (set used_at = NOW)
+ *   6. Remove from user_households
+ *   7. Orphan policy for owned households: if other members exist, transfer
  *      ownership to the longest-tenured; if sole member, keep alive ownerless
  *      (recoverable, per locked decision)
- *   6. Delete the Supabase auth user via the admin API
+ *   8. Delete the Supabase auth user via the admin API
  *
  * Idempotent: calling DELETE /account on an already-deleted user returns 200
  * (the Supabase admin delete is a no-op for missing users). The client signs
@@ -65,7 +72,39 @@ export class AccountController {
         [Date.now(), userId],
       );
 
-      // 3. Revoke any outstanding invites the user created (mark as used so
+      // 3. Tombstone the user's attribution rows across the remaining
+      //    household tables. Without this, favorites/history/announcements/
+      //    reactions keep the deleted user's id as live attribution. Each
+      //    UPDATE is keyed on that table's user-id column (added_by /
+      //    created_by / user_id) and updated_at is the client-style epoch-ms
+      //    the sync model uses everywhere else.
+      const now = Date.now();
+      await client.query(
+        'UPDATE favorite_recipes SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
+        [now, userId],
+      );
+      await client.query(
+        'UPDATE activity_events SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
+        [now, userId],
+      );
+      await client.query(
+        'UPDATE announcements SET deleted = true, updated_at = $1 WHERE created_by = $2 AND deleted = false',
+        [now, userId],
+      );
+      await client.query(
+        'UPDATE announcement_reactions SET deleted = true, updated_at = $1 WHERE user_id = $2 AND deleted = false',
+        [now, userId],
+      );
+
+      // 4. Tombstone the user's push tokens. fanOut selects on
+      //    `deleted = FALSE`, so flipping the flag is what actually stops the
+      //    deleted user's devices from receiving household pushes.
+      await client.query(
+        'UPDATE push_tokens SET deleted = true, updated_at = $1 WHERE user_id = $2 AND deleted = false',
+        [now, userId],
+      );
+
+      // 5. Revoke any outstanding invites the user created (mark as used so
       //    they can't be accepted after the account is gone). `used_by` is a
       //    UUID column (Supabase auth.users.id) with no sentinel value — a
       //    non-UUID literal like 'deleted' fails uuid coercion at query-parse
@@ -75,7 +114,7 @@ export class AccountController {
         [userId],
       );
 
-      // 4 + 5. For each household the user is a member of:
+      // 6 + 7. For each household the user is a member of:
       //   - If they're the owner and other members exist → transfer ownership
       //     to the longest-tenured remaining member.
       //   - If they're the sole member → keep the household alive, ownerless
@@ -123,7 +162,7 @@ export class AccountController {
       client.release();
     }
 
-    // 6. Delete the Supabase auth user. This is outside the DB transaction
+    // 8. Delete the Supabase auth user. This is outside the DB transaction
     //    because it's a separate HTTP call to the Supabase admin API. If it
     //    fails after the cascade committed, the DB data is already tombstoned
     //    and the auth user is orphaned — recoverable by retrying this call.
