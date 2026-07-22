@@ -53,3 +53,41 @@ jobs:
         env:
           API_JWKS_URI: https://example.com/jwks.json
         run: npm test -w services/api
+
+  integration:
+    name: Integration (real Postgres)
+    runs-on: ubuntu-latest
+    # Wire tests that run the real routes/controller against actual Postgres —
+    # they catch SQL/DDL/constraint drift the mocked unit suites can't (e.g. the
+    # household_invites.used_by uuid-coercion bug). The schema is the numbered
+    # init-scripts baseline, applied by the suite's globalSetup.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Integration tests (services/api)
+        env:
+          PG_URI: postgres://postgres:postgres@localhost:5432/postgres
+          API_JWKS_URI: https://example.com/jwks.json
+        run: npm run test:integration -w services/api

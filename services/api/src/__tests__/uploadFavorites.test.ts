@@ -76,7 +76,9 @@ afterEach(() => {
 
 describe('POST /sync/upload — favorite_recipes', () => {
   it('accepts a PUT insert with tenancy on added_by', async () => {
-    const { query } = mockClient([UPDATED]);
+    // authorizePutWrite runs two reads before the upsert: an existing-row
+    // lookup (none for a fresh insert) then the household-membership gate.
+    const { query } = mockClient([{ rowCount: 0, rows: [] }, MEMBER, UPDATED]);
     const res = await request(buildApp())
       .post('/sync/upload')
       .set('Authorization', `Bearer test:${USER}`)

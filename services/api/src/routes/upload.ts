@@ -411,6 +411,130 @@ export function buildUpsertSql(
   };
 }
 
+/**
+ * The single write-authorization chokepoint for the PUT/upsert path.
+ *
+ * validateCrudEntry only proves a user-id-shaped column equals the JWT sub —
+ * it does NOT prove the caller belongs to the `household_id` being written. So
+ * without this gate, a crafted client could PUT (upsert) rows into ANY
+ * household by supplying a foreign household_id: pantry/shopping/favorite/
+ * activity/announcement rows, a `households` row overwriting another household's
+ * ownership metadata via ON CONFLICT, or a `user_households` row self-joining
+ * any household as owner (bypassing the guarded /household/accept invite flow).
+ *
+ * Every PUT passes through here, and the check is driven by the *presence of a
+ * household_id column* rather than a per-table allowlist: a future
+ * household-scoped table added to ALLOWED_COLUMNS is authorized automatically,
+ * and one that reaches here with no household dimension and no explicit
+ * exemption fails loud rather than silently skipping the gate. The PATCH path
+ * enforces the same membership invariant in handlePatchPantryItem (it reads the
+ * target row to learn its household).
+ *
+ * `ownedHouseholdIds` is the set of household ids created by a `households` PUT
+ * earlier in the same batch (validateCrudEntry already forced their created_by
+ * to equal the caller), so the bootstrap flow — ensureDefaultHousehold writes a
+ * households row + an owner user_households row in one transaction — is permitted
+ * without a round-trip, regardless of intra-batch order.
+ */
+export async function authorizePutWrite(
+  table: string,
+  columns: string[],
+  values: unknown[],
+  userId: string,
+  client: PoolClient,
+  ownedHouseholdIds: ReadonlySet<string>,
+): Promise<void> {
+  // push_tokens is user-scoped, not household-scoped (user_id === caller is
+  // enforced in validateCrudEntry); there is no household dimension to check.
+  if (table === 'push_tokens') return;
+
+  if (table === 'households') {
+    // A households PUT is an upsert on id. Creating a NEW household is the
+    // bootstrap case (created_by === caller is enforced upstream). But updating
+    // an EXISTING household must be restricted to its members — otherwise
+    // ON CONFLICT DO UPDATE lets any client rewrite another household's name /
+    // created_by by guessing its (non-secret) id.
+    const householdId = values[columns.indexOf('id')];
+    const existing = await client.query<{ created_by: string; member: string | null }>(
+      `SELECT h.created_by, m.user_id AS member
+         FROM households h
+         LEFT JOIN user_households m ON m.household_id = h.id AND m.user_id = $2
+        WHERE h.id = $1`,
+      [householdId, userId],
+    );
+    if ((existing.rowCount ?? 0) === 0) return; // brand-new household — caller is creating their own
+    const row = existing.rows[0];
+    if (row && (row.member !== null || row.created_by === userId)) return;
+    throw new UploadError(
+      403,
+      `tenancy: cannot overwrite household "${String(householdId)}" — caller is not a member`,
+    );
+  }
+
+  const hidIdx = columns.indexOf('household_id');
+  if (hidIdx === -1) {
+    // Every remaining writable table is household-scoped by design. Reaching
+    // here without a household_id means a new table was added to ALLOWED_COLUMNS
+    // with neither a household dimension nor an exemption above — refuse rather
+    // than let the tenancy gate be silently bypassed.
+    throw new UploadError(
+      400,
+      `table "${table}" has no household_id to authorize the write against`,
+    );
+  }
+  const householdId = values[hidIdx];
+
+  if (table === 'user_households') {
+    // Membership rows may only be PUT for a household the caller CREATED (the
+    // bootstrap owner-membership). Joining an existing household, or
+    // self-promoting to owner within one, must go through the guarded
+    // /household/accept flow — never the open sync path.
+    if (typeof householdId === 'string' && ownedHouseholdIds.has(householdId)) return;
+    const owned = await client.query<{ created_by: string }>(
+      'SELECT created_by FROM households WHERE id = $1',
+      [householdId],
+    );
+    if (owned.rows[0]?.created_by === userId) return;
+    throw new UploadError(
+      403,
+      'tenancy: a user_households row may only be PUT for a household you created; ' +
+        'join an existing household via /household/accept',
+    );
+  }
+
+  // All other household-scoped tables. A PUT is an upsert, so guard BOTH sides:
+  //
+  //  1. If a row with this id already exists, its household_id is immutable — the
+  //     upsert must not relocate it. Without this, a member of household A who
+  //     learns a row id in household B could PUT {id, household_id: A, ...} and
+  //     pull B's row into A (hijack/corruption). The PATCH path already guards
+  //     this by reading the target row; the PUT path must too. `table` is
+  //     allowlist-validated (KNOWN_TABLES), never raw input.
+  const rowId = values[columns.indexOf('id')];
+  const existingRow = await client.query<{ household_id: string }>(
+    `SELECT household_id FROM ${table} WHERE id = $1`,
+    [rowId],
+  );
+  if ((existingRow.rowCount ?? 0) > 0 && existingRow.rows[0]?.household_id !== householdId) {
+    throw new UploadError(
+      403,
+      `tenancy: cannot move ${table} row "${String(rowId)}" between households`,
+    );
+  }
+
+  //  2. The caller must belong to the (target == existing) household.
+  const member = await client.query(
+    'SELECT 1 FROM user_households WHERE user_id = $1 AND household_id = $2',
+    [userId, householdId],
+  );
+  if ((member.rowCount ?? 0) === 0) {
+    throw new UploadError(
+      403,
+      `tenancy: not a member of household "${String(householdId)}" (table "${table}")`,
+    );
+  }
+}
+
 router.post('/sync/upload', requireUser, async (req, res) => {
   const parsed = UploadPayloadSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -431,6 +555,11 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     | { op: 'PATCH'; entry: CrudEntry };
   const plan: PlannedOp[] = [];
   const announcementPuts: Record<string, unknown>[] = [];
+  // Household ids created by a `households` PUT in this batch. validateCrudEntry
+  // already forced their created_by to equal the caller, so these are the
+  // caller's own new households — used by authorizePutWrite to permit the
+  // bootstrap owner-membership without a DB round-trip.
+  const ownedHouseholdIds = new Set<string>();
   for (const entry of entries) {
     if (entry.op === 'PUT') {
       const result = validateCrudEntry(entry, userId);
@@ -443,6 +572,10 @@ router.post('/sync/upload', requireUser, async (req, res) => {
         return;
       }
       plan.push({ op: 'PUT', table: result.table, columns: result.columns, values: result.values });
+      if (result.table === 'households') {
+        const idIdx = result.columns.indexOf('id');
+        if (idIdx !== -1) ownedHouseholdIds.add(String(result.values[idIdx]));
+      }
       if (result.table === 'announcements') {
         const rowObj: Record<string, unknown> = {};
         result.columns.forEach((c, i) => (rowObj[c] = result.values[i]));
@@ -467,6 +600,7 @@ router.post('/sync/upload', requireUser, async (req, res) => {
 
     for (const op of plan) {
       if (op.op === 'PUT') {
+        await authorizePutWrite(op.table, op.columns, op.values, userId, client, ownedHouseholdIds);
         const { sql } = buildUpsertSql(op.table, op.columns);
         await client.query(sql, op.values);
       } else {

@@ -12,5 +12,9 @@ if (!process.env.API_JWKS_URI) {
 export default defineConfig({
   test: {
     environment: 'node',
+    // The __integration__ suite needs a live Postgres and runs in its own CI
+    // job via vitest.integration.config.ts — keep the default `npm test`
+    // hermetic by excluding it here.
+    exclude: ['**/node_modules/**', '**/dist/**', 'src/__integration__/**'],
   },
 });
