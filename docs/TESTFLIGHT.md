@@ -71,12 +71,14 @@ paths — this is what avoids the hardcoded-path failure.
 > (no `.dev`) and the `.widget` target in
 > `ios/PantryParty.xcodeproj/project.pbxproj`.
 
-**Build numbers:** the production profile's `autoIncrement` in `eas.json` bumps
-the build number automatically — no manual edit needed. Keep it `true`:
-`appVersionSource` is `local`, so with `autoIncrement: false` every build
-reuses the `(version, buildNumber)` pair in the repo — and App Store Connect
-**rejects a pair that was already uploaded** (the new build never appears in
-TestFlight).
+**Build numbers:** EAS `autoIncrement` is **not supported** with `app.config.js`
+(`autoIncrement option is not supported when using app.config.js` — it cannot
+write a JS config). Keep `cli.appVersionSource` as `local` and set
+`ios.buildNumber` in `app.config.js` for each production binary. Last TestFlight
+upload is **40**; the next iOS production build must be **41** (already set).
+Do not re-enable `autoIncrement: true` unless you also switch
+`appVersionSource` to `remote` **and** run `eas build:version:set -p ios`
+initialized to ≥40 (EAS remote currently sits at 39, which would collide).
 
 ## Building from Windows — containerized recipe (validated: build 20)
 
