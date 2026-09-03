@@ -42,7 +42,7 @@
     },
     "production": {
       "channel": "production",
-      "autoIncrement": false,
+      "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production",
         "APPLE_TEAM_ID": "X7E3964XPW",
