@@ -8,24 +8,39 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # Nest 12 peers require a coordinated @nestjs/common+core bump; Express
+      # must stay on v5 via platform-express 11 (app.router).
+      - dependency-name: "@nestjs/platform-express"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/common"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/core"
+        update-types: ["version-update:semver-major"]
+      # v7 requires Node >=22.12; CI and the API image are Node 20.
+      - dependency-name: "expo-server-sdk"
+        update-types: ["version-update:semver-major"]
     groups:
       # Expo/React Native native surface is upgrade-sensitive — group so bumps
       # land together and get a single deliberate on-device QA pass.
+      # Majors (SDK 56→57) are a dedicated upgrade, not a weekly PR.
       expo-react-native:
         patterns:
           - "expo*"
           - "react-native*"
           - "@expo/*"
           - "@react-native*"
+        update-types:
+          - "minor"
+          - "patch"
       dev-dependencies:
         dependency-type: development
 
-  # The services/api production image installs from its own committed lockfile.
-  - package-ecosystem: npm
-    directory: "/services/api"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+  # Do NOT also watch /services/api as its own npm ecosystem. CI installs from
+  # the root lockfile; API-only PRs fail `npm ci` (`Missing: <pkg> from lock
+  # file`). Workspace bumps still change services/api/package.json; the image
+  # lockfile is gated by the "Verify API image lockfile" CI step. Refresh
+  # services/api/package-lock.json in the same PR when an API dep moves.
 
   # Local-dev + production Docker base/service images (e.g. powersync-service).
   - package-ecosystem: docker
@@ -37,6 +52,11 @@ updates:
     directory: "/services/api"
     schedule:
       interval: weekly
+    ignore:
+      # Stay on Node 20 until CI + engines + expo-server-sdk move together.
+      # Jumping 20 → 26 skips Active LTS (22) and is not built in CI.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
 
   # CI action versions.
   - package-ecosystem: github-actions
