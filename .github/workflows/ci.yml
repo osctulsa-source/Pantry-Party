@@ -26,6 +26,13 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      # Railway/Docker `npm ci` uses services/api/package-lock.json, not the
+      # workspace root lockfile. Fail here if a workspace bump left the image
+      # lockfile stale (the #224–#229 Dependabot pattern).
+      - name: Verify API image lockfile
+        run: npm ci --no-audit --no-fund
+        working-directory: services/api
+
       - name: Typecheck apps/mobile
         run: npx tsc -p apps/mobile/tsconfig.json --noEmit
 
