@@ -57,6 +57,10 @@ module.exports = {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
       appleTeamId: 'X7E3964XPW',
+      // Last TestFlight upload is (0.0.1, 40). EAS autoIncrement cannot write
+      // app.config.js (`local` source fails the build). Bump this on each
+      // production binary; next is 41.
+      buildNumber: '41',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
