@@ -72,7 +72,11 @@ paths — this is what avoids the hardcoded-path failure.
 > `ios/PantryParty.xcodeproj/project.pbxproj`.
 
 **Build numbers:** the production profile's `autoIncrement` in `eas.json` bumps
-the build number automatically — no manual edit needed.
+the build number automatically — no manual edit needed. Keep it `true`:
+`appVersionSource` is `local`, so with `autoIncrement: false` every build
+reuses the `(version, buildNumber)` pair in the repo — and App Store Connect
+**rejects a pair that was already uploaded** (the new build never appears in
+TestFlight).
 
 ## Building from Windows — containerized recipe (validated: build 20)
 
@@ -83,7 +87,7 @@ the whole flow inside a Linux container instead; the fingerprint is computed on
 exactly the tree that gets uploaded, and it matches the workers:
 
 ```sh
-docker run --rm -e EXPO_TOKEN=<token> -v "<repo-root>:/src:ro" node:20 bash -lc "
+MSYS_NO_PATHCONV=1 docker run --rm -e EXPO_TOKEN=<token> -v "<repo-root>:/src:ro" node:20 bash -lc "
   git clone -q --depth 1 file:///src /work && cd /work &&
   npm ci --no-audit --no-fund --ignore-scripts &&
   cd apps/mobile &&
@@ -97,6 +101,10 @@ Notes:
 - `eas submit` from Windows can also fail silently — run it via the same
   container, mounting the ASC `.p8` key and setting `EXPO_ASC_API_KEY_PATH`,
   `EXPO_ASC_KEY_ID`, and `EXPO_ASC_ISSUER_ID`.
+- ⚠️ **The `MSYS_NO_PATHCONV=1` prefix is required in Git Bash on Windows.**
+  Without it Git Bash rewrites the container paths (`/src`, `/work`,
+  `bash -lc …`) into Windows paths before docker sees them and the recipe
+  fails. (Prefix applies to Git Bash; it is unnecessary in PowerShell/CMD.)
 
 ## Submit to App Store Connect
 
