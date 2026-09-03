@@ -1,0 +1,45 @@
+# Dependency update automation. Replaces the fully-manual cadence flagged in the
+# 2026-07-22 audit. Grouped, low-frequency PRs so review stays manageable.
+version: 2
+updates:
+  # npm workspaces (root lockfile covers apps/mobile, services/api, packages/core).
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # Expo/React Native native surface is upgrade-sensitive — group so bumps
+      # land together and get a single deliberate on-device QA pass.
+      expo-react-native:
+        patterns:
+          - "expo*"
+          - "react-native*"
+          - "@expo/*"
+          - "@react-native*"
+      dev-dependencies:
+        dependency-type: development
+
+  # The services/api production image installs from its own committed lockfile.
+  - package-ecosystem: npm
+    directory: "/services/api"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Local-dev + production Docker base/service images (e.g. powersync-service).
+  - package-ecosystem: docker
+    directory: "/infra/local-dev/docker"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: "/services/api"
+    schedule:
+      interval: weekly
+
+  # CI action versions.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
