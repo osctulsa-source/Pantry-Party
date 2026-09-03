@@ -106,9 +106,15 @@ describe('DELETE /account', () => {
     const TRANSFER: MockQueryResult = { rowCount: 1, rows: [] };
     const REMOVED: MockQueryResult = { rowCount: 1, rows: [] };
 
+    const TOMBSTONED: MockQueryResult = { rowCount: 1, rows: [] };
     const { query } = mockClient([
       PANTRY_TOMBSTONED,
       SHOPPING_TOMBSTONED,
+      TOMBSTONED, // favorite_recipes
+      TOMBSTONED, // activity_events
+      TOMBSTONED, // announcements
+      TOMBSTONED, // announcement_reactions
+      TOMBSTONED, // push_tokens
       INVITES_REVOKED,
       MEMBERSHIPS,
       SUCCESSOR,
@@ -130,11 +136,16 @@ describe('DELETE /account', () => {
 
     expect(sqls[0]).toMatch(/^UPDATE pantry_items SET deleted/i);
     expect(sqls[1]).toMatch(/^UPDATE shopping_list_items SET deleted/i);
-    expect(sqls[2]).toMatch(/^UPDATE household_invites SET used_at/i);
-    expect(sqls[3]).toMatch(/^SELECT household_id, role FROM user_households/i);
-    expect(sqls[4]).toMatch(/^SELECT user_id FROM user_households/i); // successor lookup
-    expect(sqls[5]).toMatch(/^UPDATE user_households SET role/i); // transfer
-    expect(sqls[6]).toMatch(/^DELETE FROM user_households/i);
+    expect(sqls[2]).toMatch(/^UPDATE favorite_recipes SET deleted/i);
+    expect(sqls[3]).toMatch(/^UPDATE activity_events SET deleted/i);
+    expect(sqls[4]).toMatch(/^UPDATE announcements SET deleted/i);
+    expect(sqls[5]).toMatch(/^UPDATE announcement_reactions SET deleted/i);
+    expect(sqls[6]).toMatch(/^UPDATE push_tokens SET deleted/i);
+    expect(sqls[7]).toMatch(/^UPDATE household_invites SET used_at/i);
+    expect(sqls[8]).toMatch(/^SELECT household_id, role FROM user_households/i);
+    expect(sqls[9]).toMatch(/^SELECT user_id FROM user_households/i); // successor lookup
+    expect(sqls[10]).toMatch(/^UPDATE user_households SET role/i); // transfer
+    expect(sqls[11]).toMatch(/^DELETE FROM user_households/i);
 
     // Supabase admin delete was called.
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -150,6 +161,11 @@ describe('DELETE /account', () => {
     const { query } = mockClient([
       { rowCount: 0, rows: [] }, // pantry
       { rowCount: 0, rows: [] }, // shopping
+      { rowCount: 0, rows: [] }, // favorite_recipes
+      { rowCount: 0, rows: [] }, // activity_events
+      { rowCount: 0, rows: [] }, // announcements
+      { rowCount: 0, rows: [] }, // announcement_reactions
+      { rowCount: 0, rows: [] }, // push_tokens
       { rowCount: 0, rows: [] }, // invites
       { rowCount: 1, rows: [{ household_id: HOUSEHOLD_A, role: 'owner' }] }, // memberships
       { rowCount: 0, rows: [] }, // no successor
@@ -177,6 +193,11 @@ describe('DELETE /account', () => {
     mockClient([
       { rowCount: 0, rows: [] }, // pantry (nothing to tombstone)
       { rowCount: 0, rows: [] }, // shopping
+      { rowCount: 0, rows: [] }, // favorite_recipes
+      { rowCount: 0, rows: [] }, // activity_events
+      { rowCount: 0, rows: [] }, // announcements
+      { rowCount: 0, rows: [] }, // announcement_reactions
+      { rowCount: 0, rows: [] }, // push_tokens
       { rowCount: 0, rows: [] }, // invites
       { rowCount: 0, rows: [] }, // no memberships
     ]);

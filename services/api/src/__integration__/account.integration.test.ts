@@ -80,6 +80,34 @@ describe('DELETE /account (real Postgres)', () => {
       [HH, USER_A],
     );
 
+    // Attribution rows across the remaining household tables + a push token.
+    await pool.query(
+      `INSERT INTO favorite_recipes (id, household_id, recipe_id, title, payload, added_by, added_at, updated_at)
+       VALUES (gen_random_uuid(), $1, 1, 'Soup', '{}', $2, NOW(), $3)`,
+      [HH, USER_A, Date.now()],
+    );
+    await pool.query(
+      `INSERT INTO activity_events (id, household_id, kind, label, occurred_at, added_by, updated_at)
+       VALUES (gen_random_uuid(), $1, 'cooked', 'Soup', NOW(), $2, $3)`,
+      [HH, USER_A, Date.now()],
+    );
+    const ann = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+    await pool.query(
+      `INSERT INTO announcements (id, household_id, kind, created_by, created_at, updated_at)
+       VALUES ($1, $2, 'runner', $3, NOW(), $4)`,
+      [ann, HH, USER_A, Date.now()],
+    );
+    await pool.query(
+      `INSERT INTO announcement_reactions (id, announcement_id, household_id, user_id, reaction, created_at, updated_at)
+       VALUES (gen_random_uuid(), $1, $2, $3, '👍', NOW(), $4)`,
+      [ann, HH, USER_A, Date.now()],
+    );
+    await pool.query(
+      `INSERT INTO push_tokens (id, user_id, token, platform, updated_at)
+       VALUES (gen_random_uuid(), $1, 'ExponentPushToken[x]', 'ios', $2)`,
+      [USER_A, Date.now()],
+    );
+
     const res = await request(app).delete('/account').set('Authorization', bearer(USER_A));
 
     // The whole point of P0-#1: this used to be a 500.
@@ -117,6 +145,22 @@ describe('DELETE /account (real Postgres)', () => {
       [USER_B, HH],
     );
     expect(bRole.rows[0].role).toBe('owner');
+
+    // No live row still attributes content to the deleted user, and no live
+    // push token remains (deleted devices stop receiving household pushes).
+    for (const [table, col] of [
+      ['favorite_recipes', 'added_by'],
+      ['activity_events', 'added_by'],
+      ['announcements', 'created_by'],
+      ['announcement_reactions', 'user_id'],
+      ['push_tokens', 'user_id'],
+    ] as const) {
+      const live = await pool.query(
+        `SELECT 1 FROM ${table} WHERE ${col} = $1 AND deleted = false`,
+        [USER_A],
+      );
+      expect(live.rowCount, `${table} should have no live rows for a deleted user`).toBe(0);
+    }
   });
 
   it('is idempotent — deleting an already-deleted user still returns 200', async () => {
