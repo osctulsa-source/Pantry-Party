@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fanOutAnnouncement } from './fanOut.js';
+import { fanOutAnnouncement, sweepRunnerSummaries } from './fanOut.js';
 import type { PushSender, PushResult } from './expoClient.js';
 
 function fakeSender(results: PushResult[] = []): { sender: PushSender; sent: any[] } {
@@ -80,5 +80,53 @@ describe('fanOutAnnouncement', () => {
     const { client } = fakePg([]);
     await fanOutAnnouncement(stale, { pg: client as any, sender });
     expect(sent).toHaveLength(0);
+  });
+});
+
+// A pg stub that models the atomic claim: the candidate SELECT always returns
+// the due run (so both callers see it), but the `... WHERE runner_summary_sent_at
+// IS NULL` claim UPDATE returns rowCount 1 only for the first caller.
+function claimAwarePg() {
+  let claimed = false;
+  const candidate = {
+    id: 'run-1',
+    household_id: 'h1',
+    created_by: 'user-1',
+    departs_at: new Date().toISOString(), // delta 0 → due
+    status: 'active',
+    runner_summary_sent_at: null,
+    requested_count: 3,
+    housemate_count: 1,
+  };
+  return {
+    client: {
+      query: vi.fn(async (sql: string) => {
+        if (/UPDATE announcements SET runner_summary_sent_at/i.test(sql)) {
+          if (claimed) return { rows: [], rowCount: 0 };
+          claimed = true;
+          return { rows: [], rowCount: 1 };
+        }
+        if (/FROM announcements a/i.test(sql)) return { rows: [candidate], rowCount: 1 };
+        if (/FROM push_tokens/i.test(sql)) {
+          return { rows: [{ token: 'ExponentPushToken[x]' }], rowCount: 1 };
+        }
+        return { rows: [], rowCount: 0 };
+      }),
+    },
+  };
+}
+
+describe('sweepRunnerSummaries', () => {
+  it('sends the runner ping at most once under a simulated two-caller race', async () => {
+    const { sender, sent } = fakeSender();
+    const { client } = claimAwarePg();
+    const now = new Date();
+    // Two instances sweep the same due run concurrently.
+    await Promise.all([
+      sweepRunnerSummaries({ pg: client as any, sender }, now),
+      sweepRunnerSummaries({ pg: client as any, sender }, now),
+    ]);
+    // Claim-first means exactly one caller wins and sends; the other skips.
+    expect(sent).toHaveLength(1);
   });
 });
