@@ -18,7 +18,7 @@ is either derived from it or reproducible from the repo.
 
 | Component | Source of truth? | Backup / recovery approach |
 |---|---|---|
-| **Supabase Postgres** (7 tables in `public`) | **YES — the only one** | Supabase automated backups + PITR (§2); optional independent `pg_dump` (§2c) |
+| **Supabase Postgres** (11 tables in `public`: 10 PowerSync-published + `analytics_events`) | **YES — the only one** | Supabase automated backups + PITR (§2); optional independent `pg_dump` (§2c) |
 | **Supabase Auth** (users, in the `auth` schema) | YES | Same Supabase project → covered by the same backups/PITR |
 | **PowerSync Cloud** | No — a derived replica + sync checkpoints | Re-replicates from Postgres after a restore (§4); nothing to back up |
 | **Railway API** (`services/api`) | No — stateless | Redeploy from the repo; no data to restore |
@@ -82,7 +82,7 @@ comfortable with these numbers.]`
    or the most recent daily backup if PITR isn't enabled).
 3. After the restore, **verify PowerSync** (§4, PowerSync note below): run
    `powersync fetch status --directory pulled` and confirm it's connected and
-   replicating all 7 tables.
+   replicating all 10 published tables.
 4. Spot-check row counts and a sign-in + a device sync before declaring recovery.
 
 ### Scenario B — PowerSync replication broken (source DB intact)
@@ -96,14 +96,15 @@ takes time to re-replicate).
    `PS_ROLE_PASSWORD=<powersync_role pw> powersync deploy --directory pulled`
    (see `infra/managed/README.md` §2). `sync-config.yaml` must stay byte-for-byte
    the repo's `infra/local-dev/sync-config.yaml`.
-3. Confirm 7 tables replicating; clients re-sync automatically on reconnect.
+3. Confirm 10 tables replicating; clients re-sync automatically on reconnect.
 
 ### Scenario C — Full Supabase project / account loss (worst case)
 This is where the independent `pg_dump` (§2c) earns its keep.
 1. Create a new Supabase project; enable the **IPv4 add-on** (required for
    PowerSync's direct-endpoint replication) and PITR.
-2. Apply the schema idempotently from the repo (the `schema_migrations` +
-   `postgres:16-alpine` psql model in `infra/managed/README.md` §1), then
+2. Apply the schema idempotently from the repo with the canonical runner
+   (`DATABASE_URL=… ./infra/managed/migrate.sh` — the `schema_migrations` ledger
+   model documented in `infra/managed/README.md` → "Schema migrations"), then
    re-create the `powersync` publication and `powersync_role`.
 3. Restore data from the latest `pg_dump` (`pg_restore`). **Auth users** restore
    with the `auth` schema — validate sign-in works afterward; if the auth schema

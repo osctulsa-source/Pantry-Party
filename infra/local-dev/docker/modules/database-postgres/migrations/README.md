@@ -11,9 +11,11 @@ older dev database to the current schema. The first two (0001 fill_level,
    add a new one.
 2. **Idempotent.** Every statement must be safe to re-run
    (`ADD COLUMN IF NOT EXISTS`, `DROP CONSTRAINT IF EXISTS`, guarded `DO`
-   blocks for named constraints). Because re-running is always safe, there
-   is no schema_migrations bookkeeping table yet — apply the lot, in order,
-   any time.
+   blocks for named constraints). In **local dev** this means you can apply
+   the lot, in order, any time — no bookkeeping needed for disposable data.
+   In **production** the same files run through a `schema_migrations` ledger
+   (`infra/managed/migrate.sh`) so each applies at most once; idempotency is
+   the backstop, not the primary mechanism.
 3. **Lockstep with init-scripts.** Every migration ALSO updates the
    corresponding `init-scripts/*.sql` file in the same PR. Init scripts
    describe the CURRENT schema (fresh volumes need no migrations);
@@ -45,7 +47,11 @@ re-runs init scripts from scratch — fine when local data is disposable.
 
 ## Production
 
-A real migration runner (and its backup/PITR story) is chosen with ADR-007
-(production Postgres hosting). This convention is deliberately tool-agnostic:
-numbered idempotent SQL imports cleanly into node-pg-migrate, dbmate, Flyway,
-or a managed host's migration tooling.
+The production runner is **[`infra/managed/migrate.sh`](../../../../../managed/migrate.sh)**
+— a `schema_migrations`-ledger runner that applies the init-scripts baseline
+(`00`–`08`) then these numbered migrations (`0001`–`0009`), each at most once,
+in one transaction per file. It is the documented pre-deploy step and is
+exercised in CI against a throwaway Postgres on every PR. See
+`infra/managed/README.md` → "Schema migrations". (The convention stays
+tool-agnostic — numbered idempotent SQL also imports cleanly into node-pg-migrate,
+dbmate, or Flyway — but `migrate.sh` is the one we run.)

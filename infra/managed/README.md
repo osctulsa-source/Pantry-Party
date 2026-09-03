@@ -32,12 +32,13 @@ API's `API_JWKS_URI`. Two connection paths — do not cross them:
   long-lived pool friendly.
 
 Schema: the numbered baseline + migrations from
-`infra/local-dev/docker/modules/database-postgres/` (init-scripts `00`–`06`,
-then `migrations/0001`–`0006`), applied idempotently with a
-`schema_migrations` ledger — same model as `infra/azure/migrations/run.sh`, run
-via `psql` in a `postgres:16-alpine` container against the direct endpoint.
-This produced the 7 tables, the `powersync` publication over exactly those
-tables, and the replication role per PowerSync's Supabase guide:
+`infra/local-dev/docker/modules/database-postgres/` (init-scripts `00`–`08`,
+then `migrations/0001`–`0009`), applied idempotently with a `schema_migrations`
+ledger by the canonical runner **[`infra/managed/migrate.sh`](./migrate.sh)**
+(the documented pre-deploy step — see "Schema migrations" below). This produced
+the **10 PowerSync-published tables + the server-only `analytics_events`
+(11 total)**, the `powersync` publication over exactly the 10 published tables,
+and the replication role per PowerSync's Supabase guide:
 
 ```sql
 CREATE ROLE powersync_role WITH REPLICATION BYPASSRLS LOGIN PASSWORD '<generated>';
@@ -49,6 +50,32 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO powersync_ro
 RLS is intentionally NOT enabled — tenancy lives in the sync rules (reads) and
 the API upload-proxy (writes). Ignore Supabase's RLS-linter warnings.
 
+### Schema migrations (the one runner)
+
+There is **one** documented migration runner: **[`infra/managed/migrate.sh`](./migrate.sh)**.
+It maintains a `schema_migrations` ledger and applies, at most once each and in
+order, the init-scripts baseline (`00`–`08`, current schema for a fresh
+database) then the numbered migrations (`0001`–`0009`, the incremental path for
+existing databases). Re-running is safe — applied files are skipped by the
+ledger. This is the ledger model from the parked `infra/azure/migrations/run.sh`,
+generalized (no host-specific role provisioning).
+
+**Pre-deploy step** — run BEFORE any `services/api` / PowerSync deploy that
+depends on new schema:
+
+```sh
+DATABASE_URL="postgres://<direct-endpoint>/postgres" ./infra/managed/migrate.sh
+```
+
+CI runs the same script against a throwaway Postgres on every PR (the
+`migrations` job in `.github/workflows/ci.yml`), so a broken or non-idempotent
+migration fails the build before it can reach production.
+
+> Local dev is different: init-scripts run automatically on a fresh volume and
+> the numbered migrations are idempotent, so local databases can just re-apply
+> the lot (no ledger needed for disposable data) — see
+> `infra/local-dev/docker/modules/database-postgres/migrations/README.md`.
+
 ## 2 · PowerSync Cloud
 
 Instance is managed with the `powersync` CLI (`npm i -g powersync`, then
@@ -58,7 +85,7 @@ Instance is managed with the `powersync` CLI (`npm i -g powersync`, then
 powersync pull instance --instance-id=6a19dc178d064eb85eea1728 --directory pulled
 # edit pulled/service.yaml + pulled/sync-config.yaml, then
 PS_ROLE_PASSWORD=<powersync_role pw> powersync deploy --directory pulled
-powersync fetch status --directory pulled   # connected + replicating, 7 tables
+powersync fetch status --directory pulled   # connected + replicating, 10 tables
 ```
 
 - `service.yaml`: postgres connection to the DIRECT Supabase endpoint as
