@@ -34,19 +34,25 @@ module.exports = {
     userInterfaceStyle: 'automatic',
     scheme: 'pantryparty',
     icon: './assets/icon.png',
-    // OTA updates (EAS Update): JS/asset changes ship to existing TestFlight
-    // installs via `eas update --channel production` — no new build. The
-    // `fingerprint` runtime policy hashes the NATIVE runtime, so an update is
-    // only delivered to builds whose native side matches; adding/removing a
-    // native module changes the fingerprint and automatically fences old
-    // builds off (no manual version discipline — important because `version`
-    // stays put while eas.json autoIncrement bumps build numbers).
+    // OTA updates (EAS Update): JS/asset changes ship to existing installs via
+    // `eas update --channel production` — no new build.
+    //
+    // runtimeVersion is an EXPLICIT string (was `policy: 'fingerprint'`). The
+    // fingerprint policy proved non-deterministic for this monorepo + committed
+    // prebuilt ios/ setup: the hash differed run-to-run locally AND between the
+    // local machine and the EAS worker (all in the `expoConfigPlugins` tooling
+    // closure, which `.fingerprintignore` can't exclude under expo-updates),
+    // hard-failing builds with "Runtime version calculated on local machine not
+    // equal to runtime version calculated during build".
+    //
+    // ⚠️ MANUAL DISCIPLINE: bump this string whenever the NATIVE runtime changes
+    // (add/remove/upgrade a native module, change expo plugins / build props).
+    // Publishing an OTA to a runtime whose installed build lacks the required
+    // native code will crash those installs. JS-only changes need no bump.
     updates: {
       url: 'https://u.expo.dev/b307f8c4-9c6f-46eb-9288-39a9b9a7c844',
     },
-    runtimeVersion: {
-      policy: 'fingerprint',
-    },
+    runtimeVersion: '1.0.0',
     ios: {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
