@@ -1,0 +1,17 @@
+// Build config: emit compiled JS to dist/ for the production Docker image.
+// The base tsconfig.json is typecheck-only (noEmit + allowImportingTsExtensions);
+// this one flips those on and excludes tests. Source uses explicit `.js` import
+// specifiers, so the emitted ESM resolves correctly under Node's "type": "module".
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/__tests__/**", "src/__integration__/**"]
+}
