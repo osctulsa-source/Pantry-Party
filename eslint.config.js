@@ -39,6 +39,33 @@ module.exports = tseslint.config(
       'react-hooks/exhaustive-deps': 'warn',
     },
   },
+  // Ban hardcoded hex colors outside the theme layer — every UI color must
+  // route through `tokens` (apps/mobile/src/theme) so the app can theme (and,
+  // when the dark-mode ThemeProvider lands, retheme) consistently. Pure black
+  // (#000 / #000000) is allowed for shadows/overlays. Exempt: the theme layer
+  // itself, motion art constants, illustration art (collectionIcons, the
+  // technique glyphs), and RootErrorBoundary — a startup fallback deliberately
+  // token-free so it renders even when the theme is what failed.
+  {
+    files: ['apps/mobile/src/**/*.ts', 'apps/mobile/src/**/*.tsx'],
+    ignores: [
+      'apps/mobile/src/theme/**',
+      'apps/mobile/src/motion/**',
+      'apps/mobile/src/**/collectionIcons.tsx',
+      'apps/mobile/src/components/brandGlyphs.technique.tsx',
+      'apps/mobile/src/components/RootErrorBoundary.tsx',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/^#(?!000$)(?!000000$)[0-9a-fA-F]{3,8}$/i]',
+          message:
+            'Hardcoded hex color — route UI colors through `tokens` (apps/mobile/src/theme). Pure black is allowed for shadows; art/motion files are allow-listed in eslint.config.js.',
+        },
+      ],
+    },
+  },
   // Rules for Node.js / config files
   {
     files: [

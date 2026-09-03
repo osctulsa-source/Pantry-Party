@@ -1518,7 +1518,7 @@ const styles = StyleSheet.create({
   heroTitleOnImg: {
     fontFamily: tokens.font.display.bold,
     fontSize: 20,
-    color: '#F6F2E9',
+    color: tokens.color.onAccent,
     letterSpacing: -0.3,
     lineHeight: 24,
     textShadowColor: 'rgba(0,0,0,0.45)',

@@ -44,6 +44,7 @@ import {
   registerExpiryCategory,
 } from './notificationActions';
 import { readExpiryEvents } from '../pantry/expiryEvents';
+import { tokens } from '../../theme/tokens';
 import { readCookEvents } from '../recipes/cookLog';
 
 /**
@@ -56,7 +57,7 @@ async function ensureAndroidChannel(): Promise<void> {
   await Notifications.setNotificationChannelAsync('default', {
     name: 'Expiry reminders',
     importance: Notifications.AndroidImportance.HIGH,
-    lightColor: '#2E5D3A', // Crumb accent
+    lightColor: tokens.color.accent, // Crumb accent (Android channel LED)
   });
 }
 
