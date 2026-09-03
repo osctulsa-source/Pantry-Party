@@ -4,7 +4,7 @@
 # committed package-lock.json give a reproducible `npm ci` without the monorepo.
 
 # ---- build: install ALL deps (incl. dev/types) and compile TS -> dist/ -------
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -13,13 +13,13 @@ COPY src ./src
 RUN npm run build
 
 # ---- prod-deps: runtime dependencies only (no dev/types) ---------------------
-FROM node:20-alpine AS prod-deps
+FROM node:26-alpine AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 
 # ---- runtime: compiled output + prod deps, non-root, production --------------
-FROM node:20-alpine AS runtime
+FROM node:26-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json ./
