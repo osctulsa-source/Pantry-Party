@@ -33,7 +33,7 @@ This is the deepest bet in the app — hence the dedicated Phase 0 spike.
 
 ---
 
-## ADR-003 · Sync engine — DECISION DEFERRED to Phase 0 spike
+## ADR-003 · Sync engine — PowerSync (resolved after Phase 0 spike)
 **Status:** Accepted — PowerSync (Phase 0 closure) · **Date:** Phase 0 kickoff
 
 **Context.** PowerSync and Replicache both solve offline-first conflict-resolved sync.
@@ -180,7 +180,7 @@ walking skeleton work moving without committing to monthly infrastructure costs 
 ---
 
 ## ADR-008 · Throwaway Express upload-proxy (backend decision still deferred)
-**Status:** Accepted · **Date:** PR #8a
+**Status:** Superseded by ADR-009 · **Date:** PR #8a · **Superseded:** 2026-07-21
 
 **Context.** PowerSync's `uploadData()` requires a server endpoint to drain local CRUD
 writes back to Postgres. PR #7.5 added local-only writes (auto-create-household) and
@@ -216,3 +216,76 @@ temporary, and adding a non-upload endpoint immediately violates the scope disci
 **Update mechanism.** When any promotion trigger fires, open a new ADR (ADR-NNN)
 documenting the chosen real backend, link back to ADR-008, and mark this status as
 **Superseded**.
+
+---
+
+## ADR-009 · Promote the API to NestJS through an incremental hybrid
+**Status:** Accepted · **Date:** 2026-07-21
+
+**Context.** ADR-008 deliberately limited the first Express service to a disposable
+PowerSync upload path. Its promotion triggers have fired: the service now owns household
+invites, recipe search, recipe-instruction backfill, account deletion, push fan-out, and a
+scheduled runner-summary sweep. Replacing every route at once would create avoidable wire
+compatibility and regression risk.
+
+**Decision.** The production API is Node.js + TypeScript on NestJS. During migration,
+NestJS wraps the existing Express application with `ExpressAdapter`:
+
+- `POST /sync/upload`, `POST /household/invite`, `POST /household/accept`, and
+  `POST /recipes/search` remain legacy Express handlers mounted by `src/main.ts`.
+- `DELETE /account` and `GET /recipes/:id/instructions` are native NestJS controllers.
+- New feature endpoints are NestJS-first. Existing Express routers migrate incrementally
+  when touched, while preserving their current HTTP contracts and tests.
+- Sentry covers both halves: the Nest global filter handles Nest routes and the Express
+  error handler covers legacy routers.
+
+**Consequences.** `services/api` is no longer a throwaway one-endpoint proxy and ADR-008
+is superseded. The hybrid has two routing/error-handling styles temporarily, but it avoids
+a flag-day rewrite. Express remains a Nest platform dependency and migration host, not an
+alternative backend decision.
+
+---
+
+## ADR-010 · PowerSync SQLite client uses the op-sqlite adapter
+**Status:** Accepted · **Date:** 2026-07-21
+
+**Context.** Early planning named WatermelonDB as the likely local store, but the shipped
+mobile data path uses PowerSync's React Native SDK with its op-sqlite adapter. Keeping both
+stories in active documentation causes contributors to design against a database layer that
+does not exist in the app.
+
+**Decision.** The mobile local database and sync client are PowerSync on SQLite via
+`@powersync/op-sqlite` and `@op-engineering/op-sqlite`. Feature reads and writes target the
+local PowerSync database. PowerSync downloads household-scoped rows from Postgres, and the
+connector drains local CRUD operations through `services/api`.
+
+**Consequences.** WatermelonDB is not part of the current production architecture. Native
+SQLite support requires Expo development builds/prebuild, but application code remains in
+the Expo managed/prebuild workflow; no hand-maintained Swift, Objective-C, Java, or Kotlin
+feature implementation is permitted.
+
+---
+
+## ADR-011 · Replace LWW pantry quantity with idempotent per-device contributions
+**Status:** Proposed — implementation debt · **Date:** 2026-07-21
+
+**Context.** Three different quantity policies have appeared in the repository and must not
+be conflated:
+
+1. The required invariant is a per-device contribution model merged with `max`, so replaying
+   the same write is idempotent.
+2. An older architecture document claimed concurrent quantities were naively summed. That
+   is not idempotent and is not an acceptable target.
+3. The current `pantry_items` schema stores one `quantity` on one UUID row and resolves
+   competing updates through `updated_at` last-write-wins. It therefore does not implement
+   the required contribution model and may lose a concurrent quantity change.
+
+**Proposed decision.** Introduce device-scoped quantity contributions with stable operation
+identity and max-merge semantics, then derive the displayed item quantity from those
+contributions. The production migration must include schema evolution, existing-row
+backfill, mixed-client compatibility, upload validation, sync-rule changes, and torture
+tests proving replay idempotence, concurrent edits, offline restart, and tombstone behavior.
+
+**Non-decision.** This ADR does not select a final table shape or migration sequence and does
+not claim that max-merge is implemented. Until a dedicated migration is accepted and
+deployed, documentation and code must describe current quantity conflicts as LWW.

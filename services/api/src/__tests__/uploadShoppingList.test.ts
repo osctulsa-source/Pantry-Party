@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Legacy API behavior retained under the ADR-009 NestJS migration.
 
 // Wire tests for shopping_list_items joining the upload-proxy (August
 // shopping-list arc): PUT insert, PATCH check-off, and the per-table PATCH
@@ -75,7 +73,9 @@ afterEach(() => {
 
 describe('POST /sync/upload — shopping_list_items', () => {
   it('accepts a PUT insert with tenancy on added_by', async () => {
-    const { query } = mockClient([UPDATED]);
+    // authorizePutWrite runs two reads before the upsert: an existing-row
+    // lookup (none for a fresh insert) then the household-membership gate.
+    const { query } = mockClient([{ rowCount: 0, rows: [] }, MEMBER, UPDATED]);
     const res = await request(buildApp())
       .post('/sync/upload')
       .set('Authorization', `Bearer test:${USER}`)

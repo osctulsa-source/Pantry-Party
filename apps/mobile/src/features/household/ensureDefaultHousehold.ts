@@ -49,7 +49,7 @@ export async function ensureDefaultHousehold(userId: string): Promise<void> {
 
       // Atomic: never leave a household with no membership (or vice versa).
       // PowerSync's CRUD queue captures both inserts; uploadData() drains them
-      // to /sync/upload (PR #9 — services/api Express stopgap, ADR-008).
+      // to the authenticated services/api /sync/upload endpoint.
       await db.writeTransaction(async (tx) => {
         await tx.execute(
           `INSERT INTO households (id, name, created_at, created_by)

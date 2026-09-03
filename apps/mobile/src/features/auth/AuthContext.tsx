@@ -43,13 +43,24 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // waitForFirstSync() so the local user_households cache reflects server state —
 // otherwise a returning user whose membership hasn't replicated yet would get
 // a duplicate household. See features/household/ensureDefaultHousehold.ts.
-function syncPowerSyncWithSession(session: Session | null): void {
+//
+// `bootstrap` gates that household provisioning to genuine sign-in / app-load
+// only. onAuthStateChange also fires on TOKEN_REFRESHED / USER_UPDATED, where
+// re-running waitForFirstSync + ensureDefaultHousehold is pure waste — connect
+// is idempotent, so those events still keep the connection alive but skip the
+// bootstrap.
+function syncPowerSyncWithSession(
+  session: Session | null,
+  opts: { bootstrap: boolean },
+): void {
   if (session) {
     void (async () => {
       try {
         await connectPowerSync();
-        await getPowerSync().waitForFirstSync();
-        await ensureDefaultHousehold(session.user.id);
+        if (opts.bootstrap) {
+          await getPowerSync().waitForFirstSync();
+          await ensureDefaultHousehold(session.user.id);
+        }
       } catch (e: unknown) {
         console.error('PowerSync connect / household bootstrap failed:', e);
       }
@@ -75,15 +86,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      syncPowerSyncWithSession(session);
+      // App load: if a session is already present, this is effectively a
+      // (re-)sign-in for a returning user, so run the bootstrap.
+      syncPowerSyncWithSession(session, { bootstrap: Boolean(session) });
       syncPostHogWithSession(session);
       setState(session ? { status: 'authenticated', session } : { status: 'unauthenticated' });
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      syncPowerSyncWithSession(session);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only genuine sign-ins provision a household; TOKEN_REFRESHED /
+      // USER_UPDATED keep the connection alive but skip the bootstrap.
+      syncPowerSyncWithSession(session, { bootstrap: event === 'SIGNED_IN' });
       syncPostHogWithSession(session);
       setState(session ? { status: 'authenticated', session } : { status: 'unauthenticated' });
     });

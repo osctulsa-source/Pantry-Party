@@ -1,10 +1,5 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
-//
-//    ADR-008 STATUS: /recipes/search made this the service's FOURTH endpoint —
-//    the promotion trigger has fired. That route shipped as the LAST Express
-//    addition; the next endpoint belongs to the promoted backend.
+// Retired pre-NestJS Express bootstrap retained as migration history.
+// Runtime scripts use src/main.ts; do not add routes here (ADR-009).
 
 // Sentry first — the SDK must load before express to auto-instrument.
 import './instrument.js';

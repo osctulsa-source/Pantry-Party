@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Shared Postgres pool for the hybrid NestJS/legacy Express API (ADR-009).
 
 import pg from 'pg';
 
@@ -13,7 +11,7 @@ const connectionString =
 
 export const pool = new Pool({
   connectionString,
-  // Small pool: this is a single-instance throwaway. Tune in the real backend.
+  // Keep the Railway/local footprint small; revisit with measured concurrency.
   max: 5,
   idleTimeoutMillis: 30_000,
 });

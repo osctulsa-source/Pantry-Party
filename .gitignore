@@ -43,3 +43,13 @@ apps/mobile/scripts/glyph-sheet.html
 
 # Isolated worktrees (superpowers workflow)
 .worktrees/
+
+# Claude Code local working dir (personal settings + locally-installed skills)
+.claude/
+
+# Local design/marketing preview renders and one-off tooling reports — kept
+# out of git so they don't clutter the repo root (regenerate as needed).
+/*-preview.html
+/*-mockups.html
+/posthog-*-report.md
+/data/recipes/_validate-out.txt

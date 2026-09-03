@@ -6,9 +6,8 @@
  *     a slice of the upstream Postgres, populated by sync rules.
  *   - The Connector tells PowerSync HOW to authenticate (fetchCredentials) and
  *     how to push local changes back to the server (uploadData). Local writes
- *     (auto-create-household in PR #7.5, Add Item in PR #8b) accumulate in
- *     SQLite's CRUD log; uploadData drains them by POSTing to the temporary
- *     services/api upload-proxy (ADR-008).
+ *     SQLite's CRUD log; uploadData drains them by POSTing to the authenticated
+ *     services/api sync endpoint (ADRs 009 and 010).
  *
  * Authentication:
  *   - PowerSync validates client JWTs against the Supabase JWKS (configured in
@@ -39,6 +38,22 @@ import { supabase } from '../supabase/client';
 let _db: PowerSyncDatabase | null = null;
 let _connected = false;
 
+// Serialize connect/disconnect so a sign-out can never interleave with an
+// in-flight connect. Previously `_connected` flipped to true only AFTER
+// `db.connect()` resolved, so a sign-out during connect saw `_connected ===
+// false`, no-op'd the clear, and the connect then completed — leaving the next
+// user on a shared device briefly seeing the previous user's local SQLite. Every
+// connect/disconnect now chains onto the previous op, so disconnect always runs
+// AFTER any pending connect and the clear can't be skipped.
+let _opChain: Promise<void> = Promise.resolve();
+
+function enqueueOp(op: () => Promise<void>): Promise<void> {
+  // Run `op` regardless of whether the previous op resolved or rejected, so one
+  // failure can't wedge the chain forever.
+  _opChain = _opChain.then(op, op);
+  return _opChain;
+}
+
 class SupabaseConnector implements PowerSyncBackendConnector {
   async fetchCredentials(): Promise<PowerSyncCredentials> {
     const endpoint = process.env.EXPO_PUBLIC_POWERSYNC_URL;
@@ -68,7 +83,8 @@ class SupabaseConnector implements PowerSyncBackendConnector {
   // PowerSync retries (with backoff). On success we mark the batch complete
   // so PowerSync drops it from the local queue.
   //
-  // The endpoint is the THROWAWAY Express service in services/api (ADR-008).
+  // The endpoint is owned by services/api; its handler remains a legacy
+  // Express router mounted by the NestJS bootstrap during ADR-009 migration.
   // Wire format: `{ crud: CrudEntry[] }` POST → 200 `{ ok: true, applied: N }`.
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -122,17 +138,24 @@ export async function setupPowerSync(): Promise<PowerSyncDatabase> {
   return _db;
 }
 
-export async function connectPowerSync(): Promise<void> {
-  const db = await setupPowerSync();
-  if (_connected) return;
-  await db.connect(new SupabaseConnector());
-  _connected = true;
+export function connectPowerSync(): Promise<void> {
+  return enqueueOp(async () => {
+    const db = await setupPowerSync();
+    if (_connected) return;
+    await db.connect(new SupabaseConnector());
+    _connected = true;
+  });
 }
 
-export async function disconnectAndClearPowerSync(): Promise<void> {
-  if (!_db || !_connected) return;
-  await _db.disconnectAndClear();
-  _connected = false;
+export function disconnectAndClearPowerSync(): Promise<void> {
+  return enqueueOp(async () => {
+    // No `_connected` guard: on sign-out we ALWAYS want local SQLite wiped, even
+    // if a connect never finished. Because we run after any queued connect,
+    // there is no in-flight connect left to un-clear the database.
+    if (!_db) return;
+    await _db.disconnectAndClear();
+    _connected = false;
+  });
 }
 
 export function getPowerSync(): PowerSyncDatabase {

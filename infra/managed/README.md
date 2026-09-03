@@ -98,6 +98,25 @@ self-contained (a fresh container build has no repo root, so an `extends` above
 boot), and `express` must stay on v5 — `@nestjs/platform-express` 11 wraps the
 provided Express instance and reads `app.router`, which throws on Express 4.
 
+### Scaling & single-instance invariants
+
+**The `api` service MUST run exactly one replica (Railway replicas = 1).** Two
+pieces of state live in-process, not in a shared store:
+
+- `FixedWindowRateLimiter` (`src/lib/rateLimit.ts`) — the Spoonacular per-user
+  quota. At N replicas the effective limit is N× the configured value.
+- `TtlCache` (`src/lib/ttlCache.ts`) — the 24h recipe-search cache. Each replica
+  keeps its own, so cache hit-rate (and quota savings) degrades with replicas.
+
+The runner-summary sweep (`sweepRunnerSummaries`) is already multi-instance safe:
+it claims each run with `UPDATE announcements SET runner_summary_sent_at = NOW()
+WHERE id = $1 AND runner_summary_sent_at IS NULL` and only sends when `rowCount =
+1`, so overlapping ticks can't double-send. It is the exception, not the rule.
+
+**Before raising the replica count**, move the rate limiter and cache to a shared
+store (Redis or a Postgres table). Until then, keep replicas pinned to 1 in the
+Railway service settings.
+
 ## 4 · Mobile app
 
 Pure config; no code changes. `apps/mobile/.env.local` (dev) and the

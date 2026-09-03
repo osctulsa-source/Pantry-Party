@@ -1,10 +1,5 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
-//
-// Shared Household PR A: invite-code mechanism. Two endpoints registered on
-// the same Express app as /sync/upload — pragmatic ADR-008 path. NestJS
-// promotion deferred to a deliberate post-Shared-Household consolidation PR.
+// Legacy Express household router mounted by the NestJS bootstrap (ADR-009).
+// Preserve its tested wire contract until the feature migrates to a Nest module.
 
 import { Router } from 'express';
 import { z } from 'zod';

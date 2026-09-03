@@ -1,7 +1,6 @@
 /**
  * Dependency-free TTL cache with LRU-flavored eviction. In-memory and
- * per-process — right-sized for the TEMPORARY upload-proxy (ADR-008); the
- * promoted backend gets a real cache.
+ * per-process; appropriate while the API runs as a small Railway service.
  *
  * Purpose here: recipe-search responses are cached 24h so repeat searches
  * (same pantry, same meal tab) stop spending Spoonacular quota — the free
@@ -22,6 +21,11 @@ interface Entry<T> {
   value: T;
 }
 
+// ⚠ SINGLE-INSTANCE INVARIANT: entries live in this process's Map. Multiple
+// Railway replicas each keep their own cache (wasted Spoonacular quota, not a
+// correctness bug, but still an assumption). The service is pinned to
+// replicas = 1 (see infra/managed/README.md → "Scaling & single-instance
+// invariants"); a shared cache is required before scaling out.
 export class TtlCache<T> {
   private readonly entries = new Map<string, Entry<T>>();
 

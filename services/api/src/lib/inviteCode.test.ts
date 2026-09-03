@@ -1,4 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
+// Legacy API behavior retained under the ADR-009 NestJS migration.
 
 import { describe, expect, it } from 'vitest';
 import {

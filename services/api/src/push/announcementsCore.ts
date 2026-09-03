@@ -3,7 +3,7 @@
  * helpers, copied here on purpose.
  *
  * The production API deploys as a self-contained `services/api` (Docker root =
- * this folder only, per ADR-008 / PR #145), so it CANNOT resolve the
+ * this folder only), so it CANNOT resolve the
  * `@breadbox/core` workspace package at runtime. PR #180's fanOut.ts imported
  * from `@breadbox/core` and crash-looped prod with ERR_MODULE_NOT_FOUND. These
  * functions have no IO and no non-trivial deps, so we inline them zod-free

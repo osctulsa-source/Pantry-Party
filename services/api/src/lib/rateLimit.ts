@@ -1,8 +1,7 @@
 /**
- * Dependency-free fixed-window rate limiter (external review §2.8: the service
- * had zero rate limiting). In-memory and per-process — exactly right for the
- * TEMPORARY single-instance upload-proxy (ADR-008); the promoted backend gets
- * a real store-backed limiter.
+ * Dependency-free fixed-window rate limiter. It is in-memory and per-process;
+ * replace it with a shared store if the Railway service scales horizontally or
+ * the risk profile requires a global limit.
  *
  * Deliberately NOT express-rate-limit: new npm dependencies require a local
  * lockfile regen (CI runs `npm ci`), and ~40 lines covers the need.
@@ -29,6 +28,11 @@ interface Bucket {
 /** Sweep threshold — when the key map grows past this, expired buckets are pruned. */
 const SWEEP_AT = 10_000;
 
+// ⚠ SINGLE-INSTANCE INVARIANT: state lives in this process's Map, so the quota
+// is per-replica. Running 2+ Railway replicas silently multiplies every limit.
+// The Railway service is deliberately pinned to replicas = 1 (see
+// infra/managed/README.md → "Scaling & single-instance invariants"). Raising the
+// replica count REQUIRES moving this (and TtlCache) to a shared store first.
 export class FixedWindowRateLimiter {
   private readonly buckets = new Map<string, Bucket>();
 
