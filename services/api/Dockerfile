@@ -1,14 +1,11 @@
-# ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-#    Reason: PowerSync write path until backend architecture is decided.
-#    Tracking: docs/DECISIONS.md ADR-008.
+# Self-contained NestJS API image (ADR-009).
 
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy only the API workspace's manifest first for layer caching.
-# This is the throwaway-quick path — production-grade builds would use
-# the monorepo lockfile + npm ci. For local-dev, npm install works.
+# Copy only the API workspace's manifest first for layer caching. Railway and
+# local Compose both build with services/api as the isolated Docker context.
 COPY package.json ./
 RUN npm install --no-audit --no-fund
 

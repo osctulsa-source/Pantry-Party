@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Shared invite-code domain helper used by the legacy household router.
 
 import { randomInt } from 'node:crypto';
 

@@ -1,4 +1,4 @@
-# PowerSync sync rules — per-user pantry partitioning (ADR-008).
+# PowerSync sync rules — household/user partitioning (ADRs 002, 003, and 010).
 # yaml-language-server: $schema=https://unpkg.com/@powersync/service-sync-rules@latest/schema/sync_rules.json
 #
 # Each client connects with a Supabase user session JWT. PowerSync validates it

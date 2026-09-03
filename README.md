@@ -1,93 +1,123 @@
 # Breadbox
 
-> **Internal codename — not a candidate product name.** The brand (Larder / Crumb / TBD)
-> is being workshopped in parallel and is intentionally decoupled from the codebase.
-> The app ships under whatever name wins; the code never has to know.
+> **Internal codename, not a product name.** Brand name, copy, colors, and typography are
+> intentionally isolated from feature code. Do not hardcode the codename in the app UI.
 
-A mobile-first (iOS + Android) pantry tracker. This repo is the **technical kickoff
-scaffold** for a small founding team, following a **throwaway-prototype-first** plan:
-prove the two existential risks in disposable code *before* committing to the
-production architecture.
+Breadbox is an offline-first pantry and cooking app for iOS and Android. It helps a
+household capture food, track quantities and expiry, maintain a shared shopping list, and
+find recipes that use what is already available.
 
----
+This repository is an npm-workspace monorepo containing the Expo mobile app, shared domain
+logic, the NestJS API, database/sync configuration, curated recipe and shelf-life data, and
+operational runbooks.
 
-## The two questions Phase 0 must answer
+## Current architecture
 
-Nothing else gets built until these are answered with real numbers, not opinions:
+| Layer | Technology | Responsibility |
+|---|---|---|
+| Mobile | React Native + Expo + TypeScript | Capture, pantry, recipes, shopping, household, notifications, insights, and widgets |
+| Local data | PowerSync SQLite through `@powersync/op-sqlite` | Source of truth for normal feature reads and writes; remains usable offline |
+| Sync | PowerSync Cloud | Downloads household-scoped Postgres changes to each device |
+| Upload path | `services/api` on Railway | Authenticates and applies the PowerSync client CRUD queue |
+| Backend | NestJS with legacy Express routers | Sync uploads, household invites, recipe proxying, account deletion, and push workflows |
+| Database + auth | Supabase Postgres + Auth | Durable server state, JWT identity, and logical-replication source |
+| Shared domain | Zod schemas and pure TypeScript in `packages/core` | Canonical pantry model and reusable product rules |
+| Partners | Spoonacular and Open Food Facts | Recipe data and barcode metadata; secret partner keys stay server-side |
+| Observability | Sentry + PostHog | Error reporting and product analytics |
 
-1. **Can we hit ≥ 90% capture accuracy?** Barcode scanning + receipt OCR are the
-   product's front door. KitchenPal's ~33% barcode hit rate is the single biggest
-   reason it loses users. If we can't clear 90%, the whole premise wobbles.
-   → `spikes/capture-accuracy/`
+The mobile UI is **local-first**: feature code reads and writes the local PowerSync database
+instead of waiting for network requests. PowerSync downloads server changes automatically;
+the mobile connector uploads queued mutations through the authenticated API. See
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full data flow and current limitations.
 
-2. **Can we build offline-first sync that never loses data?** Multi-year data-loss
-   bugs are KitchenPal's other fatal flaw. Sync is the deepest architectural bet in
-   the app. If we can't prove zero-loss under a torture test, we pick a different engine.
-   → `spikes/offline-sync/`
+## Repository map
 
-**Throwaway means throwaway.** The spike code exists to produce a number and a
-decision. Do not let it leak into `apps/` or `packages/`. The learning is the asset.
-
----
-
-## Repo layout
-
-```
-breadbox/
-├── spikes/                 ← Phase 0. Disposable. Delete after decisions are logged.
-│   ├── capture-accuracy/   ← barcode cascade + receipt OCR, measured against a test set
-│   └── offline-sync/       ← offline-first proof + data-loss torture test
-├── packages/
-│   └── core/               ← the ONE piece of production thinking seeded early:
-│                              the canonical pantry-item schema everything shares
-├── apps/
-│   └── mobile/             ← Expo app — production foundation skeleton (Phase 1)
-│       └── src/theme/      ← themeable token layer; the brand drops in here, once
-├── services/
-│   └── api/                ← backend skeleton (Phase 1) — stub for now
-└── docs/
-    ├── DECISIONS.md        ← architecture decision record (ADR) log
-    └── ARCHITECTURE.md     ← the walking skeleton + data flow
+```text
+apps/mobile/        Expo mobile application and feature code
+packages/core/      Canonical Zod schemas and shared domain logic
+services/api/       NestJS API with legacy Express routers under migration
+infra/local-dev/    Local Postgres + PowerSync + API Docker environment
+infra/managed/      Supabase + PowerSync Cloud + Railway production runbook
+data/               Curated recipes and generated shelf-life data
+docs/               Architecture, ADRs, operations, legal, and feature designs
+web/legal/          Static legal-document website
+spikes/             Throwaway experiments; never import these into production code
 ```
 
-## Phases
+`infra/azure/` is a parked deployment path retained as reference. It is not the active
+production topology.
 
-| Phase | Weeks | Goal | Exit criteria |
-|-------|-------|------|---------------|
-| **0 · Spikes** | 1–3 | Kill the two risks | Capture ≥ 90% on a 500-item set; sync passes the torture test |
-| **1 · Foundation** | 4–6 | Lock the stack, build the walking skeleton | One item flows capture → pantry → recipe end to end |
-| **2 · Features** | 7+ | Capture Engine, then Sync Foundation | First killer feature behind a flag in TestFlight/internal track |
+## Prerequisites
 
-## Getting started (Phase 0)
+- Node.js 20 or newer
+- npm
+- Docker Desktop for the fully local backend/sync stack
+- Xcode or Android Studio for native development builds
+- Supabase credentials for authentication, even when using local PowerSync
 
-The spikes are **standalone** npm projects (deliberately not workspaces — they're throwaway):
+The app uses native Expo modules, PowerSync, and op-sqlite. Use an Expo development build;
+Expo Go is not sufficient. Application features must remain in TypeScript/Expo modules—do
+not hand-maintain native Swift, Objective-C, Java, or Kotlin code.
 
-```bash
-# Capture accuracy spike
-cd spikes/capture-accuracy
-npm install
-cp .env.example .env        # add UPCITEMDB_KEY etc. (Open Food Facts needs no key)
-npm start                   # runs the harness against testset.sample.json, prints hit rate
+## Install and verify
 
-# Offline sync torture test
-cd spikes/offline-sync
-npm install
-npm test                    # runs the data-loss torture scenarios, reports pass/fail
+```sh
+npm ci --legacy-peer-deps
+
+# Match the checks used by CI
+npx tsc -p apps/mobile/tsconfig.json --noEmit
+npm run typecheck -w services/api
+npm run lint
+npm test -w packages/core
+npm test -w services/api
+cd apps/mobile && npm test
 ```
 
-## The stack (decided; see docs/DECISIONS.md for the why)
+The repository root `npm test` is not the aggregate test command; tests currently run per
+workspace as shown above and in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-- **Mobile:** React Native + Expo (managed workflow unless a native module forces bare)
-- **Local store:** SQLite / WatermelonDB (offline-first)
-- **Sync engine:** PowerSync **or** Replicache — *decided by the Phase 0 spike*
-- **Backend:** Node (NestJS) or Go — pick on team strength; Postgres on RDS
-- **Auth:** Auth0 or Clerk (managed; do not roll our own)
-- **Capture:** Open Food Facts → UPCitemdb → paid fallback; OCR via Tabscanner/Veryfi
-- **Recipes:** Spoonacular · **Nutrition:** USDA FoodData Central (free MVP backbone)
+## Run locally
 
-## Principle for a small team: buy over build
+1. Follow [`infra/local-dev/README.md`](infra/local-dev/README.md) to start Postgres,
+   PowerSync, and the API.
+2. Copy `apps/mobile/.env.example` to `apps/mobile/.env.local` and provide the required
+   public Supabase, PowerSync, and API configuration.
+3. Start a native development build:
 
-Every hour spent on undifferentiated infrastructure (sync plumbing, auth, OCR models)
-is an hour not spent on the things users actually notice. Rent the hard infrastructure;
-build only the glue that makes us *us* — the capture flow, the Cook This surface, the
-restock loop.
+```sh
+npm run ios -w apps/mobile
+# or
+npm run android -w apps/mobile
+```
+
+Use `npm run start -w apps/mobile` when the development client is already installed.
+
+## Engineering invariants
+
+- Import the canonical `PantryItem` schema from `@breadbox/core`; never redefine it.
+- Treat the local PowerSync database as the feature-facing source of truth.
+- Scope server reads and writes by the authenticated user's household membership.
+- Keep partner API keys and privileged Supabase credentials out of the mobile bundle.
+- Import visual tokens from `apps/mobile/src/theme/tokens.ts`; keep brand values out of
+  feature code.
+- Keep `spikes/` disposable and isolated from production packages.
+- Make sync operations idempotent.
+
+### Known quantity conflict debt
+
+The required quantity design is a per-device contribution model with idempotent max-merge.
+It is **not implemented yet**. The current production-shaped `pantry_items` table stores one
+quantity on one UUID row and uses `updated_at` last-write-wins. Do not describe current
+behavior as summing or max-merge, and do not change the live schema without a migration,
+backfill, mixed-client compatibility plan, and sync torture tests. See ADR-011 in
+[`docs/DECISIONS.md`](docs/DECISIONS.md).
+
+## Operational references
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Architecture decisions](docs/DECISIONS.md)
+- [Managed production stack](infra/managed/README.md)
+- [Local development stack](infra/local-dev/README.md)
+- [Secrets management](docs/SECRETS.md)
+- [Backup and disaster recovery](docs/BACKUP-DR.md)
+- [TestFlight runbook](docs/TESTFLIGHT.md)

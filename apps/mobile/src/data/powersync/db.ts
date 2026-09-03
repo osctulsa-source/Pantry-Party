@@ -6,9 +6,8 @@
  *     a slice of the upstream Postgres, populated by sync rules.
  *   - The Connector tells PowerSync HOW to authenticate (fetchCredentials) and
  *     how to push local changes back to the server (uploadData). Local writes
- *     (auto-create-household in PR #7.5, Add Item in PR #8b) accumulate in
- *     SQLite's CRUD log; uploadData drains them by POSTing to the temporary
- *     services/api upload-proxy (ADR-008).
+ *     SQLite's CRUD log; uploadData drains them by POSTing to the authenticated
+ *     services/api sync endpoint (ADRs 009 and 010).
  *
  * Authentication:
  *   - PowerSync validates client JWTs against the Supabase JWKS (configured in
@@ -68,7 +67,8 @@ class SupabaseConnector implements PowerSyncBackendConnector {
   // PowerSync retries (with backoff). On success we mark the batch complete
   // so PowerSync drops it from the local queue.
   //
-  // The endpoint is the THROWAWAY Express service in services/api (ADR-008).
+  // The endpoint is owned by services/api; its handler remains a legacy
+  // Express router mounted by the NestJS bootstrap during ADR-009 migration.
   // Wire format: `{ crud: CrudEntry[] }` POST → 200 `{ ok: true, applied: N }`.
   async uploadData(database: AbstractPowerSyncDatabase): Promise<void> {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL;

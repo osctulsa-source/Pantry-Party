@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Legacy Express router mounted by the NestJS bootstrap during ADR-009 migration.
 
 import { Router } from 'express';
 import { z } from 'zod';
@@ -247,8 +245,8 @@ export class UploadError extends Error {
  * retry of an already-applied op doesn't drift state.
  *
  * Name note: kept as handlePatchPantryItem (its original single-table name)
- * so existing imports/tests stay stable; rename to handlePatch at the ADR-008
- * NestJS promotion.
+ * so existing imports/tests stay stable; rename when this router migrates to a
+ * native NestJS module.
  */
 export async function handlePatchPantryItem(
   entry: CrudEntry,

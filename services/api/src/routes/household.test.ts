@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//
-// Wire-level tests for /household/invite and /household/accept. The pg
+// Legacy API behavior retained under the ADR-009 NestJS migration.
 // pool and jose's jwtVerify are both module-mocked so this suite never
 // touches a real database or JWKS endpoint.
 

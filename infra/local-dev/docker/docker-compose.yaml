@@ -46,10 +46,9 @@ services:
         pg-storage: { condition: service_healthy }
       }
 
-  # ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-  #    Drains PowerSync's local CRUD queue back to pg-db, handles household
-  #    invites, and proxies Spoonacular recipe search (server-side key + per-
-  #    user rate limit + 24h cache). See services/api/README.md.
+  # NestJS API with legacy Express routers under incremental migration (ADR-009).
+  # Drains PowerSync's local CRUD queue back to pg-db, handles household
+  # workflows, and proxies Spoonacular requests with server-side credentials.
   api:
     restart: unless-stopped
     build:

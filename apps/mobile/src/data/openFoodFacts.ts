@@ -1,10 +1,9 @@
 /**
  * Open Food Facts barcode lookup — DIRECT from the client (v1).
  *
- * Keyless, free, generous limits; going direct keeps the ADR-008 NestJS
- * promotion untripped (a server proxy would be a 5th endpoint). If testing
- * shows hit-rate or rate-limit pain, the documented upgrade path is a
- * proxied lookup on the promoted backend with a paid fallback DB.
+ * Keyless, free, and suitable for direct public lookup. If testing shows
+ * hit-rate, privacy, or rate-limit pain, move it behind the NestJS API and add
+ * a managed paid fallback there; partner keys must never enter the client.
  */
 
 import { categoryFromOffTags } from '@breadbox/core';

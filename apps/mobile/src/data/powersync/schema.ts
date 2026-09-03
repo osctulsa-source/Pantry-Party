@@ -137,7 +137,7 @@ const push_tokens = new Table({
 // households / user_households are downloaded from the sync stream AND written
 // to locally by ensureDefaultHousehold() so a fresh user gets a pantry to live
 // in without manual SQL provisioning. Local writes drain to Postgres via
-// SupabaseConnector.uploadData → services/api (ADR-008, PR #8a).
+// SupabaseConnector.uploadData → services/api (ADRs 009 and 010).
 const households = new Table({
   name: column.text,
   created_at: column.text,

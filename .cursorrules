@@ -5,28 +5,35 @@ Codename "Breadbox" — the brand (name + theme) is intentionally NOT decided ye
 decoupled from the code. Never hardcode a product name in the UI.
 
 ## What is DECIDED — build on these
-- Frontend: React Native + Expo, MANAGED workflow.
+- Frontend: React Native + Expo managed/prebuild workflow. Development builds are allowed;
+  do not hand-write or maintain native application code.
 - Language: TypeScript, strict mode. Avoid `any`; prefer precise types and interfaces.
 - Validation: Zod. The canonical data model is the `PantryItem` schema in `packages/core`
   (@breadbox/core). Import it — never redefine the item shape inline.
 - Architecture: offline-first. All reads/writes hit the LOCAL store first; assume the
   network may be unavailable; sync runs in the background.
-- Local store: SQLite via WatermelonDB.
+- Local store + sync client: PowerSync on SQLite via `@powersync/op-sqlite` and
+  `@op-engineering/op-sqlite`. PowerSync downloads automatically; the mobile connector
+  uploads its CRUD queue through `services/api`.
+- Backend: Node.js + TypeScript. `services/api` is a NestJS application that temporarily
+  mounts three legacy Express routers while endpoints migrate incrementally to Nest modules.
+- Production services: Supabase Postgres + Auth, PowerSync Cloud, and the API on Railway.
 - Theming: import design tokens from `apps/mobile/src/theme/tokens.ts`. NEVER hardcode a
   color, font, or the brand name in feature code — the brand drops into that one file.
 
-## What is OPEN — do NOT assume; these are being decided in Phase 0 spikes
-- Sync engine: PowerSync vs Replicache — UNDECIDED. Don't generate engine-specific code
-  unless asked; code against the `SyncEngine` interface in `spikes/offline-sync`.
-- Backend: Node.js + TypeScript (NestJS) is the leaning choice but NOT locked (Go is still
-  on the table). Keep backend code thin: auth handoff, sync backend, partner-API proxy.
+## What is OPEN — do NOT assume
 - Receipt OCR vendor (Tabscanner vs Veryfi) — undecided.
+- Quantity conflict semantics are NOT finished. The required design is a per-device
+  contribution model with idempotent max-merge; the current production-shaped table is a
+  single UUID row using `updated_at` (LWW). Do not describe the current implementation as
+  sum or max-merge, and do not change the live schema without a migration/backfill plan.
 
 ## Hard rules
 - Do NOT write raw native iOS (Swift/Obj-C) or Android (Java/Kotlin) code. Lean entirely on
   Expo modules. If something seems to require ejecting to a bare workflow, flag it and ask.
 - Sync/merge logic must be IDEMPOTENT. Quantity merges use a per-device contribution model
   (max-merge), never a naive sum — re-syncing the same write must not change the count.
+  This is a target invariant with known implementation debt; do not assume it is already met.
 - Code under `spikes/` is THROWAWAY. Never import spike code into `apps/` or `packages/`,
   and don't treat it as production reference.
 - Buy over build: prefer managed services (sync, auth, OCR, recipes) over hand-rolled

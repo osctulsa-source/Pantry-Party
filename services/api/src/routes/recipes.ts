@@ -1,24 +1,7 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
-//
-//    ADR-008 NOTE: /recipes/search is this service's FOURTH endpoint — the
-//    promotion trigger has fired. This ships as the LAST Express addition;
-//    the next endpoint starts life on the promoted backend instead.
-//
-//    ADR-008 NOTE 2 (recipe-detail arc): the in-app recipe detail screen is
-//    served by WIDENING this existing endpoint's response — NOT by adding a
-//    `/recipes/:id/information` endpoint. A fifth endpoint would have been the
-//    first NestJS change; instead we pass through fields Spoonacular already
-//    returns (addRecipeInformation was already on for healthScore), so the
-//    trigger stays untripped and the detail screen costs zero extra quota.
-//
-//    ADR-008 NOTE 3 (steps-backfill): some sources (e.g. foodista) come back
-//    with NO analyzedInstructions but DO carry a free-text `instructions`
-//    string — which we'd been discarding. We now parse that as a fallback,
-//    still inside this same endpoint and the same upstream response, so no new
-//    endpoint and zero extra quota (honoring NOTE 2). Genuinely step-less
-//    recipes still yield [] and the client keeps its "view original" state.
+// Legacy Express recipe-search router mounted by the NestJS bootstrap (ADR-009).
+// The response was widened over time to carry recipe detail and instruction
+// data without extra upstream calls. Preserve that wire contract until this
+// route migrates to RecipesModule.
 
 import { Router } from 'express';
 import { z } from 'zod';
@@ -283,8 +266,7 @@ export function parsePlainInstructions(raw: string | undefined): RecipeInstructi
 /**
  * Structured steps when Spoonacular analyzed them; otherwise a best-effort
  * parse of the free-text `instructions` string. Both come from the SAME
- * upstream response, so this adds zero quota and no new endpoint (ADR-008
- * NOTE 2/3).
+ * upstream response, so this adds zero quota and no additional request.
  */
 export function resolveInstructions(r: UpstreamResult): RecipeInstructionGroup[] {
   const analyzed = trimInstructions(r.analyzedInstructions);

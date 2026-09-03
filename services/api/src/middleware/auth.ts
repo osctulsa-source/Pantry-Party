@@ -1,6 +1,4 @@
-// ⚠ TEMPORARY upload-proxy. Replace with real backend per ADR-008.
-//    Reason: PowerSync write path until backend architecture is decided.
-//    Tracking: docs/DECISIONS.md ADR-008.
+// Express authentication middleware for legacy routers mounted by NestJS (ADR-009).
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { NextFunction, Request, Response } from 'express';
