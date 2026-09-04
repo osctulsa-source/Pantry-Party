@@ -26,13 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      # Railway/Docker `npm ci` uses services/api/package-lock.json, not the
-      # workspace root lockfile. Fail here if a workspace bump left the image
-      # lockfile stale (the #224–#229 Dependabot pattern).
-      - name: Verify API image lockfile
-        run: npm ci --no-audit --no-fund
-        working-directory: services/api
-
       - name: Typecheck apps/mobile
         run: npx tsc -p apps/mobile/tsconfig.json --noEmit
 
@@ -60,6 +53,34 @@ jobs:
         env:
           API_JWKS_URI: https://example.com/jwks.json
         run: npm test -w services/api
+
+  # Railway/Docker builds the API image with `npm ci` against
+  # services/api/package-lock.json, NOT the workspace root lockfile. This job
+  # fails if a workspace bump left that image lockfile stale (the #224-#229
+  # Dependabot pattern).
+  #
+  # It MUST be its own job. Run in the typecheck job (as #235 did), `npm ci`
+  # from services/api resolves up to the workspace root and reinstalls there,
+  # replacing all 1206 workspace packages with the API's 302 — every step after
+  # it then failed with "Cannot find module 'react'". CI was red on main from
+  # 2026-09-03 until this was split out.
+  api-image-lockfile:
+    name: API image lockfile is current
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/api/package-lock.json
+
+      - name: npm ci against the image lockfile
+        run: npm ci --no-audit --no-fund
+        working-directory: services/api
 
   integration:
     name: Integration (real Postgres)
