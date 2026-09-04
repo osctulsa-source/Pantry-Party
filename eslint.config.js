@@ -75,6 +75,9 @@ module.exports = tseslint.config(
       '**/index.js',
       'eslint.config.js',
       '**/jest.setup.js',
+      '**/*.cjs',
+      // Expo config plugins run in Node at prebuild time, not in the app bundle.
+      'apps/mobile/plugins/**/*.js',
     ],
     languageOptions: {
       sourceType: 'commonjs',
@@ -88,7 +91,7 @@ module.exports = tseslint.config(
       'no-undef': 'off',
     },
   },
-  // Node ESM scripts (data pipelines etc.)
+  // Node ESM scripts (data pipelines, release guardrails)
   {
     files: ['**/*.mjs'],
     languageOptions: {
@@ -96,6 +99,24 @@ module.exports = tseslint.config(
       globals: {
         ...globals.node,
       },
+    },
+  },
+  // Plain-JS jest suites (the config-plugin and release-invariant tests). The
+  // TypeScript suites get their globals from typescript-eslint's recommended
+  // config, which disables no-undef; these need them declared explicitly.
+  {
+    files: ['**/*.test.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+      'no-undef': 'off',
     },
   }
 );
