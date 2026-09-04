@@ -18,6 +18,11 @@ build landed on device on **2026-07-06** (App Store Connect app
 | `app.config.js`, plugins, native deps (`package.json` deps with native code), `targets/widget/`, splash/icons | **Full build** — the recipe below, then submit. |
 | Not sure | Full build — always safe, just slower. |
 
+⚠️ **A full build for a native change also needs a `runtimeVersion` bump** in
+`app.config.js`. The runtime is an explicit string, not a fingerprint, so it will
+not notice on its own — and an OTA published onto a stale runtime can crash
+installs that lack the native code. See [OTA updates](#ota-updates-eas-update--js-only-changes-in-1-minute).
+
 ## Prerequisites (one-time)
 
 - Apple Developer Program membership + access to the App Store Connect record
@@ -31,82 +36,99 @@ build landed on device on **2026-07-06** (App Store Connect app
 
 ## Build recipe (the important part)
 
-The first EAS build failed on a hardcoded-CocoaPods-path bug caused by reusing
-stale native `ios/` artifacts. **Whenever `app.config.js`, `eas.json` env vars,
-or the widget/targets change, regenerate native iOS first.** From `apps/mobile/`:
+**EAS prebuilds the native iOS project server-side, from committed config, on
+every build.** There is no local `ios/` step and no Docker container — those were
+removed after they produced two different binaries from the same commit (see
+[Why the recipe changed](#why-the-recipe-changed-2026-09-04)). From the repo root:
 
 ```sh
-# 1. Regenerate the native iOS project from config
-npx expo prebuild --platform ios --clean
+# 1. Bump the build number (writes ios.buildNumber in app.config.js)
+npm run ios:next-build-number
 
-# 2. Delete stale native artifacts so EAS regenerates Pods fresh
-rm -rf ios/Pods ios/Podfile.lock ios/*.xcworkspace ios/build
+# 2. Commit and push — a build must correspond to a reviewable commit
+git add apps/mobile/app.config.js && git commit -m "chore(ios): build N" && git push
 
-# 3. Build on EAS (production profile)
-eas build --platform ios --profile production
+# 3. Gate: verifies provenance, config invariants and the build number
+npm run ios:preflight
+
+# 4. Build
+cd apps/mobile && eas build --platform ios --profile production
 ```
 
-Deleting `ios/Pods`, `ios/Podfile.lock`, `ios/*.xcworkspace`, and `ios/build`
-forces EAS's remote workers to regenerate CocoaPods with the correct **remote**
-paths — this is what avoids the hardcoded-path failure.
+**Do not skip step 3.** `npm run ios:preflight` is the whole postmortem list
+turned into checks, and it costs a few seconds against a build that costs 20
+minutes and a wasted build number:
 
-> ⚠️ **On Windows, step 1 is destructive.** `expo prebuild --platform ios
-> --clean` deletes `ios/` and then CANNOT regenerate it ("Run npx expo prebuild
-> again from macOS or Linux"). The local `ios/` directory is **load-bearing**:
-> `.easignore` deliberately un-ignores it so the upload carries the native
-> project and EAS skips its buggy remote widget prebuild — without it, every
-> remote build fails in "Configure Xcode project" AND the fingerprint changes
-> (so OTA updates stop matching installed builds). If `ios/` is missing or
-> stale on a Windows machine, regenerate it in a Linux container instead
-> (from the repo root; env mirrors the production build profile):
->
-> ```sh
-> MSYS_NO_PATHCONV=1 docker run --rm -v "C:/Users/JCS/Pantry-Party:/work" \
->   -w /work/apps/mobile -e APP_VARIANT=production -e APPLE_TEAM_ID=X7E3964XPW \
->   -e SENTRY_DISABLE_AUTO_UPLOAD=true -e CI=1 \
->   node:20 npx expo prebuild --platform ios --no-install
-> ```
->
-> Verify afterwards: `PRODUCT_BUNDLE_IDENTIFIER = com.osctulsa.pantryparty`
-> (no `.dev`) and the `.widget` target in
-> `ios/PantryParty.xcodeproj/project.pbxproj`.
+| It checks | Because |
+|---|---|
+| Working tree is clean | A build must map to a commit. |
+| `HEAD` exists on a remote | Builds 42/43 came from commit `f8ebd5c`, which is in neither this repo nor GitHub — the binaries in TestFlight have no reviewable source. |
+| `ios.buildNumber` > every build EAS has issued | App Store Connect rejects a duplicate `(version, build)` pair *after* the build has run. |
+| `runtimeVersion` is an explicit string | A fingerprint policy gives every build its own runtime, so no OTA can reach it. |
+| `withWidgetVersionSync` runs after `expo-widgets` | Otherwise the widget extension ships `CFBundleVersion 1` against the host app — fatal. |
+| Widget bundle id derives from the app bundle id | An extension must live under its host app's id. |
+| Production bundle id has no `.dev` suffix | `APP_VARIANT` not applying silently produces an unuploadable binary. |
+| `appVersionSource: local`, `autoIncrement: false` | The version scheme this repo can actually support (see below). |
+| `.easignore` does not un-ignore `ios/` | Uploading a native project makes EAS skip prebuild and ignore your config. |
 
-**Build numbers:** EAS `autoIncrement` is **not supported** with `app.config.js`
-(`autoIncrement option is not supported when using app.config.js` — it cannot
-write a JS config). Keep `cli.appVersionSource` as `local` and set
-`ios.buildNumber` in `app.config.js` for each production binary. Last TestFlight
-upload is **40**; the next iOS production build must be **41** (already set).
-Do not re-enable `autoIncrement: true` unless you also switch
-`appVersionSource` to `remote` **and** run `eas build:version:set -p ios`
-initialized to ≥40 (EAS remote currently sits at 39, which would collide).
+The same invariants — everything above that does not need network or git — also
+run in CI as `apps/mobile/releaseInvariants.test.js`, so a PR that breaks one
+fails review rather than the release. The rules live in one place,
+[`scripts/lib/release-invariants.cjs`](../scripts/lib/release-invariants.cjs),
+shared by the gate and the test so they cannot drift.
 
-## Building from Windows — containerized recipe (validated: build 20)
+### Build numbers
 
-`expo prebuild` cannot generate the iOS project on Windows, and submitting from
-Windows fails the **fingerprint runtime-version check** (the local hash never
-matches what EAS's Linux/macOS workers compute — build 19 died this way). Run
-the whole flow inside a Linux container instead; the fingerprint is computed on
-exactly the tree that gets uploaded, and it matches the workers:
+EAS `autoIncrement` is **not usable in this repo**. With
+`cli.appVersionSource: "local"` it has to write the resolved version back into
+the config, and it cannot write a JS config:
+
+```
+autoIncrement option is not supported when using app.config.js
+```
+
+Turning it on fails the build (#237). Turning it off without any other check
+risks re-using a build number and getting rejected on upload (#238). This repo
+flipped that flag back and forth in two consecutive commits.
+
+The resolution is **not** to flip it again: `ios.buildNumber` in `app.config.js`
+is the single source of truth, and `npm run ios:next-build-number` performs the
+increment EAS cannot, reading the highest number EAS has already issued and
+writing the next one. `npm run ios:preflight` then refuses to build if the
+number is not strictly greater.
+
+> Switching to `appVersionSource: "remote"` is not a shortcut here — it splits
+> the build number across two sources, and `withWidgetVersionSync` (which stamps
+> the widget extension) reads it from the config. The preflight fails if the
+> scheme changes.
+
+### Why the recipe changed (2026-09-04)
+
+The old recipe ran `expo prebuild` locally (or in a Linux container, since
+prebuild cannot run on Windows) and shipped the resulting `apps/mobile/ios/` to
+EAS via an `!apps/mobile/ios/` un-ignore in `.easignore`. That existed to dodge a
+bug in EAS's remote widget prebuild.
+
+It broke in a way that was very hard to see. `ios/` is **gitignored**, so what
+got uploaded was one machine's *untracked* snapshot — and EAS skips prebuild
+whenever a native project is present, so that snapshot silently overrode
+`app.config.js`. By 2026-09-04 it sat at `CFBundleVersion 40` while the config
+said `43`. Meanwhile the container recipe cloned *committed* state, where `ios/`
+does not exist, and prebuilt fresh. Two build paths, two different binaries from
+the same commit, and no way to tell from the outside which one you got.
+
+Builds 42 and 43 confirmed EAS's server-side prebuild now works, so the
+un-ignore is gone and `ios/` is never uploaded. The widget-target bug that
+motivated it is handled in config instead, by
+[`apps/mobile/plugins/withWidgetVersionSync.js`](../apps/mobile/plugins/withWidgetVersionSync.js).
+
+If you ever do need a local native project for Xcode debugging, generate it on a
+Mac or in a Linux container — but it is a local artifact only, it is gitignored,
+and nothing uploads it:
 
 ```sh
-MSYS_NO_PATHCONV=1 docker run --rm -e EXPO_TOKEN=<token> -v "<repo-root>:/src:ro" node:20 bash -lc "
-  git clone -q --depth 1 file:///src /work && cd /work &&
-  npm ci --no-audit --no-fund --ignore-scripts &&
-  cd apps/mobile &&
-  APP_VARIANT=production npx expo prebuild --platform ios --no-install &&
-  npx eas-cli build --platform ios --profile production --non-interactive --no-wait"
+cd apps/mobile && APP_VARIANT=production npx expo prebuild --platform ios --no-install
 ```
-
-Notes:
-- The clone uses **committed state** — commit (or merge to main) before building.
-- `APP_VARIANT=production` at prebuild is REQUIRED (bakes the store bundle id).
-- `eas submit` from Windows can also fail silently — run it via the same
-  container, mounting the ASC `.p8` key and setting `EXPO_ASC_API_KEY_PATH`,
-  `EXPO_ASC_KEY_ID`, and `EXPO_ASC_ISSUER_ID`.
-- ⚠️ **The `MSYS_NO_PATHCONV=1` prefix is required in Git Bash on Windows.**
-  Without it Git Bash rewrites the container paths (`/src`, `/work`,
-  `bash -lc …`) into Windows paths before docker sees them and the recipe
-  fails. (Prefix applies to Git Bash; it is unnecessary in PowerShell/CMD.)
 
 ## Submit to App Store Connect
 
@@ -122,76 +144,84 @@ The build processes for a few minutes, then appears under the **TestFlight** tab
 
 ## OTA updates (EAS Update) — JS-only changes in ~1 minute
 
-`expo-updates` is wired with `runtimeVersion: { policy: 'fingerprint' }` and the
-production build profile is on the **`production` channel** (`eas.json`). That
-means installed TestFlight builds check for published JS updates and apply them —
-no new build, no upload, no processing wait.
+`expo-updates` is wired to an **explicit `runtimeVersion` string** (`'1.0.0'` in
+`app.config.js`), and the production build profile is on the **`production`
+channel**. Installed TestFlight builds check for published JS updates and apply
+them — no new build, no upload, no processing wait.
 
-> **Pre-publish gate:** run the Maestro smoke flows first (`npm run smoke`
-> against a booted sim — see [`.maestro/README.md`](../.maestro/README.md)).
-> They pin the bug classes that previously shipped to TestFlight unnoticed
-> (dead buttons, unreachable content, clipped labels).
-
-**Ship a JS-only change** (from `apps/mobile/`, on the same `main` state the
-current TestFlight build was made from):
+**Always publish with the script.** It is the only path that runs the
+reachability gate:
 
 ```sh
-APP_VARIANT=production eas update --channel production --environment production \
-  --message "fix: whatever changed"
+npm run ota:publish "fix: whatever changed"
 ```
 
-⚠️ **`APP_VARIANT=production` is mandatory.** `eas.json`'s `env` block only
-applies to *builds* — `eas update` doesn't read it, so without the shell
-variable `app.config.js` resolves the **development** variant (`.dev` bundle
-ids), the fingerprint comes out different, and the update is silently fenced
-off from every installed build (it looks published but no phone ever gets it).
-Verify delivery: the `Runtime version` printed must **equal the fingerprint of
-the installed build** (`eas fingerprint:compare <build-fingerprint>` diagnoses
-a mismatch). A dirty working tree changes the fingerprint the same way — commit
-or stash first (the publish output marks a dirty tree with `*` after the
-commit hash).
+### The failure mode this protects against
+
+An update targets the runtimeVersion `app.config.js` resolves to. An installed
+build only accepts updates matching the runtimeVersion baked into it at build
+time. When those diverge, the publish still reports success — it just reaches
+**zero devices**, and you find out days later when nothing changed on anyone's
+phone.
+
+This is live right now: TestFlight builds 42 and 43 carry *fingerprint*
+runtimeVersions (`de3e88e3…`, `f16fc241…`) because they were built from a tree
+that still used `policy: 'fingerprint'`. Every update published from `main`
+targets `1.0.0` and is invisible to them.
+[`scripts/check-ota-reachability.mjs`](../scripts/check-ota-reachability.mjs)
+compares the two and refuses to publish on a mismatch; `npm run ota:publish`
+calls it before every publish. **A mismatch means you need a full build, not an
+update.**
+
+Three things silently change the runtimeVersion you publish on, and the script
+blocks all three:
+
+- **Missing `APP_VARIANT=production`** — `eas.json`'s `env` block applies only to
+  *builds*; `eas update` does not read it. Without the shell variable
+  `app.config.js` resolves the **development** variant (`.dev` bundle ids) and
+  the update is fenced off from every production install.
+- **A dirty working tree** — what you publish must correspond to a reviewable
+  commit, or nobody can tell later what testers are actually running.
+- **A native change since the last build** — see the bullet below.
+
+### Notes
 
 - **When testers get it:** the app downloads the update in the background on
   launch and applies it on the **next** launch. To see it deterministically:
   kill the app, open it (downloads), kill it again, open it (runs the update).
-- **Safety (why fingerprint):** the update carries a hash of the native runtime
-  it was built against. Builds whose native side doesn't match simply don't
-  receive it — so an OTA update can never crash an older binary by referencing
-  a native module it doesn't have. If you've changed anything native since the
-  last build, `eas update` will target a fingerprint no installed build has:
-  that's your signal to ship a **full build** instead.
+- **⚠️ The explicit runtimeVersion is manual discipline.** With a fingerprint
+  policy, a native change automatically produced a runtime no installed build
+  had — unreachable, but *safe*. An explicit string does not do that: publish
+  JS that calls a native module the installed binary lacks and those installs
+  **crash**. So: **bump `runtimeVersion` and cut a full build whenever the native
+  runtime changes** (add/remove/upgrade a native module, change an Expo plugin or
+  build property). JS-only changes need no bump. The explicit string is still the
+  right trade — the fingerprint policy was non-deterministic across this
+  monorepo's machines and hard-failed builds outright — but the safety net is now
+  you.
 - **What can ship OTA:** JS/TS, styles, JS-imported assets. **What cannot:**
   anything in the full-build row of the table above.
-- **Prefer `scripts/publish-ota.sh "msg"`** over the raw command — it enforces
-  the clean-tree + APP_VARIANT guardrails above and uploads Sentry sourcemaps
-  when credentials are set.
-- **expo-audio (added 2026-07-17, cook-feedback branch):** adding it changed the
-  fingerprint (`3b1e5369…` → `b64a20d5…`), so once it's on main, OTA publishes
-  will NOT reach builds made before it — cut a new TestFlight build after
-  merging. Until users are on that build, the feedback layer is intentionally
-  haptics-only: `src/feedback/feedback.ts` lazy-requires expo-audio in a
-  try/catch, so older binaries degrade silently instead of crashing. The cook
-  Live Activity does NOT need the new build — its layout ships in the JS bundle
-  and renders via the widget extension already present in current builds.
+- **expo-audio (added 2026-07-17):** `src/feedback/feedback.ts` lazy-requires it
+  in a try/catch, so binaries built before it degrade to haptics-only instead of
+  crashing. That defensive pattern is the right model for any native module
+  added under an explicit runtimeVersion.
 
-### Sentry in production — current state & how to turn it on
+### Sentry in production
 
 The app initializes Sentry from `EXPO_PUBLIC_SENTRY_DSN`
-(`src/observability/sentry.ts`) — and **nothing supplies that variable in
-production**: it's absent from `eas.json`'s production env, the EAS-hosted
-production environment is empty, and the root `.env`'s `SENTRY_DSN` lacks the
-`EXPO_PUBLIC_` prefix so it never reaches the app. Production builds log
-"error reporting disabled" and every TestFlight crash goes unreported.
+(`src/observability/sentry.ts`). Since #209 that variable **is** supplied by
+`eas.json` for all three build profiles, so production builds report crashes.
 
-To enable (in order of preference):
+If crashes ever stop arriving, check in this order:
 
-1. **EAS-hosted env var** (works for OTA bundles immediately, no fingerprint
-   change): `eas env:create --environment production --name
-   EXPO_PUBLIC_SENTRY_DSN --value <dsn> --visibility plain --scope project`,
-   then publish an OTA with `--environment production`. A DSN is not a secret
-   (it ships inside every client bundle by design).
-2. For **full builds**, the same EAS env var is injected at build time too —
-   no `eas.json` edit needed (editing `eas.json` would move the fingerprint).
+1. The DSN is present in the profile's `env` block in `eas.json` (a DSN is not a
+   secret — it ships inside every client bundle by design).
+2. **EAS-hosted env vars diverge from `eas.json`.** `eas.json` applies to
+   *builds*; the EAS-hosted `production` environment applies to `eas update`.
+   They have drifted before and caused broken-OTA incidents — reconcile both
+   before publishing.
+3. `eas env:create --environment production --name EXPO_PUBLIC_SENTRY_DSN
+   --value <dsn> --visibility plain --scope project` sets the hosted one.
 
 Sourcemap upload for OTA bundles additionally needs `SENTRY_AUTH_TOKEN`,
 `SENTRY_ORG`, and `SENTRY_PROJECT` in the publishing shell —
@@ -208,11 +238,13 @@ adding `expo-updates` must be a full build (recipe above).
 Recognize these if they recur:
 
 - **Missing GitHub remote** — EAS needs the repo's git remote configured.
-- **`@bacons/apple-targets` widget-target bug** — only reproduces on EAS
-  **remote** workers (not local); worked around via a committed **`.easignore`**
-  that excludes the offending target files from the EAS upload.
-- **Hardcoded CocoaPods path** — solved by the prebuild-clean + delete-Pods
-  recipe above.
+- **Widget-target bug on EAS remote workers** — originally worked around by
+  uploading a locally prebuilt `ios/`. That workaround caused worse problems than
+  it solved and is **gone**; the widget target is now handled in config by
+  `plugins/withWidgetVersionSync.js`. See
+  [Why the recipe changed](#why-the-recipe-changed-2026-09-04).
+- **Hardcoded CocoaPods path** — was caused by uploading local Pods. Moot now
+  that EAS prebuilds and installs Pods server-side every time.
 - **Missing `babel-preset-expo`** — added so the remote build transforms
   correctly.
 - **Sentry sourcemap-upload snag** — resolved in config (see the Sentry setup
@@ -231,7 +263,11 @@ Recognize these if they recur:
 
 ## Shipping a new build
 
-Re-run the build recipe → `eas submit`. `autoIncrement` handles the build number;
-the new build appears in TestFlight and existing internal testers get it
+Re-run the [build recipe](#build-recipe-the-important-part) → `eas submit`. The
+new build appears in TestFlight and existing internal testers get it
 automatically. For JS-only changes, prefer an [OTA update](#ota-updates-eas-update--js-only-changes-in-1-minute)
 instead.
+
+`autoIncrement` does **not** handle the build number — it cannot, with a JS
+config. `npm run ios:next-build-number` does. See
+[Build numbers](#build-numbers).

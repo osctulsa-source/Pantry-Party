@@ -16,7 +16,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "npm run test -w packages/core && npm run test -w services/api && npm run test -w apps/mobile",
-    "smoke": "maestro test .maestro"
+    "smoke": "maestro test .maestro",
+    "ios:preflight": "node scripts/preflight-ios-build.mjs",
+    "ios:next-build-number": "node scripts/preflight-ios-build.mjs --set-next",
+    "ota:publish": "bash scripts/publish-ota.sh"
   },
   "overrides": {
     "react": "19.2.3",
