@@ -57,10 +57,20 @@ module.exports = {
       supportsTablet: false,
       bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}`,
       appleTeamId: 'X7E3964XPW',
-      // Last TestFlight upload is (0.0.1, 40). EAS autoIncrement cannot write
-      // app.config.js (`local` source fails the build). Bump this on each
-      // production binary; next is 41.
-      buildNumber: '41',
+      // SINGLE SOURCE OF TRUTH for the iOS build number.
+      //
+      // EAS `autoIncrement` is impossible here: with `appVersionSource: local`
+      // it has to write the version back into the config, and it cannot write a
+      // JS config (`autoIncrement option is not supported when using
+      // app.config.js`). Flipping it on/off is how this repo ping-ponged
+      // between "build fails" (#237) and "duplicate build number" (#238).
+      //
+      // Instead: bump this string, and let the preflight gate enforce that it
+      // is strictly greater than every build number EAS has already issued.
+      //   node scripts/preflight-ios-build.mjs --set-next   (bumps it for you)
+      //   node scripts/preflight-ios-build.mjs              (verifies it)
+      // EAS has already issued 43, so the next production binary is 44.
+      buildNumber: '44',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -124,6 +134,7 @@ module.exports = {
       [
         'expo-widgets',
         {
+          bundleIdentifier: `com.osctulsa.pantryparty${ID_SUFFIX}.ExpoWidgetsTarget`,
           groupIdentifier: 'group.com.osctulsa.pantryparty',
           widgets: [
             {
@@ -151,6 +162,13 @@ module.exports = {
           ],
         },
       ],
+      // MUST stay AFTER expo-widgets. expo-widgets hardcodes the widget target's
+      // CURRENT_PROJECT_VERSION=1 / MARKETING_VERSION=1.0 and sets
+      // GENERATE_INFOPLIST_FILE=YES, so those beat the Info.plist it writes and
+      // the extension ships CFBundleVersion 1 against an app at 41/42 — a fatal
+      // IPA mismatch. This plugin rewrites them to match ios.buildNumber and
+      // version, and throws if it cannot (see plugins/withWidgetVersionSync.js).
+      './plugins/withWidgetVersionSync',
     ],
     experiments: {
       typedRoutes: false,

@@ -1,5 +1,8 @@
 // gesture-handler must be the first import (Android requirement).
 import 'react-native-gesture-handler';
+// Reanimated 4: worklets provider must be installed before reanimated's
+// native install path (WorkletsNotInstalledException = instant iOS abort).
+import 'react-native-worklets';
 import 'react-native-reanimated';
 
 import { registerRootComponent } from 'expo';
