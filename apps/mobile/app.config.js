@@ -131,6 +131,22 @@ module.exports = {
       '@sentry/react-native',
       'expo-localization',
       'posthog-react-native/expo',
+      // MUST be listed BEFORE expo-widgets — yes, before.
+      //
+      // @expo/config-plugins composes same-key mods so that the LAST registered
+      // mod runs FIRST (withMod calls your action, then `nextMod`, which is the
+      // PREVIOUSLY registered mod). Both this plugin and expo-widgets use
+      // withXcodeProject, so listing this one after expo-widgets makes it run
+      // before the widget target exists. Verified by prebuild: it threw
+      // "found no ExpoWidgetsTarget build configurations to sync".
+      //
+      // Why it is needed at all: expo-widgets hardcodes the widget target's
+      // CURRENT_PROJECT_VERSION=1 / MARKETING_VERSION=1.0 (no config option) and
+      // sets GENERATE_INFOPLIST_FILE=YES, so those beat the Info.plist it writes
+      // and the extension ships CFBundleVersion 1 against an app at 41/42 — a
+      // fatal IPA mismatch. This plugin rewrites them to match ios.buildNumber
+      // and version, and throws rather than degrading silently.
+      './plugins/withWidgetVersionSync',
       [
         'expo-widgets',
         {
@@ -162,13 +178,6 @@ module.exports = {
           ],
         },
       ],
-      // MUST stay AFTER expo-widgets. expo-widgets hardcodes the widget target's
-      // CURRENT_PROJECT_VERSION=1 / MARKETING_VERSION=1.0 and sets
-      // GENERATE_INFOPLIST_FILE=YES, so those beat the Info.plist it writes and
-      // the extension ships CFBundleVersion 1 against an app at 41/42 — a fatal
-      // IPA mismatch. This plugin rewrites them to match ios.buildNumber and
-      // version, and throws if it cannot (see plugins/withWidgetVersionSync.js).
-      './plugins/withWidgetVersionSync',
     ],
     experiments: {
       typedRoutes: false,

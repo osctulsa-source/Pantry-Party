@@ -9,7 +9,14 @@
  * CFBundleVersion / CFBundleShortVersionString to match its host app; a mismatch
  * is a fatal IPA error and took out TestFlight builds 41 and 42.
  *
- * Must run AFTER the expo-widgets plugin (app.config.js orders it last).
+ * Must RUN after expo-widgets, which means it must be LISTED BEFORE it in the
+ * app.config.js plugins array. @expo/config-plugins composes same-key mods so
+ * the last registered mod runs first: withMod invokes your action and then
+ * `nextMod`, which is the previously registered mod. Both this plugin and
+ * expo-widgets use withXcodeProject, so listing this one after expo-widgets
+ * makes it run before the widget target exists — which is what the
+ * "found no ExpoWidgetsTarget build configurations" error below reports.
+ *
  * Overwrites even when the widget target already exists, because expo-widgets
  * skips rewriting an existing build-configuration list.
  *
@@ -79,8 +86,9 @@ function withWidgetVersionSync(config) {
     if (updated === 0) {
       throw new Error(
         `[withWidgetVersionSync] found no ${TARGET_NAME} build configurations to sync. ` +
-          'Either expo-widgets did not run before this plugin (check the plugin order ' +
-          'in app.config.js) or the widget target name changed.',
+          'Either expo-widgets has not run yet (this plugin must be LISTED BEFORE ' +
+          'expo-widgets in app.config.js so that it RUNS after it — see the note ' +
+          'above) or the widget target name changed.',
       );
     }
     return cfg;

@@ -65,7 +65,7 @@ minutes and a wasted build number:
 | `HEAD` exists on a remote | Builds 42/43 came from commit `f8ebd5c`, which is in neither this repo nor GitHub — the binaries in TestFlight have no reviewable source. |
 | `ios.buildNumber` > every build EAS has issued | App Store Connect rejects a duplicate `(version, build)` pair *after* the build has run. |
 | `runtimeVersion` is an explicit string | A fingerprint policy gives every build its own runtime, so no OTA can reach it. |
-| `withWidgetVersionSync` runs after `expo-widgets` | Otherwise the widget extension ships `CFBundleVersion 1` against the host app — fatal. |
+| `withWidgetVersionSync` is listed **before** `expo-widgets` | Otherwise the widget extension ships `CFBundleVersion 1` against the host app — fatal. Listed *before* so it *runs after*: `@expo/config-plugins` runs the last-registered mod first. |
 | Widget bundle id derives from the app bundle id | An extension must live under its host app's id. |
 | Production bundle id has no `.dev` suffix | `APP_VARIANT` not applying silently produces an unuploadable binary. |
 | `appVersionSource: local`, `autoIncrement: false` | The version scheme this repo can actually support (see below). |
