@@ -69,17 +69,22 @@ function checkReleaseInvariants({ config, easJson, easignore }) {
 
   if (widgetsIdx === -1) {
     fail('expo-widgets is not registered', 'The widget extension will not be generated.');
-  } else if (syncIdx === -1 || syncIdx < widgetsIdx) {
+  } else if (syncIdx === -1 || syncIdx > widgetsIdx) {
     fail(
-      'withWidgetVersionSync is missing or ordered before expo-widgets',
+      'withWidgetVersionSync is missing or ordered after expo-widgets',
       'expo-widgets hardcodes the widget target to CURRENT_PROJECT_VERSION=1 /\n' +
         'MARKETING_VERSION=1.0 and sets GENERATE_INFOPLIST_FILE=YES, so the extension\n' +
         'ships CFBundleVersion 1 against a host app at 41/42. Apple treats that\n' +
-        'mismatch as fatal — it took out TestFlight builds 41 and 42. The sync plugin\n' +
-        'must run AFTER expo-widgets in the plugins array.',
+        'mismatch as fatal — it took out TestFlight builds 41 and 42.\n' +
+        '\n' +
+        'The sync plugin must be listed BEFORE expo-widgets — counterintuitive, but\n' +
+        '@expo/config-plugins composes same-key mods so the LAST registered mod runs\n' +
+        'FIRST (withMod calls your action, then `nextMod`, the PREVIOUSLY registered\n' +
+        'mod). Both use withXcodeProject, so listing it after expo-widgets makes it\n' +
+        'run before the widget target exists.',
     );
   } else {
-    ok('withWidgetVersionSync runs after expo-widgets');
+    ok('withWidgetVersionSync is ordered to run after expo-widgets (listed before it)');
   }
 
   const widgets = plugins.find((p) => pluginName(p) === 'expo-widgets');

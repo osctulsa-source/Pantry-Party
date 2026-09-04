@@ -87,4 +87,33 @@ describe('iOS release invariants', () => {
       ]),
     );
   });
+
+  it('rejects withWidgetVersionSync listed AFTER expo-widgets', () => {
+    // The real regression, caught by a container prebuild rather than by this
+    // suite: @expo/config-plugins runs the LAST registered mod FIRST, so a sync
+    // plugin listed after expo-widgets runs before the widget target exists and
+    // the extension keeps CFBundleVersion 1. Listing order is inverted from
+    // execution order, which is exactly the kind of thing that gets "tidied"
+    // back the wrong way later.
+    const nameOf = (p) => (Array.isArray(p) ? p[0] : p);
+    const withoutSync = config.plugins.filter(
+      (p) => !String(nameOf(p)).includes('withWidgetVersionSync'),
+    );
+    const widgetsIdx = withoutSync.findIndex((p) => nameOf(p) === 'expo-widgets');
+    const misordered = [
+      ...withoutSync.slice(0, widgetsIdx + 1),
+      './plugins/withWidgetVersionSync',
+      ...withoutSync.slice(widgetsIdx + 1),
+    ];
+
+    const { failures } = checkReleaseInvariants({
+      config: { ...config, plugins: misordered },
+      easJson,
+      easignore,
+    });
+
+    expect(failures.map((f) => f.title)).toEqual([
+      'withWidgetVersionSync is missing or ordered after expo-widgets',
+    ]);
+  });
 });
