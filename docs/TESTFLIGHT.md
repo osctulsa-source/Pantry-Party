@@ -133,10 +133,25 @@ cd apps/mobile && APP_VARIANT=production npx expo prebuild --platform ios --no-i
 ## Submit to App Store Connect
 
 ```sh
-eas submit --platform ios --profile production
+npm run ios:submit              # latest finished build
+npm run ios:submit <build-id>   # a specific build
 ```
 
 The build processes for a few minutes, then appears under the **TestFlight** tab.
+Internal testers get it automatically.
+
+⚠️ **Use the script, not the raw `eas submit`.** `eas submit` evaluates
+`app.config.js`, and without `APP_VARIANT=production` it resolves the
+**development** variant and goes looking for the wrong app:
+
+```
+Looking up credentials configuration for com.osctulsa.pantryparty.dev...
+```
+
+`eas.json`'s per-profile `env` block does **not** cover this — it applies to
+*builds* only. This is the same trap `eas update` has. The rule: **any command
+that reads `app.config.js` outside a build needs `APP_VARIANT=production` in the
+shell.** `scripts/submit-ios.sh` and `scripts/publish-ota.sh` both set it.
 
 > The **Distribution** tab (screenshots, description, "Add for Review") is for the
 > **public App Store release** and is **not** required for TestFlight. Ignore it
