@@ -1,5 +1,17 @@
-# EAS Build reads this from the monorepo root. Replicates .gitignore, but
-# un-ignores apps/mobile/ios so EAS skips its buggy remote widget prebuild.
+# EAS Build reads this from the monorepo root. Replicates .gitignore.
+#
+# apps/mobile/ios/ is NEVER uploaded. It used to be un-ignored here so EAS would
+# skip its remote widget prebuild — but the directory is gitignored, so what got
+# uploaded was one machine's untracked local snapshot. That snapshot went stale
+# (it sat at CFBundleVersion 40 while app.config.js said 43), and because EAS
+# skips prebuild whenever a native project is present, the build number in
+# app.config.js was silently ignored. Meanwhile the containerized recipe cloned
+# committed state, where ios/ does not exist, and prebuilt fresh — so the two
+# paths produced different binaries from the same commit.
+#
+# Now there is one path: EAS prebuilds server-side from committed config on every
+# build. The widget-target bug that motivated the un-ignore is handled in config
+# instead, by apps/mobile/plugins/withWidgetVersionSync.js.
 node_modules/
 .pnp.*
 dist/
@@ -23,14 +35,3 @@ spikes/**/results/*.json
 .idea/
 .vscode/*
 !.vscode/extensions.json
-
-!apps/mobile/ios/
-!apps/mobile/ios/**
-
-# Stale local CocoaPods/Xcode artifacts — exclude from EAS upload so remote
-# workers regenerate Pods with correct paths (docs/TESTFLIGHT.md). Prevents
-# ~400MB uploads and hardcoded-path failures when prebuild installs Pods locally.
-apps/mobile/ios/Pods/
-apps/mobile/ios/Podfile.lock
-apps/mobile/ios/build/
-apps/mobile/ios/*.xcworkspace/
