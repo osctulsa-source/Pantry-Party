@@ -1,0 +1,43 @@
+---
+description: TestFlight 36–46 postmortem — required iOS ship path. Always apply so agents on any machine cannot skip the gates.
+alwaysApply: true
+---
+
+# iOS TestFlight — do not improvise
+
+Full runbook: `docs/TESTFLIGHT.md`. Product rules: `.cursorrules`.
+
+## Last known good
+
+- TestFlight **build 47** is the last known good install (2026-09-08).
+- Builds **41–46 crash on launch**. Do not install them. Do not tell testers to.
+
+## Ship path (the only one)
+
+Mac-local EAS production → inspect that IPA → submit **that file**.
+
+```sh
+npm run ios:next-build-number
+# commit + push app.config.js (and LAST_KNOWN_ASC_BUILD after a prior submit)
+npm run ios:preflight
+cd apps/mobile && eas build --platform ios --profile production --local --non-interactive
+npm run ios:submit -- apps/mobile/build-<id>.ipa
+```
+
+## Hard bans (each is a TestFlight incident)
+
+- Never `eas submit --latest`, `--id`, or `--url`. `npm run ios:submit` requires a local IPA and inspects it first.
+- Never `eas update` / `npm run ota:publish` while `updates.enabled` is false. OTA is **not** the JS ship path. Builds 36/41/45 abort at `RelaunchProcedure.swift:94` (expo/expo#45154).
+- Do not set `updates.enabled: true` without upgrading expo-updates past that unwrap **and** cutting a new binary.
+- Do not treat a working **simulator** Release as a TestFlight binary. They already diverged from the same commit.
+- Do not run `expo prebuild` from the repo root. Always `cd apps/mobile` with `APP_VARIANT=production`.
+- Do not bump `ios.buildNumber` from EAS `build:list` alone. Preflight unions App Store Connect (`eas submit:status`) + EAS + `LAST_KNOWN_ASC_BUILD` in `scripts/lib/ios-build-numbers.cjs`. After a successful submit, bump that floor.
+
+## Plugin onion (`app.config.js`)
+
+`@expo/config-plugins` runs the **last-registered** `withXcodeProject` **first**.
+
+- List `withForceJsBundleEmbed` **before** `@sentry/react-native` and PostHog so it **runs last** and keeps `embed-jsbundle.sh`. Sentry+PostHog otherwise compose `/bin/sh sentry-xcode.sh /bin/sh …`; with `SENTRY_DISABLE_AUTO_UPLOAD=true` Sentry runs `/bin/sh` as the bundler and writes **no JS** (TestFlight 46).
+- List `withWidgetVersionSync` **before** `expo-widgets` so it runs after the widget target exists (otherwise widget `CFBundleVersion` stays 1 — builds 41/42).
+
+Config plugins that edit the Xcode project are allowed. Do not hand-write Swift/Kotlin product code.

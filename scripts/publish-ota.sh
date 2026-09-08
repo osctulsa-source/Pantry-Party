@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-# publish-ota.sh — the one blessed way to ship a JS-only change to TestFlight.
+# publish-ota.sh — gated wrapper around `eas update`. NOT a current ship path.
+#
+# updates.enabled is false (TestFlight 36/41/45, expo/expo#45154). This script
+# still exists so nobody invents a raw `eas update`. check-ota-reachability.mjs
+# exits 1 until updates are explicitly re-enabled AND a new binary is cut.
+# Until then: docs/TESTFLIGHT.md — Mac-local build, inspect, submit that IPA.
 #
 # Wraps the raw `eas update` with the guardrails that past incidents proved
 # necessary (see docs/TESTFLIGHT.md):

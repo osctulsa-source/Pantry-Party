@@ -5,6 +5,16 @@ build landed on device on **2026-07-06** (App Store Connect app
 **PantryPartyColeTech**). Provisioning of the backend it talks to is in
 [`infra/managed/README.md`](../infra/managed/README.md).
 
+**Last known good on device: TestFlight build 47** (2026-09-08). Builds **41–46**
+crash on launch. Do not install them. Do not tell testers to.
+
+> **Agents (any machine):** do not invent a shorter path. The recipe below is the
+> whole postmortem of 36–46. `eas submit --latest`, `eas update`, a simulator
+> Release, or a Linux EAS build without unzipping the IPA are how we shipped
+> empty-JS and RelaunchProcedure binaries. Follow this file. Bump
+> `LAST_KNOWN_ASC_BUILD` in [`scripts/lib/ios-build-numbers.cjs`](../scripts/lib/ios-build-numbers.cjs)
+> after a successful submit.
+
 > **Live-backend note:** the app's `EXPO_PUBLIC_*` endpoints (Supabase, PowerSync
 > Cloud, Railway) are baked in **at build time** from the per-profile `env` in
 > `eas.json`. A TestFlight build therefore talks to the **live** managed stack —
@@ -14,14 +24,20 @@ build landed on device on **2026-07-06** (App Store Connect app
 
 | You changed… | Ship it via |
 |---|---|
-| **JS/TS only** (screens, hooks, logic, styles, images imported from JS) | **EAS Update (OTA)** — ~1 minute, no build. See [OTA updates](#ota-updates-eas-update--js-only-changes-in-1-minute). |
-| `app.config.js`, plugins, native deps (`package.json` deps with native code), `targets/widget/`, splash/icons | **Full build** — the recipe below, then submit. |
-| Not sure | Full build — always safe, just slower. |
+| **Anything testers must run** | **Full Mac-local build** — recipe below. OTA is **off**. |
+| `app.config.js`, plugins, native deps, widgets, splash/icons | **Full build** (and bump `runtimeVersion` if the native runtime changed). |
+| Not sure | Full build. |
+
+OTA (`eas update`) is **disabled** until expo-updates no longer force-unwraps a
+nil error at `RelaunchProcedure.swift:94` ([expo/expo#45154](https://github.com/expo/expo/issues/45154)).
+Builds **36/41/45** died in ~1s on that path. `updates.enabled` is `false`;
+`npm run ota:publish` refuses to run. Re-enable only after upgrading
+expo-updates past that unwrap, then cut a **new** binary. 47 stays last-known-good
+until that binary exists.
 
 ⚠️ **A full build for a native change also needs a `runtimeVersion` bump** in
 `app.config.js`. The runtime is an explicit string, not a fingerprint, so it will
-not notice on its own — and an OTA published onto a stale runtime can crash
-installs that lack the native code. See [OTA updates](#ota-updates-eas-update--js-only-changes-in-1-minute).
+not notice on its own.
 
 ## Prerequisites (one-time)
 
@@ -36,55 +52,65 @@ installs that lack the native code. See [OTA updates](#ota-updates-eas-update--j
 
 ## Build recipe (the important part)
 
-**EAS prebuilds the native iOS project server-side, from committed config, on
-every build.** There is no local `ios/` step and no Docker container — those were
-removed after they produced two different binaries from the same commit (see
-[Why the recipe changed](#why-the-recipe-changed-2026-09-04)). From the repo root:
+**One path.** Mac-local EAS production, inspect the IPA, submit **that file**.
+Simulator Release and EAS cloud are not substitutes: they already produced
+different binaries from the same commit (empty `main.jsbundle`, widget v1, the
+Sentry `/bin/sh` wrap).
+
+From the repo root, on a Mac with Xcode:
 
 ```sh
-# 1. Bump the build number (writes ios.buildNumber in app.config.js)
+# 1. Bump the build number (writes ios.buildNumber in app.config.js).
+#    Reads App Store Connect + EAS + a committed floor — not only eas build:list.
 npm run ios:next-build-number
 
-# 2. Commit and push — a build must correspond to a reviewable commit
-git add apps/mobile/app.config.js && git commit -m "chore(ios): build N" && git push
+# 2. If you submitted a previous IPA, bump LAST_KNOWN_ASC_BUILD in
+#    scripts/lib/ios-build-numbers.cjs to that stamp, then commit both.
 
-# 3. Gate: verifies provenance, config invariants and the build number
+# 3. Commit and push — a build must correspond to a reviewable commit
+git add apps/mobile/app.config.js scripts/lib/ios-build-numbers.cjs
+git commit -m "chore(ios): build N" && git push
+
+# 4. Gate: provenance, config invariants, ASC-aware build number
 npm run ios:preflight
 
-# 4. Build (Mac-local for the binary you will actually install)
+# 5. Mac-local production archive
 cd apps/mobile && eas build --platform ios --profile production --local --non-interactive
 
-# 5. Confirm the IPA contains JS before Apple ever sees it.
-#    Build 46 had no main.jsbundle and crashed on launch.
-npm run ios:inspect-ipa -- path/to.ipa
-
-# 6. Submit that exact IPA (not --latest)
-APP_VARIANT=production npx eas-cli submit --platform ios --profile production --path path/to.ipa
+# 6+7. Inspect then submit THAT ipa (the script refuses --latest)
+cd ../..
+npm run ios:submit -- apps/mobile/build-<id>.ipa
 ```
 
-**Do not skip step 3.** `npm run ios:preflight` is the whole postmortem list
-turned into checks, and it costs a few seconds against a build that costs 20
-minutes and a wasted build number:
+`npm run ios:submit` runs `ios:inspect-ipa` first (JS present, updates off,
+widget version = app version) and will not call `eas submit --latest`.
+
+**Do not skip preflight or inspect.** They are the postmortem list. A failed EAS
+build wastes 20 minutes and a build number; an un-inspected IPA wastes a
+TestFlight slot testers then crash on.
 
 | It checks | Because |
 |---|---|
 | Working tree is clean | A build must map to a commit. |
 | `HEAD` exists on a remote | Builds 42/43 came from commit `f8ebd5c`, which is in neither this repo nor GitHub — the binaries in TestFlight have no reviewable source. |
-| `ios.buildNumber` > every build EAS has issued | App Store Connect rejects a duplicate `(version, build)` pair *after* the build has run. |
+| `ios.buildNumber` > every stamp on **App Store Connect** (plus EAS + a committed floor) | Local builds 45/46 were on TestFlight while `eas build:list` still said 44. Apple rejects a duplicate `(version, build)` pair *after* the archive. |
 | `runtimeVersion` is an explicit string | A fingerprint policy gives every build its own runtime, so no OTA can reach it. |
 | `withWidgetVersionSync` is listed **before** `expo-widgets` | Otherwise the widget extension ships `CFBundleVersion 1` against the host app — fatal. Listed *before* so it *runs after*: `@expo/config-plugins` runs the last-registered mod first. |
 | Widget bundle id derives from the app bundle id | An extension must live under its host app's id. |
 | Production bundle id has no `.dev` suffix | `APP_VARIANT` not applying silently produces an unuploadable binary. |
 | `appVersionSource: local`, `autoIncrement: false` | The version scheme this repo can actually support (see below). |
 | `.easignore` does not un-ignore `ios/` | Uploading a native project makes EAS skip prebuild and ignore your config. |
-| `withForceJsBundleEmbed` is registered | Build 46 shipped with no `main.jsbundle` (Xcode skipped the RN bundle phase). Instant crash with updates off. |
+| `withForceJsBundleEmbed` is listed **before** Sentry (so it **runs last**) | Build 46: Sentry+PostHog composed `/bin/sh sentry-xcode.sh /bin/sh …`. With `SENTRY_DISABLE_AUTO_UPLOAD=true` Sentry ran `/bin/sh` as the bundler and wrote no JS. |
 | `updates.enabled` is false | Builds 36/41/45 abort at `RelaunchProcedure.swift:94` (expo/expo#45154). |
 
-The same invariants — everything above that does not need network or git — also
-run in CI as `apps/mobile/releaseInvariants.test.js`, so a PR that breaks one
-fails review rather than the release. The rules live in one place,
-[`scripts/lib/release-invariants.cjs`](../scripts/lib/release-invariants.cjs),
-shared by the gate and the test so they cannot drift.
+CI also **prebuilds** (`npm run ios:check-embed-phase`) and asserts the generated
+pbxproj invokes `embed-jsbundle.sh` and does **not** contain `sentry-xcode.sh` in
+the RN bundle phase. Plugin listing is not enough — a Sentry upgrade can restore
+the wrap without touching `app.config.js`.
+
+The same config invariants — everything above that does not need network, git, or
+Xcode — also run in CI as `apps/mobile/releaseInvariants.test.js`. The rules live
+in [`scripts/lib/release-invariants.cjs`](../scripts/lib/release-invariants.cjs).
 
 ### Build numbers
 
@@ -101,10 +127,12 @@ risks re-using a build number and getting rejected on upload (#238). This repo
 flipped that flag back and forth in two consecutive commits.
 
 The resolution is **not** to flip it again: `ios.buildNumber` in `app.config.js`
-is the single source of truth, and `npm run ios:next-build-number` performs the
-increment EAS cannot, reading the highest number EAS has already issued and
-writing the next one. `npm run ios:preflight` then refuses to build if the
-number is not strictly greater.
+is the single source of truth, `npm run ios:next-build-number` increments it, and
+`npm run ios:preflight` refuses to build unless the number is strictly greater
+than `max(App Store Connect TestFlight stamps, EAS build:list, LAST_KNOWN_ASC_BUILD)`.
+
+EAS `build:list` alone is not enough. Builds 45 and 46 were Mac-local: they
+existed on Apple while EAS still reported 44.
 
 > Switching to `appVersionSource: "remote"` is not a shortcut here — it splits
 > the build number across two sources, and `withWidgetVersionSync` (which stamps
@@ -133,48 +161,66 @@ motivated it is handled in config instead, by
 
 If you ever do need a local native project for Xcode debugging, generate it on a
 Mac or in a Linux container — but it is a local artifact only, it is gitignored,
-and nothing uploads it:
+and nothing uploads it. Always from `apps/mobile` (a root `expo prebuild` writes
+a stray `ios/` and `app.json`):
 
 ```sh
 cd apps/mobile && APP_VARIANT=production npx expo prebuild --platform ios --no-install
 ```
 
+### Why Mac-local + inspect (2026-09-08)
+
+EAS cloud, Mac-local, and simulator Release produced **different** binaries from
+the same commit. Build **46** was a Mac-local IPA with `updates.enabled: false`
+and **no `main.jsbundle`** (Sentry wrapped the RN phase as `/bin/sh`). Inspect
+the file you will submit. `npm run ios:submit -- path.ipa` is the only submit
+path; `--latest` is refused.
+
 ## Submit to App Store Connect
 
 ```sh
-npm run ios:submit              # latest finished build
-npm run ios:submit <build-id>   # a specific build
+npm run ios:submit -- apps/mobile/build-<id>.ipa
 ```
+
+The script inspects the IPA, then submits **that path** with
+`APP_VARIANT=production`. It refuses `--latest`, `--id`, and a missing file.
 
 The build processes for a few minutes, then appears under the **TestFlight** tab.
 Internal testers get it automatically.
 
-⚠️ **Use the script, not the raw `eas submit`.** `eas submit` evaluates
-`app.config.js`, and without `APP_VARIANT=production` it resolves the
-**development** variant and goes looking for the wrong app:
+⚠️ **Use the script, not the raw `eas submit`.** Raw `eas submit`:
+- without `APP_VARIANT=production` looks up `com.osctulsa.pantryparty.dev`
+- `--latest` can upload a binary nobody unzipped (46)
 
-```
-Looking up credentials configuration for com.osctulsa.pantryparty.dev...
-```
-
-`eas.json`'s per-profile `env` block does **not** cover this — it applies to
-*builds* only. This is the same trap `eas update` has. The rule: **any command
-that reads `app.config.js` outside a build needs `APP_VARIANT=production` in the
-shell.** `scripts/submit-ios.sh` and `scripts/publish-ota.sh` both set it.
+`eas.json`'s per-profile `env` block does **not** cover submit — it applies to
+*builds* only. **Any command that reads `app.config.js` outside a build needs
+`APP_VARIANT=production` in the shell.** `scripts/submit-ios.sh` and
+`scripts/publish-ota.sh` both set it (OTA is still blocked; see below).
 
 > The **Distribution** tab (screenshots, description, "Add for Review") is for the
 > **public App Store release** and is **not** required for TestFlight. Ignore it
 > until you're doing a public launch.
 
-## OTA updates (EAS Update) — JS-only changes in ~1 minute
+## OTA updates (EAS Update) — currently OFF
+
+`updates.enabled` is **`false`** in `app.config.js`. Installed TestFlight 47
+does not apply published JS updates. `npm run ota:publish` exits 1 until that
+flag is flipped **and** expo-updates is past
+[expo/expo#45154](https://github.com/expo/expo/issues/45154) **and** a new
+binary is cut.
+
+Do not "just OTA" a JS fix. Cut a full build (recipe above).
+
+The rest of this section is the gate for **when OTA is turned back on**. It is
+not a current ship path.
 
 `expo-updates` is wired to an **explicit `runtimeVersion` string** (`'1.0.0'` in
 `app.config.js`), and the production build profile is on the **`production`
-channel**. Installed TestFlight builds check for published JS updates and apply
-them — no new build, no upload, no processing wait.
+channel**. When enabled, installed TestFlight builds check for published JS
+updates and apply them — no new build, no upload, no processing wait.
 
 **Always publish with the script.** It is the only path that runs the
-reachability gate:
+reachability gate (and today it also refuses because updates are off):
 
 ```sh
 npm run ota:publish "fix: whatever changed"
@@ -223,8 +269,9 @@ blocks all three:
   right trade — the fingerprint policy was non-deterministic across this
   monorepo's machines and hard-failed builds outright — but the safety net is now
   you.
-- **What can ship OTA:** JS/TS, styles, JS-imported assets. **What cannot:**
-  anything in the full-build row of the table above.
+- **What can ship OTA today:** nothing. `updates.enabled` is false. When that
+  is re-enabled *and* a new binary is on testers' phones: JS/TS, styles,
+  JS-imported assets. **What cannot:** native modules, plugins, widgets, splash.
 - **expo-audio (added 2026-07-17):** `src/feedback/feedback.ts` lazy-requires it
   in a try/catch, so binaries built before it degrade to haptics-only instead of
   crashing. That defensive pattern is the right model for any native module
@@ -287,11 +334,10 @@ Recognize these if they recur:
 
 ## Shipping a new build
 
-Re-run the [build recipe](#build-recipe-the-important-part) → `eas submit`. The
-new build appears in TestFlight and existing internal testers get it
-automatically. For JS-only changes, prefer an [OTA update](#ota-updates-eas-update--js-only-changes-in-1-minute)
-instead.
+Re-run the [build recipe](#build-recipe-the-important-part). Existing internal
+testers get the new TestFlight build automatically. **Do not prefer OTA** until
+updates are re-enabled (see above).
 
 `autoIncrement` does **not** handle the build number — it cannot, with a JS
 config. `npm run ios:next-build-number` does. See
-[Build numbers](#build-numbers).
+[Build numbers](#build-numbers). After submit, bump `LAST_KNOWN_ASC_BUILD`.

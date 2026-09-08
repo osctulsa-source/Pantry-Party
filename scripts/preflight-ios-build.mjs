@@ -22,11 +22,15 @@
  *   5. expo-widgets hardcodes the widget extension to version 1, which is a fatal
  *      IPA mismatch. -> withWidgetVersionSync must be registered after it.
  *   6. `.dev` bundle ids ship when APP_VARIANT is not set at prebuild time.
- *   7. Build 46 shipped with expo-updates off and no main.jsbundle (Xcode skipped
- *      the RN bundle phase). Instant launch crash. -> withForceJsBundleEmbed.
+ *   7. Build 46 shipped with expo-updates off and no main.jsbundle (Sentry
+ *      wrapped the RN bundle phase as `/bin/sh`). Instant launch crash.
+ *      -> withForceJsBundleEmbed + inspect IPA before submit.
+ *   8. EAS build:list lagged ASC (45/46 on Apple, EAS still at 44).
+ *      -> monotonic check against App Store Connect + a committed floor.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import {
@@ -35,12 +39,11 @@ import {
   EAS_JSON,
   MOBILE_DIR,
   REPO_ROOT,
-  iosBuilds,
+  highestIssuedIosBuild,
   loadProductionConfig,
 } from './lib/eas.mjs';
-import releaseInvariants from './lib/release-invariants.cjs';
 
-const { checkReleaseInvariants } = releaseInvariants;
+const { checkReleaseInvariants } = createRequire(import.meta.url)('./lib/release-invariants.cjs');
 
 const argv = new Set(process.argv.slice(2));
 const OFFLINE = argv.has('--offline');
@@ -127,14 +130,8 @@ function checkInvariants(config) {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Build number must exceed every build EAS has already issued.
+// 3. Build number must exceed every stamp Apple already has.
 // ---------------------------------------------------------------------------
-function easBuildNumbers() {
-  return iosBuilds()
-    .map((b) => Number.parseInt(b.appBuildVersion, 10))
-    .filter((n) => Number.isFinite(n));
-}
-
 function checkBuildNumber(config) {
   const local = Number.parseInt(config?.ios?.buildNumber, 10);
   if (!Number.isFinite(local)) {
@@ -143,40 +140,38 @@ function checkBuildNumber(config) {
   }
 
   if (OFFLINE) {
-    notes.push(`  [!] --offline: build ${local} was NOT verified against EAS. Do not ship on this.`);
+    notes.push(`  [!] --offline: build ${local} was NOT verified against App Store Connect. Do not ship on this.`);
     return;
   }
 
-  let issued;
+  let highest;
   try {
-    issued = easBuildNumbers();
+    highest = highestIssuedIosBuild();
   } catch (err) {
     fail(
-      'Could not read the build list from EAS',
+      'Could not read issued iOS build numbers from EAS / App Store Connect',
       `${String(err.message).split('\n')[0]}\n` +
-        'Run `npx eas-cli login` in apps/mobile. Without this the monotonic check is\n' +
-        'blind and a duplicate (version, build) pair gets rejected on upload.\n' +
-        'Use --offline only when you have verified the number another way.',
+        'Run `npx eas-cli login` in apps/mobile. The monotonic check must see ASC,\n' +
+        'not only `eas build:list` — local builds 45/46 were on TestFlight while EAS\n' +
+        'still reported 44. Use --offline only when you have verified the number another way.',
     );
     return;
   }
 
-  const highest = Math.max(0, ...issued);
   if (local <= highest) {
     fail(
-      `ios.buildNumber ${local} is not greater than the highest build EAS has issued (${highest})`,
+      `ios.buildNumber ${local} is not greater than the highest issued build (${highest})`,
       'App Store Connect rejects a duplicate (version, build) pair, and the upload\n' +
-        'fails after the build has already run. Bump it:\n' +
+        'fails after the build has already run. That highest includes TestFlight stamps\n' +
+        'from `eas submit:status` plus a committed floor (scripts/lib/ios-build-numbers.cjs).\n' +
+        'Bump it:\n' +
         '    node scripts/preflight-ios-build.mjs --set-next',
     );
   } else {
-    ok(`ios.buildNumber ${local} > highest issued ${highest}`);
+    ok(`ios.buildNumber ${local} > highest issued ${highest} (ASC + EAS + floor)`);
   }
 }
 
-// ---------------------------------------------------------------------------
-// --set-next: the autoIncrement EAS cannot do, done safely against a JS config.
-// ---------------------------------------------------------------------------
 function setNext() {
   const src = readFileSync(APP_CONFIG, 'utf8');
   const match = src.match(/(\n\s*buildNumber:\s*')(\d+)(')/);
@@ -185,7 +180,7 @@ function setNext() {
     process.exit(1);
   }
   const current = Number.parseInt(match[2], 10);
-  const highest = OFFLINE ? current : Math.max(0, ...easBuildNumbers());
+  const highest = OFFLINE ? current : highestIssuedIosBuild();
   const next = Math.max(highest + 1, current);
   if (next === current) {
     console.log(`> ios.buildNumber is already ${next} (highest issued: ${highest}). Unchanged.`);
@@ -194,6 +189,8 @@ function setNext() {
   writeFileSync(APP_CONFIG, src.replace(match[0], `${match[1]}${next}${match[3]}`), 'utf8');
   console.log(`> ios.buildNumber ${current} -> ${next} (highest issued: ${highest}).`);
   console.log('  Commit this before building — the gate requires a clean, pushed tree.');
+  console.log('  After this IPA is on TestFlight, bump LAST_KNOWN_ASC_BUILD in');
+  console.log('  scripts/lib/ios-build-numbers.cjs to the new number.');
 }
 
 // ---------------------------------------------------------------------------
@@ -209,8 +206,10 @@ console.log('\niOS build preflight\n');
 console.log(notes.join('\n'));
 
 if (failures.length === 0) {
-  console.log('\n[PASS] All checks passed. Safe to run:');
-  console.log('    cd apps/mobile && eas build --platform ios --profile production\n');
+  console.log('\n[PASS] All checks passed. Safe to run (Mac, from repo root):');
+  console.log('    cd apps/mobile && eas build --platform ios --profile production --local --non-interactive');
+  console.log('    npm run ios:inspect-ipa -- apps/mobile/build-<id>.ipa');
+  console.log('    npm run ios:submit -- apps/mobile/build-<id>.ipa\n');
   process.exit(0);
 }
 

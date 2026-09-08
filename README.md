@@ -120,4 +120,4 @@ backfill, mixed-client compatibility plan, and sync torture tests. See ADR-011 i
 - [Local development stack](infra/local-dev/README.md)
 - [Secrets management](docs/SECRETS.md)
 - [Backup and disaster recovery](docs/BACKUP-DR.md)
-- [TestFlight runbook](docs/TESTFLIGHT.md)
+- [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 47**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).

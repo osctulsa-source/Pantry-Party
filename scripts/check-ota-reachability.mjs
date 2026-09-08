@@ -16,11 +16,23 @@
  * into the most recent finished production iOS build, and exits non-zero when
  * they differ. Called by scripts/publish-ota.sh.
  *
+ * While updates.enabled is not true, this exits first: OTA is not a ship path.
+ * Last known good TestFlight is 47. JS changes wait for a full Mac-local build.
+ *
  *   node scripts/check-ota-reachability.mjs
  */
 import { iosBuilds, loadProductionConfig } from './lib/eas.mjs';
 
-const local = loadProductionConfig()?.runtimeVersion;
+const config = loadProductionConfig();
+const local = config?.runtimeVersion;
+
+if (config?.updates?.enabled !== true) {
+  console.error('[x] OTA publishing is blocked. updates.enabled is not true.');
+  console.error('    Builds 36/41/45 die at RelaunchProcedure.swift:94 (expo/expo#45154).');
+  console.error('    Keep updates.enabled false until that unwrap is gone, then cut a new');
+  console.error('    binary. Last known good TestFlight: 47. Cut a full build for JS changes.');
+  process.exit(1);
+}
 
 if (typeof local !== 'string') {
   console.error('[x] app.config.js runtimeVersion is not an explicit string.');

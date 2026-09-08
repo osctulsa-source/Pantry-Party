@@ -54,6 +54,35 @@ jobs:
           API_JWKS_URI: https://example.com/jwks.json
         run: npm test -w services/api
 
+      - name: Test iOS release script helpers
+        run: npm run test:ios-release-scripts
+
+  # Generated Xcode project must still embed JS. Sentry/PostHog rewrite the RN
+  # bundle phase; listing withForceJsBundleEmbed first makes it run last. A
+  # plugin upgrade can restore `/bin/sh sentry-xcode.sh /bin/sh …` (TestFlight
+  # 46) without failing releaseInvariants.test.js, which only reads app.config.js.
+  ios-embed-phase:
+    name: iOS prebuild embeds JS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Prebuild and assert embed-jsbundle.sh
+        env:
+          APP_VARIANT: production
+          CI: '1'
+        run: npm run ios:check-embed-phase
+
   # Railway/Docker builds the API image with `npm ci` against
   # services/api/package-lock.json, NOT the workspace root lockfile. This job
   # fails if a workspace bump left that image lockfile stale (the #224-#229

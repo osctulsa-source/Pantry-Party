@@ -74,6 +74,15 @@ cd apps/mobile && npm test
 Use `start` when a compatible development client is already installed. `ios` and `android`
 build/install the native development app.
 
+## Shipping TestFlight
+
+Do not invent a path. Follow [`docs/TESTFLIGHT.md`](../../docs/TESTFLIGHT.md).
+
+- Last known good: **build 47**. Skip 41–46.
+- OTA is off (`updates.enabled: false`). Full Mac-local production build only.
+- `npm run ios:preflight` → `eas build --local` → `npm run ios:submit -- <ipa>`.
+- The submit script inspects the IPA (JS present, updates off, widget version match) and refuses `--latest`.
+
 ## Conventions
 
 - Import colors, type, spacing, and motion values from `src/theme/tokens.ts`.

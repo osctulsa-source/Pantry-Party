@@ -123,4 +123,25 @@ describe('iOS release invariants', () => {
       'withWidgetVersionSync is missing or ordered after expo-widgets',
     ]);
   });
+
+  it('rejects withForceJsBundleEmbed listed AFTER Sentry', () => {
+    const nameOf = (p) => (Array.isArray(p) ? p[0] : p);
+    const without = config.plugins.filter((p) => !String(nameOf(p)).includes('withForceJsBundleEmbed'));
+    const sentryIdx = without.findIndex((p) => String(nameOf(p)).includes('@sentry/react-native'));
+    const misordered = [
+      ...without.slice(0, sentryIdx + 1),
+      './plugins/withForceJsBundleEmbed',
+      ...without.slice(sentryIdx + 1),
+    ];
+
+    const { failures } = checkReleaseInvariants({
+      config: { ...config, plugins: misordered },
+      easJson,
+      easignore,
+    });
+
+    expect(failures.map((f) => f.title)).toEqual([
+      'withForceJsBundleEmbed is ordered after @sentry/react-native',
+    ]);
+  });
 });

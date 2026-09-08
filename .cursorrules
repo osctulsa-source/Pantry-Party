@@ -46,3 +46,11 @@ decoupled from the code. Never hardcode a product name in the UI.
 - Co-locate feature code under `apps/mobile/src/features/<feature>`.
 - Prefer early returns, small functions, and explicit names over cleverness.
 - ESLint + Prettier are configured at the repo root — match their output.
+
+## iOS TestFlight — do not improvise
+- Runbook: `docs/TESTFLIGHT.md`. Last known good on device: **build 47**. Builds 41–46 crash; do not install or recommend them.
+- `updates.enabled` is **false**. Do not run `eas update` / `npm run ota:publish`. Do not set `updates.enabled: true` without upgrading expo-updates past expo/expo#45154 **and** cutting a new binary.
+- Never `eas submit --latest` or `--id`. Inspect then submit one IPA: `npm run ios:submit -- path/to.ipa`.
+- Production binaries are **Mac-local** EAS (`eas build --platform ios --profile production --local`). A working simulator is not a TestFlight binary.
+- After a successful TestFlight submit, bump `LAST_KNOWN_ASC_BUILD` in `scripts/lib/ios-build-numbers.cjs` to that build number.
+- Config plugins that edit the Xcode project are allowed. Do not hand-write Swift/Kotlin product code.

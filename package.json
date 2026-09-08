@@ -21,7 +21,9 @@
     "ios:next-build-number": "node scripts/preflight-ios-build.mjs --set-next",
     "ios:inspect-ipa": "node scripts/inspect-ios-ipa.mjs",
     "ios:submit": "bash scripts/submit-ios.sh",
-    "ota:publish": "bash scripts/publish-ota.sh"
+    "ios:check-embed-phase": "node scripts/check-ios-embed-phase.mjs",
+    "ota:publish": "bash scripts/publish-ota.sh",
+    "test:ios-release-scripts": "node --test scripts/lib/ios-build-numbers.test.cjs scripts/lib/ios-embed-phase.test.cjs"
   },
   "overrides": {
     "react": "19.2.3",
