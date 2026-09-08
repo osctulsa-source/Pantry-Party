@@ -6,6 +6,9 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+# Local EAS IPA artifacts. An untracked .ipa fails ios:preflight ("working
+# tree is not clean") and must never be committed.
+*.ipa
 
 # Expo
 .expo/
