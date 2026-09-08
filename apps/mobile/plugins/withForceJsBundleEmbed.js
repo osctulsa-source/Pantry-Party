@@ -1,27 +1,53 @@
 /**
- * withForceJsBundleEmbed — make the "Bundle React Native code and images"
- * Xcode phase actually run on Release archives.
+ * withForceJsBundleEmbed — make Release archives actually contain JS.
  *
- * Xcode's "Based on dependency analysis" skips a script with no input/output
- * files. EAS local Release then ships an IPA with no main.jsbundle. With
- * expo-updates disabled (RelaunchProcedure.swift:94 abort), AppDelegate looks
- * for that file and dies on launch: "No script URL provided". TestFlight
- * build 46 was that IPA. The simulator only launched after we copied a
- * bundle in by hand.
+ * TestFlight 46 launched into "No script URL provided". AppDelegate looks for
+ * Bundle.main.url("main", "jsbundle") when expo-updates is off, and the IPA
+ * had no such file. EAS *did* produce a bundle (`EAGER_BUNDLE` wrote
+ * main.jsbundle to a temp dir) and gym even logged
+ * `Executing … Bundle React Native code and images`, but the file never landed
+ * in Payload/*.app.
  *
- * Unchecking dependency analysis is `alwaysOutOfDate = 1` on the phase.
- * FAILS LOUDLY if the phase is missing — a silent no-op would ship another
- * empty-JS binary.
+ * Two cooperating fixes, both fail-loud:
+ *   1. Force the RN bundle phase to run and persist its output:
+ *        - alwaysOutOfDate = 1  (uncheck "Based on dependency analysis")
+ *        - declare main.jsbundle as an output so Xcode script sandboxing
+ *          is allowed to write it (Xcode 15+ ENABLE_USER_SCRIPT_SANDBOXING)
+ *        - set ENABLE_USER_SCRIPT_SANDBOXING=NO on the app project
+ *   2. A follow-up script phase that `exit 1`s on Release if the file is
+ *      missing — so the next empty-JS binary fails the EAS build instead of
+ *      TestFlight.
  */
 const { withXcodeProject } = require('expo/config-plugins');
 
 const PHASE_NAME = 'Bundle React Native code and images';
+const VERIFY_PHASE_NAME = 'Verify main.jsbundle is embedded';
 const JSBUNDLE_OUTPUT =
   '"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/main.jsbundle"';
+
+const VERIFY_SCRIPT = [
+  'set -e',
+  'case "$CONFIGURATION" in',
+  '  *Debug*) exit 0 ;;',
+  'esac',
+  'JS="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/main.jsbundle"',
+  'if [ ! -f "$JS" ]; then',
+  '  echo "error: main.jsbundle is missing at $JS." >&2',
+  '  echo "error: TestFlight 46 shipped without JS and crashed on launch (No script URL provided)." >&2',
+  '  echo "error: The Bundle React Native code and images phase must write this file." >&2',
+  '  exit 1',
+  'fi',
+  'echo "embedded main.jsbundle: $(wc -c < "$JS") bytes"',
+].join('\n');
 
 function isBundlePhase(phase) {
   if (!phase || typeof phase !== 'object') return false;
   return String(phase.name ?? '').includes(PHASE_NAME);
+}
+
+function isVerifyPhase(phase) {
+  if (!phase || typeof phase !== 'object') return false;
+  return String(phase.name ?? '').includes(VERIFY_PHASE_NAME);
 }
 
 function forceBundlePhase(project) {
@@ -43,6 +69,58 @@ function forceBundlePhase(project) {
   return updated;
 }
 
+function disableUserScriptSandboxing(project) {
+  const configs = project.pbxXCBuildConfigurationSection?.() ?? {};
+  let updated = 0;
+  for (const key of Object.keys(configs)) {
+    const entry = configs[key];
+    if (!entry || typeof entry !== 'object' || !entry.buildSettings) continue;
+    entry.buildSettings.ENABLE_USER_SCRIPT_SANDBOXING = 'NO';
+    updated += 1;
+  }
+  return updated;
+}
+
+function findAppTargetUuid(project) {
+  const targets = project.pbxNativeTargetSection?.() ?? {};
+  for (const key of Object.keys(targets)) {
+    if (key.endsWith('_comment')) continue;
+    const target = targets[key];
+    const productType = String(target.productType ?? '');
+    if (productType.includes('com.apple.product-type.application')) {
+      return key;
+    }
+  }
+  return project.getFirstTarget?.()?.uuid;
+}
+
+function ensureVerifyPhase(project) {
+  const section = project.hash?.project?.objects?.PBXShellScriptBuildPhase ?? {};
+  for (const key of Object.keys(section)) {
+    if (key.endsWith('_comment')) continue;
+    if (isVerifyPhase(section[key])) return 'exists';
+  }
+
+  const targetUuid = findAppTargetUuid(project);
+  if (!targetUuid) return 'missing-target';
+
+  project.addBuildPhase([], 'PBXShellScriptBuildPhase', VERIFY_PHASE_NAME, targetUuid, {
+    shellPath: '/bin/sh',
+    shellScript: VERIFY_SCRIPT,
+    outputPaths: [JSBUNDLE_OUTPUT],
+  });
+
+  // addBuildPhase does not set alwaysOutOfDate; pin it the same way as the
+  // RN bundle phase so Xcode cannot skip the check.
+  const updated = project.hash.project.objects.PBXShellScriptBuildPhase;
+  for (const key of Object.keys(updated)) {
+    if (key.endsWith('_comment')) continue;
+    if (!isVerifyPhase(updated[key])) continue;
+    updated[key].alwaysOutOfDate = 1;
+  }
+  return 'added';
+}
+
 function withForceJsBundleEmbed(config) {
   return withXcodeProject(config, (cfg) => {
     const updated = forceBundlePhase(cfg.modResults);
@@ -53,11 +131,24 @@ function withForceJsBundleEmbed(config) {
           '(TestFlight 46).',
       );
     }
+    disableUserScriptSandboxing(cfg.modResults);
+    const verify = ensureVerifyPhase(cfg.modResults);
+    if (verify === 'missing-target') {
+      throw new Error(
+        '[withForceJsBundleEmbed] found no app target to attach the main.jsbundle ' +
+          'existence check. Refusing to produce another empty-JS binary.',
+      );
+    }
     return cfg;
   });
 }
 
 module.exports = withForceJsBundleEmbed;
 module.exports.isBundlePhase = isBundlePhase;
+module.exports.isVerifyPhase = isVerifyPhase;
 module.exports.forceBundlePhase = forceBundlePhase;
+module.exports.disableUserScriptSandboxing = disableUserScriptSandboxing;
+module.exports.ensureVerifyPhase = ensureVerifyPhase;
 module.exports.PHASE_NAME = PHASE_NAME;
+module.exports.VERIFY_PHASE_NAME = VERIFY_PHASE_NAME;
+module.exports.VERIFY_SCRIPT = VERIFY_SCRIPT;
