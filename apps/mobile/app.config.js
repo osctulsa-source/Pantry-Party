@@ -69,8 +69,8 @@ module.exports = {
       // is strictly greater than every build number EAS has already issued.
       //   node scripts/preflight-ios-build.mjs --set-next   (bumps it for you)
       //   node scripts/preflight-ios-build.mjs              (verifies it)
-      // EAS has already issued 43, so the next production binary is 44.
-      buildNumber: '44',
+      // EAS has already issued 44, so the next production binary is 45.
+      buildNumber: '45',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
