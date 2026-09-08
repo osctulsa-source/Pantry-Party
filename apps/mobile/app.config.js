@@ -51,6 +51,19 @@ module.exports = {
     // native code will crash those installs. JS-only changes need no bump.
     updates: {
       url: 'https://u.expo.dev/b307f8c4-9c6f-46eb-9288-39a9b9a7c844',
+      // OFF until expo-updates ships a RelaunchProcedure that does not
+      // force-unwrap a nil error (expo/expo#45154, PR #45174).
+      //
+      // Builds 36/41/45 die in ~1s at RelaunchProcedure.swift:94
+      // (EXC_BREAKPOINT / brk 1). A JS fatal inside 10s of launch marks the
+      // embedded bundle failed; recovery then relaunches a previous update
+      // that does not exist on a first install, `error` is nil, and Swift
+      // aborts. That abort is what TestFlight shows — the original JS error
+      // never appears. RootErrorBoundary cannot catch it.
+      //
+      // Re-enable after upgrading expo-updates past that unwrap, then cut a
+      // new binary (runtimeVersion bump if the native module changes).
+      enabled: false,
     },
     runtimeVersion: '1.0.0',
     ios: {
@@ -69,8 +82,8 @@ module.exports = {
       // is strictly greater than every build number EAS has already issued.
       //   node scripts/preflight-ios-build.mjs --set-next   (bumps it for you)
       //   node scripts/preflight-ios-build.mjs              (verifies it)
-      // EAS has already issued 44, so the next production binary is 45.
-      buildNumber: '45',
+      // EAS has already issued 45, so the next production binary is 46.
+      buildNumber: '46',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },

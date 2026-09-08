@@ -39,10 +39,13 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // smoke testing on a single simulator).
 //
 // On sign-in we also run ensureDefaultHousehold() so first-time users get a
-// pantry to write into without manual SQL provisioning. It MUST run after
-// waitForFirstSync() so the local user_households cache reflects server state —
-// otherwise a returning user whose membership hasn't replicated yet would get
-// a duplicate household. See features/household/ensureDefaultHousehold.ts.
+// pantry to write into without manual SQL provisioning. We wait briefly for
+// first sync so a returning user's memberships can land first (avoids a
+// duplicate household). If sync is down or hangs (offline, bad URL), we still
+// provision locally — onboarding's staple insert keys off that row. See
+// features/household/ensureDefaultHousehold.ts.
+
+const FIRST_SYNC_BUDGET_MS = 8_000;
 //
 // `bootstrap` gates that household provisioning to genuine sign-in / app-load
 // only. onAuthStateChange also fires on TOKEN_REFRESHED / USER_UPDATED, where
@@ -58,7 +61,16 @@ function syncPowerSyncWithSession(
       try {
         await connectPowerSync();
         if (opts.bootstrap) {
-          await getPowerSync().waitForFirstSync();
+          try {
+            await Promise.race([
+              getPowerSync().waitForFirstSync(),
+              new Promise<void>((resolve) => {
+                setTimeout(resolve, FIRST_SYNC_BUDGET_MS);
+              }),
+            ]);
+          } catch (syncErr: unknown) {
+            console.error('PowerSync first sync failed or timed out:', syncErr);
+          }
           await ensureDefaultHousehold(session.user.id);
         }
       } catch (e: unknown) {

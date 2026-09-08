@@ -45,42 +45,53 @@ export class RootErrorBoundary extends Component<Props, State> {
   override render(): ReactNode {
     const { error, componentStack } = this.state;
     if (!error) return this.props.children;
-
-    return (
-      <View style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.title}>Pantry Party hit a snag</Text>
-          <Text style={styles.subtitle}>
-            The app caught a startup error. This screen is here so the details can be read and
-            reported instead of the app closing.
-          </Text>
-
-          <Text style={styles.label}>Error</Text>
-          <Text style={styles.mono} selectable>
-            {error.name}: {error.message}
-          </Text>
-
-          {error.stack ? (
-            <>
-              <Text style={styles.label}>Stack</Text>
-              <Text style={styles.monoSmall} selectable>
-                {error.stack}
-              </Text>
-            </>
-          ) : null}
-
-          {componentStack ? (
-            <>
-              <Text style={styles.label}>Component stack</Text>
-              <Text style={styles.monoSmall} selectable>
-                {componentStack}
-              </Text>
-            </>
-          ) : null}
-        </ScrollView>
-      </View>
-    );
+    return <StartupErrorView error={error} componentStack={componentStack} />;
   }
+}
+
+/** Shown for render errors AND for import-time failures caught in index.js. */
+export function StartupErrorView({
+  error,
+  componentStack,
+}: {
+  error: unknown;
+  componentStack?: string | null;
+}) {
+  const err = error instanceof Error ? error : new Error(String(error));
+  return (
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>The app hit a snag</Text>
+        <Text style={styles.subtitle}>
+          The app caught a startup error. This screen is here so the details can be read and
+          reported instead of the app closing.
+        </Text>
+
+        <Text style={styles.label}>Error</Text>
+        <Text style={styles.mono} selectable>
+          {err.name}: {err.message}
+        </Text>
+
+        {err.stack ? (
+          <>
+            <Text style={styles.label}>Stack</Text>
+            <Text style={styles.monoSmall} selectable>
+              {err.stack}
+            </Text>
+          </>
+        ) : null}
+
+        {componentStack ? (
+          <>
+            <Text style={styles.label}>Component stack</Text>
+            <Text style={styles.monoSmall} selectable>
+              {componentStack}
+            </Text>
+          </>
+        ) : null}
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

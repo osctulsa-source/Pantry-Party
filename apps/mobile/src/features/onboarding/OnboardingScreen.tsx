@@ -23,6 +23,7 @@ import { BRAND } from '../../theme/brand';
 import { OnboardingHeroArt } from '../../components/illustrations/OnboardingHeroArt';
 import { useAuth } from '../auth/AuthContext';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import { ensureDefaultHousehold } from '../household/ensureDefaultHousehold';
 import { addPantryItem } from '../pantry/addPantryItem';
 import { QuickAddStaples } from '../pantry/QuickAddStaples';
 import type { Staple } from '../pantry/staples';
@@ -126,18 +127,37 @@ export function OnboardingScreen({ onDone }: { onDone: (result: { seededPantry: 
 
   // Tapping Continue while staples are still queued (household hasn't resolved)
   // must not drop them. Enter a "finishing" state that blocks the buttons; the
-  // effect below calls onDone() only once the queue has drained.
-  function finish() {
+  // effect below calls onDone() only once the queue has drained. If household
+  // bootstrap never ran (sync down / timed out), provision one here so Done
+  // cannot hang on "Finishing up…" forever.
+  const doneRef = useRef(false);
+  const emitDone = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    void track('staples_seeded', { count: added.length });
+    onDone({ seededPantry: added.length > 0 });
+  }, [added.length, onDone]);
+
+  async function finish() {
     if (finishing) return;
     setFinishing(true);
+    if (userId && !activeHouseholdId) {
+      try {
+        await ensureDefaultHousehold(userId);
+      } catch (e: unknown) {
+        console.error('Onboarding household bootstrap failed:', e);
+      }
+    }
   }
   useEffect(() => {
-    if (finishing && pendingStaples.length === 0 && !flushing) {
-      // count === 0 means the user skipped seeding — a first-class funnel signal.
-      void track('staples_seeded', { count: added.length });
-      onDone({ seededPantry: added.length > 0 });
+    if (!finishing) return;
+    if (pendingStaples.length === 0 && !flushing) {
+      emitDone();
+      return;
     }
-  }, [finishing, pendingStaples, flushing, onDone, added.length]);
+    const t = setTimeout(emitDone, 12_000);
+    return () => clearTimeout(t);
+  }, [finishing, pendingStaples, flushing, emitDone]);
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right', 'bottom']}>

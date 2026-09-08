@@ -108,7 +108,7 @@ const linking: LinkingOptions<RootStackParamList> = {
   },
 };
 
-function AppStack({ landOnCook }: { landOnCook: boolean }) {
+function AppStack() {
   // Keep the home/lock-screen widgets in sync with the live pantry and
   // shopping list while the user is in the authenticated tree (iOS-only,
   // best-effort — see useExpiringWidget / useShoppingWidget).
@@ -131,7 +131,6 @@ function AppStack({ landOnCook }: { landOnCook: boolean }) {
         name="MainTabs"
         component={MainTabs}
         options={{ headerShown: false }}
-        initialParams={landOnCook ? { screen: 'CookTab' } : undefined}
       />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{ title: 'Add item' }} />
       <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan' }} />
@@ -195,10 +194,6 @@ function AppRoot() {
   const userId = state.status === 'authenticated' ? state.session.user.id : null;
   const { needsOnboarding, loading: onboardingLoading, complete } = useOnboarding(userId);
 
-  // After onboarding, land a user who SEEDED staples straight on the Cook tab
-  // (their first match is the payoff); a user who skipped lands on Pantry as
-  // before. Consumed as MainTabs' initial nested route in AppStack.
-  const [landOnCook, setLandOnCook] = useState(false);
   // Soft terracotta welcome beat once per sign-on (resets on sign-out).
   const [welcomeDone, setWelcomeDone] = useState(false);
   // First-run glyph stagger plays once before the welcome splash.
@@ -238,15 +233,16 @@ function AppRoot() {
   if (needsOnboarding) {
     return (
       <OnboardingScreen
-        onDone={({ seededPantry }) => {
-          setLandOnCook(seededPantry);
+        onDone={() => {
+          // Land on Pantry (the home tab) so seeded staples are visible.
+          // Cook-tab landing hid the items and looked like a failed setup.
           void complete();
         }}
       />
     );
   }
 
-  return <AppStack landOnCook={landOnCook} />;
+  return <AppStack />;
 }
 
 export default function App() {

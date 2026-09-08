@@ -31,7 +31,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import {
   ActivityIndicator,
   Animated,
-  FlatList,
   Image,
   Modal,
   type NativeScrollEvent,
@@ -1070,7 +1069,7 @@ function CookThis({
 
   return (
     <>
-      <FlatList
+      <Animated.FlatList
         data={pool}
         keyExtractor={(r) => String(r.id)}
         renderItem={({ item }) => (
