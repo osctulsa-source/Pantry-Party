@@ -41,6 +41,7 @@ describe('withForceJsBundleEmbed', () => {
     expect(forceBundlePhase(project)).toBe(1);
     const phase = project.hash.project.objects.PBXShellScriptBuildPhase.abc;
     expect(phase.alwaysOutOfDate).toBe(1);
+    expect(phase.shellScript).toContain('embed-jsbundle.sh');
     expect(phase.outputPaths.some((p) => String(p).includes('main.jsbundle'))).toBe(true);
     expect(project.hash.project.objects.PBXShellScriptBuildPhase.def.alwaysOutOfDate).toBeUndefined();
   });

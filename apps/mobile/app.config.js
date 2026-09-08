@@ -101,6 +101,12 @@ module.exports = {
       },
     },
     plugins: [
+      // Listed FIRST so it RUNS LAST. Sentry + PostHog rewrite the RN bundle
+      // phase to `/bin/sh sentry-xcode.sh /bin/sh posthog-xcode.sh …`; Sentry
+      // then treats that extra `/bin/sh` as the bundler. With
+      // SENTRY_DISABLE_AUTO_UPLOAD=true it exits 0 without writing JS
+      // (TestFlight 46). This plugin must overwrite that composition.
+      './plugins/withForceJsBundleEmbed',
       'expo-font',
       'expo-dev-client',
       [
@@ -144,11 +150,6 @@ module.exports = {
       '@sentry/react-native',
       'expo-localization',
       'posthog-react-native/expo',
-      // Force the RN "Bundle React Native code and images" phase to run on
-      // Release archives. Xcode skips it under "Based on dependency analysis"
-      // when it has no outputs; build 46 shipped with no main.jsbundle and
-      // crashed instantly (AppDelegate looks for that file with updates off).
-      './plugins/withForceJsBundleEmbed',
       // MUST be listed BEFORE expo-widgets — yes, before.
       //
       // @expo/config-plugins composes same-key mods so that the LAST registered

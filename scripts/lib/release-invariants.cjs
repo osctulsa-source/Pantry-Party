@@ -104,6 +104,20 @@ function checkReleaseInvariants({ config, easJson, easignore }) {
     ok('withForceJsBundleEmbed is registered so Release archives embed main.jsbundle');
   }
 
+  const sentryIdx = plugins.findIndex((p) => String(pluginName(p)).includes('@sentry/react-native'));
+  if (forceJsIdx !== -1 && sentryIdx !== -1 && forceJsIdx > sentryIdx) {
+    fail(
+      'withForceJsBundleEmbed is ordered after @sentry/react-native',
+      'Sentry rewrites the RN bundle phase. @expo/config-plugins runs the last\n' +
+        'registered withXcodeProject first, so listing this plugin after Sentry makes\n' +
+        'Sentry run last and restore `/bin/sh sentry-xcode.sh /bin/sh …` — the wrap\n' +
+        'that shipped TestFlight 46 with no JS. List withForceJsBundleEmbed BEFORE\n' +
+        'Sentry (and PostHog) so it runs last and keeps the embed script.',
+    );
+  } else if (forceJsIdx !== -1 && sentryIdx !== -1) {
+    ok('withForceJsBundleEmbed is listed before Sentry so it runs last');
+  }
+
   if (config?.updates?.enabled !== false) {
     fail(
       'expo-updates is enabled',
