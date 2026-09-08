@@ -107,7 +107,6 @@ function ensureVerifyPhase(project) {
   project.addBuildPhase([], 'PBXShellScriptBuildPhase', VERIFY_PHASE_NAME, targetUuid, {
     shellPath: '/bin/sh',
     shellScript: VERIFY_SCRIPT,
-    outputPaths: [JSBUNDLE_OUTPUT],
   });
 
   // addBuildPhase does not set alwaysOutOfDate; pin it the same way as the
