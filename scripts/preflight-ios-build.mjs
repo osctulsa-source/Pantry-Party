@@ -22,6 +22,8 @@
  *   5. expo-widgets hardcodes the widget extension to version 1, which is a fatal
  *      IPA mismatch. -> withWidgetVersionSync must be registered after it.
  *   6. `.dev` bundle ids ship when APP_VARIANT is not set at prebuild time.
+ *   7. Build 46 shipped with expo-updates off and no main.jsbundle (Xcode skipped
+ *      the RN bundle phase). Instant launch crash. -> withForceJsBundleEmbed.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';

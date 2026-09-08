@@ -51,8 +51,15 @@ git add apps/mobile/app.config.js && git commit -m "chore(ios): build N" && git 
 # 3. Gate: verifies provenance, config invariants and the build number
 npm run ios:preflight
 
-# 4. Build
-cd apps/mobile && eas build --platform ios --profile production
+# 4. Build (Mac-local for the binary you will actually install)
+cd apps/mobile && eas build --platform ios --profile production --local --non-interactive
+
+# 5. Confirm the IPA contains JS before Apple ever sees it.
+#    Build 46 had no main.jsbundle and crashed on launch.
+npm run ios:inspect-ipa -- path/to.ipa
+
+# 6. Submit that exact IPA (not --latest)
+APP_VARIANT=production npx eas-cli submit --platform ios --profile production --path path/to.ipa
 ```
 
 **Do not skip step 3.** `npm run ios:preflight` is the whole postmortem list
@@ -70,6 +77,8 @@ minutes and a wasted build number:
 | Production bundle id has no `.dev` suffix | `APP_VARIANT` not applying silently produces an unuploadable binary. |
 | `appVersionSource: local`, `autoIncrement: false` | The version scheme this repo can actually support (see below). |
 | `.easignore` does not un-ignore `ios/` | Uploading a native project makes EAS skip prebuild and ignore your config. |
+| `withForceJsBundleEmbed` is registered | Build 46 shipped with no `main.jsbundle` (Xcode skipped the RN bundle phase). Instant crash with updates off. |
+| `updates.enabled` is false | Builds 36/41/45 abort at `RelaunchProcedure.swift:94` (expo/expo#45154). |
 
 The same invariants — everything above that does not need network or git — also
 run in CI as `apps/mobile/releaseInvariants.test.js`, so a PR that breaks one

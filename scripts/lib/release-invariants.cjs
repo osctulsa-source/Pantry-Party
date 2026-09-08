@@ -87,6 +87,35 @@ function checkReleaseInvariants({ config, easJson, easignore }) {
     ok('withWidgetVersionSync is ordered to run after expo-widgets (listed before it)');
   }
 
+  // --- embedded JS (TestFlight 46) -----------------------------------------
+  const forceJsIdx = plugins.findIndex((p) =>
+    String(pluginName(p)).includes('withForceJsBundleEmbed'),
+  );
+  if (forceJsIdx === -1) {
+    fail(
+      'withForceJsBundleEmbed is not registered',
+      'Xcode skips the "Bundle React Native code and images" phase when it has no\n' +
+        'input/output files ("Based on dependency analysis"). TestFlight build 46\n' +
+        'shipped with no main.jsbundle. With expo-updates disabled, AppDelegate looks\n' +
+        'for that file and the app dies on launch: "No script URL provided".\n' +
+        'Keep ./plugins/withForceJsBundleEmbed in app.config.js so the phase always runs.',
+    );
+  } else {
+    ok('withForceJsBundleEmbed is registered so Release archives embed main.jsbundle');
+  }
+
+  if (config?.updates?.enabled !== false) {
+    fail(
+      'expo-updates is enabled',
+      'Builds 36/41/45 abort in ~1s at RelaunchProcedure.swift:94 (expo/expo#45154).\n' +
+        'Keep updates.enabled false until expo-updates no longer force-unwraps a nil\n' +
+        'error, then cut a new binary. A JS fatal inside 10s of first launch is what\n' +
+        'triggers that path — RootErrorBoundary cannot catch it.',
+    );
+  } else {
+    ok('expo-updates is disabled (RelaunchProcedure.swift:94 abort)');
+  }
+
   const widgets = plugins.find((p) => pluginName(p) === 'expo-widgets');
   const widgetBundleId = Array.isArray(widgets) ? widgets[1]?.bundleIdentifier : undefined;
   if (widgetBundleId !== `${bundleId}${WIDGET_TARGET_SUFFIX}`) {

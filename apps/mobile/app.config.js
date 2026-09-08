@@ -82,8 +82,8 @@ module.exports = {
       // is strictly greater than every build number EAS has already issued.
       //   node scripts/preflight-ios-build.mjs --set-next   (bumps it for you)
       //   node scripts/preflight-ios-build.mjs              (verifies it)
-      // EAS has already issued 45, so the next production binary is 46.
-      buildNumber: '46',
+      // EAS has already issued 46, so the next production binary is 47.
+      buildNumber: '47',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -144,6 +144,11 @@ module.exports = {
       '@sentry/react-native',
       'expo-localization',
       'posthog-react-native/expo',
+      // Force the RN "Bundle React Native code and images" phase to run on
+      // Release archives. Xcode skips it under "Based on dependency analysis"
+      // when it has no outputs; build 46 shipped with no main.jsbundle and
+      // crashed instantly (AppDelegate looks for that file with updates off).
+      './plugins/withForceJsBundleEmbed',
       // MUST be listed BEFORE expo-widgets — yes, before.
       //
       // @expo/config-plugins composes same-key mods so that the LAST registered

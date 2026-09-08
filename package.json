@@ -19,6 +19,7 @@
     "smoke": "maestro test .maestro",
     "ios:preflight": "node scripts/preflight-ios-build.mjs",
     "ios:next-build-number": "node scripts/preflight-ios-build.mjs --set-next",
+    "ios:inspect-ipa": "node scripts/inspect-ios-ipa.mjs",
     "ios:submit": "bash scripts/submit-ios.sh",
     "ota:publish": "bash scripts/publish-ota.sh"
   },

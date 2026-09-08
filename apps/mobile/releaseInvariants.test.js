@@ -68,7 +68,12 @@ describe('iOS release invariants', () => {
     const broken = {
       ...config,
       runtimeVersion: { policy: 'fingerprint' },
-      plugins: config.plugins.filter((p) => !String(Array.isArray(p) ? p[0] : p).includes('withWidgetVersionSync')),
+      updates: { ...(config.updates ?? {}), enabled: true },
+      plugins: config.plugins.filter(
+        (p) =>
+          !String(Array.isArray(p) ? p[0] : p).includes('withWidgetVersionSync') &&
+          !String(Array.isArray(p) ? p[0] : p).includes('withForceJsBundleEmbed'),
+      ),
     };
     const { failures } = checkReleaseInvariants({
       config: broken,
@@ -81,6 +86,8 @@ describe('iOS release invariants', () => {
       expect.arrayContaining([
         expect.stringContaining('runtimeVersion'),
         expect.stringContaining('withWidgetVersionSync'),
+        expect.stringContaining('withForceJsBundleEmbed'),
+        expect.stringContaining('expo-updates is enabled'),
         expect.stringContaining('appVersionSource'),
         expect.stringContaining('autoIncrement'),
         expect.stringContaining('.easignore'),
