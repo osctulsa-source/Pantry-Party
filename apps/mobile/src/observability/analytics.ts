@@ -8,7 +8,9 @@
  * + the authenticated user id (for prod RLS) + the event name + a small JSON
  * prop bag. No offline outbox yet: events that fail to send (offline, or table
  * absent in dev) are dropped, which is acceptable for early funnel measurement.
- * Measures the install → first-match funnel.
+ * Measures the install → first-match funnel, plus capture accuracy: scan_result
+ * is the central twin of the on-device scanLog, which is per-device AsyncStorage
+ * and therefore can never be aggregated across testers.
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
@@ -21,7 +23,8 @@ export type AnalyticsEvent =
   | 'staples_seeded'
   | 'first_match_shown'
   | 'recipe_opened'
-  | 'cook_this_confirmed';
+  | 'cook_this_confirmed'
+  | 'scan_result';
 
 const INSTALL_ID_KEY = 'analytics:installId';
 let cachedInstallId: string | null = null;

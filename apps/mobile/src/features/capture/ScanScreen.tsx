@@ -51,6 +51,7 @@ import {
   isRetailBarcode,
   lookupHouseholdBarcode,
 } from '../../data/lookupHouseholdBarcode';
+import { track } from '../../observability/analytics';
 import { recordScan } from './scanLog';
 import { ScanReviewSheet, type ScanBasketItem } from './ScanReviewSheet';
 import { resolveScanPayload } from './resolveScanPayload';
@@ -232,6 +233,11 @@ export function ScanScreen() {
         }
       : off;
     void recordScan(activeHouseholdId, code, product?.name != null);
+    // scanLog is per-device AsyncStorage, so it can never be aggregated across
+    // testers. `source` splits a household-memory hit from an Open Food Facts
+    // hit — without it, re-scans of already-named items inflate apparent OFF
+    // coverage and the >=90% capture gate measures the wrong thing.
+    void track('scan_result', { hit: product?.name != null, source: household ? 'household' : 'off' });
 
     if (mode === 'confirm') {
       setName(product?.name ?? '');

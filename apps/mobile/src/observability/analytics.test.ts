@@ -41,4 +41,15 @@ describe('track', () => {
       expect.objectContaining({ recipe_id: 'abc', install_id: 'test-uuid' }),
     );
   });
+
+  // The capture-accuracy event: `source` must survive the round trip, because
+  // splitting 'household' from 'off' is what makes the hit rate mean anything.
+  it('passes hit and source through for scan_result', async () => {
+    (capturePostHog as jest.Mock).mockClear();
+    await track('scan_result', { hit: false, source: 'off' });
+    expect(capturePostHog).toHaveBeenCalledWith(
+      'scan_result',
+      expect.objectContaining({ hit: false, source: 'off', install_id: 'test-uuid' }),
+    );
+  });
 });
