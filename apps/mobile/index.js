@@ -2,6 +2,7 @@
 import 'react-native-gesture-handler';
 
 import { registerRootComponent } from 'expo';
+import * as Sentry from '@sentry/react-native';
 
 import { initSentry } from './src/observability/sentry';
 import { RootErrorBoundary, StartupErrorView } from './src/components/RootErrorBoundary';
@@ -31,6 +32,15 @@ function loadRoot() {
     }
     return Root;
   } catch (error) {
+    // Report the boot failure too. StartupErrorView shows it on-device, but
+    // without this the event reaches nobody: RootErrorBoundary only catches
+    // render errors, and an import-time throw never renders. (The gap #242
+    // would have closed by routing boot errors through the boundary.)
+    try {
+      Sentry.captureException(error, { tags: { boundary: 'boot' } });
+    } catch {
+      // never let error reporting cause a second failure
+    }
     return function BootFailure() {
       return <StartupErrorView error={error} />;
     };
