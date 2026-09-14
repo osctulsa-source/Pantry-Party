@@ -121,6 +121,9 @@ export function ScanScreen() {
   const [lookupSlow, setLookupSlow] = useState(false);
 
   const lastScan = useRef<{ code: string; at: number }>({ code: '', at: 0 });
+  // Items the receipt parser produced this session — the denominator for the
+  // ocr_review kept/parsed precision proxy fired from onAddAll.
+  const ocrParsed = useRef(0);
 
   // D2: confirm card spring entrance — slides up from below with overshoot.
   const cardSlide = useRef(new Animated.Value(300)).current;
@@ -335,15 +338,26 @@ export function ScanScreen() {
       });
       setDetectedStore(ocr.detectedStore?.name ?? null);
       pushNamesToBasket(ocr.items, 'TEXT');
+      ocrParsed.current += ocr.items.length;
+      // OCR accuracy telemetry: counts only — the recognized text never leaves
+      // the device. `items` = what the parser produced; text_chars sizes the read.
+      void track('ocr_result', { ok: true, items: ocr.items.length, text_chars: ocr.textChars });
       setReviewOpen(true);
     } catch (e: unknown) {
+      // Attribution split: textChars > 0 on an empty result = the OCR read text
+      // but the receipt parser found no item lines (parser gap); 0 = the camera
+      // saw nothing (capture quality). Both count against the >=85% OCR bar.
+      let reason: 'unavailable' | 'empty_ocr' | 'empty_parse' | 'error' = 'error';
       if (e instanceof TextOcrUnavailableError) {
+        reason = 'unavailable';
         setOcrError('Text scan needs a newer app build. Try paste-a-list instead.');
       } else if (e instanceof TextOcrEmptyError) {
+        reason = e.textChars > 0 ? 'empty_parse' : 'empty_ocr';
         setOcrError(e.message);
       } else {
         setOcrError('Could not read that — try brighter light and hold steady.');
       }
+      void track('ocr_result', { ok: false, reason });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
     } finally {
       setOcrBusy(false);
@@ -437,6 +451,12 @@ export function ScanScreen() {
         });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      // Precision proxy for the OCR path: rows the parser produced vs rows the
+      // user kept (deleted rows were misparses). Counts only; TEXT-tagged rows.
+      if (ocrParsed.current > 0) {
+        const kept = addable.filter((b) => b.barcode === 'TEXT').length;
+        void track('ocr_review', { parsed: ocrParsed.current, kept });
+      }
       navigation.goBack();
     } finally {
       setAddingAll(false);
