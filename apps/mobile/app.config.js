@@ -151,6 +151,9 @@ module.exports = {
       // only rewrites the app target; this hook raises the leftover resource bundles
       // (Sentry, RNSVG, AsyncStorage) that failed the first build-49 archive.
       './plugins/withPodMinIos',
+      // Nested ExpoModulesJSI `xcodebuild -quiet` prints a phantom error on
+      // Xcode 27 that fails gym even when the archive (and JS bundle) succeeded.
+      './plugins/withExpoModulesJsiXcode27',
       [
         'expo-notifications',
         {

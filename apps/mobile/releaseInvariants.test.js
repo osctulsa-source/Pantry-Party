@@ -73,7 +73,8 @@ describe('iOS release invariants', () => {
         (p) =>
           !String(Array.isArray(p) ? p[0] : p).includes('withWidgetVersionSync') &&
           !String(Array.isArray(p) ? p[0] : p).includes('withForceJsBundleEmbed') &&
-          !String(Array.isArray(p) ? p[0] : p).includes('withPodMinIos'),
+          !String(Array.isArray(p) ? p[0] : p).includes('withPodMinIos') &&
+          !String(Array.isArray(p) ? p[0] : p).includes('withExpoModulesJsiXcode27'),
       ),
     };
     const { failures } = checkReleaseInvariants({
@@ -89,6 +90,7 @@ describe('iOS release invariants', () => {
         expect.stringContaining('withWidgetVersionSync'),
         expect.stringContaining('withForceJsBundleEmbed'),
         expect.stringContaining('withPodMinIos'),
+        expect.stringContaining('withExpoModulesJsiXcode27'),
         expect.stringContaining('expo-updates is enabled'),
         expect.stringContaining('appVersionSource'),
         expect.stringContaining('autoIncrement'),

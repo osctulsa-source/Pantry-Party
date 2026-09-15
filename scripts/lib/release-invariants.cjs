@@ -131,6 +131,20 @@ function checkReleaseInvariants({ config, easJson, easignore }) {
     ok('withPodMinIos is registered so CocoaPods targets meet the Xcode 27 iOS 15 floor');
   }
 
+  const jsiQuietIdx = plugins.findIndex((p) =>
+    String(pluginName(p)).includes('withExpoModulesJsiXcode27'),
+  );
+  if (jsiQuietIdx === -1) {
+    fail(
+      'withExpoModulesJsiXcode27 is not registered',
+      'Xcode 27 treats nested `xcodebuild -quiet` in ExpoModulesJSI as\n' +
+        '`error: the following command failed with exit code 0`. gym then fails an\n' +
+        'archive that already contains main.jsbundle. Keep ./plugins/withExpoModulesJsiXcode27.',
+    );
+  } else {
+    ok('withExpoModulesJsiXcode27 is registered so nested JSI xcodebuild is not -quiet');
+  }
+
   if (config?.updates?.enabled !== false) {
     fail(
       'expo-updates is enabled',
