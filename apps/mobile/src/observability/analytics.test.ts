@@ -53,6 +53,26 @@ describe('track', () => {
     );
   });
 
+  // OCR accuracy proxies are counts only (items parsed, chars read) — the
+  // recognized text itself must never reach analytics.
+  it('passes counts through for ocr_result', async () => {
+    (capturePostHog as jest.Mock).mockClear();
+    await track('ocr_result', { ok: true, items: 7, text_chars: 412 });
+    expect(capturePostHog).toHaveBeenCalledWith(
+      'ocr_result',
+      expect.objectContaining({ ok: true, items: 7, text_chars: 412, install_id: 'test-uuid' }),
+    );
+  });
+
+  it('passes parsed vs kept counts through for ocr_review', async () => {
+    (capturePostHog as jest.Mock).mockClear();
+    await track('ocr_review', { parsed: 9, kept: 6 });
+    expect(capturePostHog).toHaveBeenCalledWith(
+      'ocr_review',
+      expect.objectContaining({ parsed: 9, kept: 6, install_id: 'test-uuid' }),
+    );
+  });
+
   // Paste/order-list precision proxy: counts only — pasted text never leaves the device.
   it('passes parsed vs kept counts through for paste_add', async () => {
     (capturePostHog as jest.Mock).mockClear();
