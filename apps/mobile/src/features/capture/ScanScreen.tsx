@@ -35,9 +35,14 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
-import { ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-react-native';
+import { Image as ImageIcon, ShoppingBasket, Zap, ZapOff, ScanLine, QrCode, Type } from 'lucide-react-native';
 
-import { suggestExpiryISO, suggestStorageLocation, type CaptureSource } from '@breadbox/core';
+import {
+  suggestExpiryISO,
+  suggestStorageLocation,
+  type CaptureSource,
+  type GroceryPasteItem,
+} from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { BrandLoader } from '../../components/BrandDecor';
 import { BrandLoading } from '../../components/BrandLoading';
@@ -56,6 +61,7 @@ import { recordScan } from './scanLog';
 import { ScanReviewSheet, type ScanBasketItem } from './ScanReviewSheet';
 import { resolveScanPayload } from './resolveScanPayload';
 import { runTextOcr, TextOcrEmptyError, TextOcrUnavailableError } from './runTextOcr';
+import { PhotoLibraryDeniedError, pickReceiptImage } from './pickReceiptImage';
 import type { RootStackParamList } from '../../../App';
 
 const RETAIL_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e'] as const;
@@ -192,29 +198,37 @@ export function ScanScreen() {
   }
 
   function pushNamesToBasket(names: string[], sourceTag: string) {
+    pushOcrItems(
+      names.map((name) => ({ name, quantity: 1, unit: null })),
+      sourceTag,
+    );
+  }
+
+  function pushOcrItems(items: GroceryPasteItem[], sourceTag: string) {
     const now = Date.now();
     setBasket((prev) => {
       let next = [...prev];
-      for (const name of names) {
+      for (const item of items) {
         if (next.length >= MAX_BASKET) break;
         next = [
           ...next,
           {
-            key: `${sourceTag}-${name}-${now}-${next.length}`,
+            key: `${sourceTag}-${item.name}-${now}-${next.length}`,
             barcode: sourceTag,
-            name,
+            name: item.name,
             brand: null,
-            sizeText: null,
+            sizeText: item.unit ? `${item.quantity} ${item.unit}` : null,
             imageUrl: null,
             category: null,
-            qty: 1,
+            qty: item.quantity,
+            unit: item.unit,
           },
         ];
       }
       return next;
     });
-    if (names.length > 0) {
-      setLastAdded(names[names.length - 1] ?? null);
+    if (items.length > 0) {
+      setLastAdded(items[items.length - 1]?.name ?? null);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
   }
@@ -326,6 +340,35 @@ export function ScanScreen() {
     setPhase({ kind: 'confirm', barcode: code, product: null, scanNote: 'QR text' });
   }
 
+  async function applyOcrUri(uri: string) {
+    const ocr = await runTextOcr(uri, {
+      favoriteStores: favoriteStores.map((s) => ({ id: s.id, name: s.name })),
+    });
+    setDetectedStore(ocr.detectedStore?.name ?? null);
+    pushOcrItems(ocr.items, 'TEXT');
+    ocrParsed.current += ocr.items.length;
+    void track('ocr_result', { ok: true, items: ocr.items.length, text_chars: ocr.textChars });
+    setReviewOpen(true);
+  }
+
+  function reportOcrFailure(e: unknown) {
+    let reason: 'unavailable' | 'empty_ocr' | 'empty_parse' | 'denied' | 'error' = 'error';
+    if (e instanceof TextOcrUnavailableError) {
+      reason = 'unavailable';
+      setOcrError('Text scan needs a newer app build. Try paste-a-list instead.');
+    } else if (e instanceof PhotoLibraryDeniedError) {
+      reason = 'denied';
+      setOcrError(e.message);
+    } else if (e instanceof TextOcrEmptyError) {
+      reason = e.textChars > 0 ? 'empty_parse' : 'empty_ocr';
+      setOcrError(e.message);
+    } else {
+      setOcrError('Could not read that — try a brighter photo or paste the list.');
+    }
+    void track('ocr_result', { ok: false, reason });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+  }
+
   async function captureText() {
     if (!cameraRef.current || !cameraReady || ocrBusy || phase.kind !== 'scanning') return;
     setOcrError(null);
@@ -333,32 +376,24 @@ export function ScanScreen() {
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.85 });
       if (!photo?.uri) throw new TextOcrEmptyError();
-      const ocr = await runTextOcr(photo.uri, {
-        favoriteStores: favoriteStores.map((s) => ({ id: s.id, name: s.name })),
-      });
-      setDetectedStore(ocr.detectedStore?.name ?? null);
-      pushNamesToBasket(ocr.items, 'TEXT');
-      ocrParsed.current += ocr.items.length;
-      // OCR accuracy telemetry: counts only — the recognized text never leaves
-      // the device. `items` = what the parser produced; text_chars sizes the read.
-      void track('ocr_result', { ok: true, items: ocr.items.length, text_chars: ocr.textChars });
-      setReviewOpen(true);
+      await applyOcrUri(photo.uri);
     } catch (e: unknown) {
-      // Attribution split: textChars > 0 on an empty result = the OCR read text
-      // but the receipt parser found no item lines (parser gap); 0 = the camera
-      // saw nothing (capture quality). Both count against the >=85% OCR bar.
-      let reason: 'unavailable' | 'empty_ocr' | 'empty_parse' | 'error' = 'error';
-      if (e instanceof TextOcrUnavailableError) {
-        reason = 'unavailable';
-        setOcrError('Text scan needs a newer app build. Try paste-a-list instead.');
-      } else if (e instanceof TextOcrEmptyError) {
-        reason = e.textChars > 0 ? 'empty_parse' : 'empty_ocr';
-        setOcrError(e.message);
-      } else {
-        setOcrError('Could not read that — try brighter light and hold steady.');
-      }
-      void track('ocr_result', { ok: false, reason });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      reportOcrFailure(e);
+    } finally {
+      setOcrBusy(false);
+    }
+  }
+
+  async function captureFromLibrary() {
+    if (ocrBusy || phase.kind !== 'scanning') return;
+    setOcrError(null);
+    setOcrBusy(true);
+    try {
+      const uri = await pickReceiptImage();
+      if (!uri) return;
+      await applyOcrUri(uri);
+    } catch (e: unknown) {
+      reportOcrFailure(e);
     } finally {
       setOcrBusy(false);
     }
@@ -418,7 +453,12 @@ export function ScanScreen() {
   }
   function qtyBasket(key: string, delta: number) {
     setBasket((prev) =>
-      prev.map((b) => (b.key === key ? { ...b, qty: Math.max(1, Math.min(99, b.qty + delta)) } : b)),
+      prev.map((b) => {
+        if (b.key !== key) return b;
+        const min = b.unit ? 0.1 : 1;
+        const next = Math.round((b.qty + delta) * 10) / 10;
+        return { ...b, qty: Math.max(min, Math.min(99, next)) };
+      }),
     );
   }
   function removeBasket(key: string) {
@@ -444,6 +484,7 @@ export function ScanScreen() {
           brand: b.brand?.trim() || null,
           barcode: isRetailBarcode(b.barcode) ? b.barcode : null,
           quantity: b.qty,
+          unit: b.unit ?? null,
           category: category ?? null,
           location,
           expiresIso: suggestExpiryISO({ name: nm, category, location }),
@@ -618,7 +659,7 @@ export function ScanScreen() {
           <>
             <Text style={styles.hint}>
               {favoriteStores.length === 0
-                ? 'Point at a receipt or label, then tap Read text'
+                ? 'Point at a receipt, or choose a screenshot of a grocery order'
                 : 'Point at a receipt — we’ll use your saved stores to read it better'}
             </Text>
             <Pressable
@@ -633,6 +674,16 @@ export function ScanScreen() {
               ) : (
                 <Text style={styles.captureBtnTxt}>Read text</Text>
               )}
+            </Pressable>
+            <Pressable
+              style={[styles.photoBtn, ocrBusy && styles.captureBtnDisabled]}
+              onPress={() => void captureFromLibrary()}
+              disabled={ocrBusy}
+              accessibilityRole="button"
+              accessibilityLabel="Choose a receipt or order screenshot from photos"
+            >
+              <ImageIcon size={16} color={tokens.color.accent} />
+              <Text style={styles.photoBtnTxt}>Choose a screenshot</Text>
             </Pressable>
             {detectedStore && (
               <Text style={styles.detectedStore}>Read as {detectedStore}</Text>
@@ -897,6 +948,18 @@ const styles = StyleSheet.create({
   },
   captureBtnDisabled: { opacity: 0.5 },
   captureBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.onAccent },
+  photoBtn: {
+    marginTop: tokens.space(2),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: tokens.space(2),
+  },
+  photoBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.accent },
   ocrError: {
     marginTop: tokens.space(2),
     fontFamily: tokens.font.body.medium,

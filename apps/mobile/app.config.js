@@ -127,6 +127,13 @@ module.exports = {
         },
       ],
       [
+        'expo-image-picker',
+        {
+          photosPermission:
+            'Pantry Party uses your photos to read receipts and grocery-order screenshots on your device.',
+        },
+      ],
+      [
         'expo-mlkit-ocr',
         {
           iosEngine: 'auto',

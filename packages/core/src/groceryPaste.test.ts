@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseGroceryPaste } from "./groceryPaste.ts";
+import { looksLikeGroceryOrderDump, parseGroceryPaste } from "./groceryPaste.ts";
 
 /** Reconstructed clipboard from the 2026-09-14 Instacart delivered-order screenshot. */
 const INSTACART_ORDER_DUMP = `
@@ -119,5 +119,12 @@ describe("parseGroceryPaste", () => {
   it("dedupes a typed list case-insensitively", () => {
     const result = parseGroceryPaste("Milk\nmilk\nEggs");
     expect(result.items.map((i) => i.name)).toEqual(["Milk", "Eggs"]);
+  });
+
+  it("treats Instacart chrome as an order dump even without a lone $ line", () => {
+    expect(looksLikeGroceryOrderDump("Found (9)\nDiet Coke")).toBe(true);
+    expect(looksLikeGroceryOrderDump("$7.57 · each")).toBe(true);
+    expect(looksLikeGroceryOrderDump("MILK 2%           3.49")).toBe(false);
+    expect(looksLikeGroceryOrderDump("Subtotal $12.00")).toBe(false);
   });
 });

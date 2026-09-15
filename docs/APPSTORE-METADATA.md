@@ -26,9 +26,9 @@ changeable if the brand (Larder/Crumb) lands later.
 > working even when your phone is offline.
 >
 > ADD GROCERIES IN SECONDS
-> Scan a barcode and items name themselves. Point the camera at a receipt and
-> Pantry Party reads it — no typing, no forms. Or add things by hand when you
-> prefer.
+> Scan a barcode and items name themselves. Point the camera at a receipt, or
+> choose a screenshot of a grocery order, and Pantry Party reads it on your
+> device — no typing, no forms. Or add things by hand when you prefer.
 >
 > STOP WASTING FOOD
 > Track best-before dates and fill levels. See what's expiring soon and cook it
@@ -63,8 +63,9 @@ changeable if the brand (Larder/Crumb) lands later.
 | Diagnostics → Crash Data | Yes (Sentry, no PII) | **No** | No |
 | Location, Contacts, Health, Purchases, Browsing, Search history | Not collected | — | — |
 
-Camera: used for barcode/receipt/QR scanning; images processed on device, never
-stored or transmitted (matches the privacy policy and the `NSCameraUsageDescription`).
+Camera: used for barcode/receipt/QR scanning; Photos library used when you
+choose a receipt screenshot. Images processed on device, never stored or
+transmitted (matches the privacy policy and the camera/photos usage strings).
 
 ## Beta review notes (external TestFlight)
 

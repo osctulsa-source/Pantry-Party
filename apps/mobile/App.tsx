@@ -60,7 +60,7 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   AddItem: undefined;
   Scan: undefined;
-  BulkPaste: undefined;
+  BulkPaste: { pickPhoto?: boolean } | undefined;
   QuickAdd: undefined;
   EditItem: { itemId: string };
   ExpiringSoon: undefined;

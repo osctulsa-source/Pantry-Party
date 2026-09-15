@@ -60,8 +60,8 @@ App so it can do its job, including:
 **c. Barcodes you scan.** When you use the barcode scanner, your device's camera
 decodes the barcode **on your device**. We send only the resulting **barcode
 number** to a product database (Open Food Facts) to look up the product name and
-brand. Camera images are **not** stored by us and are **not** transmitted off
-your device.
+brand. Camera images and receipt photos you choose from your library are
+**not** stored by us and are **not** transmitted off your device.
 
 **d. Recipe search terms.** To suggest recipes, we send **ingredient names
 derived from your pantry** (and an optional meal type) to our server, which
@@ -69,7 +69,8 @@ queries a recipe provider (Spoonacular). We do **not** attach your name, email,
 or account identifier to those upstream recipe queries.
 
 **e. Device permissions.**
-- **Camera** — used only to scan barcodes, as described above.
+- **Camera** — used only to scan barcodes, QR codes, and receipts, as described above.
+- **Photos** — used only when you choose a receipt or grocery-order screenshot to read on your device. We do not upload the image.
 - **Notifications** — used to schedule **local** reminders on your device
   (expiry reminders, cook‑mode timers). These are scheduled on the device; we do
   not operate a push‑advertising server. You can disable them in your OS
@@ -156,6 +157,8 @@ cycle).
 - **Notifications.** Turn reminders off in your device's OS settings.
 - **Camera.** Revoke camera access in your device settings (barcode scanning
   will stop working).
+- **Photos.** Revoke Photos access in your device settings (reading a receipt
+  screenshot will stop working; paste and camera capture still work).
 - **Diagnostics.** `[Describe how a user disables diagnostics, if exposed in‑app;
   otherwise state the default.]`
 

@@ -422,11 +422,11 @@ export function RecipesScreen() {
 
   // Collapsing header: the title/meal-chips/filters block slides up and out as
   // the recipe feed scrolls down (and back in on scroll-up), giving the feed
-  // more room. Transform-only (translateY), so this stays on the native driver
-  // for smooth scroll-linked motion — no react-native-reanimated dependency
-  // needed. The header is measured via onLayout (its height is dynamic: meal
-  // chips wrap, the device row and ingredient panel show/hide) and the content
-  // below it gets a matching paddingTop so nothing starts out hidden behind it.
+  // more room. Transform-only (translateY), so this stays on the native driver.
+  // The header is measured via onLayout and the feed's contentContainerStyle
+  // gets matching paddingTop so the first card starts below it — that padding
+  // scrolls away with the list. A wrapper around the header clips it so it
+  // cannot slide into the status bar / Dynamic Island.
   const [headerHeight, setHeaderHeight] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const clampedScroll = useMemo(
@@ -501,6 +501,7 @@ export function RecipesScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'left', 'right']}>
+      <View style={styles.body}>
       <Animated.View
         style={[styles.collapsingHeader, { transform: [{ translateY: headerTranslateY }] }]}
         onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
@@ -624,13 +625,17 @@ export function RecipesScreen() {
         </View>
       </Animated.View>
 
-      <View style={[styles.belowHeader, { paddingTop: headerHeight }]}>
+      <View style={styles.belowHeader}>
         {cooked && <CookSuccessBurst key={cooked.key} itemCount={cooked.count} />}
 
-        {recipeState.kind === 'loading' && <CookSkeleton />}
+        {recipeState.kind === 'loading' && (
+          <View style={{ paddingTop: headerHeight }}>
+            <CookSkeleton />
+          </View>
+        )}
 
         {recipeState.kind === 'error' && (
-          <View style={styles.center}>
+          <View style={[styles.center, { paddingTop: headerHeight }]}>
             <CookErrorArt />
             <Text style={styles.errorTitle}>Couldn't load recipes</Text>
             <Text style={styles.helper}>{recipeState.message}</Text>
@@ -638,11 +643,15 @@ export function RecipesScreen() {
         )}
 
         {recipeState.kind === 'empty' && recipeState.reason === 'no-pantry' && (
-          <CuratedBrowse meal={meal} onAddToPantry={() => navigation.navigate('QuickAdd')} />
+          <CuratedBrowse
+            meal={meal}
+            onAddToPantry={() => navigation.navigate('QuickAdd')}
+            contentInsetTop={headerHeight}
+          />
         )}
 
         {recipeState.kind === 'empty' && recipeState.reason !== 'no-pantry' && (
-          <View style={styles.center}>
+          <View style={[styles.center, { paddingTop: headerHeight }]}>
             <BrandEmptyArt foods={['bread', 'tomato', 'herb']} />
             <Text style={styles.errorTitle}>
               {recipeState.reason === 'all-excluded' ? "Everything's on the bench" : "That's everything we found"}
@@ -682,8 +691,10 @@ export function RecipesScreen() {
             loadingMore={loadingMore}
             deviceCard={deviceCardNode}
             onScroll={handleFeedScroll}
+            headerInset={headerHeight}
           />
         )}
+      </View>
       </View>
 
       <Modal visible={filtersOpen} transparent animationType="fade" onRequestClose={() => setFiltersOpen(false)}>
@@ -806,6 +817,7 @@ function CookThis({
   loadingMore,
   deviceCard,
   onScroll,
+  headerInset,
 }: {
   recipes: SpoonacularRecipe[];
   items: PantryItem[];
@@ -827,6 +839,7 @@ function CookThis({
   loadingMore: boolean;
   deviceCard: ReactNode;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  headerInset: number;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { favorites, isFavorited, toggleFavorite } = useFavorites();
@@ -1070,6 +1083,7 @@ function CookThis({
   return (
     <>
       <Animated.FlatList
+        style={styles.feedList}
         data={pool}
         keyExtractor={(r) => String(r.id)}
         renderItem={({ item }) => (
@@ -1124,7 +1138,7 @@ function CookThis({
         onScroll={onScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingTop: headerInset }]}
       />
 
       {cooking && (
@@ -1354,6 +1368,7 @@ function RecipeFeedCard({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: tokens.color.surface },
+  body: { flex: 1, overflow: 'hidden' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: tokens.space(8) },
   helper: {
     fontFamily: tokens.font.body.regular,
@@ -1379,6 +1394,7 @@ const styles = StyleSheet.create({
     backgroundColor: tokens.color.surface,
   },
   belowHeader: { flex: 1 },
+  feedList: { flex: 1 },
   headerPad: { paddingHorizontal: tokens.space(6), paddingTop: 0, paddingBottom: tokens.space(3) },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: tokens.space(2) },
   chip: { paddingVertical: tokens.space(2), paddingHorizontal: tokens.space(3), borderRadius: 999, backgroundColor: tokens.color.surfaceAlt },

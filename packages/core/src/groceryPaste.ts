@@ -44,13 +44,16 @@ const UNIT_BODY = "lb|lbs|oz|ct|g|kg|ml|l|cup|tbsp|tsp";
 const QTY_WITH_UNIT = new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*(${UNIT_BODY})$`, "i");
 const QTY_BARE = /^\d+(?:\.\d+)?$/;
 
+/**
+ * Instacart-style order chrome — used by screenshot OCR so a paper receipt
+ * that merely contains `$3.49` does not steal the sold-by-weight parser.
+ */
+export function looksLikeGroceryOrderDump(raw: string): boolean {
+  return FOUND_HEADER.test(raw) || MIDDOT_EACH.test(raw) || PRICE_PER_LB.test(raw);
+}
+
 function looksLikeOrderDump(raw: string): boolean {
-  return (
-    FOUND_HEADER.test(raw) ||
-    PRICE_TOKEN.test(raw) ||
-    MIDDOT_EACH.test(raw) ||
-    PRICE_PER_LB.test(raw)
-  );
+  return looksLikeGroceryOrderDump(raw) || PRICE_TOKEN.test(raw);
 }
 
 function canonicalUnit(raw: string): string | null {

@@ -7,8 +7,8 @@
  * which items appear. Location demotes to a per-row sub-label, and each row wears
  * a category icon (CategoryIcon; neutral fallback). The header folds the streak
  * chip, a search toggle, and the sync dot onto one line; a single "Add items"
- * button opens an add sheet (Scan / Add manually / Quick add) so the three
- * entry points stay one tap away without three permanent buttons.
+ * button opens an add sheet (Scan / photo / paste / Add manually / Quick add) so
+ * the entry points stay one tap away without a row of permanent buttons.
  *
  * Row interactions are unchanged from the previous list:
  *   - swipe left → ✓ Used / Remove
@@ -38,7 +38,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useQuery, useStatus } from '@powersync/react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import { ChevronDown, ChevronRight, Plus, ScanLine, Search, SquarePen, X, Zap } from 'lucide-react-native';
+import { ClipboardList, ChevronDown, ChevronRight, Image as ImageIcon, Plus, ScanLine, Search, SquarePen, X, Zap } from 'lucide-react-native';
 
 import { tokens } from '../../theme/tokens';
 import { pantryZoneTheme, type PantryZoneFilter } from '../../theme/pantryZoneTheme';
@@ -644,7 +644,7 @@ export function PantryScreen() {
           accessibilityRole="button"
           accessibilityLabel="Add items to your pantry"
         >
-          <Plus size={18} color={zoneTheme.onAccent} />
+          <Plus size={18} color={zoneTheme.onAccent} strokeWidth={2.5} />
           <Text style={[styles.addBtnTxt, { color: zoneTheme.onAccent }]}>Add items</Text>
         </Pressable>
       )}
@@ -762,6 +762,22 @@ export function PantryScreen() {
               onPress={() => {
                 setAddMenuOpen(false);
                 navigation.navigate('Scan');
+              }}
+            />
+            <AddRow
+              icon={<ImageIcon size={20} color={tokens.color.accent} />}
+              label="Photo of a receipt"
+              onPress={() => {
+                setAddMenuOpen(false);
+                navigation.navigate('BulkPaste', { pickPhoto: true });
+              }}
+            />
+            <AddRow
+              icon={<ClipboardList size={20} color={tokens.color.accent} />}
+              label="Paste a list"
+              onPress={() => {
+                setAddMenuOpen(false);
+                navigation.navigate('BulkPaste');
               }}
             />
             <AddRow
@@ -1062,12 +1078,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: tokens.space(2),
+    minHeight: 48,
     marginHorizontal: tokens.space(6),
     marginBottom: tokens.space(3),
-    paddingVertical: tokens.space(3),
+    paddingVertical: tokens.space(3.5),
     borderRadius: tokens.radius.md,
+    overflow: 'visible',
   },
-  addBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15 },
+  addBtnTxt: {
+    fontFamily: tokens.font.body.semibold,
+    fontSize: 15,
+    lineHeight: 22,
+    includeFontPadding: false,
+  },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1104,18 +1127,20 @@ const styles = StyleSheet.create({
   selectUsed: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.color.success },
   selectRemove: { fontFamily: tokens.font.body.semibold, fontSize: 14, color: tokens.semantic.expiry.expired },
   selectCancel: { fontFamily: tokens.font.body.medium, fontSize: 14, color: tokens.color.inkMuted },
-  zoneScroll: { flexGrow: 0, marginBottom: tokens.space(2) },
+  zoneScroll: { flexGrow: 0, marginBottom: tokens.space(2), minHeight: 44 },
   zoneChips: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: tokens.space(2),
     paddingHorizontal: tokens.space(6),
-    paddingVertical: tokens.space(1),
+    paddingVertical: 4,
   },
   zoneChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: tokens.space(1),
-    paddingVertical: tokens.space(2.5),
+    minHeight: 40,
+    paddingVertical: 10,
     paddingHorizontal: tokens.space(3.5),
     borderRadius: 999,
     overflow: 'hidden',
@@ -1128,23 +1153,24 @@ const styles = StyleSheet.create({
     // measured width.
     flexShrink: 0,
   },
-  // Explicit lineHeight + includeFontPadding: Nunito Sans clips vertically on
-  // iOS/Android without them — invisible on the soft chip fill, obvious once a
-  // selected chip goes accent (looks like the center of the pill is cut out).
-  // Nunito Sans sits high in its line box on iOS: a tight lineHeight clips the
-  // ascenders/digits (the glyph is drawn above the frame and cropped). A prior
-  // pass set lineHeight 18 — still too tight (obvious once a chip goes accent).
-  // Give it generous headroom + a little vertical padding so the frame fully
-  // contains the glyph on every device.
-  zoneChipTxt: { fontFamily: tokens.font.body.medium, fontSize: 13, lineHeight: 22, paddingVertical: 2 },
+  // Nunito Sans sits high in its line box on iOS. The horizontal ScrollView
+  // also clips vertically when its height is measured without the chip
+  // padding — minHeight on the scroller + includeFontPadding: false keeps
+  // ascenders inside the pill.
+  zoneChipTxt: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    lineHeight: 18,
+    includeFontPadding: false,
+  },
   // Fixed-height circular badge (not inline text) so double/triple-digit
   // counts widen the badge symmetrically via minWidth + centered text,
   // instead of the bare number pushing the whole chip lopsided.
   zoneChipCountBadge: {
-    minWidth: 18,
-    height: 18,
+    minWidth: 22,
+    height: 22,
     borderRadius: 999,
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1152,6 +1178,7 @@ const styles = StyleSheet.create({
     fontFamily: tokens.font.body.semibold,
     fontSize: 11,
     lineHeight: 14,
+    includeFontPadding: false,
     textAlign: 'center',
     fontVariant: ['tabular-nums'],
   },

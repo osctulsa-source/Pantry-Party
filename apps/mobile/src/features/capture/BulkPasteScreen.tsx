@@ -2,10 +2,11 @@
  * BulkPasteScreen — paste-a-list / grocery-order capture.
  *
  * Typed lists (commas/newlines) and priced order dumps (Instacart, etc.) share
- * one parser. Preview is a checklist; checked rows merge into the pantry with
- * source `receipt`. Count-only `paste_add` fires on submit.
+ * one parser. A screenshot of an order or receipt can be read on-device into
+ * the same box. Preview is a checklist; checked rows merge into the pantry
+ * with source `receipt`. Count-only `paste_add` fires on submit.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -15,10 +16,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
-import { Check } from 'lucide-react-native';
+import { Check, Image as ImageIcon } from 'lucide-react-native';
 
 import { parseGroceryPaste, suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -27,6 +28,8 @@ import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
 import { track } from '../../observability/analytics';
+import { PhotoLibraryDeniedError, pickReceiptImage } from './pickReceiptImage';
+import { readImageText, TextOcrEmptyError, TextOcrUnavailableError } from './runTextOcr';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_ITEMS = 50;
@@ -37,14 +40,17 @@ function qtyLabel(quantity: number, unit: string | null): string {
 
 export function BulkPasteScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'BulkPaste'>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'BulkPaste'>>();
   const { activeHouseholdId } = useActiveHousehold();
   const { state: authState } = useAuth();
   const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
 
   const [raw, setRaw] = useState('');
   const [busy, setBusy] = useState(false);
+  const [reading, setReading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unchecked, setUnchecked] = useState<ReadonlySet<number>>(new Set());
+  const launchedPhotoPicker = useRef(false);
 
   const parsed = useMemo(() => parseGroceryPaste(raw, { limit: MAX_ITEMS }), [raw]);
   const keptItems = parsed.items.filter((_, i) => !unchecked.has(i));
@@ -55,6 +61,38 @@ export function BulkPasteScreen() {
     setUnchecked(new Set());
     setError(null);
   }
+
+  async function readScreenshot() {
+    if (reading || busy) return;
+    setError(null);
+    setReading(true);
+    try {
+      const uri = await pickReceiptImage();
+      if (!uri) return;
+      const { text } = await readImageText(uri);
+      onChangeText(text);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    } catch (e: unknown) {
+      if (e instanceof PhotoLibraryDeniedError || e instanceof TextOcrUnavailableError) {
+        setError(e.message);
+      } else if (e instanceof TextOcrEmptyError) {
+        setError(e.message);
+      } else {
+        setError('Could not read that photo — try a clearer screenshot or paste the list.');
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+    } finally {
+      setReading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (route.params?.pickPhoto !== true || launchedPhotoPicker.current) return;
+    launchedPhotoPicker.current = true;
+    navigation.setParams({ pickPhoto: undefined });
+    void readScreenshot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot from Add items; ref blocks a double picker
+  }, [route.params?.pickPhoto, navigation]);
 
   function toggle(index: number) {
     setUnchecked((prev) => {
@@ -97,15 +135,32 @@ export function BulkPasteScreen() {
   }
 
   const displayError = error ?? (emptyParse ? "Couldn't find grocery items in that paste." : null);
-  const addDisabled = keptItems.length === 0 || busy;
+  const addDisabled = keptItems.length === 0 || busy || reading;
 
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.hint}>
-          Paste a grocery order or a typed list — one per line or separated by commas. Uncheck
-          anything you don't want, then add. We'll set a smart expiry for each one.
+          Paste a grocery order, choose a screenshot, or type a list — one per line or separated
+          by commas. Uncheck anything you don't want, then add. We'll set a smart expiry for each
+          one.
         </Text>
+        <Pressable
+          style={[styles.photoBtn, (reading || busy) && styles.photoBtnDisabled]}
+          onPress={() => void readScreenshot()}
+          disabled={reading || busy}
+          accessibilityRole="button"
+          accessibilityLabel="Read a receipt or grocery-order screenshot"
+        >
+          {reading ? (
+            <BrandLoader variant="dots" size={22} />
+          ) : (
+            <>
+              <ImageIcon size={16} color={tokens.color.accent} />
+              <Text style={styles.photoBtnTxt}>Choose a screenshot</Text>
+            </>
+          )}
+        </Pressable>
         <TextInput
           style={styles.area}
           multiline
@@ -113,7 +168,7 @@ export function BulkPasteScreen() {
           placeholderTextColor={tokens.color.inkMuted}
           value={raw}
           onChangeText={onChangeText}
-          autoFocus
+          autoFocus={route.params?.pickPhoto !== true}
           textAlignVertical="top"
         />
         {displayError && <Text style={styles.error}>{displayError}</Text>}
@@ -173,6 +228,20 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: tokens.space(4),
   },
+  photoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: tokens.space(2),
+    minHeight: 48,
+    marginBottom: tokens.space(4),
+    paddingVertical: tokens.space(3),
+    borderRadius: tokens.radius.md,
+    borderWidth: 1,
+    borderColor: tokens.color.line,
+  },
+  photoBtnDisabled: { opacity: 0.5 },
+  photoBtnTxt: { fontFamily: tokens.font.body.semibold, fontSize: 15, color: tokens.color.accent },
   area: {
     minHeight: 180,
     padding: tokens.space(4),

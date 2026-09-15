@@ -40,6 +40,8 @@ export interface ScanBasketItem {
   /** App category from OFF categories_tags; null for OCR/QR rows and OFF misses. */
   category: string | null;
   qty: number;
+  /** Canonical unit from a grocery-order screenshot (e.g. `lb`); null for counts. */
+  unit?: string | null;
 }
 
 export function ScanReviewSheet({
@@ -125,9 +127,11 @@ export function ScanReviewSheet({
                         <Text style={styles.rsub} numberOfLines={1}>
                           {unnamed
                             ? `Unknown barcode · ${it.barcode}`
-                            : it.sizeText
-                              ? `${it.sizeText} · ${it.barcode}`
-                              : it.barcode}
+                            : it.barcode === 'TEXT'
+                              ? 'From a receipt or screenshot'
+                              : it.sizeText
+                                ? `${it.sizeText} · ${it.barcode}`
+                                : it.barcode}
                         </Text>
                       </View>
                       <View style={styles.stepper}>
@@ -140,7 +144,9 @@ export function ScanReviewSheet({
                         >
                           <Minus size={14} color={tokens.color.accent} />
                         </Pressable>
-                        <Text style={styles.sv}>{it.qty}</Text>
+                        <Text style={styles.sv}>
+                          {it.unit ? `${it.qty} ${it.unit}` : it.qty}
+                        </Text>
                         <Pressable
                           onPress={() => onQty(it.key, 1)}
                           hitSlop={4}

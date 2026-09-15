@@ -25,11 +25,14 @@ export function CuratedBrowse({
   meal,
   onAddToPantry,
   listHeader,
+  contentInsetTop = 0,
 }: {
   meal: MealType | 'any';
   onAddToPantry: () => void;
   /** Cook chrome — scrolls with this list, not sticky above it. */
   listHeader?: ReactNode;
+  /** Space for the overlay Cook header so cards start below it, then scroll away. */
+  contentInsetTop?: number;
 }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const recipes = useMemo(
@@ -43,7 +46,7 @@ export function CuratedBrowse({
       data={recipes}
       keyExtractor={(r) => String(r.id)}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.scroll}
+      contentContainerStyle={[styles.scroll, { paddingTop: contentInsetTop }]}
       ListHeaderComponent={
         <View>
           {listHeader}
