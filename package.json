@@ -28,9 +28,10 @@
   "overrides": {
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "@op-engineering/op-sqlite": "^16.2.0"
+    "@op-engineering/op-sqlite": "^16.2.0",
+    "expo-modules-jsi": "56.0.13"
   },
-  "///overrides": "react/react-dom: pin repo-wide to the mobile app's exact React — loose peer ranges (react@'*' via @expo/ui, PowerSync, op-sqlite) otherwise hoist a second react (19.2.7) that trips @testing-library/react-native's peer check. op-sqlite: @powersync/op-sqlite's peer range (^13–^15) otherwise installs a SECOND op-sqlite at the root; duplicate native modules break Android autolinking/Gradle. The app already runs 16.x at runtime, so forcing the peer to match just dedupes.",
+  "///overrides": "react/react-dom: pin repo-wide to the mobile app's exact React — loose peer ranges (react@'*' via @expo/ui, PowerSync, op-sqlite) otherwise hoist a second react (19.2.7) that trips @testing-library/react-native's peer check. op-sqlite: @powersync/op-sqlite's peer range (^13–^15) otherwise installs a SECOND op-sqlite at the root; duplicate native modules break Android autolinking/Gradle. The app already runs 16.x at runtime, so forcing the peer to match just dedupes. expo-modules-jsi: 56.0.12 fails Xcode 27 (`set == nil ? nil : setter` is not a C function pointer); 56.0.13 is the SDK-56 cherry-pick of expo/expo#46736.",
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/node": "^20.11.0",
