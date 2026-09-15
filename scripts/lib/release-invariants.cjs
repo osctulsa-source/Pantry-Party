@@ -118,6 +118,19 @@ function checkReleaseInvariants({ config, easJson, easignore }) {
     ok('withForceJsBundleEmbed is listed before Sentry so it runs last');
   }
 
+  const podMinIdx = plugins.findIndex((p) => String(pluginName(p)).includes('withPodMinIos'));
+  if (podMinIdx === -1) {
+    fail(
+      'withPodMinIos is not registered',
+      'Xcode 27 (iPhoneOS27.0.sdk) errors when any CocoaPods target is below iOS 15.\n' +
+        'expo-build-properties only raises the app target. Keep ./plugins/withPodMinIos\n' +
+        'so Sentry/RNSVG/AsyncStorage resource bundles do not fail the archive the way\n' +
+        'the first build-49 attempt did after Xcode 26.6 → 27.0.',
+    );
+  } else {
+    ok('withPodMinIos is registered so CocoaPods targets meet the Xcode 27 iOS 15 floor');
+  }
+
   if (config?.updates?.enabled !== false) {
     fail(
       'expo-updates is enabled',

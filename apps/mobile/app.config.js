@@ -147,6 +147,10 @@ module.exports = {
           },
         },
       ],
+      // Xcode 27 SDK errors on CocoaPods targets below iOS 15. expo-build-properties
+      // only rewrites the app target; this hook raises the leftover resource bundles
+      // (Sentry, RNSVG, AsyncStorage) that failed the first build-49 archive.
+      './plugins/withPodMinIos',
       [
         'expo-notifications',
         {

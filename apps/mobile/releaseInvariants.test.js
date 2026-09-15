@@ -72,7 +72,8 @@ describe('iOS release invariants', () => {
       plugins: config.plugins.filter(
         (p) =>
           !String(Array.isArray(p) ? p[0] : p).includes('withWidgetVersionSync') &&
-          !String(Array.isArray(p) ? p[0] : p).includes('withForceJsBundleEmbed'),
+          !String(Array.isArray(p) ? p[0] : p).includes('withForceJsBundleEmbed') &&
+          !String(Array.isArray(p) ? p[0] : p).includes('withPodMinIos'),
       ),
     };
     const { failures } = checkReleaseInvariants({
@@ -87,6 +88,7 @@ describe('iOS release invariants', () => {
         expect.stringContaining('runtimeVersion'),
         expect.stringContaining('withWidgetVersionSync'),
         expect.stringContaining('withForceJsBundleEmbed'),
+        expect.stringContaining('withPodMinIos'),
         expect.stringContaining('expo-updates is enabled'),
         expect.stringContaining('appVersionSource'),
         expect.stringContaining('autoIncrement'),
