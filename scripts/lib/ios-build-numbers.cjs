@@ -8,7 +8,7 @@
  * LAST_KNOWN_ASC_BUILD is a floor: bump it when a production IPA is submitted
  * so a stale API reply cannot walk the number backwards.
  */
-const LAST_KNOWN_ASC_BUILD = 49;
+const LAST_KNOWN_ASC_BUILD = 50;
 
 function parseBuildInt(value) {
   const n = Number.parseInt(String(value ?? ''), 10);
