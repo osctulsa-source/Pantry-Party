@@ -11,8 +11,8 @@
  * Measures the install → first-match funnel, plus capture accuracy: scan_result
  * is the central twin of the on-device scanLog, which is per-device AsyncStorage
  * and therefore can never be aggregated across testers; ocr_result/ocr_review
- * cover the receipt/text path (counts only — recognized text itself never
- * leaves the device).
+ * cover the receipt/text path and paste_add covers order-list paste (counts
+ * only — recognized or pasted text never leaves the device).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
@@ -28,7 +28,8 @@ export type AnalyticsEvent =
   | 'cook_this_confirmed'
   | 'scan_result'
   | 'ocr_result'
-  | 'ocr_review';
+  | 'ocr_review'
+  | 'paste_add';
 
 const INSTALL_ID_KEY = 'analytics:installId';
 let cachedInstallId: string | null = null;

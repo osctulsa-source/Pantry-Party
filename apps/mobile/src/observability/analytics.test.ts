@@ -72,4 +72,19 @@ describe('track', () => {
       expect.objectContaining({ parsed: 9, kept: 6, install_id: 'test-uuid' }),
     );
   });
+
+  // Paste/order-list precision proxy: counts only — pasted text never leaves the device.
+  it('passes parsed vs kept counts through for paste_add', async () => {
+    (capturePostHog as jest.Mock).mockClear();
+    await track('paste_add', { parsed: 9, kept: 7, orderDump: true });
+    expect(capturePostHog).toHaveBeenCalledWith(
+      'paste_add',
+      expect.objectContaining({
+        parsed: 9,
+        kept: 7,
+        orderDump: true,
+        install_id: 'test-uuid',
+      }),
+    );
+  });
 });

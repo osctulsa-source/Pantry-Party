@@ -1,11 +1,9 @@
 /**
- * BulkPasteScreen — paste-a-list capture (the interim receipt path).
+ * BulkPasteScreen — paste-a-list / grocery-order capture.
  *
- * Paste or type names separated by newlines / commas / semicolons; the parser
- * trims, dedupes (case-insensitive), and caps at 50. One tap batch-adds every
- * row via addPantryItem with the smart-expiry suggester (source 'manual').
- * Receipt OCR (October, dataset-gated) replaces typing with a photo — this
- * screen is its honest stand-in until then.
+ * Typed lists (commas/newlines) and priced order dumps (Instacart, etc.) share
+ * one parser. Preview is a checklist; checked rows merge into the pantry with
+ * source `receipt`. Count-only `paste_add` fires on submit.
  */
 import { useMemo, useState } from 'react';
 import {
@@ -20,30 +18,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
+import { Check } from 'lucide-react-native';
 
-import { suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
+import { parseGroceryPaste, suggestExpiryISO, suggestStorageLocation } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { BrandLoader } from '../../components/BrandDecor';
 import { addOrMergePantryItem } from '../pantry/addPantryItem';
 import { useActiveHousehold } from '../household/ActiveHouseholdContext';
 import { useAuth } from '../auth/AuthContext';
+import { track } from '../../observability/analytics';
 import type { RootStackParamList } from '../../../App';
 
 const MAX_ITEMS = 50;
 
-function parseNames(raw: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const piece of raw.split(/[\n,;]+/)) {
-    const name = piece.trim().slice(0, 100);
-    const key = name.toLowerCase();
-    if (name && !seen.has(key)) {
-      seen.add(key);
-      out.push(name);
-    }
-    if (out.length >= MAX_ITEMS) break;
-  }
-  return out;
+function qtyLabel(quantity: number, unit: string | null): string {
+  return unit ? `${quantity} ${unit}` : String(quantity);
 }
 
 export function BulkPasteScreen() {
@@ -55,28 +44,50 @@ export function BulkPasteScreen() {
   const [raw, setRaw] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unchecked, setUnchecked] = useState<ReadonlySet<number>>(new Set());
 
-  const names = useMemo(() => parseNames(raw), [raw]);
+  const parsed = useMemo(() => parseGroceryPaste(raw, { limit: MAX_ITEMS }), [raw]);
+  const keptItems = parsed.items.filter((_, i) => !unchecked.has(i));
+  const emptyParse = raw.trim().length > 0 && parsed.items.length === 0;
 
-  async function addAll() {
-    if (names.length === 0 || !userId || !activeHouseholdId || busy) return;
+  function onChangeText(next: string) {
+    setRaw(next);
+    setUnchecked(new Set());
+    setError(null);
+  }
+
+  function toggle(index: number) {
+    setUnchecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  }
+
+  async function addKept() {
+    if (keptItems.length === 0 || !userId || !activeHouseholdId || busy) return;
     setError(null);
     setBusy(true);
     try {
-      for (const name of names) {
-        // Location-consistent estimate (see ScanScreen): infer where the food
-        // lives, then estimate expiry AT that location.
-        const location = suggestStorageLocation(name) ?? 'pantry';
+      for (const item of keptItems) {
+        const location = suggestStorageLocation(item.name) ?? 'pantry';
         await addOrMergePantryItem({
           householdId: activeHouseholdId,
           userId,
-          name,
-          quantity: 1,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
           location,
-          expiresIso: suggestExpiryISO({ name, location }),
-          source: 'manual',
+          expiresIso: suggestExpiryISO({ name: item.name, location }),
+          source: 'receipt',
         });
       }
+      void track('paste_add', {
+        parsed: parsed.items.length,
+        kept: keptItems.length,
+        orderDump: parsed.lookedLikeOrder,
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       navigation.goBack();
     } catch (e: unknown) {
@@ -85,42 +96,66 @@ export function BulkPasteScreen() {
     }
   }
 
+  const displayError = error ?? (emptyParse ? "Couldn't find grocery items in that paste." : null);
+  const addDisabled = keptItems.length === 0 || busy;
+
   return (
     <SafeAreaView style={styles.root} edges={['left', 'right', 'bottom']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.hint}>
-          Paste what you bought — one per line or separated by commas. We'll set a smart expiry for
-          each one.
+          Paste a grocery order or a typed list — one per line or separated by commas. Uncheck
+          anything you don't want, then add. We'll set a smart expiry for each one.
         </Text>
         <TextInput
           style={styles.area}
           multiline
-          placeholder={'Milk\nEggs\nPenne pasta\nSalsa'}
+          placeholder={'Milk\nEggs\nOrganic Bananas\n$1.78'}
           placeholderTextColor={tokens.color.inkMuted}
           value={raw}
-          onChangeText={setRaw}
+          onChangeText={onChangeText}
           autoFocus
           textAlignVertical="top"
         />
-        {error && <Text style={styles.error}>{error}</Text>}
+        {displayError && <Text style={styles.error}>{displayError}</Text>}
+        {parsed.items.map((item, index) => {
+          const checked = !unchecked.has(index);
+          return (
+            <Pressable
+              key={`${index}-${item.name}`}
+              style={styles.row}
+              onPress={() => toggle(index)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked }}
+              accessibilityLabel={`${item.name}, ${qtyLabel(item.quantity, item.unit)}`}
+            >
+              <View style={[styles.checkbox, checked && styles.checkboxOn]}>
+                {checked && <Check size={12} color={tokens.color.onAccent} />}
+              </View>
+              <Text style={styles.rowName} numberOfLines={2}>
+                {item.name}
+              </Text>
+              <Text style={styles.rowQty}>{qtyLabel(item.quantity, item.unit)}</Text>
+            </Pressable>
+          );
+        })}
         <Pressable
-          style={[styles.addBtn, (names.length === 0 || busy) && styles.addBtnDisabled]}
-          onPress={() => void addAll()}
-          disabled={names.length === 0 || busy}
+          style={[styles.addBtn, addDisabled && styles.addBtnDisabled]}
+          onPress={() => void addKept()}
+          disabled={addDisabled}
           accessibilityRole="button"
-          accessibilityLabel={`Add ${names.length} items to pantry`}
+          accessibilityLabel={`Add ${keptItems.length} items to pantry`}
         >
           {busy ? (
             <BrandLoader variant="dots" size={22} />
           ) : (
             <Text style={styles.addBtnTxt}>
-              {names.length === 0
+              {keptItems.length === 0
                 ? 'Add items'
-                : `Add ${names.length} ${names.length === 1 ? 'item' : 'items'}`}
+                : `Add ${keptItems.length} ${keptItems.length === 1 ? 'item' : 'items'}`}
             </Text>
           )}
         </Pressable>
-        {names.length >= MAX_ITEMS && (
+        {parsed.items.length >= MAX_ITEMS && (
           <Text style={styles.cap}>Capped at {MAX_ITEMS} per batch — add the rest in a second pass.</Text>
         )}
       </ScrollView>
@@ -154,7 +189,37 @@ const styles = StyleSheet.create({
     color: tokens.semantic.expiry.expired,
     marginBottom: tokens.space(3),
   },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: tokens.space(3),
+    paddingVertical: tokens.space(3),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: tokens.color.line,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: tokens.radius.sm,
+    borderWidth: 1.5,
+    borderColor: tokens.color.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxOn: { backgroundColor: tokens.color.accent, borderColor: tokens.color.accent },
+  rowName: {
+    flex: 1,
+    fontFamily: tokens.font.body.regular,
+    fontSize: 15,
+    color: tokens.color.ink,
+  },
+  rowQty: {
+    fontFamily: tokens.font.body.medium,
+    fontSize: 13,
+    color: tokens.color.inkMuted,
+  },
   addBtn: {
+    marginTop: tokens.space(4),
     paddingVertical: tokens.space(4),
     backgroundColor: tokens.color.accent,
     borderRadius: tokens.radius.md,

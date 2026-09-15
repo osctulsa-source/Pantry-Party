@@ -22,6 +22,7 @@ export * from "./tasteProfile.ts";
 export * from "./dietFilter.ts";
 export * from "./historyFormat.ts";
 export * from "./storeChains.ts";
+export * from "./groceryPaste.ts";
 export * from "./receiptLines.ts";
 export * from "./receiptStoreHints.ts";
 export * from "./pantryZones.ts";
