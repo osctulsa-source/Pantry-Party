@@ -83,7 +83,7 @@ module.exports = {
       //   node scripts/preflight-ios-build.mjs --set-next   (bumps it for you)
       //   node scripts/preflight-ios-build.mjs              (verifies it)
       // EAS has already issued 46, so the next production binary is 47.
-      buildNumber: '48',
+      buildNumber: '49',
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
