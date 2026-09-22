@@ -75,13 +75,14 @@ function mockClient(steps: QueryStep[]): {
     return next;
   });
   const release = vi.fn();
-  connectMock.mockResolvedValueOnce({ query, release });
+  connectMock.mockImplementation(async () => ({ query, release }));
   return { query, release };
 }
 
 const USER_A = '11111111-1111-1111-1111-111111111111';
 const USER_B = '22222222-2222-2222-2222-222222222222';
 const HOUSEHOLD_1 = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const MEMBERSHIP_1 = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const INVITE_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 const FUTURE = new Date(Date.now() + 60 * 60 * 1000).toISOString();
@@ -93,6 +94,60 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe('POST /household/bootstrap', () => {
+  it('returns 401 when no Authorization header is sent', async () => {
+    const res = await request(buildApp()).post('/household/bootstrap');
+    expect(res.status).toBe(401);
+    expect(connectMock).not.toHaveBeenCalled();
+  });
+
+  it('returns the oldest existing membership without inserting', async () => {
+    const { query } = mockClient([
+      {
+        rowCount: 1,
+        rows: [{ id: MEMBERSHIP_1, household_id: HOUSEHOLD_1, created_at: PAST }],
+      },
+    ]);
+    const res = await request(buildApp())
+      .post('/household/bootstrap')
+      .set('Authorization', `Bearer test:${USER_A}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      created: false,
+      household_id: HOUSEHOLD_1,
+      membership_id: MEMBERSHIP_1,
+      membership_created_at: PAST,
+    });
+    const sqls = query.mock.calls.map((c) => c[0] as string);
+    expect(sqls.some((s) => /INSERT INTO households/i.test(s))).toBe(false);
+  });
+
+  it('creates a household and owner membership when the user has none', async () => {
+    const { query } = mockClient([
+      { rowCount: 0, rows: [] },
+      { rowCount: 1, rows: [{ id: HOUSEHOLD_1 }] },
+      { rowCount: 1, rows: [{ id: MEMBERSHIP_1, created_at: PAST }] },
+    ]);
+    const res = await request(buildApp())
+      .post('/household/bootstrap')
+      .set('Authorization', `Bearer test:${USER_A}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      ok: true,
+      created: true,
+      household_id: HOUSEHOLD_1,
+      membership_id: MEMBERSHIP_1,
+      membership_created_at: PAST,
+    });
+    const sqls = query.mock.calls.map((c) => c[0] as string);
+    expect(sqls.some((s) => /INSERT INTO households/i.test(s))).toBe(true);
+    expect(sqls.some((s) => /INSERT INTO user_households/i.test(s))).toBe(true);
+    const householdInsert = query.mock.calls.find((c) => /INSERT INTO households/i.test(c[0] as string));
+    expect(householdInsert?.[1]).toEqual([USER_A]);
+  });
 });
 
 describe('POST /household/invite', () => {

@@ -88,7 +88,8 @@ export function HouseholdScreen() {
   );
 
   const activeHousehold = householdRows.find((h) => h.id === activeHouseholdId) ?? null;
-  const activeIdForMembers = activeHousehold?.id ?? '';
+  const activeIdForMembers = activeHousehold?.id ?? activeHouseholdId ?? '';
+  const inviteHouseholdId = activeHousehold?.id ?? activeHouseholdId;
 
   const { data: memberRows, isLoading: membersLoading } = useQuery<MemberRow>(
     'SELECT user_id, role, display_name FROM user_households WHERE household_id = ? ORDER BY created_at ASC',
@@ -219,11 +220,11 @@ export function HouseholdScreen() {
           <Pressable
             style={({ pressed }) => [styles.inviteButton, pressed && styles.pressed]}
             onPress={() => {
-              if (activeHousehold) {
-                navigation.navigate('InviteCodeModal', { householdId: activeHousehold.id });
+              if (inviteHouseholdId) {
+                navigation.navigate('InviteCodeModal', { householdId: inviteHouseholdId });
               }
             }}
-            disabled={!activeHousehold}
+            disabled={!inviteHouseholdId}
           >
             <Text style={styles.inviteButtonText}>Invite member</Text>
           </Pressable>
