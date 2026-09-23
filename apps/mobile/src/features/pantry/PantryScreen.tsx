@@ -44,6 +44,7 @@ import { tokens } from '../../theme/tokens';
 import { pantryZoneTheme, type PantryZoneFilter } from '../../theme/pantryZoneTheme';
 import type { PantryZoneThemeColors } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
+import { restorePantryItems, setPantryFillLevel, tombstonePantryItems } from './pantryWrites';
 import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import {
@@ -341,9 +342,11 @@ export function PantryScreen() {
       const db = getPowerSync();
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
-        for (const t of targets) {
-          await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [now, t.id]);
-        }
+        await tombstonePantryItems(
+          targets.map((t) => t.id),
+          tx,
+          now,
+        );
       });
       // Stamp "used" batches once so undo can match (and retract) their events.
       const at = kind === 'used' ? new Date().toISOString() : null;
@@ -396,9 +399,7 @@ export function PantryScreen() {
       const db = getPowerSync();
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
-        for (const id of payload.ids) {
-          await tx.execute('UPDATE pantry_items SET deleted = 0, updated_at = ? WHERE id = ?', [now, id]);
-        }
+        await restorePantryItems(payload.ids, tx, now);
         if (payload.kind === 'used' && payload.at && activeHouseholdId && payload.names.length > 0) {
           const placeholders = payload.names.map(() => '?').join(', ');
           await tx.execute(
@@ -424,11 +425,7 @@ export function PantryScreen() {
     const next = current > 0.75 ? 0.75 : current > 0.5 ? 0.5 : current > 0.25 ? 0.25 : 1;
     Haptics.selectionAsync().catch(() => {});
     try {
-      await getPowerSync().execute('UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?', [
-        next,
-        Date.now(),
-        item.id,
-      ]);
+      await setPantryFillLevel(item.id, next);
     } catch (e: unknown) {
       Alert.alert('Could not update', e instanceof Error ? e.message : 'Try again.');
     }

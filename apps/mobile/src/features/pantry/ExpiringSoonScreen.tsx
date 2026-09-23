@@ -33,7 +33,7 @@ import { Check, ChefHat, Clock, Trash2 } from 'lucide-react-native';
 
 import { addDaysUTC, getExpiryStatus, type PantryItem } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
-import { getPowerSync } from '../../data/powersync/db';
+import { setPantryExpiry, tombstonePantryItems } from './pantryWrites';
 import { rowToPantryItem } from '../../data/powersync/mapRow';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryPill } from '../../components/ExpiryPill';
@@ -89,13 +89,9 @@ export function ExpiringSoonScreen() {
     if (busyId) return;
     setBusyId(item.id);
     try {
-      const db = getPowerSync();
       // Same tombstone path as Edit Item's delete — PantryScreen's
       // `deleted = 0` filter (and this screen's) hides it everywhere.
-      await db.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-        Date.now(),
-        item.id,
-      ]);
+      await tombstonePantryItems([item.id]);
       await recordExpiryEvents(activeHouseholdId, [
         { kind, itemName: item.name, at: new Date().toISOString() },
       ]);
@@ -111,13 +107,7 @@ export function ExpiringSoonScreen() {
     if (busyId) return;
     setBusyId(item.id);
     try {
-      const db = getPowerSync();
-      const newExpiry = addDaysUTC(new Date(), 2).toISOString();
-      await db.execute('UPDATE pantry_items SET expires_at = ?, updated_at = ? WHERE id = ?', [
-        newExpiry,
-        Date.now(),
-        item.id,
-      ]);
+      await setPantryExpiry(item.id, addDaysUTC(new Date(), 2).toISOString());
       Haptics.selectionAsync().catch(() => {});
     } catch (e: unknown) {
       Alert.alert('Could not snooze', e instanceof Error ? e.message : 'Try again.');

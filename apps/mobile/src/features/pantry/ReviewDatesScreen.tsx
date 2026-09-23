@@ -22,6 +22,7 @@ import { ArrowRight, Check } from 'lucide-react-native';
 import { suggestDateRepairs, type RepairProposal } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { getPowerSync } from '../../data/powersync/db';
+import { setPantryExpiryAndLocation } from './pantryWrites';
 import { usePantryItems } from './usePantryItems';
 import { CategoryIcon } from './CategoryIcon';
 import { categorizeByName } from '@breadbox/core';
@@ -81,10 +82,7 @@ export function ReviewDatesScreen() {
       const now = Date.now();
       await db.writeTransaction(async (tx) => {
         for (const p of chosen) {
-          await tx.execute(
-            'UPDATE pantry_items SET expires_at = ?, location = ?, updated_at = ? WHERE id = ?',
-            [p.suggestedExpiresAt, p.suggestedLocation, now, p.itemId],
-          );
+          await setPantryExpiryAndLocation(p.itemId, p.suggestedExpiresAt, p.suggestedLocation, tx, now);
         }
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
