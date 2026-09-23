@@ -87,6 +87,8 @@ const INVITE_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 const FUTURE = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 const PAST = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+// Result of bootstrap's `SELECT pg_advisory_xact_lock(...)`.
+const LOCKED = { rowCount: 1, rows: [{ pg_advisory_xact_lock: '' }] };
 
 beforeEach(() => {
   connectMock.mockReset();
@@ -105,6 +107,7 @@ describe('POST /household/bootstrap', () => {
 
   it('returns the oldest existing membership without inserting', async () => {
     const { query } = mockClient([
+      LOCKED,
       {
         rowCount: 1,
         rows: [{ id: MEMBERSHIP_1, household_id: HOUSEHOLD_1, created_at: PAST }],
@@ -127,6 +130,7 @@ describe('POST /household/bootstrap', () => {
 
   it('creates a household and owner membership when the user has none', async () => {
     const { query } = mockClient([
+      LOCKED,
       { rowCount: 0, rows: [] },
       { rowCount: 1, rows: [{ id: HOUSEHOLD_1 }] },
       { rowCount: 1, rows: [{ id: MEMBERSHIP_1, created_at: PAST }] },
@@ -147,6 +151,14 @@ describe('POST /household/bootstrap', () => {
     expect(sqls.some((s) => /INSERT INTO user_households/i.test(s))).toBe(true);
     const householdInsert = query.mock.calls.find((c) => /INSERT INTO households/i.test(c[0] as string));
     expect(householdInsert?.[1]).toEqual([USER_A]);
+  });
+
+  it('takes a per-user advisory lock before reading memberships', async () => {
+    const { query } = mockClient([LOCKED, { rowCount: 0, rows: [] }, { rowCount: 1, rows: [{ id: HOUSEHOLD_1 }] }, { rowCount: 1, rows: [{ id: MEMBERSHIP_1, created_at: PAST }] }]);
+    await request(buildApp()).post('/household/bootstrap').set('Authorization', `Bearer test:${USER_A}`);
+    const calls = query.mock.calls.filter((c) => !/^\s*(BEGIN|COMMIT|ROLLBACK)/i.test(c[0] as string));
+    expect(calls[0]?.[0]).toMatch(/pg_advisory_xact_lock/);
+    expect(calls[0]?.[1]).toEqual([USER_A]);
   });
 });
 

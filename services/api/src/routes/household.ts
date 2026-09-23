@@ -59,6 +59,11 @@ router.post('/household/bootstrap', requireUser, async (req, res) => {
   try {
     client = await pool.connect();
     await client.query('BEGIN');
+    // Serialize get-or-create per user. Without this, two concurrent calls
+    // (two devices signing in at once, or a retry) both see "no membership"
+    // under READ COMMITTED and each create a household — the duplicate this
+    // endpoint exists to prevent. Released automatically at COMMIT/ROLLBACK.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [userId]);
 
     const existing = await client.query<{
       id: string;
