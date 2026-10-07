@@ -49,7 +49,7 @@ re-runs init scripts from scratch — fine when local data is disposable.
 
 The production runner is **[`infra/managed/migrate.sh`](../../../../../managed/migrate.sh)**
 — a `schema_migrations`-ledger runner that applies the init-scripts baseline
-(`00`–`08`) then these numbered migrations (`0001`–`0009`), each at most once,
+(`00`–`09`) then these numbered migrations (`0001`–`0010`), each at most once,
 in one transaction per file. It is the documented pre-deploy step and is
 exercised in CI against a throwaway Postgres on every PR. See
 `infra/managed/README.md` → "Schema migrations". (The convention stays

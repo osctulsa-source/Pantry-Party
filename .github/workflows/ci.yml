@@ -187,3 +187,13 @@ jobs:
             echo "::error::migrate.sh re-applied a file on the second run — ledger is not idempotent"
             exit 1
           fi
+
+      - name: Every public table has row level security
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+        run: |
+          missing="$(psql "$DATABASE_URL" -tA -c "SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'public' AND c.relkind IN ('r','p') AND NOT c.relrowsecurity")"
+          if [ -n "$missing" ]; then
+            echo "::error::RLS is off on public tables (exposed via Supabase PostgREST): $missing"
+            exit 1
+          fi

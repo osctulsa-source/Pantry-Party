@@ -46,7 +46,7 @@ export function makeTestPool(): pg.Pool {
 }
 
 /**
- * Drop everything and re-apply the numbered init-scripts (00-08) in order —
+ * Drop everything and re-apply the numbered init-scripts (00-09) in order —
  * the documented "current baseline for a fresh Postgres volume". This is what a
  * fresh local/compose or production database gets; the numbered migrations/ are
  * the incremental path for already-provisioned databases and are not replayed

@@ -32,7 +32,7 @@ API's `API_JWKS_URI`. Two connection paths — do not cross them:
   long-lived pool friendly.
 
 Schema: the numbered baseline + migrations from
-`infra/local-dev/docker/modules/database-postgres/` (init-scripts `00`–`08`,
+`infra/local-dev/docker/modules/database-postgres/` (init-scripts `00`–`09`,
 then `migrations/0001`–`0009`), applied idempotently with a `schema_migrations`
 ledger by the canonical runner **[`infra/managed/migrate.sh`](./migrate.sh)**
 (the documented pre-deploy step — see "Schema migrations" below). This produced
@@ -47,15 +47,29 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO powersync_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO powersync_role;
 ```
 
-RLS is intentionally NOT enabled — tenancy lives in the sync rules (reads) and
-the API upload-proxy (writes). Ignore Supabase's RLS-linter warnings.
+RLS is **enabled with no policies** on every `public` table (init-script `09`,
+migration `0010`). That denies the `anon` and `authenticated` roles, which
+Supabase exposes through PostgREST (`/rest/v1`) using the anon key shipped in
+the app. Tenancy still lives in the sync rules (reads) and the API upload-proxy
+(writes): the API connects as `postgres` (table owner, `BYPASSRLS`) and
+PowerSync as `powersync_role` (`BYPASSRLS`), so neither is affected. The only
+policy is the prod-only write-only INSERT policy on `analytics_events`. A new
+table must never ship with RLS off; CI fails the build if one does. See ADR-014.
+
+Verify production after running the migration (expect zero rows):
+
+```sql
+SELECT c.relname
+FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE n.nspname = 'public' AND c.relkind IN ('r','p') AND NOT c.relrowsecurity;
+```
 
 ### Schema migrations (the one runner)
 
 There is **one** documented migration runner: **[`infra/managed/migrate.sh`](./migrate.sh)**.
 It maintains a `schema_migrations` ledger and applies, at most once each and in
-order, the init-scripts baseline (`00`–`08`, current schema for a fresh
-database) then the numbered migrations (`0001`–`0009`, the incremental path for
+order, the init-scripts baseline (`00`–`09`, current schema for a fresh
+database) then the numbered migrations (`0001`–`0010`, the incremental path for
 existing databases). Re-running is safe — applied files are skipped by the
 ledger. This is the ledger model from the parked `infra/azure/migrations/run.sh`,
 generalized (no host-specific role provisioning).
