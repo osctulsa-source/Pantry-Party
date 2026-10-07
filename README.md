@@ -11,6 +11,20 @@ This repository is an npm-workspace monorepo containing the Expo mobile app, sha
 logic, the NestJS API, database/sync configuration, curated recipe and shelf-life data, and
 operational runbooks.
 
+**Website:** [legal-production-9e0c.up.railway.app](https://legal-production-9e0c.up.railway.app/)
+
+<!--
+Screenshots: add images to web/legal/screenshots/ (they also feed the website),
+then uncomment and adjust the filenames below.
+
+<p>
+  <img src="web/legal/screenshots/01-pantry.png" width="24%" alt="Pantry">
+  <img src="web/legal/screenshots/02-capture.png" width="24%" alt="Receipt capture">
+  <img src="web/legal/screenshots/03-recipes.png" width="24%" alt="Recipes">
+  <img src="web/legal/screenshots/04-shopping.png" width="24%" alt="Shopping list">
+</p>
+-->
+
 ## Project status
 
 The iOS app is in development with a documented TestFlight build history. See the
@@ -151,3 +165,7 @@ backfill, mixed-client compatibility plan, and sync torture tests. See ADR-011 i
 - [Secrets management](docs/SECRETS.md)
 - [Backup and disaster recovery](docs/BACKUP-DR.md)
 - [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 47**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).
+
+## License
+
+Source is available to read and evaluate; all rights reserved. See [LICENSE](LICENSE).

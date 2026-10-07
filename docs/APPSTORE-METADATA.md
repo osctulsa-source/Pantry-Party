@@ -12,7 +12,7 @@ changeable if the brand (Larder/Crumb) lands later.
 | Privacy Policy URL | `https://legal-production-9e0c.up.railway.app/privacy/` |
 | Terms of Use (EULA) | `https://legal-production-9e0c.up.railway.app/terms/` (or leave Apple's standard EULA) |
 | Support URL | `https://legal-production-9e0c.up.railway.app/` |
-| Marketing URL (optional) | — |
+| Marketing URL (optional) | `https://legal-production-9e0c.up.railway.app/` |
 
 ## Promotional text (170 chars max)
 
@@ -35,7 +35,7 @@ changeable if the brand (Larder/Crumb) lands later.
 > before it turns into compost guilt.
 >
 > COOK WHAT YOU HAVE
-> Browse 150 curated recipes plus live suggestions matched to what's actually in
+> Browse nearly 300 curated recipes plus live suggestions matched to what's actually in
 > your pantry — with substitutions when you're missing an ingredient.
 >
 > SHOP AS A TEAM
@@ -60,6 +60,7 @@ changeable if the brand (Larder/Crumb) lands later.
 | Contact Info → Email Address | Yes (account) | Yes | No |
 | User Content → Other (pantry/shopping/household data) | Yes | Yes | No |
 | Identifiers → User ID | Yes (account UUID) | Yes | No |
+| Usage Data → Product Interaction | Yes (PostHog + first-party `analytics_events`) | Yes (account ID) | No |
 | Diagnostics → Crash Data | Yes (Sentry, no PII) | **No** | No |
 | Location, Contacts, Health, Purchases, Browsing, Search history | Not collected | — | — |
 

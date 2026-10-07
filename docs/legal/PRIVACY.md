@@ -72,14 +72,27 @@ or account identifier to those upstream recipe queries.
 - **Camera** — used only to scan barcodes, QR codes, and receipts, as described above.
 - **Photos** — used only when you choose a receipt or grocery-order screenshot to read on your device. We do not upload the image.
 - **Notifications** — used to schedule **local** reminders on your device
-  (expiry reminders, cook‑mode timers). These are scheduled on the device; we do
-  not operate a push‑advertising server. You can disable them in your OS
-  settings at any time.
+  (expiry reminders, cook‑mode timers), and, if you allow notifications, to
+  deliver **household notifications** (for example, a member announcing a
+  shopping run). For household notifications we store a push token for your
+  device, linked to your account, and send the notification through Expo's push
+  service. We never send advertising notifications. You can disable
+  notifications in your OS settings at any time; deleting your account
+  deactivates your push tokens.
 
 **f. Diagnostics (optional).** If enabled, we use an error‑reporting tool
 (Sentry) to capture crash and error information so we can fix bugs. It is
 configured to **not** attach personally identifying information by default. If
 diagnostics are disabled, no crash data is sent.
+
+**g. Product analytics.** To understand which features are used and where people
+get stuck, the App records usage events (for example, screens viewed, items
+added, or a recipe opened) with PostHog and in our own database. These events
+are linked to your account ID and a random per‑install ID, **not** your email or
+name. They may include simple counts and categories (such as how many items were
+added, or "fridge"), but never item names or other text you type. We use them only to
+improve the App; we do not use them for advertising or share them with
+advertisers.
 
 We do **not** intentionally collect precise location, contacts, health data, or
 advertising identifiers.
@@ -129,7 +142,8 @@ its function, and each has its own privacy policy.
 | **Spoonacular** | Recipe search | Ingredient names + meal type derived from your pantry (no account identity) |
 | **Open Food Facts** | Barcode → product lookup | The scanned barcode number |
 | **Sentry** (optional; only if diagnostics enabled) | Crash/error reporting | Diagnostic data; no PII attached by default |
-| **Expo / EAS** | App builds and updates | Basic app/build and device information |
+| **PostHog** (hosted in the United States) | Product analytics | Usage events linked to your account ID; no email, item names, or typed text |
+| **Expo / EAS** | App builds, updates, and push notification delivery | Basic app/build and device information; device push tokens and household notification text |
 | **Apple / Google** | App distribution (and, in future, payments) | Governed by their own policies |
 
 `[Confirm this list and each provider's data‑processing terms with counsel;
