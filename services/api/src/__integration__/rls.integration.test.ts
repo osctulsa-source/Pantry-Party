@@ -71,14 +71,14 @@ describe('row level security (real Postgres)', () => {
       const counts: Record<string, number> = {};
       for (const table of ALL_TABLES) {
         const { rows } = await client.query<{ n: string }>(`SELECT count(*) AS n FROM ${table}`);
-        counts[table] = Number(rows[0].n);
+        counts[table] = Number(rows[0]?.n);
       }
       return counts;
     });
 
     expect(Object.values(visible).every((n) => n === 0)).toBe(true);
     const { rows } = await pool.query<{ n: string }>('SELECT count(*) AS n FROM households');
-    expect(Number(rows[0].n)).toBe(1);
+    expect(Number(rows[0]?.n)).toBe(1);
   });
 
   it('rejects inserts from a granted non-owner role', async () => {
