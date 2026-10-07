@@ -3,25 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Legal — Pantry Party</title>
+<title>Pantry Party — the shared pantry for your household</title>
+<meta name="description" content="Pantry Party keeps your household's pantry in sync: scan groceries in, watch expiry dates, cook what you have, and shop what you're missing.">
+<meta property="og:title" content="Pantry Party">
+<meta property="og:description" content="The shared pantry for your household. Waste less food, cook what you have.">
+<meta property="og:image" content="/assets/icon.png">
+<link rel="icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="landing">
 <header>
   <a class="brand" href="/">Pantry&nbsp;Party</a>
-  <nav><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav>
+  <nav><a class="wide-only" href="#features">Features</a><a class="wide-only" href="#built">How it's built</a><a href="#support">Support</a></nav>
 </header>
 <main>
-<h1>Pantry Party — Legal</h1>
-<p>Pantry Party is a shared-pantry app that helps your household waste less food.</p>
-<ul>
-<li><a href="/privacy/">Privacy Policy</a></li>
-<li><a href="/terms/">Terms of Service</a></li>
-</ul>
-<p>Questions? Email <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a>.</p>
+<section class="hero">
+  <div>
+    <img class="hero-icon" src="/assets/icon.png" alt="">
+    <span class="badge">iPhone beta on TestFlight</span>
+    <h1>The shared pantry for your household.</h1>
+    <p class="lede">Scan groceries in, see what's expiring, cook what you already have, and shop what you're missing, together. It keeps working offline.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="mailto:jcsenka013@gmail.com?subject=Pantry%20Party%20beta">Request beta access</a>
+      <a class="btn btn-ghost" href="https://github.com/osctulsa-source/Pantry-Party">Read the engineering write-up</a>
+    </div>
+  </div>
+  <div class="mosaic">
+    <img src="/assets/food/9000133.jpg" alt="" loading="lazy" width="400" height="400">
+    <img src="/assets/food/9000096.jpg" alt="" loading="lazy" width="400" height="400">
+    <img src="/assets/food/9000049.jpg" alt="" loading="lazy" width="400" height="400">
+    <img src="/assets/food/9000022.jpg" alt="" loading="lazy" width="400" height="400">
+  </div>
+</section>
+
+<section id="features">
+  <h2 class="section-title">Less waste, less guessing</h2>
+  <p class="section-lede">Everyone in the household sees the same fridge, freezer, and cupboard, and changes sync to every phone.</p>
+  <div class="features">
+    <div class="card"><h3>Add groceries in seconds</h3><p>Scan a barcode, point the camera at a receipt, or pick a screenshot of an online order. Text is read on your phone.</p></div>
+    <div class="card"><h3>Know what's expiring</h3><p>Track best-before dates and fill levels, and get a heads-up before food goes bad.</p></div>
+    <div class="card"><h3>Cook what you have</h3><p>Nearly 300 original recipes ranked by what's already in your pantry, with swaps for missing ingredients.</p></div>
+    <div class="card"><h3>Shop as a team</h3><p>One shared list. Check items off at the store and everyone's list updates.</p></div>
+    <div class="card"><h3>Works offline</h3><p>Every change saves on your phone first and syncs when you're back online.</p></div>
+    <div class="card"><h3>Private by design</h3><p>No ads and no data sales. Delete your account and its data from inside the app at any time.</p></div>
+  </div>
+</section>
+
+<section id="built">
+  <h2 class="section-title">How it's built</h2>
+  <p class="section-lede">A TypeScript monorepo: React Native and Expo on the phone, NestJS and Postgres behind it.</p>
+  <ul class="built">
+    <li><strong>Local-first sync</strong><span>Reads and writes hit on-device SQLite; PowerSync streams household-scoped changes from Postgres.</span></li>
+    <li><strong>On-device OCR</strong><span>Receipts and order screenshots are parsed on the phone into an editable review list.</span></li>
+    <li><strong>Tenancy enforced twice</strong><span>Sync rules scope reads; an authenticated upload API checks household membership on every write.</span></li>
+    <li><strong>Tested against real Postgres</strong><span>Unit suites plus integration tests for concurrency races, account deletion, and access control.</span></li>
+  </ul>
+</section>
+
+<section id="support">
+  <div class="support">
+    <h2 class="section-title">Support</h2>
+    <p>Questions, bugs, or beta access: <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
+    <p><a href="/privacy/">Privacy Policy</a> · <a href="/terms/">Terms of Service</a></p>
+  </div>
+</section>
 </main>
 <footer>
-  <p>Pantry Party · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
+  <p>© 2026 Pantry Party · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
 </footer>
 </body>
 </html>
