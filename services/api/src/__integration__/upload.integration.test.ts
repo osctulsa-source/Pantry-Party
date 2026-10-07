@@ -22,7 +22,7 @@ vi.mock('jose', () => ({
 // fanOut fires push best-effort after commit; stub the sender's network out.
 vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, text: async () => '' })));
 
-const { makeTestPool, truncateAll, seedHouseholdWithOwner, bearer } = await import(
+const { makeTestPool, truncateAll, seedHouseholdWithOwner, seedMembership, bearer } = await import(
   './helpers/schema.js'
 );
 const { buildUploadApp } = await import('./helpers/app.js');
@@ -256,5 +256,72 @@ describe('POST /sync/upload — bootstrap (ensureDefaultHousehold)', () => {
       [USER_C, newHh],
     );
     expect(membership.rows[0].role).toBe('owner');
+  });
+});
+
+describe('POST /sync/upload — ownership columns are immutable on upsert', () => {
+  // A new-device client that re-inserts rows it already has server-side (e.g. a
+  // local seed of the household + membership with the Postgres ids) replays
+  // them as PUTs. The upsert must not let that rewrite who created the
+  // household or what role the member holds.
+  it('a member re-PUTting the household cannot claim created_by', async () => {
+    await seedMembership(pool, { userId: USER_C, householdId: HH_A, role: 'member' });
+    const res = await upload(
+      {
+        crud: [
+          { op: 'PUT', type: 'households', id: HH_A, data: { name: 'My Pantry', created_by: USER_C } },
+        ],
+      },
+      USER_C,
+    );
+    expect(res.status).toBe(200);
+    const hh = await pool.query('SELECT name, created_by FROM households WHERE id = $1', [HH_A]);
+    expect(hh.rows[0]).toMatchObject({ name: 'A household', created_by: USER_A });
+  });
+
+  it('a member re-PUTting their membership (with the household) cannot become owner', async () => {
+    await seedMembership(pool, { userId: USER_C, householdId: HH_A, role: 'member' });
+    const { rows } = await pool.query<{ id: string }>(
+      'SELECT id FROM user_households WHERE user_id = $1 AND household_id = $2',
+      [USER_C, HH_A],
+    );
+    const membershipId = rows[0]!.id;
+    const res = await upload(
+      {
+        crud: [
+          { op: 'PUT', type: 'households', id: HH_A, data: { name: 'My Pantry', created_by: USER_C } },
+          {
+            op: 'PUT',
+            type: 'user_households',
+            id: membershipId,
+            data: { user_id: USER_C, household_id: HH_A, role: 'owner' },
+          },
+        ],
+      },
+      USER_C,
+    );
+    expect(res.status).toBe(200);
+    const m = await pool.query('SELECT role FROM user_households WHERE id = $1', [membershipId]);
+    expect(m.rows[0]).toMatchObject({ role: 'member' });
+  });
+
+  it('a non-member cannot self-join by also claiming the household in the same batch', async () => {
+    const res = await upload(
+      {
+        crud: [
+          { op: 'PUT', type: 'households', id: HH_A, data: { name: 'x', created_by: USER_C } },
+          {
+            op: 'PUT',
+            type: 'user_households',
+            id: '99999999-9999-9999-9999-999999999999',
+            data: { user_id: USER_C, household_id: HH_A, role: 'owner' },
+          },
+        ],
+      },
+      USER_C,
+    );
+    expect(res.status).toBe(403);
+    const m = await pool.query('SELECT 1 FROM user_households WHERE user_id = $1', [USER_C]);
+    expect(m.rowCount).toBe(0);
   });
 });
