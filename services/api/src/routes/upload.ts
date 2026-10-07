@@ -380,22 +380,32 @@ export function validateCrudEntry(
   return { ok: true, table: entry.type, columns, values };
 }
 
+// Tables whose rows carry ownership (households.created_by, user_households.role)
+// and have no legitimate "replace" via PUT — renames ride PATCH, and bootstrap
+// only ever inserts. A PUT for an existing id is a no-op, so a member replaying
+// rows it already has (e.g. a new-device local seed using the server ids) can't
+// claim created_by or promote itself to owner through ON CONFLICT DO UPDATE.
+const INSERT_ONLY_TABLES: ReadonlySet<string> = new Set(['households', 'user_households']);
+
 /**
  * Builds an idempotent upsert: INSERT … ON CONFLICT (id) DO UPDATE.
  * Pure helper, easy to unit-test.
  *
  * PowerSync's PUT semantic is "insert or replace" — re-sending the same op_id
- * must not error. Upsert on `id` matches that.
+ * must not error. Upsert on `id` matches that. INSERT_ONLY_TABLES get
+ * ON CONFLICT DO NOTHING instead.
  */
 export function buildUpsertSql(
   table: string,
   columns: string[],
 ): { sql: string; placeholders: number } {
   const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
-  const updates = columns
-    .filter((c) => c !== 'id')
-    .map((c) => `${c} = EXCLUDED.${c}`)
-    .join(', ');
+  const updates = INSERT_ONLY_TABLES.has(table)
+    ? ''
+    : columns
+        .filter((c) => c !== 'id')
+        .map((c) => `${c} = EXCLUDED.${c}`)
+        .join(', ');
 
   // No non-id columns to update? Bare INSERT … ON CONFLICT DO NOTHING.
   const conflictClause = updates ? `DO UPDATE SET ${updates}` : 'DO NOTHING';

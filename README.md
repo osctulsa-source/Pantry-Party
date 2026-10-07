@@ -1,15 +1,35 @@
-# Breadbox
+# Pantry Party
 
-> **Internal codename, not a product name.** Brand name, copy, colors, and typography are
-> intentionally isolated from feature code. Do not hardcode the codename in the app UI.
+> **Internal codename: Breadbox.** Brand name, copy, colors, and typography are
+> intentionally isolated from feature code. Keep product branding in the theme tokens.
 
-Breadbox is an offline-first pantry and cooking app for iOS and Android. It helps a
+Pantry Party is an offline-first pantry and cooking app built with React Native and Expo. It helps a
 household capture food, track quantities and expiry, maintain a shared shopping list, and
 find recipes that use what is already available.
 
 This repository is an npm-workspace monorepo containing the Expo mobile app, shared domain
 logic, the NestJS API, database/sync configuration, curated recipe and shelf-life data, and
 operational runbooks.
+
+## Project status
+
+The iOS app is in development with a documented TestFlight build history. See the
+[TestFlight runbook](docs/TESTFLIGHT.md) for device validation and release gates.
+The repository also contains Android configuration; this does not establish an Android
+store release. A public App Store release is not claimed here.
+
+Engineering examples worth inspecting:
+
+- **Offline data flow:** local SQLite reads/writes, queued API uploads, and household-scoped
+  sync downloads ([architecture](docs/ARCHITECTURE.md)).
+- **Capture with correction:** on-device receipt OCR, parsing, and editable item review
+  ([OCR helper](apps/mobile/src/features/capture/runTextOcr.ts)).
+- **Concurrency regression:** transactional household bootstrap and a four-request race
+  test against Postgres ([integration tests](services/api/src/__integration__/household.integration.test.ts)).
+- **Session cleanup:** a regression test for sign-out racing an in-flight sync connection
+  ([test](apps/mobile/src/data/powersync/db.race.test.ts)).
+- **Release validation:** checked build numbers and generated JavaScript bundle phases
+  ([release helpers](scripts/lib)).
 
 ## Current architecture
 
@@ -73,8 +93,18 @@ npm test -w services/api
 cd apps/mobile && npm test
 ```
 
-The repository root `npm test` is not the aggregate test command; tests currently run per
-workspace as shown above and in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+The repository root `npm test` aggregates the core, API, and mobile unit suites. CI runs
+them individually as shown above. `npm run test:ios-release-scripts` runs the additional
+release-helper suite.
+
+The API integration suite is separate: `npm run test:integration -w services/api` requires
+a disposable Postgres database. CI provisions one and also checks migrations, the API
+image lockfile, and the generated iOS bundle phase. Never point test fixtures at production.
+
+If a clean npm install reports that `jest-expo` cannot find the already-declared
+`@react-native/jest-preset`, the preset may be nested in the mobile workspace. From
+`apps/mobile`, run `NODE_PATH="$PWD/node_modules" npm test -- --runInBand`; this resolves
+that workspace dependency without changing the lockfile.
 
 ## Run locally
 

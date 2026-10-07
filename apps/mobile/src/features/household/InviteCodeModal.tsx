@@ -40,7 +40,15 @@ import * as Haptics from 'expo-haptics';
 
 import { tokens } from '../../theme/tokens';
 import { useAuth } from '../auth/AuthContext';
-import { generateInvite, type InviteResponse } from '../../data/api/householdClient';
+import { useActiveHousehold } from './ActiveHouseholdContext';
+import {
+  bootstrapHousehold,
+  generateInvite,
+  HouseholdApiError,
+  type InviteResponse,
+} from '../../data/api/householdClient';
+import { ensureDefaultHousehold } from './ensureDefaultHousehold';
+import { setServerHouseholdHint } from './serverHouseholdHint';
 import { buildInviteShareMessage } from './inviteLink';
 import { BrandMark } from '../../components/BrandMark';
 import { BrandLoading } from '../../components/BrandLoading';
@@ -59,6 +67,7 @@ export function InviteCodeModal() {
   const route = useRoute<InviteCodeModalRoute>();
   const { householdId } = route.params;
   const { state: authState } = useAuth();
+  const { setActiveHouseholdId } = useActiveHousehold();
 
   const [inviteState, setInviteState] = useState<InviteState>({ status: 'loading' });
   const [copied, setCopied] = useState(false);
@@ -76,10 +85,25 @@ export function InviteCodeModal() {
       const data = await generateInvite(householdId, authState.session.access_token);
       setInviteState({ status: 'success', data });
     } catch (err: unknown) {
+      if (err instanceof HouseholdApiError && err.status === 403) {
+        try {
+          const boot = await bootstrapHousehold(authState.session.access_token);
+          setServerHouseholdHint(boot.household_id);
+          await ensureDefaultHousehold(authState.session.user.id, authState.session.access_token);
+          setActiveHouseholdId(boot.household_id);
+          const data = await generateInvite(boot.household_id, authState.session.access_token);
+          setInviteState({ status: 'success', data });
+          return;
+        } catch (retryErr: unknown) {
+          const message = retryErr instanceof Error ? retryErr.message : 'Unknown error';
+          setInviteState({ status: 'error', message });
+          return;
+        }
+      }
       const message = err instanceof Error ? err.message : 'Unknown error';
       setInviteState({ status: 'error', message });
     }
-  }, [authState, householdId]);
+  }, [authState, householdId, setActiveHouseholdId]);
 
   useEffect(() => {
     void fetchInvite();

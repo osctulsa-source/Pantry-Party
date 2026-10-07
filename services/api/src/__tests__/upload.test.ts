@@ -144,14 +144,22 @@ describe('validateCrudEntry', () => {
 
 describe('buildUpsertSql', () => {
   it('builds an INSERT … ON CONFLICT (id) DO UPDATE for multi-column inserts', () => {
-    const { sql, placeholders } = buildUpsertSql('households', ['id', 'name', 'created_by']);
+    const { sql, placeholders } = buildUpsertSql('shopping_list_items', ['id', 'name', 'checked']);
     expect(sql).toBe(
-      'INSERT INTO households (id, name, created_by) ' +
+      'INSERT INTO shopping_list_items (id, name, checked) ' +
         'VALUES ($1, $2, $3) ' +
-        'ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, created_by = EXCLUDED.created_by',
+        'ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, checked = EXCLUDED.checked',
     );
     expect(placeholders).toBe(3);
   });
+
+  it.each(['households', 'user_households'])(
+    'never updates ownership rows on conflict (%s is insert-only)',
+    (table) => {
+      const { sql } = buildUpsertSql(table, ['id', 'name', 'created_by']);
+      expect(sql).toMatch(/ON CONFLICT \(id\) DO NOTHING$/);
+    },
+  );
 
   it('falls back to DO NOTHING when only id is present', () => {
     const { sql } = buildUpsertSql('households', ['id']);

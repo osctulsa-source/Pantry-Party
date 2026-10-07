@@ -143,7 +143,7 @@ export function OnboardingScreen({ onDone }: { onDone: (result: { seededPantry: 
     setFinishing(true);
     if (userId && !activeHouseholdId) {
       try {
-        await ensureDefaultHousehold(userId);
+        await ensureDefaultHousehold(userId, state.status === 'authenticated' ? state.session.access_token : null);
       } catch (e: unknown) {
         console.error('Onboarding household bootstrap failed:', e);
       }

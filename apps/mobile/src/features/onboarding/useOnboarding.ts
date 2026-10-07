@@ -3,10 +3,11 @@
  * AsyncStorage so the welcome / stock-your-pantry flow shows exactly once —
  * but AsyncStorage is device-local and never syncs, so on its own this flag
  * can't tell a genuinely new account from an existing one signing in on a
- * SECOND device (e.g. Android after onboarding on iOS). To cover that case,
- * this also watches the household's synced pantry data: if items show up for
- * an account with no local flag, that's proof onboarding already happened
- * elsewhere, so we backfill the flag instead of re-running the flow.
+ * SECOND device. To cover that case, this also watches synced pantry data
+ * across every household the user belongs to (not just the active one): a
+ * new phone can briefly attach to an empty duplicate household while the
+ * original pantry is still in another membership. If any items show up, that's
+ * proof onboarding already happened elsewhere.
  *
  * Because PowerSync is local-first, "no pantry rows yet" is ambiguous right
  * after login — it's either a truly empty household or a returning user's
@@ -22,8 +23,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useStatus } from '@powersync/react-native';
-
-import { useActiveHousehold } from '../household/ActiveHouseholdContext';
+import {
+  isExistingServerHousehold,
+  subscribeExistingServerHousehold,
+} from '../household/serverHouseholdHint';
 
 const storageKey = (userId: string) => `onboarded:${userId}`;
 // Bounds the wait for a genuinely offline first launch — after this we fall
@@ -32,13 +35,17 @@ const SYNC_WAIT_MS = 8000;
 
 export function useOnboarding(userId: string | null) {
   const [localFlag, setLocalFlag] = useState<boolean | null>(null);
-  const { activeHouseholdId } = useActiveHousehold();
+  const [existingAccount, setExistingAccount] = useState(isExistingServerHousehold);
   const status = useStatus();
   const { data: pantryRows } = useQuery<{ id: string }>(
-    'SELECT id FROM pantry_items WHERE deleted = 0 AND household_id = ? LIMIT 1',
-    [activeHouseholdId ?? ''],
+    'SELECT id FROM pantry_items WHERE deleted = 0 LIMIT 1',
+    [],
   );
   const hasPantryData = (pantryRows?.length ?? 0) > 0;
+
+  useEffect(() => {
+    return subscribeExistingServerHousehold(setExistingAccount);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,11 +70,11 @@ export function useOnboarding(userId: string | null) {
   // no local flag means onboarding already happened on another device —
   // backfill so we never have to make this check again.
   useEffect(() => {
-    if (userId && hasPantryData && localFlag === false) {
+    if (userId && (hasPantryData || existingAccount) && localFlag === false) {
       AsyncStorage.setItem(storageKey(userId), '1').catch(() => {});
       setLocalFlag(true);
     }
-  }, [userId, hasPantryData, localFlag]);
+  }, [userId, hasPantryData, existingAccount, localFlag]);
 
   const [waitedForSync, setWaitedForSync] = useState(false);
   useEffect(() => {
@@ -92,10 +99,15 @@ export function useOnboarding(userId: string | null) {
 
   // Known the moment the local flag says done or pantry data proves it —
   // otherwise only once we've given sync a fair chance to settle.
-  const known = localFlag === true || hasPantryData || (localFlag === false && waitedForSync);
+  const known =
+    localFlag === true ||
+    hasPantryData ||
+    existingAccount ||
+    (localFlag === false && waitedForSync);
 
   return {
-    needsOnboarding: userId !== null && known && localFlag !== true && !hasPantryData,
+    needsOnboarding:
+      userId !== null && known && localFlag !== true && !hasPantryData && !existingAccount,
     loading: userId !== null && !known,
     complete,
   };

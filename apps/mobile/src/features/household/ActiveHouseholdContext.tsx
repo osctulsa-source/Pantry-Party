@@ -3,10 +3,10 @@
  *
  * Resolution (reactive): activeHouseholdId =
  *   1. an explicit in-session switch (setActiveHouseholdId), else
- *   2. the stored per-device preference (AsyncStorage) — trusted even if it
- *      isn't in the local membership list yet, so returning users don't flash,
- *      else
- *   3. the most-recently-created membership from a LIVE query of user_households.
+ *   2. pickActiveHouseholdId — a server bootstrap hint (new phone attaching to
+ *      an existing household), else a stored preference only if it is still a
+ *      membership and not an empty duplicate next to a stocked pantry, else
+ *      a household that already has items, else the oldest membership.
  *
  * Why reactive (bug fix, 2026-07): the previous version ran a ONE-SHOT fallback
  * query the moment auth flipped to authenticated. On a cold first launch that
@@ -38,6 +38,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery } from '@powersync/react-native';
 
 import { useAuth } from '../auth/AuthContext';
+import { pickActiveHouseholdId } from './pickActiveHousehold';
+import {
+  clearServerHouseholdHint,
+  getServerHouseholdHint,
+  subscribeServerHouseholdHint,
+} from './serverHouseholdHint';
 
 const STORAGE_KEY = 'breadbox.activeHouseholdId';
 
@@ -55,14 +61,19 @@ export function ActiveHouseholdProvider({ children }: { children: ReactNode }) {
 
   // Stored per-device preference. `undefined` = not read yet; `null` = read, none.
   const [storedPref, setStoredPref] = useState<string | null | undefined>(undefined);
-  // A household the user explicitly switched to this session (takes precedence).
+  const [serverHint, setServerHint] = useState<string | null>(getServerHouseholdHint);
   const [override, setOverride] = useState<string | null>(null);
   const readTokenRef = useRef(0);
+
+  useEffect(() => {
+    return subscribeServerHouseholdHint(setServerHint);
+  }, []);
 
   // (Re)read the stored preference whenever the signed-in user changes.
   useEffect(() => {
     setOverride(null);
     if (!userId) {
+      clearServerHouseholdHint();
       setStoredPref(null);
       return;
     }
@@ -81,20 +92,31 @@ export function ActiveHouseholdProvider({ children }: { children: ReactNode }) {
   // as sync delivers memberships. This is the fix for the first-launch race.
   // Empty-string sentinel matches no user when signed out.
   const { data: memberships } = useQuery<{ household_id: string }>(
-    'SELECT household_id FROM user_households WHERE user_id = ? ORDER BY created_at DESC',
+    'SELECT household_id FROM user_households WHERE user_id = ? ORDER BY created_at ASC',
     [userId ?? ''],
   );
   const membershipIds = useMemo(
     () => (memberships ?? []).map((m) => m.household_id),
     [memberships],
   );
+  const { data: stockedRows } = useQuery<{ household_id: string }>(
+    'SELECT household_id FROM pantry_items WHERE deleted = 0 GROUP BY household_id',
+    [],
+  );
+  const householdsWithItems = useMemo(
+    () => new Set((stockedRows ?? []).map((row) => row.household_id)),
+    [stockedRows],
+  );
 
   const activeHouseholdId = useMemo(() => {
     if (!userId) return null;
     if (override) return override;
-    if (storedPref) return storedPref;
-    return membershipIds[0] ?? null;
-  }, [userId, override, storedPref, membershipIds]);
+    return pickActiveHouseholdId(
+      membershipIds,
+      serverHint ?? storedPref ?? null,
+      householdsWithItems,
+    );
+  }, [userId, override, storedPref, serverHint, membershipIds, householdsWithItems]);
 
   // Loading only until the stored preference is read; after that the live query
   // fills activeHouseholdId in as the household appears — we never block the UI
