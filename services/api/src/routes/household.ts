@@ -44,6 +44,94 @@ interface HouseholdInviteRow {
   used_by: string | null;
 }
 
+/**
+ * Get-or-create the caller's household on the server.
+ *
+ * Returning users on a new device used to INSERT a second household locally
+ * when first-sync timed out, then invite against a row Postgres has no
+ * membership for (403) and show an empty pantry. This is the source of truth:
+ * existing memberships win; only a user with none gets a new household.
+ */
+router.post('/household/bootstrap', requireUser, async (req, res) => {
+  const userId = (req as AuthedRequest).userId;
+
+  let client: PoolClient | null = null;
+  try {
+    client = await pool.connect();
+    await client.query('BEGIN');
+    // Serialize get-or-create per user. Without this, two concurrent calls
+    // (two devices signing in at once, or a retry) both see "no membership"
+    // under READ COMMITTED and each create a household — the duplicate this
+    // endpoint exists to prevent. Released automatically at COMMIT/ROLLBACK.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [userId]);
+
+    const existing = await client.query<{
+      id: string;
+      household_id: string;
+      created_at: string | Date;
+    }>(
+      `SELECT id, household_id, created_at FROM user_households
+       WHERE user_id = $1
+       ORDER BY created_at ASC
+       LIMIT 1`,
+      [userId],
+    );
+    const already = existing.rows[0];
+    if (already) {
+      await client.query('COMMIT');
+      res.status(200).json({
+        ok: true,
+        created: false,
+        household_id: already.household_id,
+        membership_id: already.id,
+        membership_created_at: isoTimestamp(already.created_at),
+      });
+      return;
+    }
+
+    const household = await client.query<{ id: string }>(
+      `INSERT INTO households (name, created_by)
+       VALUES ('My Pantry', $1)
+       RETURNING id`,
+      [userId],
+    );
+    const householdId = household.rows[0]?.id;
+    if (!householdId) {
+      await client.query('ROLLBACK');
+      res.status(500).json({ ok: false, error: 'household create failed' });
+      return;
+    }
+
+    const membership = await client.query<{ id: string; created_at: string | Date }>(
+      `INSERT INTO user_households (user_id, household_id, role)
+       VALUES ($1, $2, 'owner')
+       RETURNING id, created_at`,
+      [userId, householdId],
+    );
+    const membershipRow = membership.rows[0];
+    if (!membershipRow?.id) {
+      await client.query('ROLLBACK');
+      res.status(500).json({ ok: false, error: 'membership create failed' });
+      return;
+    }
+
+    await client.query('COMMIT');
+    res.status(200).json({
+      ok: true,
+      created: true,
+      household_id: householdId,
+      membership_id: membershipRow.id,
+      membership_created_at: isoTimestamp(membershipRow.created_at),
+    });
+  } catch (err) {
+    if (client) await client.query('ROLLBACK').catch(() => undefined);
+    console.error('[api] /household/bootstrap failed:', err);
+    res.status(500).json({ ok: false, error: 'bootstrap failed' });
+  } finally {
+    if (client) client.release();
+  }
+});
+
 router.post('/household/invite', requireUser, async (req, res) => {
   const parsed = InviteBodySchema.safeParse(req.body);
   if (!parsed.success) {
@@ -219,6 +307,12 @@ router.post('/household/accept', requireUser, async (req, res) => {
     if (client) client.release();
   }
 });
+
+function isoTimestamp(value: string | Date | undefined): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string' && value.length > 0) return value;
+  return new Date().toISOString();
+}
 
 function isUniqueViolation(err: unknown): boolean {
   return (
