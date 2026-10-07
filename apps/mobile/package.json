@@ -41,7 +41,7 @@
     "expo-haptics": "~56.0.3",
     "expo-image-picker": "~56.0.25",
     "expo-linear-gradient": "~56.0.4",
-    "expo-localization": "~56.0.6",
+    "expo-localization": "~57.0.2",
     "expo-mlkit-ocr": "^0.2.7",
     "expo-notifications": "~56.0.21",
     "expo-speech": "~56.0.3",
