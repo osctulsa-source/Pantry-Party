@@ -55,7 +55,7 @@ import {
 } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
 import { BrandLoader } from '../../components/BrandDecor';
-import { getPowerSync } from '../../data/powersync/db';
+import { applyPantryItemEdit, tombstonePantryItems } from './pantryWrites';
 import type { PantryItemRow } from '../../data/powersync/schema';
 import { ExpiryField } from './ExpiryField';
 import { LocationPicker } from './LocationPicker';
@@ -176,18 +176,19 @@ export function EditItemScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      const db = getPowerSync();
-
       // Store a full ISO timestamp (UTC midnight): core's PantryItem validates
       // expiresAt with .datetime(), so a bare YYYY-MM-DD would fail on read-back.
       const expiresIso = expiryDays === null ? null : addDaysUTC(new Date(), expiryDays).toISOString();
 
-      await db.execute(
-        `UPDATE pantry_items
-           SET name = ?, brand = ?, quantity = ?, unit = ?, fill_level = ?, location = ?, expires_at = ?, updated_at = ?
-         WHERE id = ?`,
-        [trimmedName, trimmedBrand || null, parsedQty, unit, fillLevel, location, expiresIso, Date.now(), itemId],
-      );
+      await applyPantryItemEdit(itemId, {
+        name: trimmedName,
+        brand: trimmedBrand || null,
+        quantity: parsedQty,
+        unit,
+        fillLevel,
+        location,
+        expiresIso,
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       navigation.goBack();
     } catch (e: unknown) {
@@ -209,12 +210,8 @@ export function EditItemScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      const db = getPowerSync();
       // Tombstone, not a row removal — PantryScreen's `WHERE deleted = 0` hides it.
-      await db.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-        Date.now(),
-        itemId,
-      ]);
+      await tombstonePantryItems([itemId]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       navigation.goBack();
     } catch (e: unknown) {

@@ -40,6 +40,7 @@ import {
 import { tokens } from '../../theme/tokens';
 import { BrandLoader } from '../../components/BrandDecor';
 import { getPowerSync } from '../../data/powersync/db';
+import { setPantryFillLevel, setPantryQuantity, tombstonePantryItems } from '../pantry/pantryWrites';
 import { recordCookEvent } from './cookLog';
 import { AddCookExtraSheet } from './AddCookExtraSheet';
 
@@ -121,25 +122,14 @@ export function CookedItSheet({
           for (const u of updates) {
             if (u.action === 'use-up') {
               // Tombstone — identical to a manual delete from Edit Item.
-              await tx.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-                now,
-                u.item.itemId,
-              ]);
+              await tombstonePantryItems([u.item.itemId], tx, now);
             } else if (u.action === 'use-a-bit') {
               // Nudge the fill bar down one notch — the same primitive the
               // pantry row's manual tap uses, but floored (never wraps back
               // to full) so cooking can't accidentally "refill" an item.
-              await tx.execute('UPDATE pantry_items SET fill_level = ?, updated_at = ? WHERE id = ?', [
-                steppedFillLevel(u.item.fillLevel),
-                now,
-                u.item.itemId,
-              ]);
+              await setPantryFillLevel(u.item.itemId, steppedFillLevel(u.item.fillLevel), tx, now);
             } else {
-              await tx.execute('UPDATE pantry_items SET quantity = ?, updated_at = ? WHERE id = ?', [
-                decrementedQuantity(u.item.quantity),
-                now,
-                u.item.itemId,
-              ]);
+              await setPantryQuantity(u.item.itemId, decrementedQuantity(u.item.quantity), tx, now);
             }
           }
         });

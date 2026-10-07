@@ -27,6 +27,7 @@ import { addDaysUTC } from '@breadbox/core';
 import { getPowerSync } from '../../data/powersync/db';
 import { navigateWhenReady } from '../../navigation/navigationRef';
 import { recordExpiryEvents } from '../pantry/expiryEvents';
+import { setPantryExpiry, tombstonePantryItems } from '../pantry/pantryWrites';
 
 export const EXPIRY_CATEGORY = 'expiry';
 const ACTION_USED = 'used';
@@ -94,19 +95,12 @@ export async function handleExpiryActionResponse(
 
     if (action === ACTION_USED) {
       // Tombstone — identical to the in-app Used path.
-      await db.execute('UPDATE pantry_items SET deleted = 1, updated_at = ? WHERE id = ?', [
-        Date.now(),
-        itemId,
-      ]);
+      await tombstonePantryItems([itemId], db);
       await recordExpiryEvents(row.household_id, [
         { kind: 'used', itemName: row.name, at: new Date().toISOString() },
       ]);
     } else {
-      await db.execute('UPDATE pantry_items SET expires_at = ?, updated_at = ? WHERE id = ?', [
-        addDaysUTC(new Date(), 2).toISOString(),
-        Date.now(),
-        itemId,
-      ]);
+      await setPantryExpiry(itemId, addDaysUTC(new Date(), 2).toISOString(), db);
     }
   } catch (err) {
     console.warn('[expiry] notification action failed', err);
