@@ -17,6 +17,7 @@ import * as Crypto from 'expo-crypto';
 import { categorizeByName, type CaptureSource, type StorageLocation } from '@breadbox/core';
 
 import { getPowerSync } from '../../data/powersync/db';
+import { incrementPantryQuantity } from './pantryWrites';
 
 export interface NewPantryItem {
   householdId: string;
@@ -97,10 +98,7 @@ export async function addOrMergePantryItem(input: NewPantryItem): Promise<'inser
   );
   const existing = rows[0];
   if (existing) {
-    await db.execute(
-      'UPDATE pantry_items SET quantity = quantity + ?, updated_at = ? WHERE id = ?',
-      [input.quantity, Date.now(), existing.id],
-    );
+    await incrementPantryQuantity(existing.id, input.quantity, db);
     return 'merged';
   }
   await addPantryItem(input);

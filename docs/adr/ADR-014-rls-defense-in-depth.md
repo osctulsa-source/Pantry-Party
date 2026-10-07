@@ -5,9 +5,20 @@
 [`services/api/src/routes/upload.ts`](../../services/api/src/routes/upload.ts),
 and P0-#2 in [`docs/AUDIT-2026-07-22.md`](../AUDIT-2026-07-22.md).
 
+> **Amended 2026-10-06 — deny-by-default RLS is now ON (migration 0010).**
+> This ADR's analysis covered the PowerSync and API paths but missed a third:
+> Supabase's PostgREST (`/rest/v1`), which the `anon` and `authenticated` roles
+> can reach with the anon key bundled in every app build. With RLS off, any
+> signed-up user could read or write every household directly, bypassing both
+> tenancy layers. Every `public` table now has RLS enabled with **no policies**
+> (plus the existing write-only `analytics_events` INSERT policy), which shuts
+> out those roles without touching the owner/`BYPASSRLS` roles that the API and
+> PowerSync use. CI fails if any table lacks RLS. The per-request write-path
+> policy layer below is still deferred, with the same triggers.
+
 ## Context
 
-Postgres RLS is intentionally **off**. Tenancy is enforced in two application
+Postgres RLS was originally **off** (see amendment above). Tenancy is enforced in two application
 layers only: the PowerSync sync rules (read path) and the `services/api` upload
 chokepoint (write path). P0-#2 was a live demonstration of the failure mode of
 that posture — a **single missed membership check on the write path meant full

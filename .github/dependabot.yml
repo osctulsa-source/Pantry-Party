@@ -20,6 +20,27 @@ updates:
       # v7 requires Node >=22.12; CI and the API image are Node 20.
       - dependency-name: "expo-server-sdk"
         update-types: ["version-update:semver-major"]
+      # The Expo SDK pins these native packages to specific minors. Moving them
+      # independently (e.g. #236: react-native 0.85→0.87, worklets 0.8→0.12
+      # under SDK 56) produces a binary Expo doesn't support — the class of
+      # mismatch behind the TestFlight 41–46 crashes. They move only via
+      # `npx expo install --fix` during a deliberate SDK upgrade.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-reanimated"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-worklets"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-screens"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-safe-area-context"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-gesture-handler"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "react-native-svg"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
     groups:
       # Expo/React Native native surface is upgrade-sensitive — group so bumps
       # land together and get a single deliberate on-device QA pass.

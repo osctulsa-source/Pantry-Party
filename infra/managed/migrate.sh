@@ -10,8 +10,8 @@
 #   - Each file is applied at most once, inside a single transaction; the
 #     filename is recorded on success. Re-running is therefore safe.
 #   - Files are applied in two ordered passes: the init-scripts baseline
-#     (00-08, current schema for a fresh database) then the numbered migrations
-#     (0001-0009, the incremental path for existing databases). Migrations are
+#     (00-09, current schema for a fresh database) then the numbered migrations
+#     (0001-0010, the incremental path for existing databases). Migrations are
 #     idempotent (ADD COLUMN IF NOT EXISTS, guarded DO blocks), so on a fresh
 #     database they no-op after the baseline; the ledger keeps them one-shot.
 #
