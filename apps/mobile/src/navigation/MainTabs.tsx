@@ -1,9 +1,8 @@
 /**
  * MainTabs — the app's primary navigation (Phase 2 of the UI pass).
  *
- * Three persistent tabs: Pantry (home), Cook (the promoted "Find recipes"
- * destination — the daily hero action), and Settings. A Shopping tab slot is
- * reserved for the August shopping-list arc.
+ * Four persistent tabs: Pantry (home), Cook (the promoted "Find recipes"
+ * destination — the daily hero action), Shopping, and Settings.
  *
  * Architecture (Option B): this navigator is the FIRST screen of the root
  * native-stack (see App.tsx). Detail screens (Add / Edit / Quick add /
