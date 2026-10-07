@@ -22,7 +22,7 @@
     "@powersync/op-sqlite": "^0.9.9",
     "@powersync/react-native": "^1.35.3",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/bottom-tabs": "^7.20.0",
     "@react-navigation/native": "^7.3.1",
     "@react-navigation/native-stack": "^7.16.0",
     "@sentry/react-native": "~7.11.0",
