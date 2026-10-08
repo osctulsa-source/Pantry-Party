@@ -50,7 +50,7 @@
     "expo-system-ui": "~56.0.5",
     "expo-updates": "~56.0.22",
     "expo-widgets": "~56.0.23",
-    "lucide-react-native": "1.17.0",
+    "lucide-react-native": "1.52.0",
     "posthog-react-native": "^4.58.0",
     "react": "19.2.3",
     "react-native": "0.85.3",
