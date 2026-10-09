@@ -6,6 +6,7 @@ reproducible:
 
 - `/` is the landing page, which doubles as the App Store **Support** and
   **Marketing** URL. Its copy lives in `generate.py`.
+- `/engineering/` renders `docs/portfolio/CASE-STUDY.md` for portfolio visitors.
 - `/privacy/` and `/terms/` are rendered from `docs/legal/PRIVACY.md` and
   `TERMS.md`, the source of truth (placeholders filled: app name, dates,
   contact email).
@@ -13,7 +14,7 @@ reproducible:
 Regenerate after changing either legal doc, the landing copy, or screenshots:
 
 ```sh
-pip install markdown
+python -m pip install -r web/legal/requirements.txt
 python web/legal/generate.py
 ```
 
@@ -30,3 +31,23 @@ railway up web/legal --path-as-root --service legal --detach
 
 Apple App Store Connect wants the privacy-policy URL from this service
 (`/privacy/`); the terms live at `/terms/`.
+
+## Portfolio media and sharing
+
+See `screenshots/README.md` for image names and alt text. The generator also updates the
+marked README gallery when real screenshots are supplied. See `media/README.md` for the
+optional captioned walkthrough. Missing media sections stay hidden.
+
+`social_card.py` generates the 1200×630 PNG sharing card from typography and brand colors.
+The landing page and engineering page include absolute Open Graph image URLs and canonical
+URLs. Set `PANTRY_SITE_URL=https://your-confirmed-domain.example` when regenerating for a
+new domain; do not publish an unconfigured domain. The default is the current Railway host.
+
+After regenerating, run `python web/legal/check_site.py` to check local links, sharing
+metadata, and generated pages. Preview `site/` with a static HTTP server and inspect desktop
+and narrow layouts before deployment. The case-study body is written once in Markdown;
+edit its source rather than generated HTML.
+
+Deployment changes only the existing static `legal` service. It does not ship a mobile
+binary or change API/database configuration. After deploying, verify `/`, `/engineering/`,
+`/privacy/`, `/terms/`, and `/assets/social-card.png` on the public hostname.

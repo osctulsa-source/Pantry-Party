@@ -4,7 +4,7 @@
   :root { --ink:#ece5da; --paper:#191512; --accent:#d98a63; --green:#7fb08a; --muted:#9c9188; }
 }
 * { box-sizing: border-box; }
-body { margin:0; font:17px/1.65 Georgia, 'Times New Roman', serif; color:var(--ink); background:var(--paper); }
+body { overflow-wrap:break-word; margin:0; font:17px/1.65 Georgia, 'Times New Roman', serif; color:var(--ink); background:var(--paper); }
 header, footer { font-family: -apple-system, 'Segoe UI', sans-serif; }
 header { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; border-bottom:1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
 .brand { font-weight:700; color:var(--accent); text-decoration:none; font-size:1.05rem; letter-spacing:.01em; }
@@ -50,7 +50,9 @@ body.landing { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; line-
 .card h3 { font-size:1.15rem; margin:0 0 .4rem; }
 .card p { margin:0; color:var(--muted); }
 .shots { display:flex; gap:1rem; overflow-x:auto; padding-bottom:.5rem; scroll-snap-type:x mandatory; }
-.shots img { height:32rem; max-height:70vh; border-radius:24px; scroll-snap-align:start; box-shadow:0 8px 30px color-mix(in srgb, var(--ink) 18%, transparent); }
+.shots figure { margin:0; flex:0 0 auto; max-width:85vw; }
+.shots figcaption { max-width:20rem; font-size:.9rem; color:var(--muted); margin-top:.75rem; }
+.shots img { max-width:100%; object-fit:contain; height:32rem; max-height:70vh; border-radius:24px; scroll-snap-align:start; box-shadow:0 8px 30px color-mix(in srgb, var(--ink) 18%, transparent); }
 .built { list-style:none; padding:0; display:grid; grid-template-columns:1fr; gap:1.25rem 2rem; }
 @media (min-width: 48rem) { .built { grid-template-columns:1fr 1fr; } }
 .built li { padding-left:1rem; border-left:3px solid var(--accent); }
@@ -58,3 +60,6 @@ body.landing { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; line-
 .built span { color:var(--muted); }
 .support { padding:1.75rem; border-radius:16px; background:color-mix(in srgb, var(--green) 8%, transparent); }
 .support p { margin:.4rem 0; }
+.byline { font-size:.95rem; color:var(--muted); margin:1.2rem 0 0; }
+.walkthrough { width:100%; max-height:75vh; border-radius:16px; background:#191512; }
+a:focus-visible { outline:3px solid var(--green); outline-offset:4px; }
