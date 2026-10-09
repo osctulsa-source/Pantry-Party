@@ -1,34 +1,27 @@
 # Pantry Party
 
-> **Internal codename: Breadbox.** Brand name, copy, colors, and typography are
-> intentionally isolated from feature code. Keep product branding in the theme tokens.
+[![CI](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml/badge.svg)](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml)
 
-Pantry Party is an offline-first pantry and cooking app built with React Native and Expo. It helps a
-household capture food, track quantities and expiry, maintain a shared shopping list, and
-find recipes that use what is already available.
+**A shared pantry that keeps working offline.** Capture groceries, review receipt text,
+track expiry, find recipes, and coordinate a household shopping list.
 
-This repository is an npm-workspace monorepo containing the Expo mobile app, shared domain
-logic, the NestJS API, database/sync configuration, curated recipe and shelf-life data, and
-operational runbooks.
+Created and maintained by **[JC Senka](https://www.linkedin.com/in/jcsenka/)**.
+Built with **React Native / Expo, TypeScript, SQLite / PowerSync, NestJS, and Supabase**.
 
-**Website:** [legal-production-9e0c.up.railway.app](https://legal-production-9e0c.up.railway.app/)
+[Website](https://legal-production-9e0c.up.railway.app/) ·
+[Engineering case study](docs/portfolio/CASE-STUDY.md) ·
+[Demo guide](docs/portfolio/DEMO.md) ·
+[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Party%20beta)
 
-<!--
-Screenshots: add images to web/legal/screenshots/ (they also feed the website),
-then uncomment and adjust the filenames below.
-
-<p>
-  <img src="web/legal/screenshots/01-pantry.png" width="24%" alt="Pantry">
-  <img src="web/legal/screenshots/02-capture.png" width="24%" alt="Receipt capture">
-  <img src="web/legal/screenshots/03-recipes.png" width="24%" alt="Recipes">
-  <img src="web/legal/screenshots/04-shopping.png" width="24%" alt="Shopping list">
-</p>
--->
+<!-- portfolio-screenshots:start -->
+<!-- Real app screenshots are added here by web/legal/generate.py when supplied. -->
+<!-- portfolio-screenshots:end -->
 
 ## Project status
 
-The iOS app is in development with a documented TestFlight build history. See the
-[TestFlight runbook](docs/TESTFLIGHT.md) for device validation and release gates.
+The iPhone app is a **working TestFlight beta**. As of October 8, 2026, JC has been
+using it successfully for a couple of months. See the [TestFlight runbook](docs/TESTFLIGHT.md) for
+device validation and release gates.
 The repository also contains Android configuration; this does not establish an Android
 store release. A public App Store release is not claimed here.
 
@@ -66,6 +59,10 @@ the mobile connector uploads queued mutations through the authenticated API. See
 
 ## Repository map
 
+Internal package names use the codename **Breadbox**. Branding stays in theme tokens
+rather than feature code. This npm-workspace monorepo contains the mobile app, shared
+domain logic, API, infrastructure, and product data.
+
 ```text
 apps/mobile/        Expo mobile application and feature code
 packages/core/      Canonical Zod schemas and shared domain logic
@@ -74,7 +71,7 @@ infra/local-dev/    Local Postgres + PowerSync + API Docker environment
 infra/managed/      Supabase + PowerSync Cloud + Railway production runbook
 data/               Curated recipes and generated shelf-life data
 docs/               Architecture, ADRs, operations, legal, and feature designs
-web/legal/          Static legal-document website
+web/legal/          Product website, engineering case study, and legal pages
 spikes/             Throwaway experiments; never import these into production code
 ```
 

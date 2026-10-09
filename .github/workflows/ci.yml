@@ -200,3 +200,19 @@ jobs:
             echo "::error::RLS is off on public tables (exposed via Supabase PostgREST): $missing"
             exit 1
           fi
+
+  portfolio-site:
+    name: Portfolio pages and links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install site tooling
+        run: python -m pip install -r web/legal/requirements.txt
+      - name: Regenerate and validate the site
+        run: |
+          python web/legal/generate.py
+          python web/legal/check_site.py
+          git diff --exit-code -- README.md web/legal/site ':!web/legal/site/assets/social-card.png'
