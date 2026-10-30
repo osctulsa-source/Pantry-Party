@@ -21,13 +21,13 @@ changeable if the brand (Larder/Crumb) lands later.
 
 ## Description
 
-> Pantry Party is the shared pantry for your household. Everyone sees the same
+> Pantry Glance is the shared pantry for your household. Everyone sees the same
 > shelves — what's in the fridge, freezer, and cupboard — synced instantly and
 > working even when your phone is offline.
 >
 > ADD GROCERIES IN SECONDS
 > Scan a barcode and items name themselves. Point the camera at a receipt, or
-> choose a screenshot of a grocery order, and Pantry Party reads it on your
+> choose a screenshot of a grocery order, and Pantry Glance reads it on your
 > device — no typing, no forms. Or add things by hand when you prefer.
 >
 > STOP WASTING FOOD
@@ -90,7 +90,7 @@ the first external build goes to beta review.
 
 **Beta App Description** (4,000 chars max):
 
-> Pantry Party is a shared pantry for your household. Add groceries by barcode,
+> Pantry Glance is a shared pantry for your household. Add groceries by barcode,
 > receipt photo, grocery-order screenshot, or a pasted list; track expiry dates;
 > find recipes that use what you already have; and keep one shopping list in
 > sync for everyone at home. It keeps working offline and syncs when you're back
@@ -133,4 +133,4 @@ In order. Internal testers (App Store Connect users, up to 100) need only step 1
 - [ ] Age rating questionnaire (expect 4+; no user-generated public content)
 - [ ] Primary category: **Food & Drink**; secondary: Productivity or Shopping
 - [ ] Confirm contact email (currently jcsenka013@gmail.com on the legal pages)
-- [ ] Legal entity name on the Terms (currently "the Pantry Party team")
+- [ ] Legal entity name on the Terms (currently "the Pantry Glance team")

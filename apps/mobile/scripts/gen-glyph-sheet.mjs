@@ -129,7 +129,7 @@ figcaption{display:flex;flex-direction:column;gap:1px;padding-left:2px;}
 </style>
 <div class="wrap">
   <header class="top">
-    <span class="eyebrow">Pantry Party · brand illustration system</span>
+    <span class="eyebrow">Pantry Glance · brand illustration system</span>
     <h1>The loaf-mark glyph family</h1>
     <p class="lede">Every food, staple, and appliance drawn to one rule — a solid cream silhouette with a single green leaf, set on one of nine muted earthy grounds. Rendered on their live picker tiles, exactly as they ship.</p>
     <div class="stats"><div class="stat"><b>${total}</b><span>glyphs</span></div><div class="stat"><b>${Object.keys(GROUNDS).length}</b><span>grounds</span></div><div class="stat"><b>2</b><span>constants</span></div><div class="stat"><b>${GROUPS.length}</b><span>collections</span></div></div>

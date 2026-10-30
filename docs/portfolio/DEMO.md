@@ -21,7 +21,7 @@ SQL writes. Use the app's normal add, edit, and remove actions.
 
 | Time | Action | Suggested narration |
 |---|---|---|
-| 0–10s | Show the pantry | “I built Pantry Party to help a household track groceries and cook what it already has.” |
+| 0–10s | Show the pantry | “I built Pantry Glance to help a household track groceries and cook what it already has.” |
 | 10–30s | Read a synthetic receipt/order image; correct one item and exclude one | “Text is recognized on the device. I review the results before saving them.” |
 | 30–45s | Show the added items and expiry | “Inventory and expiry information stay in the local database.” |
 | 45–65s | Disable connectivity, edit an item's quantity, close and reopen the app | “This pantry edit persists without a network connection.” |

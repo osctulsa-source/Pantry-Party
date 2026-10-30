@@ -18,8 +18,8 @@
  * - This picks the theme once at startup. LIVE switching (no restart) is a future
  *   enhancement — it needs a ThemeProvider + migrating screens to a useTheme()
  *   hook, since screens currently read this static object at module load.
- * - "Crumb" is the internal visual-direction label, not the product name (codename
- *   "Breadbox" via brand.ts) until trademark clearance lands.
+ * - "Crumb" is the internal visual-direction label, not the product name
+ *   (BRAND.productName in brand.ts).
  * - Signature typefaces: Bitter (display) + Nunito Sans (body).
  */
 import { Appearance } from 'react-native';

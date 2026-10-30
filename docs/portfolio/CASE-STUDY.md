@@ -1,4 +1,4 @@
-# Pantry Party: a shared pantry that works offline
+# Pantry Glance: a shared pantry that works offline
 
 A mobile product by **JC Senka** · **React Native / Expo · TypeScript · NestJS · PostgreSQL**
 
@@ -10,7 +10,7 @@ A household needs a shared view of its groceries: what is available, what should
 soon, and what belongs on the next shopping trip. Entering every item manually creates
 friction, and a grocery-store connection should not determine whether an edit saves.
 
-Pantry Party combines receipt and grocery-order capture, editable review, pantry inventory,
+Pantry Glance combines receipt and grocery-order capture, editable review, pantry inventory,
 recipe discovery, and a shared shopping list. The iPhone app is in a working TestFlight beta.
 As of October 8, 2026, JC has been using it successfully through TestFlight for a couple of
 months.
@@ -93,6 +93,6 @@ hands-on validation of a particular TestFlight binary.
 
 ## Try the project
 
-[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Party%20beta), explore the
+[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Glance%20beta), explore the
 [source](https://github.com/osctulsa-source/Pantry-Party), or follow the
 [demo guide](https://github.com/osctulsa-source/Pantry-Party/blob/main/docs/portfolio/DEMO.md).

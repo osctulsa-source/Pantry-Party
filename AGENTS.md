@@ -1,6 +1,6 @@
 # Agent notes
 
-This repo is a pantry tracker (codename Breadbox). Product and architecture rules live in [`.cursorrules`](.cursorrules). Do not hardcode a product name in the UI.
+This repo is the Pantry Glance pantry tracker (codename Breadbox in package names and ids). Product and architecture rules live in [`.cursorrules`](.cursorrules). Do not hardcode a product name in the UI.
 
 ## iOS TestFlight — read this before shipping
 

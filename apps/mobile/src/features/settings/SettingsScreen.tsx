@@ -310,19 +310,20 @@ export function SettingsScreen() {
             </Body>
           </View>
 
-          {/* Preview of the App Elements kit. Shown in TestFlight builds so
-              testers can reach it; re-gate behind __DEV__ before a public App
-              Store release. */}
-          <View style={styles.section}>
-            <Caption>Developer</Caption>
-            <View style={styles.rowGroup}>
-              <ListRow
-                icon={<Wrench size={16} color={tokens.color.inkMuted} />}
-                label="Design elements"
-                onPress={() => navigation.navigate('DesignElements')}
-              />
+          {/* Preview of the App Elements kit — development builds only, so
+              external TestFlight testers don't land in a UI-kit gallery. */}
+          {__DEV__ && (
+            <View style={styles.section}>
+              <Caption>Developer</Caption>
+              <View style={styles.rowGroup}>
+                <ListRow
+                  icon={<Wrench size={16} color={tokens.color.inkMuted} />}
+                  label="Design elements"
+                  onPress={() => navigation.navigate('DesignElements')}
+                />
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Tip of the day teaser — same deterministic pick as the Tips screen. */}
           <Pressable

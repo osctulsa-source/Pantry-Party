@@ -6,7 +6,7 @@ Until then, link the existing homepage or repository, not an unpublished route.
 
 ## Resume project entry
 
-**Pantry Party — Creator & Maintainer | React Native, TypeScript, NestJS, PostgreSQL**
+**Pantry Glance — Creator & Maintainer | React Native, TypeScript, NestJS, PostgreSQL**
 
 - Built an offline-first iPhone pantry app in TestFlight beta with local SQLite storage,
   household synchronization, receipt OCR, and editable capture review.
@@ -15,12 +15,12 @@ Until then, link the existing homepage or repository, not an unpublished route.
 
 Short version:
 
-> Built Pantry Party, an offline-first React Native/Expo app with household sync, on-device
+> Built Pantry Glance, an offline-first React Native/Expo app with household sync, on-device
 > receipt OCR, a NestJS API, and PostgreSQL integration tests; used personally through TestFlight.
 
 ## LinkedIn project / Featured description
 
-> Pantry Party is my offline-first iPhone pantry and cooking app, currently in TestFlight
+> Pantry Glance is my offline-first iPhone pantry and cooking app, currently in TestFlight
 > beta. It combines React Native/Expo, TypeScript, SQLite/PowerSync, NestJS, and Supabase to
 > support shared inventory, receipt capture with human review, recipes, and shopping lists.
 > The public repository includes architecture decisions, concurrency regression tests, and

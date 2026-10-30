@@ -26,10 +26,10 @@ REPO_URL = "https://github.com/osctulsa-source/Pantry-Party"
 SUBS = [
     ("#2-️-food-safety-disclaimer-please-read", "#2-foodsafety-disclaimer-please-read"),
     # Joint forms first so we don't leave orphaned commas.
-    ("`[COMPANY / LEGAL ENTITY NAME]`, `[REGISTERED ADDRESS]`", "the Pantry Party team"),
-    ("`[COMPANY / LEGAL ENTITY NAME]`", "the Pantry Party team"),
-    ("`[APP NAME]`", "Pantry Party"),
-    ("[APP NAME]", "Pantry Party"),
+    ("`[COMPANY / LEGAL ENTITY NAME]`, `[REGISTERED ADDRESS]`", "the Pantry Glance team"),
+    ("`[COMPANY / LEGAL ENTITY NAME]`", "the Pantry Glance team"),
+    ("`[APP NAME]`", "Pantry Glance"),
+    ("[APP NAME]", "Pantry Glance"),
     ("`[EFFECTIVE DATE]`", "July 9, 2026"),
     ("`[SUPPORT CONTACT EMAIL]`", "jcsenka013@gmail.com"),
     ("`[PRIVACY CONTACT EMAIL]`", "jcsenka013@gmail.com"),
@@ -52,17 +52,17 @@ PAGE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} — Pantry Party</title>
+<title>{title} — Pantry Glance</title>
 <meta name="description" content="{description}">
 <link rel="canonical" href="{url}">
-<meta property="og:title" content="{title} — Pantry Party">
+<meta property="og:title" content="{title} — Pantry Glance">
 <meta property="og:description" content="{description}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{site}/assets/social-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Pantry Party: a shared pantry, ready when you are offline. Created by JC Senka.">
+<meta property="og:image:alt" content="Pantry Glance: a shared pantry, ready when you are offline. Created by JC Senka.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="/style.css">
 </head>
@@ -75,7 +75,7 @@ PAGE = """<!DOCTYPE html>
 {body}
 </main>
 <footer>
-  <p>Pantry Party · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
+  <p>Pantry Glance · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
 </footer>
 </body>
 </html>
@@ -155,9 +155,9 @@ LANDING = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pantry Party — the shared pantry for your household</title>
-<meta name="description" content="Pantry Party keeps your household's pantry in sync: scan groceries in, watch expiry dates, cook what you have, and shop what you're missing.">
-<meta property="og:title" content="Pantry Party">
+<title>Pantry Glance — the shared pantry for your household</title>
+<meta name="description" content="Pantry Glance keeps your household's pantry in sync: scan groceries in, watch expiry dates, cook what you have, and shop what you're missing.">
+<meta property="og:title" content="Pantry Glance">
 <meta property="og:description" content="The shared pantry for your household. Waste less food, cook what you have.">
 <link rel="canonical" href="{site}/">
 <meta property="og:type" content="website">
@@ -165,7 +165,7 @@ LANDING = """<!DOCTYPE html>
 <meta property="og:image" content="{site}/assets/social-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Pantry Party: a shared pantry, ready when you are offline. Created by JC Senka.">
+<meta property="og:image:alt" content="Pantry Glance: a shared pantry, ready when you are offline. Created by JC Senka.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/icon.png">
 <link rel="stylesheet" href="/style.css">
@@ -183,7 +183,7 @@ LANDING = """<!DOCTYPE html>
     <h1>The shared pantry for your household.</h1>
     <p class="lede">Scan groceries in, see what's expiring, cook what you already have, and shop what you're missing, together. It keeps working offline.</p>
     <div class="ctas">
-      <a class="btn btn-primary" href="mailto:{contact}?subject=Pantry%20Party%20beta">Request beta access</a>
+      <a class="btn btn-primary" href="mailto:{contact}?subject=Pantry%20Glance%20beta">Request beta access</a>
       <a class="btn btn-ghost" href="/engineering/">Read the case study</a>
     </div>
     <p class="byline">Created by <a href="https://www.linkedin.com/in/jcsenka/">JC Senka</a> · <a href="{repo}">View source</a></p>
@@ -229,7 +229,7 @@ LANDING = """<!DOCTYPE html>
 </section>
 </main>
 <footer>
-  <p>© {year} Pantry Party · <a href="mailto:{contact}">{contact}</a></p>
+  <p>© {year} Pantry Glance · <a href="mailto:{contact}">{contact}</a></p>
 </footer>
 </body>
 </html>
@@ -248,7 +248,7 @@ def render(src_md: str) -> str:
     return markdown.markdown(text, extensions=["tables", "sane_lists", "toc"])
 
 
-def page(title: str, body_html: str, out: Path, description: str = "Pantry Party support and legal information.") -> None:
+def page(title: str, body_html: str, out: Path, description: str = "Pantry Glance support and legal information.") -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(PAGE.format(title=escape(title), body=body_html, description=escape(description, quote=True), url=escape(SITE_URL + "/" + str(out.parent.relative_to(OUT)) + "/", quote=True), site=escape(SITE_URL, quote=True)), encoding="utf-8")
     print("wrote", out.relative_to(ROOT))
@@ -278,7 +278,7 @@ def landing() -> None:
         imgs = []
         for shot in screenshots:
             shutil.copyfile(shot, assets / "screens" / shot.name)
-            alt = escape(captions.get(shot.name, "Pantry Party: " + shot.stem.replace("-", " ")), quote=True)
+            alt = escape(captions.get(shot.name, "Pantry Glance: " + shot.stem.replace("-", " ")), quote=True)
             filename = quote(shot.name)
             imgs.append(f'    <figure><img src="/assets/screens/{filename}" alt="{alt}" loading="lazy"><figcaption>{alt}</figcaption></figure>')
             readme_imgs.append(f'  <img src="web/legal/screenshots/{filename}" width="23%" alt="{alt}">')
@@ -292,7 +292,7 @@ def landing() -> None:
         (assets / "media").mkdir()
         for filename in ("walkthrough.mp4", "walkthrough.vtt"):
             shutil.copyfile(MEDIA / filename, assets / "media" / filename)
-        video = '<section aria-labelledby="demo-title"><h2 class="section-title" id="demo-title">A short walkthrough</h2><video class="walkthrough" controls playsinline preload="metadata" aria-label="Pantry Party app walkthrough"><source src="/assets/media/walkthrough.mp4" type="video/mp4"><track kind="captions" src="/assets/media/walkthrough.vtt" srclang="en" label="English" default><a href="/assets/media/walkthrough.mp4">Download the walkthrough</a></video></section>'
+        video = '<section aria-labelledby="demo-title"><h2 class="section-title" id="demo-title">A short walkthrough</h2><video class="walkthrough" controls playsinline preload="metadata" aria-label="Pantry Glance app walkthrough"><source src="/assets/media/walkthrough.mp4" type="video/mp4"><track kind="captions" src="/assets/media/walkthrough.vtt" srclang="en" label="English" default><a href="/assets/media/walkthrough.mp4">Download the walkthrough</a></video></section>'
 
     out = OUT / "index.html"
     out.write_text(

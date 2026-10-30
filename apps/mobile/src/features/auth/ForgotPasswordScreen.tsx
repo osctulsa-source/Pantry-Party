@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
+import { BRAND } from '../../theme/brand';
 import { Body, Button, Heading, Input, Screen } from '../../components/ui';
 import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from './AuthContext';
@@ -60,7 +61,7 @@ export function ForgotPasswordScreen() {
       >
         <View style={styles.center}>
           <View style={styles.brand}>
-            <BrandMark size={76} label="Breadbox" />
+            <BrandMark size={76} label={BRAND.productName} />
           </View>
 
           {step === 'request' ? (

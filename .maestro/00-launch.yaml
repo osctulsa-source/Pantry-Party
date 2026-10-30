@@ -2,7 +2,7 @@ appId: com.osctulsa.pantryparty.dev
 ---
 - launchApp:
     appId: com.osctulsa.pantryparty.dev
-- tapOn: "Pantry Party"
+- tapOn: "Pantry Glance"
 - extendedWaitUntil:
     visible:
       - "Development servers"

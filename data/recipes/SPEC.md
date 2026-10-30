@@ -1,6 +1,6 @@
-# Pantry Party curated recipe spec (v1)
+# Pantry Glance curated recipe spec (v1)
 
-You are authoring ORIGINAL recipes for the Pantry Party app's owned database.
+You are authoring ORIGINAL recipes for the Pantry Glance app's owned database.
 Output: a JSON array of recipe objects, written to your assigned batch file.
 
 ## Legal rules (non-negotiable)
@@ -27,7 +27,7 @@ Output: a JSON array of recipe objects, written to your assigned batch file.
   glutenFree: boolean;        // accurate as written (soy sauce = NOT gluten-free)
   healthScore: null;          // always null in v1 (we don't fabricate scores)
   sourceUrl: "";              // always empty (it's ours)
-  sourceName: "Pantry Party Kitchen";
+  sourceName: "Pantry Glance Kitchen";
   summary: string;            // 1-2 sentences, plain text, warm + confident, max 220 chars
   ingredients: Array<{
     name: string;             // simple lowercase ingredient name ("chicken thighs")
@@ -52,7 +52,7 @@ Output: a JSON array of recipe objects, written to your assigned batch file.
 }
 ```
 
-## Voice (Pantry Party Kitchen)
+## Voice (Pantry Glance Kitchen)
 Calm, warm, zero pretension. Written for someone slightly nervous in a kitchen:
 say what to look/listen/smell for, never assume technique names ("fold" → say
 how). Steps are imperative and short. The summary sells the outcome ("Crispy
@@ -84,7 +84,7 @@ ingredients.
   "glutenFree": true,
   "healthScore": null,
   "sourceUrl": "",
-  "sourceName": "Pantry Party Kitchen",
+  "sourceName": "Pantry Glance Kitchen",
   "summary": "Ten minutes from fridge to table, and it tastes like you fussed. Sweet shrimp in a garlicky butter sauce you will want bread for.",
   "ingredients": [
     { "name": "shrimp", "original": "1 lb large shrimp, peeled and deveined", "amount": 1, "unit": "lb" },
