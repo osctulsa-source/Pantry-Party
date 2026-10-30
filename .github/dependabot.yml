@@ -20,6 +20,11 @@ updates:
       # v7 requires Node >=22.12; CI and the API image are Node 20.
       - dependency-name: "expo-server-sdk"
         update-types: ["version-update:semver-major"]
+      # Sentry 11 drops `enableLogs` and moves auto-instrumentation to
+      # module-load hooks; this ESM API then needs `node --import
+      # @sentry/node/import` or tracing silently stops (#233). Migrate on purpose.
+      - dependency-name: "@sentry/*"
+        update-types: ["version-update:semver-major"]
       # The Expo SDK pins these native packages to specific minors. Moving them
       # independently (e.g. #236: react-native 0.85→0.87, worklets 0.8→0.12
       # under SDK 56) produces a binary Expo doesn't support — the class of
