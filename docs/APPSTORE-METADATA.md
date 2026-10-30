@@ -76,6 +76,57 @@ transmitted (matches the privacy policy and the camera/photos usage strings).
 > Camera features (barcode/receipt scanning) require a physical device.
 > The app is offline-first: data syncs when connectivity returns.
 
+## TestFlight Test Information (external groups)
+
+App Store Connect → TestFlight → Test Information. Required once per app before
+the first external build goes to beta review.
+
+| Field | Value |
+|---|---|
+| Feedback email | `jcsenka013@gmail.com` |
+| Marketing URL | `https://legal-production-9e0c.up.railway.app/` |
+| Privacy Policy URL | `https://legal-production-9e0c.up.railway.app/privacy/` |
+| Sign-in required | Yes — demo account below |
+
+**Beta App Description** (4,000 chars max):
+
+> Pantry Party is a shared pantry for your household. Add groceries by barcode,
+> receipt photo, grocery-order screenshot, or a pasted list; track expiry dates;
+> find recipes that use what you already have; and keep one shopping list in
+> sync for everyone at home. It keeps working offline and syncs when you're back
+> online.
+
+**What to Test** (per build, 4,000 chars max) — update for each build:
+
+> Thanks for testing! Please try:
+> 1. Sign up, then add a few items — scan a barcode, read a receipt or a
+>    grocery-order screenshot, or paste a list.
+> 2. Fix anything the app misread before saving. Tell us what it got wrong.
+> 3. Set an expiry date and check the Expiring soon list.
+> 4. Invite someone in your household (Settings → Household) and add items
+>    from both phones.
+> 5. Turn on Airplane Mode, make a change, turn it off — the change should sync.
+>
+> Send feedback from Settings → Send feedback (your build number is filled in),
+> or take a screenshot in TestFlight. Known limit: if two phones edit the same
+> item's quantity offline, the last edit wins.
+
+## External TestFlight launch checklist
+
+In order. Internal testers (App Store Connect users, up to 100) need only step 1.
+
+1. A build passes the on-device checks in `docs/portfolio/DEMO.md` (at least
+   capture, offline persistence, household join) — see `docs/TESTFLIGHT.md`.
+2. Demo account exists and its credentials are in the beta review notes.
+3. Test Information above is filled in; App Privacy answers match the labels
+   table above.
+4. Create an external group, add the build, submit for beta review (usually
+   ~1 day for the first build; later builds of the same version are often
+   instant).
+5. After approval, enable the group's **public link** and share it. Set a
+   tester limit so a shared link can't outgrow the backend plans (Supabase,
+   PowerSync, Railway, Spoonacular).
+
 ## Remaining decisions
 
 - [ ] Demo account for review (create + record credentials here)
