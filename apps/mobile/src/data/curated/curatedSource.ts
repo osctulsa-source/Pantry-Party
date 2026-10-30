@@ -1,10 +1,10 @@
 /**
- * Curated "house recipes" — Pantry Party's own bundled recipe database.
+ * Curated "house recipes" — Pantry Glance's own bundled recipe database.
  *
  * 288 original recipes (authoring source of truth: data/recipes/ at the repo
  * root — SPEC.md + validator live there; THIS json is the bundle copy. When a
  * new batch is authored, update BOTH copies). All text is original work
- * ("Pantry Party Kitchen"); ids start at 9000001, far above Spoonacular's id
+ * ("Pantry Glance Kitchen"); ids start at 9000001, far above Spoonacular's id
  * space, so favorites/prefs/history keyed on recipe.id can never collide.
  *
  * searchCurated() is the local twin of the server's /recipes/search: it matches
@@ -19,7 +19,7 @@ import { matchCookedItems, type MealType } from '@breadbox/core';
 import type { SpoonacularRecipe } from '../spoonacular/types';
 import curatedJson from './curated.recipes.json';
 
-export const CURATED_SOURCE_NAME = 'Pantry Party Kitchen';
+export const CURATED_SOURCE_NAME = 'Pantry Glance Kitchen';
 
 /** The bundled shape: SpoonacularRecipe minus the pantry-relative fields
  *  (computed per search), plus the curated-only metadata. */

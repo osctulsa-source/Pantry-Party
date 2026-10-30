@@ -1,4 +1,4 @@
-# Pantry Party curated recipe database
+# Pantry Glance curated recipe database
 
 **288 original recipes** (`curated.recipes.json`), easy → medium, owned by the
 project — no external recipe API required to serve them. Includes a lazy-kitchen
@@ -20,7 +20,7 @@ Cook tab's device picker has real house recipes to boost.
   2026 most-searched recipe data). *Which dishes people cook* is a fact and not
   copyrightable.
 - **Every word is original.** Summaries and instructions were authored for this
-  project in the Pantry Party voice (`sourceName: "Pantry Party Kitchen"`).
+  project in the Pantry Glance voice (`sourceName: "Pantry Glance Kitchen"`).
   Nothing is scraped or paraphrased from any recipe site; no brand names appear.
 - **Images** are original generated food photography (batch 1 on Supabase
   Storage `recipe-images/{id}.jpg`; batch 2 also bundled under
@@ -37,7 +37,7 @@ client can use for filtering: `difficulty`, `mealType`, `cuisines`.
 
 Authoring rules + a worked example live in [`SPEC.md`](./SPEC.md).
 Fields intentionally fixed in v1: `healthScore: null`, `sourceUrl: ""` (ours),
-`sourceName: "Pantry Party Kitchen"`. `image` is an https URL (or `""` while
+`sourceName: "Pantry Glance Kitchen"`. `image` is an https URL (or `""` while
 authoring; the image pass fills hosted URLs).
 
 **Id space:** `9000001+` — far above Spoonacular's id range, so anything keyed
@@ -59,7 +59,7 @@ sanity. CI-inert today (nothing imports this data yet).
 1. **Bundle client-side (recommended v1).** Import the JSON in the app, compute
    `usedIngredientCount` / `missedIngredientNames` against the pantry with the
    existing token matcher (`@breadbox/core` `matchCookedItems` family), and merge
-   curated results into the Cook pool with a "Pantry Party Kitchen" badge. Works
+   curated results into the Cook pool with a "Pantry Glance Kitchen" badge. Works
    offline; zero quota; ~630KB in-bundle.
 2. **Serve from `services/api`.** Merge curated matches into `/recipes/search`
    responses server-side and serve curated ids from `/recipes/:id/instructions`.

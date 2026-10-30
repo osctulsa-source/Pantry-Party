@@ -27,7 +27,7 @@ const ID_SUFFIX = IS_PROD ? '' : '.dev';
 
 module.exports = {
   expo: {
-    name: 'Pantry Party',
+    name: 'Pantry Glance',
     slug: 'pantry-party',
     version: '0.0.1',
     orientation: 'portrait',
@@ -122,7 +122,7 @@ module.exports = {
         'expo-camera',
         {
           cameraPermission:
-            'Pantry Party uses the camera to scan barcodes, QR codes, and read text from receipts.',
+            'Pantry Glance uses the camera to scan barcodes, QR codes, and read text from receipts.',
           barcodeScannerEnabled: true,
         },
       ],
@@ -130,7 +130,7 @@ module.exports = {
         'expo-image-picker',
         {
           photosPermission:
-            'Pantry Party uses your photos to read receipts and grocery-order screenshots on your device.',
+            'Pantry Glance uses your photos to read receipts and grocery-order screenshots on your device.',
         },
       ],
       [

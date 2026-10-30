@@ -5,14 +5,16 @@
  * Success path: AuthContext state flips to 'authenticated' → App.tsx renders AppStack.
  */
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { tokens } from '../../theme/tokens';
+import { BRAND } from '../../theme/brand';
 import { Body, Button, Heading, Input, Screen } from '../../components/ui';
 import { BrandMark } from '../../components/BrandMark';
 import { useAuth } from './AuthContext';
+import { SUPPORT_LINKS } from '../settings/supportLinks';
 import type { AuthStackParamList } from '../../../App';
 
 export function SignUpScreen() {
@@ -37,7 +39,7 @@ export function SignUpScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.center}>
           <View style={styles.brand}>
-            <BrandMark size={76} label="Breadbox" />
+            <BrandMark size={76} label={BRAND.productName} />
           </View>
           <Heading size="xl">Create your account</Heading>
           <Body tone="muted" style={styles.subtitle}>
@@ -70,6 +72,18 @@ export function SignUpScreen() {
 
           <Button title="Create account" onPress={onSubmit} loading={submitting} style={styles.submit} />
 
+          <Body tone="muted" size={12} style={styles.consent}>
+            By creating an account you agree to the{' '}
+            <Text style={styles.consentLink} accessibilityRole="link" onPress={() => void Linking.openURL(SUPPORT_LINKS.terms)}>
+              Terms of Use
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.consentLink} accessibilityRole="link" onPress={() => void Linking.openURL(SUPPORT_LINKS.privacy)}>
+              Privacy Policy
+            </Text>
+            .
+          </Body>
+
           <Pressable style={styles.footerLink} onPress={() => navigation.navigate('SignIn')}>
             <Body tone="accent" weight="medium" size={14}>
               Already have an account? Sign in
@@ -89,5 +103,7 @@ const styles = StyleSheet.create({
   inputGap: { marginTop: tokens.space(3) },
   error: { marginTop: tokens.space(3) },
   submit: { marginTop: tokens.space(4) },
+  consent: { marginTop: tokens.space(3), textAlign: 'center' },
+  consentLink: { color: tokens.color.accent, fontFamily: tokens.font.body.medium },
   footerLink: { marginTop: tokens.space(5), alignItems: 'center' },
 });

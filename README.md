@@ -1,4 +1,4 @@
-# Pantry Party
+# Pantry Glance
 
 [![CI](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml/badge.svg)](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml)
 
@@ -11,7 +11,7 @@ Built with **React Native / Expo, TypeScript, SQLite / PowerSync, NestJS, and Su
 [Website](https://legal-production-9e0c.up.railway.app/) ·
 [Engineering case study](docs/portfolio/CASE-STUDY.md) ·
 [Demo guide](docs/portfolio/DEMO.md) ·
-[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Party%20beta)
+[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Glance%20beta)
 
 <!-- portfolio-screenshots:start -->
 <!-- Real app screenshots are added here by web/legal/generate.py when supplied. -->
