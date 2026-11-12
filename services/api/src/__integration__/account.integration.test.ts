@@ -20,9 +20,11 @@ vi.mock('jose', () => ({
   }),
 }));
 
-// The controller's Supabase admin-delete is a separate HTTP call; with no
-// SUPABASE_URL set it's skipped, but stub fetch defensively so a stray env var
-// can't make the suite hit the network.
+// The controller's Supabase admin-delete is a separate HTTP call. The
+// controller refuses to run without admin credentials, so provide fakes and
+// stub fetch — the suite never hits the network.
+process.env.SUPABASE_URL = 'https://test.supabase.co';
+process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, text: async () => '' })));
 
 const { makeTestPool, truncateAll, seedHousehold, seedMembership, bearer } = await import(
@@ -108,33 +110,47 @@ describe('DELETE /account (real Postgres)', () => {
       [USER_A, Date.now()],
     );
 
+    await pool.query(
+      `INSERT INTO analytics_events (id, install_id, user_id, event, occurred_at)
+       VALUES (gen_random_uuid(), 'install-1', $1, 'app_open', NOW())`,
+      [USER_A],
+    );
+
     const res = await request(app).delete('/account').set('Authorization', bearer(USER_A));
 
     // The whole point of P0-#1: this used to be a 500.
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true, deleted: USER_A });
 
-    // Pantry + shopping items tombstoned.
-    const pantry = await pool.query(
-      'SELECT deleted FROM pantry_items WHERE added_by = $1',
-      [USER_A],
-    );
-    expect(pantry.rows.every((r) => r.deleted === true)).toBe(true);
-    const shopping = await pool.query(
-      'SELECT deleted FROM shopping_list_items WHERE added_by = $1',
-      [USER_A],
-    );
-    expect(shopping.rows.every((r) => r.deleted === true)).toBe(true);
+    // Nothing anywhere still carries the deleted user's id — the rows A added
+    // are tombstoned and re-attributed to the nil UUID.
+    const NIL = '00000000-0000-0000-0000-000000000000';
+    for (const [table, col] of [
+      ['pantry_items', 'added_by'],
+      ['shopping_list_items', 'added_by'],
+      ['favorite_recipes', 'added_by'],
+      ['activity_events', 'added_by'],
+      ['announcements', 'created_by'],
+      ['announcement_reactions', 'user_id'],
+    ] as const) {
+      const mine = await pool.query(`SELECT 1 FROM ${table} WHERE ${col} = $1`, [USER_A]);
+      expect(mine.rowCount, `${table} still attributes rows to the deleted user`).toBe(0);
+      const scrubbed = await pool.query(`SELECT deleted FROM ${table} WHERE ${col} = $1`, [NIL]);
+      expect(scrubbed.rowCount, `${table} should keep one anonymized tombstone`).toBe(1);
+      expect(scrubbed.rows[0].deleted).toBe(true);
+    }
 
-    // Invite revoked — used_at set, used_by still NULL (no bogus sentinel).
-    const invite = await pool.query(
-      'SELECT used_at, used_by FROM household_invites WHERE created_by = $1',
-      [USER_A],
-    );
-    expect(invite.rows[0].used_at).not.toBeNull();
-    expect(invite.rows[0].used_by).toBeNull();
+    // Push tokens, invites, and the analytics link are gone outright.
+    for (const sql of [
+      'SELECT 1 FROM push_tokens WHERE user_id = $1',
+      'SELECT 1 FROM household_invites WHERE created_by = $1 OR used_by = $1',
+      'SELECT 1 FROM analytics_events WHERE user_id = $1',
+    ]) {
+      expect((await pool.query(sql, [USER_A])).rowCount, sql).toBe(0);
+    }
+    expect((await pool.query('SELECT 1 FROM analytics_events')).rowCount).toBe(1);
 
-    // A's membership removed; ownership transferred to B.
+    // A's membership removed; ownership — and households.created_by — moved to B.
     const aMembership = await pool.query(
       'SELECT 1 FROM user_households WHERE user_id = $1',
       [USER_A],
@@ -145,22 +161,19 @@ describe('DELETE /account (real Postgres)', () => {
       [USER_B, HH],
     );
     expect(bRole.rows[0].role).toBe('owner');
+    const hh = await pool.query('SELECT created_by FROM households WHERE id = $1', [HH]);
+    expect(hh.rows[0].created_by).toBe(USER_B);
+  });
 
-    // No live row still attributes content to the deleted user, and no live
-    // push token remains (deleted devices stop receiving household pushes).
-    for (const [table, col] of [
-      ['favorite_recipes', 'added_by'],
-      ['activity_events', 'added_by'],
-      ['announcements', 'created_by'],
-      ['announcement_reactions', 'user_id'],
-      ['push_tokens', 'user_id'],
-    ] as const) {
-      const live = await pool.query(
-        `SELECT 1 FROM ${table} WHERE ${col} = $1 AND deleted = false`,
-        [USER_A],
-      );
-      expect(live.rowCount, `${table} should have no live rows for a deleted user`).toBe(0);
-    }
+  it('a sole-member household survives ownerless, with created_by scrubbed', async () => {
+    await seedHousehold(pool, { id: HH, name: 'Solo', createdBy: USER_A });
+    await seedMembership(pool, { userId: USER_A, householdId: HH, role: 'owner' });
+
+    const res = await request(app).delete('/account').set('Authorization', bearer(USER_A));
+    expect(res.status).toBe(200);
+
+    const hh = await pool.query('SELECT created_by FROM households WHERE id = $1', [HH]);
+    expect(hh.rows[0].created_by).toBe('00000000-0000-0000-0000-000000000000');
   });
 
   it('is idempotent — deleting an already-deleted user still returns 200', async () => {

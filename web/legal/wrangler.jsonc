@@ -1,0 +1,16 @@
+// Static site (landing, privacy, terms, engineering) on Cloudflare Workers
+// static assets. Deploy: `npx wrangler deploy` from web/legal after regenerating.
+{
+  "name": "pantryglance-site",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./site",
+    "html_handling": "auto-trailing-slash"
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "pantryglance.com", "custom_domain": true },
+    { "pattern": "www.pantryglance.com", "custom_domain": true }
+  ]
+}

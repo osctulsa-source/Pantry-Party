@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "web/legal/site"
 SCREENSHOTS = ROOT / "web/legal/screenshots"
 FOOD_PHOTOS = ["9000133", "9000096", "9000049", "9000022"]
-CONTACT = "jcsenka013@gmail.com"
-SITE_URL = os.environ.get("PANTRY_SITE_URL", "https://legal-production-9e0c.up.railway.app").rstrip("/")
+CONTACT = "support@pantryglance.com"
+SITE_URL = os.environ.get("PANTRY_SITE_URL", "https://pantryglance.com").rstrip("/")
 if urlparse(SITE_URL).scheme != "https" or not urlparse(SITE_URL).netloc:
     raise ValueError("PANTRY_SITE_URL must be an absolute HTTPS URL")
 MEDIA = ROOT / "web/legal/media"
@@ -31,8 +31,8 @@ SUBS = [
     ("`[APP NAME]`", "Pantry Glance"),
     ("[APP NAME]", "Pantry Glance"),
     ("`[EFFECTIVE DATE]`", "July 9, 2026"),
-    ("`[SUPPORT CONTACT EMAIL]`", "jcsenka013@gmail.com"),
-    ("`[PRIVACY CONTACT EMAIL]`", "jcsenka013@gmail.com"),
+    ("`[SUPPORT CONTACT EMAIL]`", "support@pantryglance.com"),
+    ("`[PRIVACY CONTACT EMAIL]`", "privacy@pantryglance.com"),
     ("`[13 / 16 / 18 — confirm]`", "13"),
     ("`[13 / 16 — confirm]`", "13"),
     ("`[AMOUNT, e.g. US$50]`", "US$50"),
@@ -75,7 +75,7 @@ PAGE = """<!DOCTYPE html>
 {body}
 </main>
 <footer>
-  <p>Pantry Glance · <a href="mailto:jcsenka013@gmail.com">jcsenka013@gmail.com</a></p>
+  <p>Pantry Glance · <a href="mailto:support@pantryglance.com">support@pantryglance.com</a></p>
 </footer>
 </body>
 </html>
