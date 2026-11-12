@@ -25,6 +25,18 @@ updates:
       # under SDK 56) produces a binary Expo doesn't support — the class of
       # mismatch behind the TestFlight 41–46 crashes. They move only via
       # `npx expo install --fix` during a deliberate SDK upgrade.
+      # Every expo-* / @expo/* package is versioned WITH the SDK: its major is
+      # the SDK number. #262 moved expo-localization to 57 under SDK 56 (and
+      # #260/#261 proposed expo-clipboard/expo-font 58). Majors move only in a
+      # deliberate SDK upgrade.
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@expo/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jest-expo"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "react"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-native"
