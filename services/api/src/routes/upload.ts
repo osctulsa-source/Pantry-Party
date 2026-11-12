@@ -543,6 +543,50 @@ export async function authorizePutWrite(
   }
 }
 
+/**
+ * A device push token is unique across the table (uq_push_tokens_token), but
+ * the upsert conflicts on `id` only. The same physical token legitimately
+ * reappears under a NEW row id whenever a device registers before its old row
+ * has synced down: sign-out/sign-in (local SQLite is wiped), a second account
+ * on the same phone, or re-signup after account deletion. Without this, that
+ * PUT hit the unique index and 500'd on every retry, wedging the device's
+ * whole upload queue.
+ *
+ * The device presenting the token owns it now, so drop any other row holding
+ * it and let the upsert proceed. (The caller's user_id is already enforced by
+ * validateCrudEntry; knowing a token means having the device.)
+ */
+export async function releasePushToken(
+  columns: string[],
+  values: unknown[],
+  client: PoolClient,
+): Promise<void> {
+  const tokenIdx = columns.indexOf('token');
+  if (tokenIdx === -1) return;
+  await client.query('DELETE FROM push_tokens WHERE token = $1 AND id <> $2', [
+    values[tokenIdx],
+    values[columns.indexOf('id')],
+  ]);
+}
+
+/**
+ * Postgres errors that will fail identically on every retry: integrity
+ * violations (class 23 — unique, FK, NOT NULL, CHECK) and bad data (class 22 —
+ * malformed uuid/timestamp, out-of-range number). Answering 500 for these made
+ * PowerSync clients retry the same batch forever; a 4xx tells the client the
+ * batch is permanently unacceptable so it can drop it and keep syncing.
+ */
+export function permanentRejection(err: unknown): { status: number; error: string } | null {
+  const code =
+    typeof err === 'object' && err !== null && 'code' in err
+      ? (err as { code?: unknown }).code
+      : undefined;
+  if (typeof code !== 'string') return null;
+  if (code.startsWith('23')) return { status: 409, error: `write conflicts with existing data (${code})` };
+  if (code.startsWith('22')) return { status: 400, error: `write contains invalid data (${code})` };
+  return null;
+}
+
 router.post('/sync/upload', requireUser, async (req, res) => {
   const parsed = UploadPayloadSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -609,6 +653,7 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     for (const op of plan) {
       if (op.op === 'PUT') {
         await authorizePutWrite(op.table, op.columns, op.values, userId, client, ownedHouseholdIds);
+        if (op.table === 'push_tokens') await releasePushToken(op.columns, op.values, client);
         const { sql } = buildUpsertSql(op.table, op.columns);
         await client.query(sql, op.values);
       } else {
@@ -631,6 +676,12 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     if (client) await client.query('ROLLBACK').catch(() => undefined);
     if (err instanceof UploadError) {
       res.status(err.status).json({ ok: false, error: err.message });
+      return;
+    }
+    const rejection = permanentRejection(err);
+    if (rejection) {
+      console.error('[api] upload rejected by Postgres:', err);
+      res.status(rejection.status).json({ ok: false, error: rejection.error });
       return;
     }
     console.error('[api] upload failed:', err);

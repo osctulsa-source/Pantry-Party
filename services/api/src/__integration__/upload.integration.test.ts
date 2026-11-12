@@ -325,3 +325,95 @@ describe('POST /sync/upload — ownership columns are immutable on upsert', () =
     expect(m.rowCount).toBe(0);
   });
 });
+
+describe('POST /sync/upload — push token re-registration (real Postgres)', () => {
+  const TOKEN = 'ExponentPushToken[same-device]';
+  const tokenPut = (id: string, userId: string) => ({
+    crud: [
+      {
+        op: 'PUT',
+        type: 'push_tokens',
+        id,
+        data: {
+          user_id: userId,
+          token: TOKEN,
+          platform: 'ios',
+          announcements_enabled: 1,
+          updated_at: Date.now(),
+          deleted: 0,
+        },
+      },
+    ],
+  });
+  const ROW_1 = '11111111-aaaa-1111-1111-111111111111';
+  const ROW_2 = '22222222-aaaa-2222-2222-222222222222';
+
+  it('the same device token under a NEW row id is accepted, not a 500 (queue-wedge regression)', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    // Sign-out/sign-in wipes local SQLite; the device re-registers the same
+    // token with a fresh id before the old row has synced down.
+    expect((await upload(tokenPut(ROW_2, USER_A), USER_A)).status).toBe(200);
+
+    const rows = await pool.query('SELECT id, user_id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rows).toEqual([{ id: ROW_2, user_id: USER_A }]);
+  });
+
+  it('a second account on the same phone takes the token over', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    expect((await upload(tokenPut(ROW_2, USER_B), USER_B)).status).toBe(200);
+
+    const rows = await pool.query('SELECT id, user_id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rows).toEqual([{ id: ROW_2, user_id: USER_B }]);
+  });
+
+  it('replaying the identical PUT stays idempotent', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    const rows = await pool.query('SELECT id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rowCount).toBe(1);
+  });
+});
+
+describe('POST /sync/upload — permanent Postgres rejections are 4xx, never 500', () => {
+  it('a row that violates a CHECK constraint is a 409 the client can drop', async () => {
+    const res = await upload(
+      {
+        crud: [
+          {
+            op: 'PUT',
+            type: 'pantry_items',
+            id: '33333333-3333-3333-3333-333333333333',
+            data: {
+              household_id: HH_A,
+              name: 'Eggs',
+              added_at: '2026-01-01T00:00:00.000Z',
+              source: 'not-a-real-source',
+              added_by: USER_A,
+              updated_at: Date.now(),
+              deleted: 0,
+            },
+          },
+        ],
+      },
+      USER_A,
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it('malformed data (a non-uuid id) is a 400', async () => {
+    const res = await upload(
+      {
+        crud: [
+          {
+            op: 'PATCH',
+            type: 'pantry_items',
+            id: 'not-a-uuid',
+            data: { name: 'x', updated_at: Date.now() },
+          },
+        ],
+      },
+      USER_A,
+    );
+    expect(res.status).toBe(400);
+  });
+});

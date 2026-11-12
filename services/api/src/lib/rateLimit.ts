@@ -66,4 +66,9 @@ export class FixedWindowRateLimiter {
       ),
     };
   }
+
+  /** Forgets every key. For tests that share a module-level limiter. */
+  reset(): void {
+    this.buckets.clear();
+  }
 }
