@@ -2,7 +2,7 @@
 
 A mobile product by **JC Senka** · **React Native / Expo · TypeScript · NestJS · PostgreSQL**
 
-[Project website](https://legal-production-9e0c.up.railway.app/) · [Source code](https://github.com/osctulsa-source/Pantry-Party) · [JC on LinkedIn](https://www.linkedin.com/in/jcsenka/)
+[Project website](https://pantryglance.com/) · [Source code](https://github.com/osctulsa-source/Pantry-Party) · [JC on LinkedIn](https://www.linkedin.com/in/jcsenka/)
 
 ## The problem
 
@@ -93,6 +93,6 @@ hands-on validation of a particular TestFlight binary.
 
 ## Try the project
 
-[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Glance%20beta), explore the
+[Request beta access](mailto:support@pantryglance.com?subject=Pantry%20Glance%20beta), explore the
 [source](https://github.com/osctulsa-source/Pantry-Party), or follow the
 [demo guide](https://github.com/osctulsa-source/Pantry-Party/blob/main/docs/portfolio/DEMO.md).
