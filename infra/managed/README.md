@@ -14,7 +14,7 @@ mobile app ──writes + recipes──► services/api on Railway ──Supavis
 |---|---|---|
 | Postgres + Auth | Supabase project `yclvepnvoisgprqcenvj` | `https://yclvepnvoisgprqcenvj.supabase.co` |
 | Sync service | PowerSync Cloud instance `6a19dc178d064eb85eea1728` | `https://6a19dc178d064eb85eea1728.powersync.journeyapps.com` |
-| API (`services/api`) | Railway project `pantry-party`, service `api` | `https://api-production-f3c5.up.railway.app` |
+| API (`services/api`) | Railway project `pantry-party`, service `api` | `https://api.pantryglance.com` (custom domain via Cloudflare; the Railway address `api-production-f3c5.up.railway.app` is baked into builds up to 50 and must keep working) |
 
 The Azure path (`infra/azure/`, PR #142) is **parked** — see ADR-007.
 
@@ -166,7 +166,7 @@ per-profile `env` blocks in `apps/mobile/eas.json` (EAS builds ignore
 
 ```
 EXPO_PUBLIC_POWERSYNC_URL=https://6a19dc178d064eb85eea1728.powersync.journeyapps.com
-EXPO_PUBLIC_API_URL=https://api-production-f3c5.up.railway.app
+EXPO_PUBLIC_API_URL=https://api.pantryglance.com
 EXPO_PUBLIC_SUPABASE_URL=https://yclvepnvoisgprqcenvj.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 ```
