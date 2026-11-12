@@ -15,6 +15,7 @@ module.exports = tseslint.config(
       '**/android/**',
       '**/ios/**',
       'spikes/**', // spikes are throwaway
+      '.kilo/**', // local agent worktrees (untracked copies of the repo)
     ],
   },
   // Global options

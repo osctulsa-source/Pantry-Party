@@ -17,9 +17,10 @@
 import { matchCookedItems, type MealType } from '@breadbox/core';
 
 import type { SpoonacularRecipe } from '../spoonacular/types';
+import { BRAND } from '../../theme/brand';
 import curatedJson from './curated.recipes.json';
 
-export const CURATED_SOURCE_NAME = 'Pantry Glance Kitchen';
+export const CURATED_SOURCE_NAME = `${BRAND.productName} Kitchen`;
 
 /** The bundled shape: SpoonacularRecipe minus the pantry-relative fields
  *  (computed per search), plus the curated-only metadata. */

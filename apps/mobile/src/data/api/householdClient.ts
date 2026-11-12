@@ -39,6 +39,7 @@ function describeHouseholdFailure(
   body = '',
 ): string {
   if (status === 401) return 'Please sign in again, then retry.';
+  if (status === 429) return 'Too many attempts. Wait a few minutes, then try again.';
   if (action === 'invite' && status === 403) {
     return "This device isn't linked to that household yet. If you have more than one pantry, open Household and switch to the one with your food, then try again.";
   }

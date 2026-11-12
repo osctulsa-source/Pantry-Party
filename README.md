@@ -112,10 +112,8 @@ The API integration suite is separate: `npm run test:integration -w services/api
 a disposable Postgres database. CI provisions one and also checks migrations, the API
 image lockfile, and the generated iOS bundle phase. Never point test fixtures at production.
 
-If a clean npm install reports that `jest-expo` cannot find the already-declared
-`@react-native/jest-preset`, the preset may be nested in the mobile workspace. From
-`apps/mobile`, run `NODE_PATH="$PWD/node_modules" npm test -- --runInBand`; this resolves
-that workspace dependency without changing the lockfile.
+The mobile `npm test` script sets `NODE_PATH=./node_modules` so `jest-expo` finds the
+`@react-native/jest-preset` that npm nests inside the mobile workspace.
 
 ## Run locally
 
