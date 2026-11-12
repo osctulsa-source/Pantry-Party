@@ -3,7 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { Bitter_400Regular, Bitter_600SemiBold, Bitter_700Bold } from '@expo-google-fonts/bitter';
 import { NunitoSans_400Regular, NunitoSans_600SemiBold, NunitoSans_700Bold } from '@expo-google-fonts/nunito-sans';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppState, StyleSheet, Text, View } from 'react-native';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   NavigationContainer,
@@ -206,8 +206,16 @@ function AppRoot() {
       return;
     }
     void registerPushToken(userId);
+    // Permission is asked for later, in context; re-check on foreground so the
+    // token registers as soon as the user allows notifications.
+    const appStateSub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') void registerPushToken(userId);
+    });
     const sub = attachAnnouncementResponder();
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      appStateSub.remove();
+    };
   }, [userId]);
 
   if (state.status === 'loading') {
