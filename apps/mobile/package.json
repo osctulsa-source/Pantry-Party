@@ -19,7 +19,7 @@
     "@expo/ui": "~56.0.22",
     "@op-engineering/op-sqlite": "^16.2.0",
     "@powersync/common": "^1.53.2",
-    "@powersync/op-sqlite": "^0.9.9",
+    "@powersync/op-sqlite": "^0.9.17",
     "@powersync/react-native": "^1.35.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.21.0",
