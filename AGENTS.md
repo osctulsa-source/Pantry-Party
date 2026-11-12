@@ -1,3 +1,19 @@
+# AGENTS.md — read this first
+
+Rules for every AI tool in this repo (Claude Code, Cursor, Antigravity, Codex, Grok…).
+CLAUDE.md points here, so there is one copy.
+
+## Working on this project
+
+JC works from several devices and AI tools. These rules keep them all on the same plan.
+
+1. **Start:** `git pull`, then read [docs/STATUS.md](docs/STATUS.md). Its **Now** section is the
+   one thing being worked on.
+2. **Stay on it.** If JC asks for something else, do it, but say it's off-plan and offer to add
+   it to STATUS.md. New ideas go in the **Parking lot**, not the code.
+3. **Finish:** update STATUS.md (Now, Next, a session-log line), then commit and push so the
+   next device or tool picks up where you stopped.
+
 # Agent notes
 
 This repo is the Pantry Glance pantry tracker (codename Breadbox in package names and ids). Product and architecture rules live in [`.cursorrules`](.cursorrules). Do not hardcode a product name in the UI.
