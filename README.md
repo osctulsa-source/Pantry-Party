@@ -8,7 +8,7 @@ track expiry, find recipes, and coordinate a household shopping list.
 Created and maintained by **[JC Senka](https://www.linkedin.com/in/jcsenka/)**.
 Built with **React Native / Expo, TypeScript, SQLite / PowerSync, NestJS, and Supabase**.
 
-[Website](https://legal-production-9e0c.up.railway.app/) ·
+[Website](https://pantryglance.com/) ·
 [Engineering case study](docs/portfolio/CASE-STUDY.md) ·
 [Demo guide](docs/portfolio/DEMO.md) ·
 [Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Glance%20beta)

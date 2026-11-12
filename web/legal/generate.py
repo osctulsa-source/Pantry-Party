@@ -17,7 +17,7 @@ OUT = ROOT / "web/legal/site"
 SCREENSHOTS = ROOT / "web/legal/screenshots"
 FOOD_PHOTOS = ["9000133", "9000096", "9000049", "9000022"]
 CONTACT = "jcsenka013@gmail.com"
-SITE_URL = os.environ.get("PANTRY_SITE_URL", "https://legal-production-9e0c.up.railway.app").rstrip("/")
+SITE_URL = os.environ.get("PANTRY_SITE_URL", "https://pantryglance.com").rstrip("/")
 if urlparse(SITE_URL).scheme != "https" or not urlparse(SITE_URL).netloc:
     raise ValueError("PANTRY_SITE_URL must be an absolute HTTPS URL")
 MEDIA = ROOT / "web/legal/media"

@@ -9,10 +9,10 @@ changeable if the brand (Larder/Crumb) lands later.
 
 | Field | Value |
 |---|---|
-| Privacy Policy URL | `https://legal-production-9e0c.up.railway.app/privacy/` |
-| Terms of Use (EULA) | `https://legal-production-9e0c.up.railway.app/terms/` (or leave Apple's standard EULA) |
-| Support URL | `https://legal-production-9e0c.up.railway.app/` |
-| Marketing URL (optional) | `https://legal-production-9e0c.up.railway.app/` |
+| Privacy Policy URL | `https://pantryglance.com/privacy/` |
+| Terms of Use (EULA) | `https://pantryglance.com/terms/` (or leave Apple's standard EULA) |
+| Support URL | `https://pantryglance.com/` |
+| Marketing URL (optional) | `https://pantryglance.com/` |
 
 ## Promotional text (170 chars max)
 
@@ -84,8 +84,8 @@ the first external build goes to beta review.
 | Field | Value |
 |---|---|
 | Feedback email | `jcsenka013@gmail.com` |
-| Marketing URL | `https://legal-production-9e0c.up.railway.app/` |
-| Privacy Policy URL | `https://legal-production-9e0c.up.railway.app/privacy/` |
+| Marketing URL | `https://pantryglance.com/` |
+| Privacy Policy URL | `https://pantryglance.com/privacy/` |
 | Sign-in required | Yes — demo account below |
 
 **Beta App Description** (4,000 chars max):

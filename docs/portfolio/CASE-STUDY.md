@@ -2,7 +2,7 @@
 
 A mobile product by **JC Senka** · **React Native / Expo · TypeScript · NestJS · PostgreSQL**
 
-[Project website](https://legal-production-9e0c.up.railway.app/) · [Source code](https://github.com/osctulsa-source/Pantry-Party) · [JC on LinkedIn](https://www.linkedin.com/in/jcsenka/)
+[Project website](https://pantryglance.com/) · [Source code](https://github.com/osctulsa-source/Pantry-Party) · [JC on LinkedIn](https://www.linkedin.com/in/jcsenka/)
 
 ## The problem
 

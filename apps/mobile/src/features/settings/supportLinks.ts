@@ -1,13 +1,13 @@
 /**
  * Support + legal links shown in Settings and on Sign Up.
  *
- * The site is the Railway `legal` service generated from web/legal/ — the same
+ * The site is generated from web/legal/ and served by Cloudflare — the same
  * URLs entered in App Store Connect (docs/APPSTORE-METADATA.md). Apple expects
  * the privacy policy to be reachable inside the app, not only on the listing.
  */
 import { BRAND } from '../../theme/brand';
 
-const SITE = 'https://legal-production-9e0c.up.railway.app';
+const SITE = 'https://pantryglance.com';
 
 export const SUPPORT_LINKS = {
   website: `${SITE}/`,
