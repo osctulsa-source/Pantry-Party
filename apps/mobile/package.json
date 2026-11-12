@@ -61,7 +61,7 @@
     "react-native-svg": "15.15.4",
     "react-native-url-polyfill": "^3.0.0",
     "react-native-worklets": "0.8.3",
-    "zod": "^3.23.0"
+    "zod": "^4.6.7"
   },
   "//": "Sync engine is PowerSync (@powersync/react-native + @powersync/op-sqlite), integrated per ADR-003; barcode scanning via expo-camera. This app is well past the Phase 1 skeleton.",
   "devDependencies": {
