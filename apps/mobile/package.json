@@ -8,7 +8,7 @@
     "start": "expo start",
     "ios": "EXPO_USE_PRECOMPILED_MODULES=0 expo run:ios",
     "android": "expo run:android",
-    "test": "jest"
+    "test": "NODE_PATH=./node_modules jest"
   },
   "dependencies": {
     "@breadbox/core": "*",

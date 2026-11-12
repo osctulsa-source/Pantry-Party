@@ -299,9 +299,13 @@ export async function handlePatchPantryItem(
       throw new UploadError(403, `tenancy: push_tokens row "${entry.id}" is not the caller's`);
     }
   } else {
-    const found = await client.query(`SELECT household_id FROM ${table} WHERE id = $1`, [
-      entry.id,
-    ]);
+    // A reaction belongs to the member who left it: co-members may see it but
+    // not rewrite or remove it, so that table also checks the row's user_id.
+    const ownerCol = table === 'announcement_reactions' ? ', user_id' : '';
+    const found = await client.query(
+      `SELECT household_id${ownerCol} FROM ${table} WHERE id = $1`,
+      [entry.id],
+    );
     if ((found.rowCount ?? 0) === 0) {
       throw new UploadError(404, `${table} row "${entry.id}" not found`);
     }
@@ -313,6 +317,9 @@ export async function handlePatchPantryItem(
     );
     if ((member.rowCount ?? 0) === 0) {
       throw new UploadError(403, `tenancy: item "${entry.id}" is not in one of the caller's households`);
+    }
+    if (ownerCol && found.rows[0]?.user_id !== userId) {
+      throw new UploadError(403, `tenancy: reaction "${entry.id}" is not the caller's own`);
     }
   }
 
@@ -451,10 +458,14 @@ export async function authorizePutWrite(
   userId: string,
   client: PoolClient,
   ownedHouseholdIds: ReadonlySet<string>,
-): Promise<void> {
+): Promise<{ rowExisted: boolean }> {
+  // `rowExisted` is only meaningful for the household-scoped data tables (the
+  // final branch, which reads the target row); the early-return branches
+  // report false.
+  const NEW_ROW = { rowExisted: false };
   // push_tokens is user-scoped, not household-scoped (user_id === caller is
   // enforced in validateCrudEntry); there is no household dimension to check.
-  if (table === 'push_tokens') return;
+  if (table === 'push_tokens') return NEW_ROW;
 
   if (table === 'households') {
     // A households PUT is an upsert on id. Creating a NEW household is the
@@ -470,9 +481,9 @@ export async function authorizePutWrite(
         WHERE h.id = $1`,
       [householdId, userId],
     );
-    if ((existing.rowCount ?? 0) === 0) return; // brand-new household — caller is creating their own
+    if ((existing.rowCount ?? 0) === 0) return NEW_ROW; // brand-new household — caller is creating their own
     const row = existing.rows[0];
-    if (row && (row.member !== null || row.created_by === userId)) return;
+    if (row && (row.member !== null || row.created_by === userId)) return { rowExisted: true };
     throw new UploadError(
       403,
       `tenancy: cannot overwrite household "${String(householdId)}" — caller is not a member`,
@@ -497,12 +508,12 @@ export async function authorizePutWrite(
     // bootstrap owner-membership). Joining an existing household, or
     // self-promoting to owner within one, must go through the guarded
     // /household/accept flow — never the open sync path.
-    if (typeof householdId === 'string' && ownedHouseholdIds.has(householdId)) return;
+    if (typeof householdId === 'string' && ownedHouseholdIds.has(householdId)) return NEW_ROW;
     const owned = await client.query<{ created_by: string }>(
       'SELECT created_by FROM households WHERE id = $1',
       [householdId],
     );
-    if (owned.rows[0]?.created_by === userId) return;
+    if (owned.rows[0]?.created_by === userId) return NEW_ROW;
     throw new UploadError(
       403,
       'tenancy: a user_households row may only be PUT for a household you created; ' +
@@ -541,6 +552,7 @@ export async function authorizePutWrite(
       `tenancy: not a member of household "${String(householdId)}" (table "${table}")`,
     );
   }
+  return { rowExisted: (existingRow.rowCount ?? 0) > 0 };
 }
 
 /**
@@ -628,11 +640,6 @@ router.post('/sync/upload', requireUser, async (req, res) => {
         const idIdx = result.columns.indexOf('id');
         if (idIdx !== -1) ownedHouseholdIds.add(String(result.values[idIdx]));
       }
-      if (result.table === 'announcements') {
-        const rowObj: Record<string, unknown> = {};
-        result.columns.forEach((c, i) => (rowObj[c] = result.values[i]));
-        announcementPuts.push(rowObj);
-      }
     } else if (entry.op === 'PATCH') {
       plan.push({ op: 'PATCH', entry });
     } else {
@@ -652,7 +659,23 @@ router.post('/sync/upload', requireUser, async (req, res) => {
 
     for (const op of plan) {
       if (op.op === 'PUT') {
-        await authorizePutWrite(op.table, op.columns, op.values, userId, client, ownedHouseholdIds);
+        const { rowExisted } = await authorizePutWrite(
+          op.table,
+          op.columns,
+          op.values,
+          userId,
+          client,
+          ownedHouseholdIds,
+        );
+        // Push only for an announcement this request CREATES. A PUT is an
+        // upsert and clients replay them (a retry after a lost response, a
+        // re-queued row), so fanning out on every PUT re-notified the whole
+        // household for an announcement they had already been told about.
+        if (op.table === 'announcements' && !rowExisted) {
+          const rowObj: Record<string, unknown> = {};
+          op.columns.forEach((c, i) => (rowObj[c] = op.values[i]));
+          announcementPuts.push(rowObj);
+        }
         if (op.table === 'push_tokens') await releasePushToken(op.columns, op.values, client);
         const { sql } = buildUpsertSql(op.table, op.columns);
         await client.query(sql, op.values);
@@ -666,7 +689,9 @@ router.post('/sync/upload', requireUser, async (req, res) => {
     // Fan-out is best-effort and MUST NOT block or fail the upload — the synced
     // row is the source of truth, the push is a convenience. Fire-and-forget.
     for (const rowObj of announcementPuts) {
-      void fanOutAnnouncement(rowObj as any, { pg: pool, sender: getPushSender() }).catch((err) =>
+      // Columns were allowlist-filtered above; the row is the announcement shape.
+      const row = rowObj as unknown as Parameters<typeof fanOutAnnouncement>[0];
+      void fanOutAnnouncement(row, { pg: pool, sender: getPushSender() }).catch((err) =>
         console.error('[api] announcement fan-out failed:', err),
       );
     }
