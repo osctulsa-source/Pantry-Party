@@ -19,6 +19,13 @@ vi.mock('jose', () => ({
   }),
 }));
 
+// Spy on the push fan-out so tests can count how often a household is notified.
+const fanOutSpy = vi.fn(async () => undefined);
+vi.mock('../push/fanOut.js', () => ({
+  fanOutAnnouncement: (...args: unknown[]) => fanOutSpy(...(args as [])),
+  sweepRunnerSummaries: vi.fn(async () => undefined),
+}));
+
 // fanOut fires push best-effort after commit; stub the sender's network out.
 vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, text: async () => '' })));
 
@@ -50,6 +57,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  fanOutSpy.mockClear();
   await truncateAll(pool);
   // A owns household A; B owns household B. Neither is a member of the other's.
   await seedHouseholdWithOwner(pool, { householdId: HH_A, ownerId: USER_A, name: 'A household' });
@@ -323,5 +331,167 @@ describe('POST /sync/upload — ownership columns are immutable on upsert', () =
     expect(res.status).toBe(403);
     const m = await pool.query('SELECT 1 FROM user_households WHERE user_id = $1', [USER_C]);
     expect(m.rowCount).toBe(0);
+  });
+});
+
+describe('POST /sync/upload — push token re-registration (real Postgres)', () => {
+  const TOKEN = 'ExponentPushToken[same-device]';
+  const tokenPut = (id: string, userId: string) => ({
+    crud: [
+      {
+        op: 'PUT',
+        type: 'push_tokens',
+        id,
+        data: {
+          user_id: userId,
+          token: TOKEN,
+          platform: 'ios',
+          announcements_enabled: 1,
+          updated_at: Date.now(),
+          deleted: 0,
+        },
+      },
+    ],
+  });
+  const ROW_1 = '11111111-aaaa-1111-1111-111111111111';
+  const ROW_2 = '22222222-aaaa-2222-2222-222222222222';
+
+  it('the same device token under a NEW row id is accepted, not a 500 (queue-wedge regression)', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    // Sign-out/sign-in wipes local SQLite; the device re-registers the same
+    // token with a fresh id before the old row has synced down.
+    expect((await upload(tokenPut(ROW_2, USER_A), USER_A)).status).toBe(200);
+
+    const rows = await pool.query('SELECT id, user_id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rows).toEqual([{ id: ROW_2, user_id: USER_A }]);
+  });
+
+  it('a second account on the same phone takes the token over', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    expect((await upload(tokenPut(ROW_2, USER_B), USER_B)).status).toBe(200);
+
+    const rows = await pool.query('SELECT id, user_id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rows).toEqual([{ id: ROW_2, user_id: USER_B }]);
+  });
+
+  it('replaying the identical PUT stays idempotent', async () => {
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    expect((await upload(tokenPut(ROW_1, USER_A), USER_A)).status).toBe(200);
+    const rows = await pool.query('SELECT id FROM push_tokens WHERE token = $1', [TOKEN]);
+    expect(rows.rowCount).toBe(1);
+  });
+});
+
+describe('POST /sync/upload — permanent Postgres rejections are 4xx, never 500', () => {
+  it('a row that violates a CHECK constraint is a 409 the client can drop', async () => {
+    const res = await upload(
+      {
+        crud: [
+          {
+            op: 'PUT',
+            type: 'pantry_items',
+            id: '33333333-3333-3333-3333-333333333333',
+            data: {
+              household_id: HH_A,
+              name: 'Eggs',
+              added_at: '2026-01-01T00:00:00.000Z',
+              source: 'not-a-real-source',
+              added_by: USER_A,
+              updated_at: Date.now(),
+              deleted: 0,
+            },
+          },
+        ],
+      },
+      USER_A,
+    );
+    expect(res.status).toBe(409);
+  });
+
+  it('malformed data (a non-uuid id) is a 400', async () => {
+    const res = await upload(
+      {
+        crud: [
+          {
+            op: 'PATCH',
+            type: 'pantry_items',
+            id: 'not-a-uuid',
+            data: { name: 'x', updated_at: Date.now() },
+          },
+        ],
+      },
+      USER_A,
+    );
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /sync/upload — announcements (real Postgres)', () => {
+  const ANN = '44444444-4444-4444-4444-444444444444';
+  const REACTION = '55555555-5555-5555-5555-555555555555';
+  const announcementPut = {
+    crud: [
+      {
+        op: 'PUT',
+        type: 'announcements',
+        id: ANN,
+        data: {
+          household_id: HH_A,
+          kind: 'cooking',
+          created_by: USER_A,
+          created_at: '2026-01-01T00:00:00.000Z',
+          status: 'active',
+          updated_at: Date.now(),
+          deleted: 0,
+        },
+      },
+    ],
+  };
+
+  it('notifies the household once — a replayed PUT does not push again', async () => {
+    expect((await upload(announcementPut, USER_A)).status).toBe(200);
+    expect(fanOutSpy).toHaveBeenCalledTimes(1);
+
+    // The client retries after a lost response, or re-queues the same row.
+    expect((await upload(announcementPut, USER_A)).status).toBe(200);
+    expect(fanOutSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("a member cannot edit or remove a co-member's reaction, but can change their own", async () => {
+    await seedMembership(pool, { userId: USER_C, householdId: HH_A, role: 'member' });
+    expect((await upload(announcementPut, USER_A)).status).toBe(200);
+    const reactionPut = {
+      crud: [
+        {
+          op: 'PUT',
+          type: 'announcement_reactions',
+          id: REACTION,
+          data: {
+            announcement_id: ANN,
+            household_id: HH_A,
+            user_id: USER_C,
+            reaction: 'yum',
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: Date.now(),
+            deleted: 0,
+          },
+        },
+      ],
+    };
+    expect((await upload(reactionPut, USER_C)).status).toBe(200);
+
+    const patch = (data: object) => ({
+      crud: [{ op: 'PATCH', type: 'announcement_reactions', id: REACTION, data }],
+    });
+    // A is in the same household but did not leave this reaction.
+    expect((await upload(patch({ deleted: 1, updated_at: Date.now() }), USER_A)).status).toBe(403);
+    expect((await upload(patch({ reaction: 'nope', updated_at: Date.now() }), USER_A)).status).toBe(403);
+    // The author still can.
+    expect((await upload(patch({ reaction: 'omw', updated_at: Date.now() }), USER_C)).status).toBe(200);
+
+    const row = await pool.query('SELECT reaction, deleted FROM announcement_reactions WHERE id = $1', [
+      REACTION,
+    ]);
+    expect(row.rows[0]).toEqual({ reaction: 'omw', deleted: false });
   });
 });

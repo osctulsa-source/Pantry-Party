@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Validator for Pantry Party curated recipes (see SPEC.md).
+ * Validator for Pantry Glance curated recipes (see SPEC.md).
  * Usage:
  *   node validate.mjs <file.json> [more.json...]
  *     Validates base recipe files (see SPEC.md).
@@ -73,7 +73,7 @@ for (const file of files) {
     if (r.vegan === true && r.vegetarian !== true) where('vegan implies vegetarian');
     if (r.healthScore !== null) where('healthScore must be null');
     if (r.sourceUrl !== '') where('sourceUrl must be ""');
-    if (r.sourceName !== 'Pantry Party Kitchen') where('sourceName must be "Pantry Party Kitchen"');
+    if (r.sourceName !== 'Pantry Glance Kitchen') where('sourceName must be "Pantry Glance Kitchen"');
     if (typeof r.summary !== 'string' || r.summary.length < 20) where('summary missing/too short');
     else if (r.summary.length > 240) warn(file, id, `summary long (${r.summary.length} chars)`);
 

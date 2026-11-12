@@ -78,7 +78,7 @@ build/install the native development app.
 
 Do not invent a path. Follow [`docs/TESTFLIGHT.md`](../../docs/TESTFLIGHT.md).
 
-- Last known good: **build 47**. Skip 41–46.
+- Last known good: **build 50**. Skip 41–46.
 - OTA is off (`updates.enabled: false`). Full Mac-local production build only.
 - `npm run ios:preflight` → `eas build --local` → `npm run ios:submit -- <ipa>`.
 - The submit script inspects the IPA (JS present, updates off, widget version match) and refuses `--latest`.

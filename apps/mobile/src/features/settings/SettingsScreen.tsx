@@ -11,14 +11,27 @@
  * navigation from this screen.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import * as Haptics from 'expo-haptics';
-import { BookOpen, CalendarCheck, Clock, Flame, LayoutGrid, Lightbulb, Store, Users, Wrench } from 'lucide-react-native';
+import {
+  BookOpen,
+  CalendarCheck,
+  Clock,
+  FileText,
+  Flame,
+  LayoutGrid,
+  Lightbulb,
+  MessageSquare,
+  ShieldCheck,
+  Store,
+  Users,
+  Wrench,
+} from 'lucide-react-native';
 
 import { suggestDateRepairs, tipOfTheDay } from '@breadbox/core';
 import { tokens } from '../../theme/tokens';
@@ -38,20 +51,30 @@ import {
   setFeedbackPref,
 } from '../../feedback/feedbackPrefs';
 import { usePantryItems } from '../pantry/usePantryItems';
+import { feedbackMailto, SUPPORT_LINKS } from './supportLinks';
 import type { TabParamList } from '../../navigation/MainTabs';
 import type { RootStackParamList } from '../../../App';
 
 /**
  * "Which build are you on?" — the first question of every TestFlight bug
- * report, answered from the screen itself. Version from the JS config,
- * runtime = native-binary fingerprint (which full build), update = OTA
- * identity (null when running the embedded bundle).
+ * report, answered from the screen itself. Version + build number from the
+ * embedded config (the TestFlight "0.0.1 (51)" pair), runtime = native-binary
+ * runtime string, update = OTA identity (null when running the embedded bundle).
  */
-function buildLine(): string {
+function versionLabel(): string {
   const version = Constants.expoConfig?.version ?? '?';
+  const build = Platform.OS === 'ios' ? Constants.expoConfig?.ios?.buildNumber : undefined;
+  return build ? `${version} (${build})` : version;
+}
+
+function buildLine(): string {
   const runtime = typeof Updates.runtimeVersion === 'string' ? Updates.runtimeVersion.slice(0, 8) : '?';
   const update = Updates.updateId ? Updates.updateId.slice(0, 8) : 'embedded';
-  return `${BRAND.productName} ${version} · runtime ${runtime} · update ${update}`;
+  return `${BRAND.productName} ${versionLabel()} · runtime ${runtime} · update ${update}`;
+}
+
+function openLink(url: string) {
+  Linking.openURL(url).catch(() => {});
 }
 
 type SettingsNav = CompositeNavigationProp<
@@ -262,19 +285,45 @@ export function SettingsScreen() {
             </View>
           </View>
 
-          {/* Preview of the App Elements kit. Shown in TestFlight builds so
-              testers can reach it; re-gate behind __DEV__ before a public App
-              Store release. */}
           <View style={styles.section}>
-            <Caption>Developer</Caption>
+            <Caption>Help & legal</Caption>
             <View style={styles.rowGroup}>
               <ListRow
-                icon={<Wrench size={16} color={tokens.color.inkMuted} />}
-                label="Design elements"
-                onPress={() => navigation.navigate('DesignElements')}
+                icon={<MessageSquare size={16} color={tokens.color.inkMuted} />}
+                label="Send feedback"
+                onPress={() => openLink(feedbackMailto(versionLabel(), `${Platform.OS} ${Platform.Version}`))}
+              />
+              <ListRow
+                icon={<ShieldCheck size={16} color={tokens.color.inkMuted} />}
+                label="Privacy policy"
+                onPress={() => openLink(SUPPORT_LINKS.privacy)}
+              />
+              <ListRow
+                icon={<FileText size={16} color={tokens.color.inkMuted} />}
+                label="Terms of use"
+                onPress={() => openLink(SUPPORT_LINKS.terms)}
               />
             </View>
+            <Body tone="muted" size={12}>
+              Feedback opens an email with your build number filled in. In TestFlight you can also
+              take a screenshot to send it straight to us.
+            </Body>
           </View>
+
+          {/* Preview of the App Elements kit — development builds only, so
+              external TestFlight testers don't land in a UI-kit gallery. */}
+          {__DEV__ && (
+            <View style={styles.section}>
+              <Caption>Developer</Caption>
+              <View style={styles.rowGroup}>
+                <ListRow
+                  icon={<Wrench size={16} color={tokens.color.inkMuted} />}
+                  label="Design elements"
+                  onPress={() => navigation.navigate('DesignElements')}
+                />
+              </View>
+            </View>
+          )}
 
           {/* Tip of the day teaser — same deterministic pick as the Tips screen. */}
           <Pressable

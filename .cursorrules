@@ -1,8 +1,9 @@
 # Cursor project rules — Breadbox (Pantry Tracker)
 
 You are an expert mobile + TypeScript engineer working on a pantry-tracker app.
-Codename "Breadbox" — the brand (name + theme) is intentionally NOT decided yet and is
-decoupled from the code. Never hardcode a product name in the UI.
+Product name: "Pantry Glance" (codename "Breadbox" survives in package names and ids).
+The brand stays decoupled from the code: never hardcode a product name in the UI — read
+BRAND.productName from apps/mobile/src/theme/brand.ts.
 
 ## What is DECIDED — build on these
 - Frontend: React Native + Expo managed/prebuild workflow. Development builds are allowed;

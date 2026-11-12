@@ -1,4 +1,4 @@
-# Pantry Party
+# Pantry Glance
 
 [![CI](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml/badge.svg)](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml)
 
@@ -8,10 +8,10 @@ track expiry, find recipes, and coordinate a household shopping list.
 Created and maintained by **[JC Senka](https://www.linkedin.com/in/jcsenka/)**.
 Built with **React Native / Expo, TypeScript, SQLite / PowerSync, NestJS, and Supabase**.
 
-[Website](https://legal-production-9e0c.up.railway.app/) ·
+[Website](https://pantryglance.com/) ·
 [Engineering case study](docs/portfolio/CASE-STUDY.md) ·
 [Demo guide](docs/portfolio/DEMO.md) ·
-[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Party%20beta)
+[Request beta access](mailto:support@pantryglance.com?subject=Pantry%20Glance%20beta)
 
 <!-- portfolio-screenshots:start -->
 <!-- Real app screenshots are added here by web/legal/generate.py when supplied. -->
@@ -112,10 +112,8 @@ The API integration suite is separate: `npm run test:integration -w services/api
 a disposable Postgres database. CI provisions one and also checks migrations, the API
 image lockfile, and the generated iOS bundle phase. Never point test fixtures at production.
 
-If a clean npm install reports that `jest-expo` cannot find the already-declared
-`@react-native/jest-preset`, the preset may be nested in the mobile workspace. From
-`apps/mobile`, run `NODE_PATH="$PWD/node_modules" npm test -- --runInBand`; this resolves
-that workspace dependency without changing the lockfile.
+The mobile `npm test` script sets `NODE_PATH=./node_modules` so `jest-expo` finds the
+`@react-native/jest-preset` that npm nests inside the mobile workspace.
 
 ## Run locally
 
@@ -161,7 +159,7 @@ backfill, mixed-client compatibility plan, and sync torture tests. See ADR-011 i
 - [Local development stack](infra/local-dev/README.md)
 - [Secrets management](docs/SECRETS.md)
 - [Backup and disaster recovery](docs/BACKUP-DR.md)
-- [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 47**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).
+- [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 50**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).
 
 ## License
 

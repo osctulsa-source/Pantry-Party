@@ -73,6 +73,11 @@ function buildApp() {
   app.delete('/account', (req, res, next) => {
     ctrl.deleteAccount(req).then((result) => res.json(result)).catch(next);
   });
+  // Nest's exception filter isn't mounted here; mirror its status mapping.
+  app.use((err: unknown, _req: unknown, res: { status(c: number): { json(b: unknown): void } }, _next: unknown) => {
+    const status = (err as { getStatus?: () => number }).getStatus?.() ?? 500;
+    res.status(status).json({ ok: false });
+  });
   return app;
 }
 
@@ -91,35 +96,25 @@ describe('DELETE /account', () => {
     expect(res.status).toBe(401);
   });
 
-  it('cascades: tombstones items, revokes invites, removes memberships, transfers ownership, calls Supabase admin delete', async () => {
-    const PANTRY_TOMBSTONED: MockQueryResult = { rowCount: 3, rows: [] };
-    const SHOPPING_TOMBSTONED: MockQueryResult = { rowCount: 1, rows: [] };
-    const INVITES_REVOKED: MockQueryResult = { rowCount: 2, rows: [] };
-    const MEMBERSHIPS: MockQueryResult = {
-      rowCount: 1,
-      rows: [{ household_id: HOUSEHOLD_A, role: 'owner' }],
-    };
-    const SUCCESSOR: MockQueryResult = {
-      rowCount: 1,
-      rows: [{ user_id: '00000000-0000-0000-0000-000000000002' }],
-    };
-    const TRANSFER: MockQueryResult = { rowCount: 1, rows: [] };
-    const REMOVED: MockQueryResult = { rowCount: 1, rows: [] };
+  // The fixed prefix of the cascade, in order: six tombstone+anonymize
+  // UPDATEs, push-token delete, invite delete, invite detach, analytics detach.
+  const PREFIX: MockQueryResult[] = Array.from({ length: 10 }, () => ({ rowCount: 0, rows: [] }));
+  const OK: MockQueryResult = { rowCount: 1, rows: [] };
 
-    const TOMBSTONED: MockQueryResult = { rowCount: 1, rows: [] };
+  function sqlsOf(query: ReturnType<typeof vi.fn>): string[] {
+    return query.mock.calls
+      .map((c) => (c[0] as string).trim())
+      .filter((s) => !/^(BEGIN|COMMIT|ROLLBACK)/i.test(s));
+  }
+
+  it('cascades: anonymizes rows, removes tokens/invites, transfers ownership, calls Supabase admin delete', async () => {
     const { query } = mockClient([
-      PANTRY_TOMBSTONED,
-      SHOPPING_TOMBSTONED,
-      TOMBSTONED, // favorite_recipes
-      TOMBSTONED, // activity_events
-      TOMBSTONED, // announcements
-      TOMBSTONED, // announcement_reactions
-      TOMBSTONED, // push_tokens
-      INVITES_REVOKED,
-      MEMBERSHIPS,
-      SUCCESSOR,
-      TRANSFER,
-      REMOVED,
+      ...PREFIX,
+      { rowCount: 1, rows: [{ household_id: HOUSEHOLD_A, role: 'owner' }] }, // memberships
+      { rowCount: 1, rows: [{ user_id: '00000000-0000-0000-0000-000000000002' }] }, // successor
+      OK, // transfer
+      OK, // membership delete
+      OK, // households.created_by handover
     ]);
 
     const res = await request(buildApp())
@@ -129,23 +124,35 @@ describe('DELETE /account', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true, deleted: USER });
 
-    // Verify cascade order via the query calls (ignoring BEGIN/COMMIT).
-    const sqls = query.mock.calls
-      .map((c) => (c[0] as string).trim())
-      .filter((s) => !/^(BEGIN|COMMIT|ROLLBACK)/i.test(s));
-
-    expect(sqls[0]).toMatch(/^UPDATE pantry_items SET deleted/i);
-    expect(sqls[1]).toMatch(/^UPDATE shopping_list_items SET deleted/i);
-    expect(sqls[2]).toMatch(/^UPDATE favorite_recipes SET deleted/i);
-    expect(sqls[3]).toMatch(/^UPDATE activity_events SET deleted/i);
-    expect(sqls[4]).toMatch(/^UPDATE announcements SET deleted/i);
-    expect(sqls[5]).toMatch(/^UPDATE announcement_reactions SET deleted/i);
-    expect(sqls[6]).toMatch(/^UPDATE push_tokens SET deleted/i);
-    expect(sqls[7]).toMatch(/^UPDATE household_invites SET used_at/i);
-    expect(sqls[8]).toMatch(/^SELECT household_id, role FROM user_households/i);
-    expect(sqls[9]).toMatch(/^SELECT user_id FROM user_households/i); // successor lookup
-    expect(sqls[10]).toMatch(/^UPDATE user_households SET role/i); // transfer
-    expect(sqls[11]).toMatch(/^DELETE FROM user_households/i);
+    const sqls = sqlsOf(query);
+    const NIL = '00000000-0000-0000-0000-000000000000';
+    for (const [i, table, col] of [
+      [0, 'pantry_items', 'added_by'],
+      [1, 'shopping_list_items', 'added_by'],
+      [2, 'favorite_recipes', 'added_by'],
+      [3, 'activity_events', 'added_by'],
+      [4, 'announcements', 'created_by'],
+      [5, 'announcement_reactions', 'user_id'],
+    ] as const) {
+      expect(sqls[i]).toBe(
+        `UPDATE ${table} SET deleted = true, ${col} = $1, updated_at = $2 WHERE ${col} = $3`,
+      );
+      // The attribution column is overwritten with the nil UUID.
+      expect((query.mock.calls.find((c) => c[0] === sqls[i]) as unknown[])[1]).toEqual([
+        NIL,
+        expect.any(Number),
+        USER,
+      ]);
+    }
+    expect(sqls[6]).toMatch(/^DELETE FROM push_tokens/i);
+    expect(sqls[7]).toMatch(/^DELETE FROM household_invites WHERE created_by/i);
+    expect(sqls[8]).toMatch(/^UPDATE household_invites SET used_by = NULL/i);
+    expect(sqls[9]).toMatch(/^UPDATE analytics_events SET user_id = NULL/i);
+    expect(sqls[10]).toMatch(/^SELECT household_id, role FROM user_households/i);
+    expect(sqls[11]).toMatch(/^SELECT user_id FROM user_households/i); // successor lookup
+    expect(sqls[12]).toMatch(/^UPDATE user_households SET role/i); // transfer
+    expect(sqls[13]).toMatch(/^DELETE FROM user_households/i);
+    expect(sqls[14]).toMatch(/^UPDATE households h/i);
 
     // Supabase admin delete was called.
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -159,17 +166,11 @@ describe('DELETE /account', () => {
 
   it('handles sole-member household: no successor, no transfer, membership still removed', async () => {
     const { query } = mockClient([
-      { rowCount: 0, rows: [] }, // pantry
-      { rowCount: 0, rows: [] }, // shopping
-      { rowCount: 0, rows: [] }, // favorite_recipes
-      { rowCount: 0, rows: [] }, // activity_events
-      { rowCount: 0, rows: [] }, // announcements
-      { rowCount: 0, rows: [] }, // announcement_reactions
-      { rowCount: 0, rows: [] }, // push_tokens
-      { rowCount: 0, rows: [] }, // invites
+      ...PREFIX,
       { rowCount: 1, rows: [{ household_id: HOUSEHOLD_A, role: 'owner' }] }, // memberships
       { rowCount: 0, rows: [] }, // no successor
-      { rowCount: 1, rows: [] }, // membership delete
+      OK, // membership delete
+      OK, // households.created_by handover
     ]);
 
     const res = await request(buildApp())
@@ -178,10 +179,7 @@ describe('DELETE /account', () => {
 
     expect(res.status).toBe(200);
 
-    const sqls = query.mock.calls
-      .map((c) => (c[0] as string).trim())
-      .filter((s) => !/^(BEGIN|COMMIT|ROLLBACK)/i.test(s));
-
+    const sqls = sqlsOf(query);
     // No transfer UPDATE — just the membership DELETE.
     expect(sqls.some((s) => /^UPDATE user_households SET role/i.test(s))).toBe(false);
     expect(sqls.some((s) => /^DELETE FROM user_households/i.test(s))).toBe(true);
@@ -189,23 +187,34 @@ describe('DELETE /account', () => {
 
   it('is idempotent: Supabase 404 on already-deleted user is not an error', async () => {
     fetchMock.mockResolvedValueOnce({ ok: false, status: 404, text: async () => 'not found' });
-
-    mockClient([
-      { rowCount: 0, rows: [] }, // pantry (nothing to tombstone)
-      { rowCount: 0, rows: [] }, // shopping
-      { rowCount: 0, rows: [] }, // favorite_recipes
-      { rowCount: 0, rows: [] }, // activity_events
-      { rowCount: 0, rows: [] }, // announcements
-      { rowCount: 0, rows: [] }, // announcement_reactions
-      { rowCount: 0, rows: [] }, // push_tokens
-      { rowCount: 0, rows: [] }, // invites
-      { rowCount: 0, rows: [] }, // no memberships
-    ]);
+    mockClient([...PREFIX, { rowCount: 0, rows: [] }, OK]); // no memberships, households update
 
     const res = await request(buildApp())
       .delete('/account')
       .set('Authorization', `Bearer test:${USER}`);
 
     expect(res.status).toBe(200);
+  });
+
+  it('fails (502) when Supabase cannot delete the auth user — never reports a deletion that did not happen', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 500, text: async () => 'boom' });
+    mockClient([...PREFIX, { rowCount: 0, rows: [] }, OK]);
+
+    const res = await request(buildApp())
+      .delete('/account')
+      .set('Authorization', `Bearer test:${USER}`);
+
+    expect(res.status).toBe(502);
+  });
+
+  it('fails (502) when the Supabase admin call throws', async () => {
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+    mockClient([...PREFIX, { rowCount: 0, rows: [] }, OK]);
+
+    const res = await request(buildApp())
+      .delete('/account')
+      .set('Authorization', `Bearer test:${USER}`);
+
+    expect(res.status).toBe(502);
   });
 });
