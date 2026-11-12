@@ -2,24 +2,24 @@
  * AccountController — native NestJS, the first module on the promoted backend.
  *
  * DELETE /account: the store-gate requirement (App Store + Play). Cascade:
- *   1. Tombstone pantry_items where added_by = user
- *   2. Tombstone shopping_list_items where added_by = user
- *   3. Tombstone the user's attribution rows across the remaining household
- *      tables (favorite_recipes, activity_events, announcements,
- *      announcement_reactions) so no live row still attributes content to a
- *      deleted account
- *   4. Tombstone push_tokens where user_id = user — the sender filters
- *      deleted = FALSE, so this is what actually stops a deleted user's devices
- *      from receiving household pushes
- *   5. Revoke household_invites created_by user (set used_at = NOW)
- *   6. Remove from user_households
- *   7. Orphan policy for owned households: if other members exist, transfer
- *      ownership to the longest-tenured; if sole member, keep alive ownerless
- *      (recoverable, per locked decision)
- *   8. Delete the Supabase auth user via the admin API
+ *   1. Tombstone + anonymize the user's rows in every household table
+ *      (pantry, shopping, favorites, activity, announcements, reactions): the
+ *      attribution column is overwritten with the nil UUID, so no row keeps
+ *      the deleted user's id
+ *   2. Delete the user's push tokens
+ *   3. Delete invites the user created; detach them from invites they used
+ *   4. Detach first-party analytics_events from the account
+ *   5. Remove from user_households, transferring ownership to the
+ *      longest-tenured remaining member (sole-member households stay alive,
+ *      ownerless — recoverable, per locked decision)
+ *   6. Delete the Supabase auth user via the admin API
+ *
+ * The endpoint only returns 200 when the auth user is really gone: it refuses
+ * up front (503) when the admin credentials are missing and fails (502) when
+ * the admin call fails.
  *
  * Idempotent: calling DELETE /account on an already-deleted user returns 200
- * (the Supabase admin delete is a no-op for missing users). The client signs
+ * (the Supabase admin delete answers 404 for missing users, which counts). The client signs
  * out after a successful response; the auth state flip unmounts AppStack.
  */
 import {
@@ -40,6 +40,19 @@ import { requireUser, type AuthedRequest } from '../../middleware/auth.js';
 const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Nil UUID: the "nobody" author written over a deleted user's id.
+const ANONYMOUS_USER_ID = '00000000-0000-0000-0000-000000000000';
+
+// Every household-scoped table and the column that attributes a row to a user.
+const ATTRIBUTION_COLUMNS: ReadonlyArray<readonly [table: string, column: string]> = [
+  ['pantry_items', 'added_by'],
+  ['shopping_list_items', 'added_by'],
+  ['favorite_recipes', 'added_by'],
+  ['activity_events', 'added_by'],
+  ['announcements', 'created_by'],
+  ['announcement_reactions', 'user_id'],
+];
+
 @Controller()
 export class AccountController {
   @Delete('account')
@@ -56,65 +69,51 @@ export class AccountController {
     });
     const userId = (req as AuthedRequest).userId;
 
+    // Refuse BEFORE touching any data if the auth user can't be deleted
+    // afterwards. Otherwise the cascade would strip the user's data and the
+    // endpoint would report success while the sign-in still works — which is
+    // not an account deletion (and fails the App Store / Play requirement).
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[api] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — refusing account deletion');
+      throw new HttpException(
+        { ok: false, error: 'account deletion is not available right now' },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-
-      // 1. Tombstone the user's pantry items.
-      await client.query(
-        'UPDATE pantry_items SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
-        [Date.now(), userId],
-      );
-
-      // 2. Tombstone the user's shopping list items.
-      await client.query(
-        'UPDATE shopping_list_items SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
-        [Date.now(), userId],
-      );
-
-      // 3. Tombstone the user's attribution rows across the remaining
-      //    household tables. Without this, favorites/history/announcements/
-      //    reactions keep the deleted user's id as live attribution. Each
-      //    UPDATE is keyed on that table's user-id column (added_by /
-      //    created_by / user_id) and updated_at is the client-style epoch-ms
-      //    the sync model uses everywhere else.
       const now = Date.now();
-      await client.query(
-        'UPDATE favorite_recipes SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
-        [now, userId],
-      );
-      await client.query(
-        'UPDATE activity_events SET deleted = true, updated_at = $1 WHERE added_by = $2 AND deleted = false',
-        [now, userId],
-      );
-      await client.query(
-        'UPDATE announcements SET deleted = true, updated_at = $1 WHERE created_by = $2 AND deleted = false',
-        [now, userId],
-      );
-      await client.query(
-        'UPDATE announcement_reactions SET deleted = true, updated_at = $1 WHERE user_id = $2 AND deleted = false',
-        [now, userId],
-      );
 
-      // 4. Tombstone the user's push tokens. fanOut selects on
-      //    `deleted = FALSE`, so flipping the flag is what actually stops the
-      //    deleted user's devices from receiving household pushes.
-      await client.query(
-        'UPDATE push_tokens SET deleted = true, updated_at = $1 WHERE user_id = $2 AND deleted = false',
-        [now, userId],
-      );
+      // 1-3. Tombstone AND anonymize the user's rows in every household table.
+      //    The tombstone hides the row from co-members (the sync model's
+      //    delete); rewriting the attribution column to the nil UUID is what
+      //    makes the removal real — no row keeps the deleted user's id. No
+      //    `deleted = false` filter: rows the user tombstoned earlier still
+      //    carry their id and must be scrubbed too.
+      for (const [table, col] of ATTRIBUTION_COLUMNS) {
+        await client.query(
+          `UPDATE ${table} SET deleted = true, ${col} = $1, updated_at = $2 WHERE ${col} = $3`,
+          [ANONYMOUS_USER_ID, now, userId],
+        );
+      }
 
-      // 5. Revoke any outstanding invites the user created (mark as used so
-      //    they can't be accepted after the account is gone). `used_by` is a
-      //    UUID column (Supabase auth.users.id) with no sentinel value — a
-      //    non-UUID literal like 'deleted' fails uuid coercion at query-parse
-      //    time and 500s the whole cascade. used_at alone marks the code spent.
-      await client.query(
-        'UPDATE household_invites SET used_at = NOW() WHERE created_by = $1 AND used_at IS NULL',
-        [userId],
-      );
+      // 4. Remove the user's push tokens outright — device secrets with no
+      //    reason to outlive the account, and what stops a deleted user's
+      //    devices from receiving household pushes.
+      await client.query('DELETE FROM push_tokens WHERE user_id = $1', [userId]);
 
-      // 6 + 7. For each household the user is a member of:
+      // 5. Remove invites the user created (they can't be accepted once the
+      //    account is gone) and detach the user from invites they accepted.
+      await client.query('DELETE FROM household_invites WHERE created_by = $1', [userId]);
+      await client.query('UPDATE household_invites SET used_by = NULL WHERE used_by = $1', [userId]);
+
+      // 6. Detach first-party analytics from the account. The events stay as
+      //    anonymous install-level rows.
+      await client.query('UPDATE analytics_events SET user_id = NULL WHERE user_id = $1', [userId]);
+
+      // 7 + 8. For each household the user is a member of:
       //   - If they're the owner and other members exist → transfer ownership
       //     to the longest-tenured remaining member.
       //   - If they're the sole member → keep the household alive, ownerless
@@ -150,6 +149,19 @@ export class AccountController {
         );
       }
 
+      // 9. households.created_by still names the user. Hand it to the
+      //    household's current owner, or the nil UUID when nobody is left.
+      await client.query(
+        `UPDATE households h
+            SET created_by = COALESCE(
+              (SELECT m.user_id FROM user_households m
+                WHERE m.household_id = h.id AND m.role = 'owner'
+                ORDER BY m.created_at ASC LIMIT 1),
+              $1::uuid)
+          WHERE h.created_by = $2`,
+        [ANONYMOUS_USER_ID, userId],
+      );
+
       await client.query('COMMIT');
     } catch (err) {
       await client.query('ROLLBACK').catch(() => undefined);
@@ -162,29 +174,35 @@ export class AccountController {
       client.release();
     }
 
-    // 8. Delete the Supabase auth user. This is outside the DB transaction
+    // 10. Delete the Supabase auth user. This is outside the DB transaction
     //    because it's a separate HTTP call to the Supabase admin API. If it
-    //    fails after the cascade committed, the DB data is already tombstoned
-    //    and the auth user is orphaned — recoverable by retrying this call.
-    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
-          method: 'DELETE',
-          headers: {
-            authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-            apikey: SUPABASE_SERVICE_ROLE_KEY,
-          },
-        });
-        // 404 = user already deleted (idempotent). Anything else non-ok is a
-        // warning, not a failure — the cascade already ran.
-        if (!res.ok && res.status !== 404) {
-          console.warn('[api] supabase auth user delete failed:', res.status, await res.text());
-        }
-      } catch (err) {
-        console.warn('[api] supabase auth user delete network error:', err);
+    //    fails the account still exists, so the request FAILS (502) — the
+    //    cascade above is idempotent, so the client can simply retry.
+    let authDeleted = false;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+        },
+      });
+      // 404 = user already deleted (idempotent).
+      authDeleted = res.ok || res.status === 404;
+      if (!authDeleted) {
+        console.error('[api] supabase auth user delete failed:', res.status, await res.text());
       }
-    } else {
-      console.warn('[api] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — auth user not deleted');
+    } catch (err) {
+      console.error('[api] supabase auth user delete network error:', err);
+    }
+    if (!authDeleted) {
+      throw new HttpException(
+        {
+          ok: false,
+          error: 'your data was removed but the sign-in could not be deleted — please try again',
+        },
+        HttpStatus.BAD_GATEWAY,
+      );
     }
 
     return { ok: true, deleted: userId };

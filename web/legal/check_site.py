@@ -55,6 +55,12 @@ for path, page in pages.items():
         if url.fragment and target in pages:
             assert unquote(url.fragment) in pages[target].ids, f'{path}: missing anchor {link}'
 
+# Drafting brackets in the legal sources render as <code>[…</code>. The generator
+# fills the known placeholders; anything still bracketed was missed.
+for name in ('privacy', 'terms'):
+    html = (ROOT / name / 'index.html').read_text()
+    assert '<code>[' not in html and '<code>]' not in html, f'{name}: drafting bracket left in published text'
+
 from PIL import Image
 with Image.open(ROOT / 'assets/social-card.png') as image:
     assert image.size == (1200, 630)

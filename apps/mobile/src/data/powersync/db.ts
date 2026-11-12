@@ -33,7 +33,23 @@ import {
 } from '@powersync/react-native';
 import { OPSqliteOpenFactory } from '@powersync/op-sqlite';
 import { AppSchema } from './schema';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '../supabase/client';
+import { drainTransaction, type SendOps, type UploadOp, type UploadResponse } from './uploadQueue';
+
+// A dropped write is real (if rare) data loss for the user, so it must be
+// visible to us. Only the table, op, and status are sent — never row contents.
+function reportDroppedWrite(op: UploadOp, response: UploadResponse): void {
+  console.warn(`[sync] dropped ${op.op} on ${op.type}: HTTP ${response.status} ${response.body}`);
+  try {
+    Sentry.captureMessage('sync upload permanently rejected', {
+      level: 'error',
+      tags: { table: op.type, op: op.op, status: String(response.status) },
+    });
+  } catch {
+    // Reporting must never break the upload loop.
+  }
+}
 
 let _db: PowerSyncDatabase | null = null;
 let _connected = false;
@@ -79,9 +95,10 @@ class SupabaseConnector implements PowerSyncBackendConnector {
     return { endpoint, token };
   }
 
-  // Drains the local CRUD queue to the upload-proxy. Throws on failure so
-  // PowerSync retries (with backoff). On success we mark the batch complete
-  // so PowerSync drops it from the local queue.
+  // Drains the local CRUD queue to the upload-proxy. Throws on a transient
+  // failure so PowerSync retries (with backoff). Once every op is applied or
+  // permanently refused we mark the batch complete so PowerSync drops it from
+  // the local queue.
   //
   // The endpoint is owned by services/api; its handler remains a legacy
   // Express router mounted by the NestJS bootstrap during ADR-009 migration.
@@ -107,19 +124,26 @@ class SupabaseConnector implements PowerSyncBackendConnector {
       throw new Error('No Supabase session — cannot upload CRUD queue');
     }
 
-    const res = await fetch(`${apiUrl}/sync/upload`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ crud: batch.crud.map((e) => e.toJSON()) }),
-    });
+    const send: SendOps = async (ops) => {
+      const res = await fetch(`${apiUrl}/sync/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ crud: ops }),
+      });
+      return { status: res.status, body: res.ok ? '' : await res.text().catch(() => '') };
+    };
 
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`Upload failed: HTTP ${res.status} ${body}`);
-    }
+    // Throws on transient failures (PowerSync retries with backoff). Writes the
+    // server permanently refuses are dropped and reported instead of blocking
+    // every later write from this device — see uploadQueue.ts.
+    await drainTransaction(
+      batch.crud.map((e) => e.toJSON() as UploadOp),
+      send,
+      reportDroppedWrite,
+    );
 
     await batch.complete();
   }

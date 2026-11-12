@@ -99,7 +99,7 @@ If Metro acts up after a `node_modules` change: kill port 8081 and run
 - [ ] Gradle build completes (the native compile is the headline unknown)
 - [ ] Sign in; sync end-to-end over adb reverse (sync dot settles green; psql watermark)
 - [ ] Expiry notification arrives under the "Expiry reminders" channel
-      (Settings → Apps → Pantry Party → Notifications shows the named channel)
+      (Settings → Apps → Pantry Glance → Notifications shows the named channel)
 - [ ] Android 13+ shows the notification permission prompt on first run
 - [ ] Notification action buttons (✓ Used / Snooze 2 days) work from the shade
 - [ ] Notification small icon is legible (currently a known white-square gap)

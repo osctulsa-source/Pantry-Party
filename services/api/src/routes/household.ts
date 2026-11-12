@@ -7,6 +7,7 @@ import type { PoolClient } from 'pg';
 import { pool } from '../db.js';
 import { requireUser, type AuthedRequest } from '../middleware/auth.js';
 import { generateInviteCode, isValidInviteCode } from '../lib/inviteCode.js';
+import { FixedWindowRateLimiter } from '../lib/rateLimit.js';
 
 const router: ReturnType<typeof Router> = Router();
 
@@ -32,6 +33,29 @@ const PG_UNIQUE_VIOLATION = '23505';
 // collisions vanishingly rare; 5 attempts is purely defensive against a
 // pathological run, not an expected hot path.
 const MAX_INVITE_GENERATION_ATTEMPTS = 5;
+
+// Invite codes are short enough to read aloud (~21M combinations), so guessing
+// must be throttled: without a limit any signed-in user could script
+// /household/accept until a code hit and join a stranger's household. 10
+// attempts per 15 minutes per user is far more than a real person mistyping
+// needs and makes enumeration impractical. Creating invites is limited too so
+// one account can't flood the table (which would also raise guess odds).
+// In-process, like the recipe limiter — see the single-instance invariant in
+// lib/rateLimit.ts.
+export const acceptLimiter = new FixedWindowRateLimiter({ limit: 10, windowMs: 15 * 60_000 });
+export const inviteLimiter = new FixedWindowRateLimiter({ limit: 20, windowMs: 60 * 60_000 });
+
+function rateLimited(
+  limiter: FixedWindowRateLimiter,
+  userId: string,
+  res: { setHeader(k: string, v: string): unknown; status(c: number): { json(b: unknown): unknown } },
+): boolean {
+  const decision = limiter.check(userId);
+  if (decision.allowed) return false;
+  res.setHeader('Retry-After', String(decision.retryAfterSeconds));
+  res.status(429).json({ ok: false, error: 'too many attempts — try again later' });
+  return true;
+}
 
 interface HouseholdInviteRow {
   id: string;
@@ -144,6 +168,7 @@ router.post('/household/invite', requireUser, async (req, res) => {
   }
 
   const userId = (req as AuthedRequest).userId;
+  if (rateLimited(inviteLimiter, userId, res)) return;
   const { household_id } = parsed.data;
 
   let client: PoolClient | null = null;
@@ -210,6 +235,8 @@ router.post('/household/invite', requireUser, async (req, res) => {
 });
 
 router.post('/household/accept', requireUser, async (req, res) => {
+  // Counted before validation so malformed guesses spend the budget too.
+  if (rateLimited(acceptLimiter, (req as AuthedRequest).userId, res)) return;
   const parsed = AcceptBodySchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ ok: false, error: 'invalid payload', issues: parsed.error.issues });

@@ -1,4 +1,4 @@
-# Pantry Party device-variant spec (v1) — addendum to SPEC.md
+# Pantry Glance device-variant spec (v1) — addendum to SPEC.md
 
 You are authoring DEVICE VARIANTS: alternate instruction sets that convert an
 existing curated recipe to a different cooking device. Read SPEC.md first —

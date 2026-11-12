@@ -1,79 +1,73 @@
 # Staging environment runbook (audit Task 5)
 
-**Status:** NOT YET PROVISIONED — this is the executable plan. Standing up
-staging requires creating cloud resources under the project's own
-Supabase / PowerSync / Railway accounts (billing + credentials), which is an
-owner action. Once the three resources exist, the eas.json wiring below is a
-5-minute change.
+**Status:** provisioned 2026-11-12 on the always-on Linux desktop. Cloud staging
+(a second PowerSync Cloud instance + Railway service) was not built: PowerSync
+needs Supabase's direct endpoint, which needs the paid IPv4 add-on.
 
-## Why
+## What staging is
 
-Today **both** the `development` and `preview` EAS profiles point at the
-**production** PowerSync instance, Railway API, and Supabase project (see
-`apps/mobile/eas.json`). Every dev/test write lands in the production database,
-and a destructive bug in a dev build reaches real data. Staging fixes that:
-`development`/`preview` → staging, only `production` → prod.
-
-## 1 · Provision the parallel stack (owner action)
-
-Mirror the production stack (`infra/managed/README.md`), one tier down:
-
-| Piece | Create | Notes |
+| Piece | Where | Address |
 |---|---|---|
-| Supabase project | a new project, e.g. `pantry-party-staging` | Enable the **IPv4 add-on** (PowerSync direct-endpoint replication needs it, same as prod). Separate anon key + service-role key + JWKS URL. |
-| PowerSync Cloud instance | a new instance | Connect to the staging Supabase **direct** endpoint as a `powersync_role` created in staging; deploy the **same** `infra/local-dev/sync-config.yaml` (it's the source of truth). |
-| Railway service | a new service (or a `staging` environment on the `pantry-party` project) | Its own env vars pointing at staging Supabase (session pooler `PG_URI`, staging `API_JWKS_URI`, staging `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`). `NODE_ENV=production` is fine — "staging" is about *which data*, not the code mode. Keep **replicas = 1** (see the single-instance invariant in the main README). |
+| Auth | Supabase project `touduidwsmeohfthtlpf` (sign-in only, no app tables) | `https://touduidwsmeohfthtlpf.supabase.co` |
+| Postgres, PowerSync, API | the `infra/local-dev` Docker stack on the desktop | internal |
+| PowerSync, reachable from devices | `tailscale serve` → `127.0.0.1:18080` | `https://customjc.tail65685e.ts.net:28443` |
+| API, reachable from devices | `tailscale serve` → `127.0.0.1:28090` | `https://customjc.tail65685e.ts.net:28444` |
 
-## 2 · Apply the schema to staging
+The `development` and `preview` profiles in `apps/mobile/eas.json` point at these;
+only `production` points at the production stack. `apps/mobile/.env.local`
+(gitignored) should hold the same four values so `expo start` uses staging too.
 
-Use the one canonical runner against the staging **direct** endpoint:
+**The device must be on the tailnet.** A development or preview build opened on a
+phone without Tailscale connected cannot reach sync or the API. Do not hand a
+preview build to a tester who is not on the tailnet.
+
+## Running it
 
 ```sh
-DATABASE_URL="postgres://postgres:<staging-pw>@db.<staging-ref>.supabase.co:5432/postgres" \
-  ./infra/managed/migrate.sh
+cd infra/local-dev
+docker compose -f docker/docker-compose.yaml up -d --build   # --build picks up API changes
+docker compose -f docker/docker-compose.yaml ps
+curl https://customjc.tail65685e.ts.net:28443/probes/liveness
+curl https://customjc.tail65685e.ts.net:28444/health
 ```
 
-Then create the `powersync` publication + `powersync_role` exactly as in
-`infra/managed/README.md` §1, and deploy the sync rules (§2) to the staging
-PowerSync instance.
+`docker/.env` (gitignored) carries the staging settings: `PS_PORT=127.0.0.1:18080`,
+`API_PORT=28090`, a generated database password, and `PS_SUPABASE_JWKS_URI` for
+the staging Supabase project. The containers restart with Docker. The API image
+is built from whatever is checked out, so rebuild after switching branches.
 
-## 3 · Point `development` + `preview` at staging
+To rebuild the HTTPS front on a new machine:
 
-In `apps/mobile/eas.json`, replace the `env` URLs/keys in the **`development`**
-and **`preview`** profiles with the staging values (leave **`production`**
-untouched). Each profile's `env` block becomes:
-
-```jsonc
-"EXPO_PUBLIC_POWERSYNC_URL": "https://<staging-instance>.powersync.journeyapps.com",
-"EXPO_PUBLIC_API_URL":        "https://<staging-railway-domain>",
-"EXPO_PUBLIC_SUPABASE_URL":   "https://<staging-ref>.supabase.co",
-"EXPO_PUBLIC_SUPABASE_ANON_KEY": "<staging anon key>",
-// PostHog: keep prod, or use a separate staging project to keep analytics clean
+```sh
+tailscale serve --bg --https=28443 http://127.0.0.1:18080
+tailscale serve --bg --https=28444 http://127.0.0.1:28090
 ```
 
-Also update the local dev file `apps/mobile/.env.local` (gitignored) to the
-staging URLs so `expo start` on a bare dev build hits staging, not prod.
+The schema comes from the init scripts on a fresh volume; apply later migrations
+with `infra/managed/migrate.sh` against the `pg-db` port. `down -v` wipes staging.
 
-> These are bundled at **build time** — rebuild the dev/preview client (or
-> `expo start -c`) after changing them.
+## Known gaps
 
-## 4 · Acceptance check (the Task 5 definition of done)
+- Account deletion returns 503 on staging: the compose file does not pass
+  `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` to the API.
+- Recipe search returns 503 until `SPOONACULAR_API_KEY` is set in `docker/.env`.
+- Analytics and crash reports from staging builds still go to the production
+  PostHog and Sentry projects.
 
-1. Build/run a `development` client.
-2. Sign in with a **staging** test user and add a pantry item.
-3. Confirm the row appears in **staging** Postgres:
+## Acceptance check
+
+1. Build/run a `development` client with the phone on the tailnet.
+2. Sign up a staging user and add a pantry item.
+3. Confirm the row is in staging Postgres:
    ```sh
-   psql "$STAGING_PG_URI" -c "SELECT name, household_id FROM pantry_items WHERE deleted = false ORDER BY added_at DESC LIMIT 5;"
+   docker compose -f docker/docker-compose.yaml exec pg-db \
+     psql -U postgres -d postgres -c "SELECT name, household_id FROM pantry_items WHERE deleted = false ORDER BY added_at DESC LIMIT 5;"
    ```
-4. Confirm it is **absent** from production Postgres (same query against the prod
-   pooler URI returns nothing new). ✅ = dev builds no longer touch prod.
+4. Confirm it is absent from production Postgres.
 
-## Notes
+## Moving to cloud staging later
 
-- The prod anon key currently sits in `eas.json` in git. The staging anon key is
-  likewise non-secret (anon keys are public by design), so committing the
-  staging values is fine — but the staging **service-role key** is a real secret
-  and belongs only in the staging Railway service vars + a gitignored `.env`,
-  never in `eas.json` (same rule as prod).
-- Once staging exists, hand me the staging URLs + anon key and I'll wire the
-  `eas.json` change and verify the acceptance check.
+Create a PowerSync Cloud instance and a Railway `staging` environment, enable
+the IPv4 add-on on the staging Supabase project, run `infra/managed/migrate.sh`
+against its direct endpoint, create the publication and `powersync_role` as in
+`infra/managed/README.md` §1, then swap the two addresses in `eas.json`.

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "main": "src/main.ts",
-  "description": "Pantry Party API — NestJS (promoted from Express per ADR-008)",
+  "description": "Pantry Glance API — NestJS (promoted from Express per ADR-008)",
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
