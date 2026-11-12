@@ -19,15 +19,23 @@ export async function registerPushToken(userId: string): Promise<void> {
   if (!token) return;
 
   const db = getPowerSync();
+  // Match tombstoned rows too: the server keeps one row per token, so a token
+  // that was turned off earlier is revived rather than inserted again.
   const existing = await db.getAll<{ id: string }>(
-    'SELECT id FROM push_tokens WHERE token = ? AND deleted = 0 LIMIT 1',
+    'SELECT id FROM push_tokens WHERE token = ? LIMIT 1',
     [token],
   );
   const now = Date.now();
   if (existing.length > 0 && existing[0]) {
-    await db.execute('UPDATE push_tokens SET updated_at = ? WHERE id = ?', [now, existing[0].id]);
+    await db.execute('UPDATE push_tokens SET updated_at = ?, deleted = 0 WHERE id = ?', [
+      now,
+      existing[0].id,
+    ]);
     return;
   }
+  // No local row. This also happens when the token IS on the server but has
+  // not synced down yet (fresh sign-in, or another account used this phone);
+  // the upload API hands the token over to this new row instead of rejecting it.
   await db.execute(
     `INSERT INTO push_tokens
        (id, user_id, token, platform, announcements_enabled, updated_at, deleted)
