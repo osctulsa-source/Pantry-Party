@@ -5,7 +5,7 @@ build landed on device on **2026-07-06** (App Store Connect app
 **PantryPartyColeTech**). Provisioning of the backend it talks to is in
 [`infra/managed/README.md`](../infra/managed/README.md).
 
-**Last known good on device: TestFlight build 47** (2026-09-08). Builds **41–46**
+**Last known good on device: TestFlight build 50** (confirmed 2026-11-12; 47 was the previous one). Builds **41–46**
 crash on launch. Do not install them. Do not tell testers to.
 
 > **Agents (any machine):** do not invent a shorter path. The recipe below is the
@@ -32,7 +32,7 @@ OTA (`eas update`) is **disabled** until expo-updates no longer force-unwraps a
 nil error at `RelaunchProcedure.swift:94` ([expo/expo#45154](https://github.com/expo/expo/issues/45154)).
 Builds **36/41/45** died in ~1s on that path. `updates.enabled` is `false`;
 `npm run ota:publish` refuses to run. Re-enable only after upgrading
-expo-updates past that unwrap, then cut a **new** binary. 47 stays last-known-good
+expo-updates past that unwrap, then cut a **new** binary. 50 stays last-known-good
 until that binary exists.
 
 ⚠️ **A full build for a native change also needs a `runtimeVersion` bump** in
@@ -203,7 +203,7 @@ Internal testers get it automatically.
 
 ## OTA updates (EAS Update) — currently OFF
 
-`updates.enabled` is **`false`** in `app.config.js`. Installed TestFlight 47
+`updates.enabled` is **`false`** in `app.config.js`. Installed TestFlight 50
 does not apply published JS updates. `npm run ota:publish` exits 1 until that
 flag is flipped **and** expo-updates is past
 [expo/expo#45154](https://github.com/expo/expo/issues/45154) **and** a new
