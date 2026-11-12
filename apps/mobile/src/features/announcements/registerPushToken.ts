@@ -1,17 +1,23 @@
 /**
- * Obtains the Expo push token after notification permission is granted and
- * upserts it into the user-scoped push_tokens table (drains via upload-proxy).
- * Idempotent on the token's uniqueness — re-running refreshes updated_at.
+ * Obtains the Expo push token once notification permission has been granted
+ * and upserts it into the user-scoped push_tokens table (drains via
+ * upload-proxy). It never shows the permission prompt itself: that happens
+ * where a reminder is first needed (see useExpiryNotifications). App.tsx calls
+ * this at sign-in and on every foreground, so a grant is picked up as soon as
+ * the prompt closes; after one successful run per user it is a no-op.
  */
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import { getPowerSync } from '../../data/powersync/db';
-import { ensureNotificationPermission } from '../expiry/expoScheduler';
+import { hasNotificationPermission } from '../expiry/expoScheduler';
+
+let registeredFor: string | null = null;
 
 export async function registerPushToken(userId: string): Promise<void> {
-  const granted = await ensureNotificationPermission();
+  if (registeredFor === userId) return;
+  const granted = await hasNotificationPermission();
   if (!granted) return;
 
   const tokenResponse = await Notifications.getExpoPushTokenAsync();
@@ -31,6 +37,7 @@ export async function registerPushToken(userId: string): Promise<void> {
       now,
       existing[0].id,
     ]);
+    registeredFor = userId;
     return;
   }
   // No local row. This also happens when the token IS on the server but has
@@ -42,4 +49,5 @@ export async function registerPushToken(userId: string): Promise<void> {
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [Crypto.randomUUID(), userId, token, Platform.OS, 1, now, 0],
   );
+  registeredFor = userId;
 }

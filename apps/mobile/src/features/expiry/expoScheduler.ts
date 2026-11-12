@@ -30,13 +30,22 @@ export const expoScheduler: NotificationScheduler = {
 };
 
 /**
- * Idempotent permission check. Returns true if granted (or already granted),
+ * Read-only permission check: never shows the system prompt. Use this on
+ * paths that run without the user asking for anything (app launch, sign-in).
+ */
+export async function hasNotificationPermission(): Promise<boolean> {
+  const existing = await Notifications.getPermissionsAsync();
+  return existing.status === 'granted';
+}
+
+/**
+ * Idempotent permission check that may show the system prompt. Call it only
+ * when there is something concrete to notify about, so the prompt has context. Returns true if granted (or already granted),
  * false otherwise. Caller should silently skip scheduling on false — we don't
  * want to crash or repeat-prompt the user.
  */
 export async function ensureNotificationPermission(): Promise<boolean> {
-  const existing = await Notifications.getPermissionsAsync();
-  if (existing.status === 'granted') return true;
+  if (await hasNotificationPermission()) return true;
   const requested = await Notifications.requestPermissionsAsync();
   return requested.status === 'granted';
 }
