@@ -83,7 +83,7 @@ the first external build goes to beta review.
 
 | Field | Value |
 |---|---|
-| Feedback email | `jcsenka013@gmail.com` |
+| Feedback email | `support@pantryglance.com` |
 | Marketing URL | `https://pantryglance.com/` |
 | Privacy Policy URL | `https://pantryglance.com/privacy/` |
 | Sign-in required | Yes — demo account below |
@@ -132,5 +132,5 @@ In order. Internal testers (App Store Connect users, up to 100) need only step 1
 - [ ] Demo account for review (create + record credentials here)
 - [ ] Age rating questionnaire (expect 4+; no user-generated public content)
 - [ ] Primary category: **Food & Drink**; secondary: Productivity or Shopping
-- [ ] Confirm contact email (currently jcsenka013@gmail.com on the legal pages)
+- [x] Contact email: support@pantryglance.com (privacy@ on the privacy page); both forward via Cloudflare Email Routing
 - [ ] Legal entity name on the Terms (currently "the Pantry Glance team")

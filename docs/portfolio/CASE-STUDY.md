@@ -93,6 +93,6 @@ hands-on validation of a particular TestFlight binary.
 
 ## Try the project
 
-[Request beta access](mailto:jcsenka013@gmail.com?subject=Pantry%20Glance%20beta), explore the
+[Request beta access](mailto:support@pantryglance.com?subject=Pantry%20Glance%20beta), explore the
 [source](https://github.com/osctulsa-source/Pantry-Party), or follow the
 [demo guide](https://github.com/osctulsa-source/Pantry-Party/blob/main/docs/portfolio/DEMO.md).

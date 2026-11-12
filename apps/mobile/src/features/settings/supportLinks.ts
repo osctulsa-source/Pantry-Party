@@ -13,7 +13,7 @@ export const SUPPORT_LINKS = {
   website: `${SITE}/`,
   privacy: `${SITE}/privacy/`,
   terms: `${SITE}/terms/`,
-  feedbackEmail: 'jcsenka013@gmail.com',
+  feedbackEmail: 'support@pantryglance.com',
 } as const;
 
 /**
