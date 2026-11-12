@@ -163,6 +163,7 @@ export function BulkPasteScreen() {
         </Pressable>
         <TextInput
           style={styles.area}
+          accessibilityLabel="Grocery list to review"
           multiline
           placeholder={'Milk\nEggs\nOrganic Bananas\n$1.78'}
           placeholderTextColor={tokens.color.inkMuted}

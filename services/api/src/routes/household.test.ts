@@ -40,7 +40,7 @@ vi.mock('../db.js', () => ({
 
 // Route module + supertest are imported AFTER the mocks are registered.
 const { default: express } = await import('express');
-const { householdRouter } = await import('./household.js');
+const { householdRouter, acceptLimiter, inviteLimiter } = await import('./household.js');
 const { default: request } = await import('supertest');
 
 function buildApp() {
@@ -92,6 +92,8 @@ const LOCKED = { rowCount: 1, rows: [{ pg_advisory_xact_lock: '' }] };
 
 beforeEach(() => {
   connectMock.mockReset();
+  acceptLimiter.reset();
+  inviteLimiter.reset();
 });
 
 afterEach(() => {
@@ -471,5 +473,50 @@ describe('POST /household/accept', () => {
       expect(params[0]).toBe(USER_B);
       expect(params[1]).toBe(INVITE_ID);
     }
+  });
+});
+
+describe('household rate limits', () => {
+  it('throttles invite-code guessing: the 11th /household/accept in a window is a 429', async () => {
+    const guess = () =>
+      request(buildApp())
+        .post('/household/accept')
+        .set('Authorization', `Bearer test:${USER_B}`)
+        .send({ invite_code: 'BREAD-7K2M' });
+
+    for (let i = 0; i < 10; i++) {
+      mockClient([{ rowCount: 0, rows: [] }]); // invite lookup → none
+      expect((await guess()).status).toBe(404);
+    }
+    connectMock.mockReset();
+    const blocked = await guess();
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers['retry-after']).toBeDefined();
+    // Throttled before any database work.
+    expect(connectMock).not.toHaveBeenCalled();
+  });
+
+  it('counts malformed guesses against the same budget', async () => {
+    const guess = () =>
+      request(buildApp())
+        .post('/household/accept')
+        .set('Authorization', `Bearer test:${USER_B}`)
+        .send({ invite_code: 'nope' });
+    for (let i = 0; i < 10; i++) expect((await guess()).status).toBe(400);
+    expect((await guess()).status).toBe(429);
+  });
+
+  it('limits are per user — one user being throttled does not block another', async () => {
+    for (let i = 0; i < 11; i++) {
+      await request(buildApp())
+        .post('/household/accept')
+        .set('Authorization', `Bearer test:${USER_B}`)
+        .send({ invite_code: 'nope' });
+    }
+    const other = await request(buildApp())
+      .post('/household/accept')
+      .set('Authorization', `Bearer test:${USER_A}`)
+      .send({ invite_code: 'nope' });
+    expect(other.status).toBe(400);
   });
 });

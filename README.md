@@ -1,34 +1,27 @@
-# Pantry Party
+# Pantry Glance
 
-> **Internal codename: Breadbox.** Brand name, copy, colors, and typography are
-> intentionally isolated from feature code. Keep product branding in the theme tokens.
+[![CI](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml/badge.svg)](https://github.com/osctulsa-source/Pantry-Party/actions/workflows/ci.yml)
 
-Pantry Party is an offline-first pantry and cooking app built with React Native and Expo. It helps a
-household capture food, track quantities and expiry, maintain a shared shopping list, and
-find recipes that use what is already available.
+**A shared pantry that keeps working offline.** Capture groceries, review receipt text,
+track expiry, find recipes, and coordinate a household shopping list.
 
-This repository is an npm-workspace monorepo containing the Expo mobile app, shared domain
-logic, the NestJS API, database/sync configuration, curated recipe and shelf-life data, and
-operational runbooks.
+Created and maintained by **[JC Senka](https://www.linkedin.com/in/jcsenka/)**.
+Built with **React Native / Expo, TypeScript, SQLite / PowerSync, NestJS, and Supabase**.
 
-**Website:** [legal-production-9e0c.up.railway.app](https://legal-production-9e0c.up.railway.app/)
+[Website](https://pantryglance.com/) ·
+[Engineering case study](docs/portfolio/CASE-STUDY.md) ·
+[Demo guide](docs/portfolio/DEMO.md) ·
+[Request beta access](mailto:support@pantryglance.com?subject=Pantry%20Glance%20beta)
 
-<!--
-Screenshots: add images to web/legal/screenshots/ (they also feed the website),
-then uncomment and adjust the filenames below.
-
-<p>
-  <img src="web/legal/screenshots/01-pantry.png" width="24%" alt="Pantry">
-  <img src="web/legal/screenshots/02-capture.png" width="24%" alt="Receipt capture">
-  <img src="web/legal/screenshots/03-recipes.png" width="24%" alt="Recipes">
-  <img src="web/legal/screenshots/04-shopping.png" width="24%" alt="Shopping list">
-</p>
--->
+<!-- portfolio-screenshots:start -->
+<!-- Real app screenshots are added here by web/legal/generate.py when supplied. -->
+<!-- portfolio-screenshots:end -->
 
 ## Project status
 
-The iOS app is in development with a documented TestFlight build history. See the
-[TestFlight runbook](docs/TESTFLIGHT.md) for device validation and release gates.
+The iPhone app is a **working TestFlight beta**. As of October 8, 2026, JC has been
+using it successfully for a couple of months. See the [TestFlight runbook](docs/TESTFLIGHT.md) for
+device validation and release gates.
 The repository also contains Android configuration; this does not establish an Android
 store release. A public App Store release is not claimed here.
 
@@ -66,6 +59,10 @@ the mobile connector uploads queued mutations through the authenticated API. See
 
 ## Repository map
 
+Internal package names use the codename **Breadbox**. Branding stays in theme tokens
+rather than feature code. This npm-workspace monorepo contains the mobile app, shared
+domain logic, API, infrastructure, and product data.
+
 ```text
 apps/mobile/        Expo mobile application and feature code
 packages/core/      Canonical Zod schemas and shared domain logic
@@ -74,7 +71,7 @@ infra/local-dev/    Local Postgres + PowerSync + API Docker environment
 infra/managed/      Supabase + PowerSync Cloud + Railway production runbook
 data/               Curated recipes and generated shelf-life data
 docs/               Architecture, ADRs, operations, legal, and feature designs
-web/legal/          Static legal-document website
+web/legal/          Product website, engineering case study, and legal pages
 spikes/             Throwaway experiments; never import these into production code
 ```
 
@@ -115,10 +112,8 @@ The API integration suite is separate: `npm run test:integration -w services/api
 a disposable Postgres database. CI provisions one and also checks migrations, the API
 image lockfile, and the generated iOS bundle phase. Never point test fixtures at production.
 
-If a clean npm install reports that `jest-expo` cannot find the already-declared
-`@react-native/jest-preset`, the preset may be nested in the mobile workspace. From
-`apps/mobile`, run `NODE_PATH="$PWD/node_modules" npm test -- --runInBand`; this resolves
-that workspace dependency without changing the lockfile.
+The mobile `npm test` script sets `NODE_PATH=./node_modules` so `jest-expo` finds the
+`@react-native/jest-preset` that npm nests inside the mobile workspace.
 
 ## Run locally
 
@@ -164,7 +159,7 @@ backfill, mixed-client compatibility plan, and sync torture tests. See ADR-011 i
 - [Local development stack](infra/local-dev/README.md)
 - [Secrets management](docs/SECRETS.md)
 - [Backup and disaster recovery](docs/BACKUP-DR.md)
-- [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 47**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).
+- [TestFlight runbook](docs/TESTFLIGHT.md) — last known good **build 50**; OTA is off; never `eas submit --latest`. Agents: see [AGENTS.md](AGENTS.md).
 
 ## License
 

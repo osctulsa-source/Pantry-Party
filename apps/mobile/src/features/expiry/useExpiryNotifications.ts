@@ -36,7 +36,11 @@ import {
   type PantryItem,
 } from '@breadbox/core';
 
-import { expoScheduler, ensureNotificationPermission } from './expoScheduler';
+import {
+  expoScheduler,
+  ensureNotificationPermission,
+  hasNotificationPermission,
+} from './expoScheduler';
 import { getNotifyHour } from './notificationPrefs';
 import {
   EXPIRY_CATEGORY,
@@ -65,9 +69,21 @@ async function reconcile(
   items: PantryItem[],
   householdId: string | null,
 ): Promise<void> {
+  const now = new Date();
+
+  // Reminder-time preference (Settings → Reminders); defaults to 9am.
+  const notifyHour = await getNotifyHour();
+  const digests = computeDigestIntents(items, now, undefined, undefined, notifyHour);
+
+  // Ask for permission only once there is a reminder to schedule, so the
+  // system prompt appears after the user has dated an item, not on first
+  // launch. With nothing to schedule, just clear stale reminders if allowed.
+  if (digests.length === 0) {
+    if (await hasNotificationPermission()) await expoScheduler.cancelAll();
+    return;
+  }
   const granted = await ensureNotificationPermission();
   if (!granted) return;
-  const now = new Date();
 
   // Current streak (best-effort) — folds into the digest copy on urgent tiers.
   // Reads the on-device event logs (fast, AsyncStorage); the reconciler already
@@ -85,10 +101,6 @@ async function reconcile(
     }
   }
 
-  // Reminder-time preference (Settings → Reminders); defaults to 9am.
-  const notifyHour = await getNotifyHour();
-
-  const digests = computeDigestIntents(items, now, undefined, undefined, notifyHour);
   await expoScheduler.cancelAll();
   for (const digest of digests) {
     const { title, body } = digestNotification(digest, streakDays);

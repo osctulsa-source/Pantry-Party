@@ -1,7 +1,7 @@
 /**
  * notificationCopy — the playful phrase bank for expiry digests (pure, no I/O).
  *
- * Voice: "Pantry Party" — food with feelings, light jokes, never nagging. One
+ * Voice: "Pantry Glance" — food with feelings, light jokes, never nagging. One
  * gentle morning nudge that pushes the user to open the app and cook, rather
  * than a robotic "X expires in N days" per item.
  *

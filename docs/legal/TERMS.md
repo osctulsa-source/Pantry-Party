@@ -96,12 +96,12 @@ third‑party content may also be subject to those providers' terms.
 
 ## 8. Payments and subscriptions
 
-The Service is currently offered free of charge. `[If and when paid plans
-launch:` any paid features, prices, billing terms, renewal, and cancellation
-will be disclosed at the point of purchase and processed through the Apple App
-Store or Google Play under their terms; core reliability and sync will not be
-paywalled, consistent with our product commitments. `]` This section will be
-updated before any charges are introduced.
+The Service is currently offered free of charge. If paid plans launch, any paid
+features, prices, billing terms, renewal, and cancellation will be disclosed at
+the point of purchase and processed through the Apple App Store or Google Play
+under their terms; core reliability and sync will not be paywalled, consistent
+with our product commitments. This section will be updated before any charges
+are introduced.
 
 ## 9. Disclaimers
 

@@ -1,4 +1,4 @@
-# Maestro smoke flows — the pre-OTA gate
+# Maestro smoke flows — device smoke checks
 
 Five minutes of automation that catches the bug classes device testing kept
 finding after the fact: dead buttons, unreachable content, clipped labels,
@@ -6,7 +6,8 @@ broken navigation.
 
 ## When to run
 
-**Before every `eas update` publish and every TestFlight submit.** These flows
+**Before every TestFlight submit.** OTA updates are disabled; do not run
+`eas update`. Follow `docs/TESTFLIGHT.md` for the full-binary release gates. These flows
 exist because the settings-overflow, dead-cook-mode-X, and clipped-chip bugs
 all shipped to TestFlight and were found by a human. Each flow pins the
 regression class that escaped.
@@ -45,3 +46,10 @@ yellow flag (verify by hand) rather than an automatic red.
 Prefer `accessibilityLabel` text as tap targets (stable across copy tweaks),
 `extendedWaitUntil` over fixed sleeps, and one regression class per flow with
 a comment naming the bug it pins.
+
+## Product acceptance checks
+
+See [the demo and device validation guide](../docs/portfolio/DEMO.md) for offline
+persistence, reconnect delivery, capture correction, household joining, and session
+cleanup. These multi-device checks are manual; the smoke flows above do not establish
+end-to-end sync correctness.

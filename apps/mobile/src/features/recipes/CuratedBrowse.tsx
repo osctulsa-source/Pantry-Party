@@ -19,6 +19,7 @@ import { tokens } from '../../theme/tokens';
 import { browseCurated } from '../../data/curated/curatedSource';
 import { resolveRecipeImageSource } from '../../data/curated/resolveRecipeImage';
 import type { SpoonacularRecipe } from '../../data/spoonacular/types';
+import { BRAND } from '../../theme/brand';
 import type { RootStackParamList } from '../../../App';
 
 export function CuratedBrowse({
@@ -53,7 +54,7 @@ export function CuratedBrowse({
           <View style={styles.head}>
             <Text style={styles.title}>Nothing in your pantry yet</Text>
             <Text style={styles.sub}>
-              Here's what the Pantry Party kitchen is cooking — add a few staples and we'll match
+              Here's what the {BRAND.productName} kitchen is cooking — add a few staples and we'll match
               recipes to what you actually have.
             </Text>
             <Pressable style={styles.cta} onPress={onAddToPantry} accessibilityRole="button">
